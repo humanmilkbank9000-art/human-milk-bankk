@@ -1,0 +1,558 @@
+/**
+ * Typography System - City Human Milk Bank
+ * Font Pair: Merriweather (headings) + Quicksand (body)
+ * 
+ * Design Philosophy:
+ * - Merriweather (serif): Used for headings, titles, and emphasis - conveys trust, professionalism, and hierarchy
+ * - Quicksand (sans-serif): Used for body text, buttons, and interactive elements - provides warmth, friendliness, and readability
+ * 
+ * This creates a warm, human-centered interface appropriate for healthcare services.
+ */
+
+/* ============================================
+   CSS Variables & Root Configuration
+   ============================================ */
+:root {
+    /* Font Families */
+    --heading-font: 'Merriweather', Georgia, 'Times New Roman', serif;
+    --body-font: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.6;
+    --line-height-loose: 1.75;
+    
+    /* Letter Spacing */
+    --tracking-tight: -0.02em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.01em;
+    --tracking-wider: 0.025em;
+    
+    /* Font Weights */
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    --font-black: 900;
+}
+
+/* ============================================
+   Base Typography
+   ============================================ */
+body {
+    font-family: var(--body-font);
+    font-size: clamp(0.95rem, 2vw, 1rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+    letter-spacing: var(--tracking-wide);
+}
+
+/* ============================================
+   Headings - Merriweather (Serif)
+   ============================================ */
+
+/* Page Titles / H1 */
+h1,
+.h1,
+.page-title,
+.main-title {
+    font-family: var(--heading-font);
+    font-size: clamp(1.75rem, 4vw, 2rem);
+    font-weight: var(--font-bold);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-tight);
+    margin-bottom: 1rem;
+}
+
+/* Section Headers / H2 */
+h2,
+.h2,
+.section-title {
+    font-family: var(--heading-font);
+    font-size: clamp(1.5rem, 3.5vw, 1.75rem);
+    font-weight: var(--font-bold);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-tight);
+    margin-bottom: 0.875rem;
+}
+
+/* Subsection Headers / H3 */
+h3,
+.h3,
+.modal-title,
+.subsection-title {
+    font-family: var(--heading-font);
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: var(--font-bold);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-normal);
+    margin-bottom: 0.75rem;
+}
+
+/* Card Headers / H4 */
+h4,
+.h4,
+.card-title {
+    font-family: var(--heading-font);
+    font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+    font-weight: var(--font-bold);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-normal);
+    margin-bottom: 0.625rem;
+}
+
+/* Small Headers / H5 */
+h5,
+.h5,
+.card-header h5 {
+    font-family: var(--heading-font);
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: var(--font-bold);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-normal);
+    margin-bottom: 0.5rem;
+}
+
+/* Micro Headers / H6 */
+h6,
+.h6 {
+    font-family: var(--heading-font);
+    font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+    font-weight: var(--font-bold);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-normal);
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   Body Text - Quicksand (Sans-serif)
+   ============================================ */
+p,
+.paragraph,
+.text-body {
+    font-family: var(--body-font);
+    font-size: clamp(0.95rem, 2vw, 1rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+    letter-spacing: var(--tracking-wide);
+    margin-bottom: 1rem;
+}
+
+/* Lead Paragraph */
+.lead {
+    font-family: var(--body-font);
+    font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+    letter-spacing: var(--tracking-wide);
+}
+
+/* Small Text */
+small,
+.small,
+.text-small {
+    font-family: var(--body-font);
+    font-size: clamp(0.85rem, 1.8vw, 0.9rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Muted Text */
+.text-muted {
+    font-family: var(--body-font);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+}
+
+/* ============================================
+   Buttons - Quicksand (Sans-serif)
+   ============================================ */
+.btn,
+button,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+    font-family: var(--body-font);
+    font-size: clamp(0.9rem, 2vw, 0.95rem);
+    font-weight: var(--font-medium);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-wide);
+}
+
+.btn-lg {
+    font-size: clamp(1rem, 2.2vw, 1.1rem);
+    font-weight: var(--font-medium);
+}
+
+.btn-sm {
+    font-size: clamp(0.8rem, 1.8vw, 0.875rem);
+    font-weight: var(--font-medium);
+}
+
+/* ============================================
+   Forms - Quicksand (Sans-serif)
+   ============================================ */
+label,
+.form-label,
+.label {
+    font-family: var(--body-font);
+    font-size: clamp(0.9rem, 2vw, 0.95rem);
+    font-weight: var(--font-medium);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-wide);
+    margin-bottom: 0.375rem;
+}
+
+.form-control,
+.form-select,
+input,
+textarea,
+select {
+    font-family: var(--body-font);
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-wide);
+}
+
+.form-text,
+.form-help {
+    font-family: var(--body-font);
+    font-size: clamp(0.85rem, 1.8vw, 0.875rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+}
+
+/* ============================================
+   Tables - Mixed Typography
+   ============================================ */
+
+/* Table Headers - Merriweather */
+thead th,
+.table thead th,
+.table-header {
+    font-family: var(--heading-font);
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-weight: var(--font-bold);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-normal);
+}
+
+/* Table Body - Quicksand */
+tbody td,
+.table tbody td,
+.table-data {
+    font-family: var(--body-font);
+    font-size: clamp(0.9rem, 2vw, 0.95rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+    letter-spacing: var(--tracking-wide);
+}
+
+/* ============================================
+   Cards - Mixed Typography
+   ============================================ */
+
+/* Card Headers - Merriweather */
+.card-header {
+    font-family: var(--heading-font);
+    font-weight: var(--font-bold);
+}
+
+/* Card Body - Quicksand */
+.card-body,
+.card-text {
+    font-family: var(--body-font);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Card Footer - Quicksand */
+.card-footer {
+    font-family: var(--body-font);
+    font-size: clamp(0.85rem, 1.8vw, 0.9rem);
+    font-weight: var(--font-normal);
+}
+
+/* ============================================
+   Modals - Mixed Typography
+   ============================================ */
+
+/* Modal Titles - Merriweather */
+.modal-header,
+.modal-title {
+    font-family: var(--heading-font);
+    font-weight: var(--font-bold);
+    line-height: var(--line-height-normal);
+}
+
+/* Modal Body - Quicksand */
+.modal-body {
+    font-family: var(--body-font);
+    font-size: clamp(0.95rem, 2vw, 1rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Modal Footer - Quicksand */
+.modal-footer {
+    font-family: var(--body-font);
+}
+
+/* ============================================
+   Alerts & Notifications - Quicksand
+   ============================================ */
+.alert {
+    font-family: var(--body-font);
+    font-size: clamp(0.9rem, 2vw, 0.95rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+    letter-spacing: var(--tracking-wide);
+}
+
+.alert-heading {
+    font-family: var(--heading-font);
+    font-weight: var(--font-bold);
+}
+
+/* ============================================
+   Badges & Pills - Quicksand
+   ============================================ */
+.badge,
+.badge-status {
+    font-family: var(--body-font);
+    font-size: clamp(0.75rem, 1.6vw, 0.85rem);
+    font-weight: var(--font-medium);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-wider);
+}
+
+/* ============================================
+   Navigation - Quicksand
+   ============================================ */
+.nav-link,
+.navbar-nav .nav-link,
+.sidebar-link {
+    font-family: var(--body-font);
+    font-size: clamp(0.9rem, 2vw, 0.95rem);
+    font-weight: var(--font-medium);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--tracking-wide);
+}
+
+/* ============================================
+   Breadcrumbs - Quicksand
+   ============================================ */
+.breadcrumb,
+.breadcrumb-item {
+    font-family: var(--body-font);
+    font-size: clamp(0.85rem, 1.8vw, 0.9rem);
+    font-weight: var(--font-normal);
+}
+
+/* ============================================
+   Lists - Quicksand
+   ============================================ */
+ul,
+ol,
+li {
+    font-family: var(--body-font);
+    font-size: clamp(0.95rem, 2vw, 1rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-relaxed);
+    letter-spacing: var(--tracking-wide);
+}
+
+/* ============================================
+   Blockquotes - Merriweather
+   ============================================ */
+blockquote,
+.blockquote {
+    font-family: var(--heading-font);
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
+    font-weight: var(--font-normal);
+    line-height: var(--line-height-loose);
+    font-style: italic;
+}
+
+/* ============================================
+   Code & Pre - Monospace (exception)
+   ============================================ */
+code,
+kbd,
+pre,
+samp {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    line-height: var(--line-height-normal);
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+/* Font Family Utilities */
+.font-heading {
+    font-family: var(--heading-font) !important;
+}
+
+.font-body {
+    font-family: var(--body-font) !important;
+}
+
+/* Font Weight Utilities */
+.font-normal {
+    font-weight: var(--font-normal) !important;
+}
+
+.font-medium {
+    font-weight: var(--font-medium) !important;
+}
+
+.font-semibold {
+    font-weight: var(--font-semibold) !important;
+}
+
+.font-bold {
+    font-weight: var(--font-bold) !important;
+}
+
+.font-black {
+    font-weight: var(--font-black) !important;
+}
+
+/* Line Height Utilities */
+.leading-tight {
+    line-height: var(--line-height-tight) !important;
+}
+
+.leading-normal {
+    line-height: var(--line-height-normal) !important;
+}
+
+.leading-relaxed {
+    line-height: var(--line-height-relaxed) !important;
+}
+
+.leading-loose {
+    line-height: var(--line-height-loose) !important;
+}
+
+/* Letter Spacing Utilities */
+.tracking-tight {
+    letter-spacing: var(--tracking-tight) !important;
+}
+
+.tracking-normal {
+    letter-spacing: var(--tracking-normal) !important;
+}
+
+.tracking-wide {
+    letter-spacing: var(--tracking-wide) !important;
+}
+
+.tracking-wider {
+    letter-spacing: var(--tracking-wider) !important;
+}
+
+/* ============================================
+   Responsive Typography Adjustments
+   ============================================ */
+
+/* Tablet (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    body {
+        font-size: 0.98rem;
+    }
+    
+    h1, .h1 {
+        font-size: 1.85rem;
+    }
+    
+    h2, .h2 {
+        font-size: 1.6rem;
+    }
+    
+    h3, .h3 {
+        font-size: 1.35rem;
+    }
+}
+
+/* Mobile (up to 767px) */
+@media (max-width: 767px) {
+    body {
+        font-size: 0.95rem;
+        line-height: 1.65;
+    }
+    
+    h1, .h1 {
+        font-size: 1.75rem;
+        margin-bottom: 0.875rem;
+    }
+    
+    h2, .h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    h3, .h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.625rem;
+    }
+    
+    h4, .h4 {
+        font-size: 1.15rem;
+    }
+    
+    h5, .h5 {
+        font-size: 1rem;
+    }
+    
+    /* Increase touch target sizes on mobile */
+    .btn,
+    button {
+        font-size: 0.95rem;
+        padding: 0.625rem 1rem;
+    }
+    
+    label,
+    .form-label {
+        font-size: 0.9rem;
+    }
+}
+
+/* Small Mobile (up to 480px) */
+@media (max-width: 480px) {
+    body {
+        font-size: 0.9rem;
+    }
+    
+    h1, .h1 {
+        font-size: 1.65rem;
+    }
+    
+    h2, .h2 {
+        font-size: 1.4rem;
+    }
+    
+    h3, .h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+@media print {
+    body {
+        font-family: var(--heading-font);
+        font-size: 11pt;
+        line-height: 1.5;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+        page-break-inside: avoid;
+    }
+}
