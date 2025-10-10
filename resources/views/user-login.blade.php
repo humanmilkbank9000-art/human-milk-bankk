@@ -630,7 +630,7 @@
                 Log in to access the dashboard.
             </p>
             <p>
-                Version 3.0.0
+                Version 1.0.0
             </p>
         </div>
 
