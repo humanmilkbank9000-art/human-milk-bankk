@@ -629,6 +629,9 @@
             <p class="app-subtitle">
                 Log in to access the dashboard.
             </p>
+            <p>
+                Version 1.0.0
+            </p>
         </div>
 
         <!-- Right Panel - Login Form -->
