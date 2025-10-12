@@ -4,13 +4,7 @@
 
 @section('content')
     <div class="container">
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
+        {{-- Flash messages are handled via SweetAlert for consistency --}}
 
         <div class="card shadow-sm rounded">
             <div class="card-header bg-primary text-white">
@@ -50,7 +44,6 @@
                     <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
                         <form method="POST" action="{{ route('admin.settings.update') }}">
                             @csrf
-                            <h5 class="mb-3">Change Password</h5>
                             <div class="mb-3">
                                 <label for="current_password" class="form-label">Current Password</label>
                                 <div class="input-group">
@@ -58,7 +51,6 @@
                                     <input type="password" name="current_password" id="current_password"
                                         class="form-control" required>
                                 </div>
-                                <small class="form-text text-muted">Enter your current password to confirm changes.</small>
                                 @error('current_password')
                                     <div class="text-danger">{{ $message }}</div>
                                 @enderror
@@ -69,7 +61,6 @@
                                     <span class="input-group-text"><i class="fas fa-key"></i></span>
                                     <input type="password" name="password" id="password" class="form-control">
                                 </div>
-                                <small class="form-text text-muted">Password must be at least 8 characters.</small>
                                 @error('password')
                                     <div class="text-danger">{{ $message }}</div>
                                 @enderror
@@ -90,4 +81,46 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: {!! json_encode(session('success')) !!},
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: {!! json_encode(session('error')) !!},
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            @if($errors->has('current_password'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: {!! json_encode($errors->first('current_password')) !!},
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            @if($errors->has('username'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: {!! json_encode($errors->first('username')) !!},
+                    confirmButtonText: 'OK'
+                });
+            @endif
+            });
+    </script>
 @endsection

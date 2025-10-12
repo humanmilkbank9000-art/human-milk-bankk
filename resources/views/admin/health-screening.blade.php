@@ -15,6 +15,13 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
+        .nav-tabs .nav-link .badge {
+            font-size: 0.75rem;
+            padding: 0.25em 0.5em;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
         .table thead th {
             background: #f8fafc;
             font-weight: 600;
@@ -157,6 +164,29 @@
         }
 
         @media (max-width: 768px) {
+            .nav-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+            }
+
+            .nav-tabs .nav-item {
+                flex-shrink: 0;
+            }
+
+            .nav-tabs .nav-link {
+                font-size: 0.85rem;
+                padding: 0.5rem 0.75rem;
+                white-space: nowrap;
+            }
+
+            .nav-tabs .nav-link .badge {
+                font-size: 0.65rem;
+                padding: 0.2em 0.4em;
+                margin-left: 0.25rem;
+            }
+
             .table-responsive {
                 font-size: 0.95rem;
             }
@@ -169,7 +199,21 @@
                 margin: 0.5rem;
             }
         }
+
+        /* Extra small devices */
+        @media (max-width: 576px) {
+            .nav-tabs .nav-link {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.6rem;
+            }
+
+            .nav-tabs .nav-link .badge {
+                font-size: 0.6rem;
+                padding: 0.15em 0.35em;
+            }
+        }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
 @endsection
 
 @section('content')
@@ -339,6 +383,61 @@
                 }
             });
         }
+
+        // Undo decline health screening with SweetAlert confirmation
+        function undoDeclineScreening(screeningId) {
+            Swal.fire({
+                title: 'Undo Decline & Accept?',
+                text: "This will reverse the declined status and mark this health screening as accepted. The user will be notified that their screening is now accepted.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-arrow-counterclockwise me-1"></i> Yes, Accept Now',
+                cancelButtonText: 'Cancel',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    // Create form data
+                    const formData = new FormData();
+                    formData.append('_token', '{{ csrf_token() }}');
+                    formData.append('_method', 'POST');
+
+                    // Submit via fetch
+                    return fetch(`/admin/health-screening/${screeningId}/undo-decline`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(data => {
+                                    throw new Error(data.message || 'Failed to undo decline');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(`Request failed: ${error.message || error}`);
+                        });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Accepted!',
+                        text: 'The health screening has been accepted. The user will be notified.',
+                        icon: 'success',
+                        confirmButtonColor: '#28a745',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        }
     </script>
 
     @php
@@ -381,15 +480,26 @@
         <ul class="nav nav-tabs mb-3" role="tablist">
             <li class="nav-item">
                 <a class="nav-link {{ $status == 'pending' ? 'active bg-warning text-dark' : 'text-dark' }}"
-                    href="{{ route('admin.health-screening', ['status' => 'pending']) }}">Pending</a>
+                    href="{{ route('admin.health-screening', ['status' => 'pending']) }}">
+                    Pending
+                    <span class="badge bg-warning text-dark ms-1">{{ $pendingCount }}</span>
+                </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $status == 'accepted' ? 'active bg-success text-white' : 'text-success' }}"
-                    href="{{ route('admin.health-screening', ['status' => 'accepted']) }}">Accepted</a>
+                    href="{{ route('admin.health-screening', ['status' => 'accepted']) }}">
+                    Accepted
+                    <span
+                        class="badge {{ $status == 'accepted' ? 'bg-light text-success' : 'bg-success text-white' }} ms-1">{{ $acceptedCount }}</span>
+                </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $status == 'declined' ? 'active bg-danger text-white' : 'text-danger' }}"
-                    href="{{ route('admin.health-screening', ['status' => 'declined']) }}">Rejected</a>
+                    href="{{ route('admin.health-screening', ['status' => 'declined']) }}">
+                    Rejected
+                    <span
+                        class="badge {{ $status == 'declined' ? 'bg-light text-danger' : 'bg-danger text-white' }} ms-1">{{ $declinedCount }}</span>
+                </a>
             </li>
         </ul>
 
@@ -411,8 +521,9 @@
                                     <th class="text-center px-4 py-3" style="width: 18%">Date and Time Submitted</th>
                                     @if($status == 'accepted')
                                         <th class="text-center px-4 py-3" style="width: 18%">Date and Time Accepted</th>
+                                    @elseif($status == 'declined')
+                                        <th class="text-center px-4 py-3" style="width: 18%">Date and Time Declined</th>
                                     @endif
-                                    <th class="text-center px-4 py-3" style="width: 14%">Status</th>
                                     <th class="text-center px-4 py-3" style="width: 12%">Actions</th>
                                 </tr>
                             </thead>
@@ -423,7 +534,7 @@
                                         <td>{{ $screening->user->contact_number ?? '-' }}</td>
                                         <td>
                                             <span
-                                                title="{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('Y-m-d H:i:s') }}">
+                                                title="{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
                                                 <strong>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
                                                 <span class="text-muted"
                                                     style="font-size:0.97em;">&nbsp;{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
@@ -433,7 +544,7 @@
                                             <td>
                                                 @if(!empty($screening->date_accepted))
                                                     <span
-                                                        title="{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('Y-m-d H:i:s') }}">
+                                                        title="{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
                                                         <strong>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
                                                         <span class="text-muted"
                                                             style="font-size:0.97em;">&nbsp;{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
@@ -442,19 +553,20 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
+                                        @elseif($status == 'declined')
+                                            <td>
+                                                @if(!empty($screening->date_declined))
+                                                    <span
+                                                        title="{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
+                                                        <strong>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
+                                                        <span class="text-muted"
+                                                            style="font-size:0.97em;">&nbsp;{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
                                         @endif
-                                        <td class="text-center align-middle">
-                                            @if($screening->status == 'accepted')
-                                                <span class="badge bg-success text-white mx-auto d-inline-block"
-                                                    style="min-width:80px;">Accepted</span>
-                                            @elseif($screening->status == 'declined' || $screening->status == 'rejected')
-                                                <span class="badge bg-danger text-white mx-auto d-inline-block"
-                                                    style="min-width:80px;">Rejected</span>
-                                            @else
-                                                <span class="badge bg-warning text-dark mx-auto d-inline-block"
-                                                    style="min-width:80px;">Pending</span>
-                                            @endif
-                                        </td>
                                         <td class="text-center align-middle">
                                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
@@ -531,7 +643,7 @@
                                         <div class="row">
                                             <div class="col-md-6 mb-2">
                                                 <strong>Name:</strong> {{ $screening->infant->first_name }}
-                                                {{ $screening->infant->last_name }}
+                                                {{ $screening->infant->last_name }}{{ $screening->infant->suffix ? ' ' . $screening->infant->suffix : '' }}
                                             </div>
                                             <div class="col-md-6 mb-2">
                                                 <strong>Sex:</strong> {{ ucfirst($screening->infant->sex) }}
@@ -540,7 +652,7 @@
                                                 <strong>Date of Birth:</strong> {{ $screening->infant->date_of_birth }}
                                             </div>
                                             <div class="col-md-6 mb-2">
-                                                <strong>Age:</strong> {{ $screening->infant->age }}
+                                                <strong>Age:</strong> {{ $screening->infant->getFormattedAge() }}
                                             </div>
                                             <div class="col-md-6 mb-2">
                                                 <strong>Birth Weight:</strong> {{ $screening->infant->birth_weight }} kg
@@ -658,6 +770,12 @@
                                     <button type="button" class="btn btn-success"
                                         onclick="acceptScreening({{ $screening->health_screening_id }})">
                                         <i class="bi bi-check-circle me-1"></i> Accept
+                                    </button>
+                                @elseif($screening->status == 'declined')
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-success"
+                                        onclick="undoDeclineScreening({{ $screening->health_screening_id }})">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Undo & Accept
                                     </button>
                                 @else
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

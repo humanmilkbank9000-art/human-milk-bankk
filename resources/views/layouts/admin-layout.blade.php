@@ -8,6 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>@yield('title', 'Admin Dashboard')</title>
+    
+    <!-- Preload critical images to prevent FOUC (Flash of Unstyled Content) -->
+    <link rel="preload" as="image" href="{{ asset('hmblsc-logo.jpg') }}" fetchpriority="high">
+    <link rel="preload" as="image" href="{{ asset('jrbgh-logo.png') }}" fetchpriority="high">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- SweetAlert2 CDN -->
@@ -34,6 +39,8 @@
     <link href="{{ asset('css/ui-components.css') }}" rel="stylesheet">
     <!-- Responsive & Adaptive Styles -->
     <link href="{{ asset('css/responsive.css') }}?v={{ time() }}" rel="stylesheet">
+    <!-- Global Tab Styles - Horizontal Alignment -->
+    <link href="{{ asset('css/global-tabs.css') }}" rel="stylesheet">
     <style>
         /* Design system typography */
         :root{
@@ -77,6 +84,16 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+        }
+        
+        /* Smooth fade-in animation for sidebar logo */
+        @keyframes fadeInSidebarLogo {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         .sidebar h3 {
@@ -135,7 +152,7 @@
 
         .content {
             flex: 1;
-            padding: 20px;
+            padding: 12px; /* reduced from 20px for compactness */
             min-height: 100vh;
             box-sizing: border-box;
             overflow-x: auto;
@@ -483,7 +500,7 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
 
         <div style="margin-bottom: 16px; text-align: center; display: flex; flex-direction: column; align-items: center;">
             <!-- HMBLSC Logo -->
-            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block;">
+            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block; opacity: 0; animation: fadeInSidebarLogo 0.4s ease-in 0.1s forwards;">
             <!-- Admin Name -->
             <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0; color: #ecf0f1;">{{ session('account_name', 'Admin') }}</h3>
         </div>

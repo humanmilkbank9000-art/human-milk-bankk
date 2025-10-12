@@ -19,6 +19,8 @@ class Donation extends Model
         'number_of_bags',
         'individual_bag_volumes',
         'total_volume',
+        'dispensed_volume',
+        'available_volume',
         'donation_date',
         'donation_time',
         'scheduled_pickup_date',
@@ -27,9 +29,8 @@ class Donation extends Model
         // Inventory tracking fields
         'pasteurization_status',
         'pasteurization_batch_id',
-        'available_volume',
-        'inventory_status',
         'added_to_inventory_at',
+        'expiration_date',
     ];
 
     protected $casts = [
@@ -37,8 +38,10 @@ class Donation extends Model
         'scheduled_pickup_date' => 'date',
         'individual_bag_volumes' => 'array',
         'total_volume' => 'decimal:2',
+        'dispensed_volume' => 'decimal:2',
         'available_volume' => 'decimal:2',
         'added_to_inventory_at' => 'datetime',
+        'expiration_date' => 'date',
     ];
 
     // Relationships
@@ -127,7 +130,11 @@ class Donation extends Model
     {
         $this->individual_bag_volumes = $volumes;
         $this->number_of_bags = count($volumes);
-    $this->attributes['total_volume'] = number_format(array_sum($volumes), 2, '.', '');
+        $total = array_sum($volumes);
+        // Set total_volume only (original donation amount - IMMUTABLE)
+        // available_volume will be initialized from total_volume when added to inventory
+        // Remove .00 from whole numbers
+        $this->attributes['total_volume'] = (float)$total == (int)$total ? (int)$total : rtrim(rtrim(number_format($total, 2, '.', ''), '0'), '.');
     }
 
     public function getFormattedBagVolumesAttribute()
@@ -136,7 +143,9 @@ class Donation extends Model
             return '-';
         }
         return implode(', ', array_map(function($vol) {
-            return $vol . 'ml';
+            // Remove .00 from whole numbers
+            $formatted = (float)$vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+            return $formatted . 'ml';
         }, $this->individual_bag_volumes));
     }
 
@@ -148,14 +157,31 @@ class Donation extends Model
         return round(array_sum($this->individual_bag_volumes) / count($this->individual_bag_volumes), 2);
     }
 
+    public function getFormattedTotalVolumeAttribute()
+    {
+        $vol = (float) $this->total_volume;
+        return $vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+    }
+
+    public function getFormattedAvailableVolumeAttribute()
+    {
+        $vol = (float) $this->available_volume;
+        return $vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+    }
+
+    public function getFormattedDispensedVolumeAttribute()
+    {
+        $vol = (float) ($this->dispensed_volume ?? 0);
+        return $vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+    }
+
     // Inventory management methods
     public function isInInventory(): bool
     {
-     // Consider a donation "in inventory" only if it's marked available and has usable volume
-     return in_array($this->status, ['success_walk_in', 'success_home_collection']) && 
-         $this->inventory_status === 'available' &&
-         $this->pasteurization_status === 'unpasteurized' &&
-         ($this->available_volume !== null && $this->available_volume > 0);
+        // A donation is "in inventory" if it's a successful donation and unpasteurized
+        // It shows in inventory regardless of whether it has available volume or not
+        return in_array($this->status, ['success_walk_in', 'success_home_collection']) && 
+            $this->pasteurization_status === 'unpasteurized';
     }
 
     public function isUnpasteurized(): bool
@@ -170,26 +196,29 @@ class Donation extends Model
 
     public function isDepleted(): bool
     {
-        return $this->inventory_status === 'depleted' || $this->available_volume <= 0;
+        // A donation is depleted if available_volume is 0 or less
+        return $this->available_volume <= 0;
     }
 
     public function addToInventory(): bool
     {
-        // If record already appears to be in inventory and has a positive available_volume,
-        // treat it as already added and do nothing.
-        if ($this->inventory_status === 'available' && $this->available_volume > 0 && $this->pasteurization_status === 'unpasteurized') {
+        // If already in inventory with positive available_volume, do nothing
+        if ($this->pasteurization_status === 'unpasteurized' && !is_null($this->available_volume) && $this->available_volume > 0) {
             return false; // Already in inventory with usable volume
         }
 
-        // Ensure available_volume is set (some existing records may have inventory_status='available'
-        // but missing available_volume or added_to_inventory_at). Fill using total_volume.
-        if (is_null($this->available_volume) || $this->available_volume <= 0) {
-            $this->attributes['available_volume'] = number_format($this->total_volume ?? 0.0, 2, '.', '');
+        // Initialize available_volume from total_volume if missing or zero
+        if (is_null($this->available_volume) || $this->available_volume == 0) {
+            $this->available_volume = $this->total_volume ?? 0.0;
         }
 
-        // Ensure pasteurization and inventory status are correct for a newly added donation
+        // Initialize dispensed_volume if not set
+        if (is_null($this->dispensed_volume)) {
+            $this->dispensed_volume = 0;
+        }
+
+        // Ensure pasteurization status is correct for a newly added donation
         $this->pasteurization_status = 'unpasteurized';
-        $this->inventory_status = 'available';
 
         if (is_null($this->added_to_inventory_at)) {
             $this->added_to_inventory_at = now();
@@ -201,18 +230,25 @@ class Donation extends Model
     public function reduceVolume(float $amount): bool
     {
         $available = (float) $this->available_volume;
+        $dispensed = (float) ($this->dispensed_volume ?? 0);
         $amount = (float) $amount;
 
         if ($available >= $amount) {
+            // Update available volume
             $available -= $amount;
+            
+            // Update dispensed volume (cumulative)
+            $dispensed += $amount;
 
-            // Mark as depleted if no volume left
+            // Set available to 0 if fully depleted
             if ($available <= 0.0) {
-                $this->inventory_status = 'depleted';
                 $available = 0.0;
             }
 
-            $this->attributes['available_volume'] = number_format($available, 2, '.', '');
+            // Update the model properties directly
+            $this->available_volume = $available;
+            $this->dispensed_volume = $dispensed;
+            
             return $this->save();
         }
         
@@ -223,8 +259,8 @@ class Donation extends Model
     {
         $this->pasteurization_status = 'pasteurized';
         $this->pasteurization_batch_id = $batchId;
-        $this->inventory_status = 'depleted'; // No longer available as individual donation
-    $this->attributes['available_volume'] = number_format(0, 2, '.', '');
+        // When moved to batch, set available_volume to 0 (no longer available as individual donation)
+        $this->attributes['available_volume'] = 0;
         
         return $this->save();
     }
@@ -232,10 +268,12 @@ class Donation extends Model
     // Scopes for inventory management
     public function scopeUnpasteurizedInventory($query)
     {
+        // Show ALL success donations that are unpasteurized
+        // This includes donations with available_volume = 0 (fully dispensed)
+        // The "Available" column will show the remaining volume
         return $query->whereIn('status', ['success_walk_in', 'success_home_collection'])
                     ->where('pasteurization_status', 'unpasteurized')
-                    ->where('inventory_status', 'available')
-                    ->where('available_volume', '>', 0);
+                    ->orderBy('added_to_inventory_at', 'asc');
     }
 
     public function scopeReadyForPasteurization($query)

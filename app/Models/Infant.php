@@ -18,6 +18,7 @@ class Infant extends Model
         'first_name',
         'middle_name',
         'last_name',
+        'suffix',
         'sex',
         'date_of_birth',
         'age',
@@ -49,6 +50,39 @@ class Infant extends Model
         $totalMonths = ($diff->y * 12) + $diff->m;
 
         return (int) $totalMonths;
+    }
+
+    // Format age in years and/or months
+    public function getFormattedAge()
+    {
+        if (!$this->date_of_birth) {
+            return 'N/A';
+        }
+
+        $dob = Carbon::parse($this->date_of_birth)->startOfDay();
+        $now = Carbon::now()->startOfDay();
+
+        // If DOB is in the future, treat as invalid
+        if ($dob->gt($now)) {
+            return '0 months';
+        }
+
+        $diff = $dob->diff($now);
+        $years = $diff->y;
+        $months = $diff->m;
+
+        if ($years === 0) {
+            // Less than 1 year - show only months
+            return $months === 1 ? '1 month' : $months . ' months';
+        } elseif ($months === 0) {
+            // Exactly X years
+            return $years === 1 ? '1 year' : $years . ' years';
+        } else {
+            // X years and Y months
+            $yearStr = $years === 1 ? '1 year' : $years . ' years';
+            $monthStr = $months === 1 ? '1 month' : $months . ' months';
+            return $yearStr . ' ' . $monthStr;
+        }
     }
 
     // Relationship to User

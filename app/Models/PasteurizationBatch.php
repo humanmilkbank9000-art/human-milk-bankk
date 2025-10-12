@@ -70,6 +70,18 @@ class PasteurizationBatch extends Model
         return $this->status === 'depleted' || $this->available_volume <= 0;
     }
 
+    public function getFormattedTotalVolumeAttribute()
+    {
+        $vol = (float) $this->total_volume;
+        return $vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+    }
+
+    public function getFormattedAvailableVolumeAttribute()
+    {
+        $vol = (float) $this->available_volume;
+        return $vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+    }
+
     // Generate next batch number
     public static function generateBatchNumber(): string
     {
@@ -82,12 +94,15 @@ class PasteurizationBatch extends Model
     public function reduceVolume(float $amount): bool
     {
         if ($this->available_volume >= $amount) {
-            $this->available_volume -= $amount;
+            $newVolume = $this->available_volume - $amount;
             
             // Mark as depleted if no volume left
-            if ($this->available_volume <= 0) {
+            if ($newVolume <= 0) {
                 $this->status = 'depleted';
-                $this->available_volume = 0;
+                $this->attributes['available_volume'] = 0;
+            } else {
+                // Remove .00 from whole numbers
+                $this->attributes['available_volume'] = (float)$newVolume == (int)$newVolume ? (int)$newVolume : rtrim(rtrim(number_format($newVolume, 2, '.', ''), '0'), '.');
             }
             
             return $this->save();

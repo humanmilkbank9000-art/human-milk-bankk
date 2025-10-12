@@ -5,6 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create Account - Human Milk Bank</title>
+    
+    <!-- Preload critical images to prevent FOUC -->
+    <link rel="preload" as="image" href="{{ asset('hmblsc-logo.jpg') }}" fetchpriority="high">
+    
     <!-- Load Quicksand (headings) and Merriweather (body) from Google Fonts as per design system -->
     <link
         href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Merriweather:wght@400;500&display=swap"
@@ -67,6 +71,18 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            /* Prevent FOUC - smooth fade in */
+            opacity: 0;
+            animation: fadeInRegisterLogo 0.4s ease-in forwards;
+        }
+        
+        @keyframes fadeInRegisterLogo {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         .page-title {
@@ -268,89 +284,112 @@
         /* Responsive Design */
         @media (max-width: 768px) {
             body {
-                padding: 1rem 0.5rem;
+                padding: 0.5rem 0.375rem; /* Reduced padding */
             }
 
             .container {
-                padding: 2rem 1.5rem;
-                border-radius: 1.25rem;
+                padding: 1.25rem 1rem; /* More compact */
+                border-radius: 1rem;
             }
 
             .header {
-                gap: 1rem;
-                margin-bottom: 2rem;
+                gap: 0.75rem; /* Tighter gap */
+                margin-bottom: 1rem; /* Reduced from 2rem */
             }
 
             .logo {
-                width: 70px;
-                height: 70px;
+                width: 55px; /* Smaller logo */
+                height: 55px;
             }
 
             .page-title {
-                font-size: 1.65rem;
+                font-size: 1.35rem; /* Smaller title */
             }
 
             .form-row {
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 0.75rem; /* Reduced gap */
+            }
+
+            .form-group {
+                margin-bottom: 0.625rem; /* Tighter spacing */
+            }
+
+            .form-label {
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem; /* Tighter */
+            }
+
+            .form-input,
+            .form-textarea {
+                padding: 0.55rem 0.7rem; /* More compact */
+                font-size: 16px; /* Prevent iOS zoom */
+            }
+
+            .radio-group {
+                gap: 1rem; /* Tighter */
+                margin-top: 0.25rem;
             }
 
             .button-group {
                 flex-direction: column-reverse;
+                margin-top: 0.875rem; /* Reduced */
+                gap: 0.625rem;
             }
 
             .btn {
                 width: 100%;
                 min-height: 44px;
+                padding: 0.55rem 1rem;
             }
         }
 
         @media (max-width: 480px) {
             body {
-                padding: 0.5rem 0.25rem;
+                padding: 0.375rem 0.25rem; /* Even tighter */
             }
 
             .container {
-                padding: 1.75rem 1.25rem;
-                border-radius: 1rem;
+                padding: 1rem 0.875rem; /* Very compact */
+                border-radius: 0.875rem;
             }
 
             .header {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
+                gap: 0.625rem;
+                margin-bottom: 0.875rem; /* Reduced */
             }
 
             .logo {
-                width: 65px;
-                height: 65px;
+                width: 50px; /* Smaller */
+                height: 50px;
             }
 
             .page-title {
-                font-size: 1.5rem;
+                font-size: 1.25rem; /* Smaller */
             }
 
             .form-group {
-                margin-bottom: 1.25rem;
+                margin-bottom: 0.5rem; /* Tighter */
             }
 
             .form-label {
-                font-size: 0.9rem;
+                font-size: 0.825rem;
+                margin-bottom: 0.2rem;
             }
 
             .form-input,
             .form-textarea {
-                padding: 0.7rem 0.875rem;
+                padding: 0.5rem 0.65rem; /* Compact */
                 font-size: 16px;
-                /* Prevent iOS zoom */
             }
 
             .radio-group {
-                gap: 1.5rem;
+                gap: 0.875rem;
             }
 
             .button-group {
-                margin-top: 1.5rem;
+                margin-top: 0.75rem;
+                gap: 0.5rem;
             }
         }
     </style>
@@ -360,7 +399,7 @@
     <div class="container">
         <div class="header">
             <div class="logo">
-                <img src="{{ asset('hmblsc-logo.jpg') }}" alt="Human Milk Bank Logo">
+                <img src="{{ asset('hmblsc-logo.jpg') }}" alt="Human Milk Bank Logo" width="55" height="55" loading="eager">
             </div>
             <h1 class="page-title">Create Account</h1>
         </div>
@@ -382,12 +421,12 @@
                 <div class="form-group">
                     <label for="first_name" class="form-label">First Name</label>
                     <input type="text" id="first_name" name="first_name" class="form-input"
-                        value="{{ old('first_name') }}" required style="text-transform: capitalize;">
+                        value="{{ old('first_name', $userData['first_name'] ?? '') }}" required style="text-transform: capitalize;">
                 </div>
 
                 <div class="form-group">
                     <label for="last_name" class="form-label">Last Name</label>
-                    <input type="text" id="last_name" name="last_name" class="form-input" value="{{ old('last_name') }}"
+                    <input type="text" id="last_name" name="last_name" class="form-input" value="{{ old('last_name', $userData['last_name'] ?? '') }}"
                         required style="text-transform: capitalize;">
                 </div>
             </div>
@@ -396,18 +435,20 @@
                 <div class="form-group">
                     <label for="middle_name" class="form-label">Middle Name (optional)</label>
                     <input type="text" id="middle_name" name="middle_name" class="form-input"
-                        value="{{ old('middle_name') }}" style="text-transform: capitalize;">
+                        value="{{ old('middle_name', $userData['middle_name'] ?? '') }}" style="text-transform: capitalize;">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Gender</label>
                     <div class="radio-group">
                         <div class="radio-option">
-                            <input type="radio" id="female" name="sex" value="female" {{ old('sex') == 'female' ? 'checked' : '' }} required>
+                            <input type="radio" id="female" name="sex" value="female" 
+                                {{ old('sex', $userData['sex'] ?? '') == 'female' ? 'checked' : '' }} required>
                             <label for="female">Female</label>
                         </div>
                         <div class="radio-option">
-                            <input type="radio" id="male" name="sex" value="male" {{ old('sex') == 'male' ? 'checked' : '' }}>
+                            <input type="radio" id="male" name="sex" value="male" 
+                                {{ old('sex', $userData['sex'] ?? '') == 'male' ? 'checked' : '' }}>
                             <label for="male">Male</label>
                         </div>
                     </div>
@@ -418,7 +459,7 @@
                 <div class="form-group">
                     <label for="date_of_birth" class="form-label">Birthday</label>
                     <input type="date" id="date_of_birth" name="date_of_birth" class="form-input"
-                        value="{{ old('date_of_birth') }}" required>
+                        value="{{ old('date_of_birth', $userData['date_of_birth'] ?? '') }}" required>
                 </div>
 
                 <div class="form-group">
@@ -430,13 +471,13 @@
             <div class="form-group">
                 <label for="contact_number" class="form-label">Contact Number</label>
                 <input type="text" id="contact_number" name="contact_number" class="form-input" maxlength="11"
-                    value="{{ old('contact_number') }}" required placeholder="09XXXXXXXXX" pattern="[0-9]{11}">
+                    value="{{ old('contact_number', $userData['contact_number'] ?? '') }}" required placeholder="09XXXXXXXXX" pattern="[0-9]{11}">
             </div>
 
             <div class="form-row">
                 <div class="form-group full-width">
                     <label for="address" class="form-label">Address</label>
-                    <input type="text" id="address" name="address" class="form-input" value="{{ old('address') }}"
+                    <input type="text" id="address" name="address" class="form-input" value="{{ old('address', $userData['address'] ?? '') }}"
                         required placeholder="Enter complete address">
                 </div>
             </div>
@@ -445,7 +486,8 @@
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
                     <div class="input-wrapper">
-                        <input type="password" id="password" name="password" class="form-input" required>
+                        <input type="password" id="password" name="password" class="form-input" 
+                            value="{{ old('password', $userData['password'] ?? '') }}" required>
                         <button type="button" class="password-toggle"
                             onclick="togglePassword('password', 'eye-icon-1')">
                             <svg id="eye-icon-1" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -461,7 +503,7 @@
                     <label for="password_confirmation" class="form-label">Confirm Password</label>
                     <div class="input-wrapper">
                         <input type="password" id="password_confirmation" name="password_confirmation"
-                            class="form-input" required>
+                            class="form-input" value="{{ old('password_confirmation', $userData['password'] ?? '') }}" required>
                         <button type="button" class="password-toggle"
                             onclick="togglePassword('password_confirmation', 'eye-icon-2')">
                             <svg id="eye-icon-2" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -576,6 +618,18 @@
             }
             ageInput.value = age >= 0 ? age : 0;
         });
+
+        // Calculate age on page load if DOB is already filled (when coming back from infant registration)
+        if (dobInput.value) {
+            const dob = new Date(dobInput.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            ageInput.value = age >= 0 ? age : 0;
+        }
 
         // ==================== PASSWORD TOGGLE ====================
 

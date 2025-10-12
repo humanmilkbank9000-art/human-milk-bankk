@@ -328,7 +328,7 @@
             <button type="button" class="donation-button walk-in" data-bs-toggle="modal" data-bs-target="#walkInModal">
                 <i class="fas fa-hospital"></i>
                 <h3>Walk-in Donation</h3>
-                <p>Visit our center to donate breastmilk</p>
+                <p>Visit our unit to donate breastmilk</p>
             </button>
 
             <button type="button" class="donation-button home-collection" data-bs-toggle="modal"
@@ -419,8 +419,8 @@
             Swal.fire({
                 title: 'Confirm Home Collection Donation?',
                 html: `Are you sure you want to schedule a home collection with:<br>
-                           <strong>${bagCount} bag(s)</strong> totaling <strong>${totalVolume} ml</strong>?<br><br>
-                           <small class="text-muted">Admin will contact you to schedule a pickup time.</small>`,
+                                   <strong>${bagCount} bag(s)</strong> totaling <strong>${totalVolume} ml</strong>?<br><br>
+                                   <small class="text-muted">Admin will contact you to schedule a pickup time.</small>`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#6f42c1',
@@ -445,13 +445,13 @@
             const today = new Date();
 
             let calendarHTML = `
-                                            <div class="calendar-header">
-                                                <button type="button" class="calendar-nav-btn" onclick="navigateMonth(-1)">‹</button>
-                                                <div class="calendar-month-year">${monthNames[currentMonth]} ${currentYear}</div>
-                                                <button type="button" class="calendar-nav-btn" onclick="navigateMonth(1)">›</button>
-                                            </div>
-                                            <div class="calendar-grid">
-                                        `;
+                                                    <div class="calendar-header">
+                                                        <button type="button" class="calendar-nav-btn" onclick="navigateMonth(-1)">‹</button>
+                                                        <div class="calendar-month-year">${monthNames[currentMonth]} ${currentYear}</div>
+                                                        <button type="button" class="calendar-nav-btn" onclick="navigateMonth(1)">›</button>
+                                                    </div>
+                                                    <div class="calendar-grid">
+                                                `;
 
             // Day headers
             dayNames.forEach(day => {
@@ -534,12 +534,12 @@
                             const slotDiv = document.createElement('div');
                             slotDiv.className = 'form-check mb-2';
                             slotDiv.innerHTML = `
-                                                            <input class="form-check-input" type="radio" name="availability_id"
-                                                                value="${slot.id}" id="slot_${slot.id}" onchange="selectTimeSlot(${slot.id})">
-                                                            <label class="form-check-label" for="slot_${slot.id}">
-                                                                <strong>${slot.formatted_time}</strong>
-                                                            </label>
-                                                        `;
+                                                                    <input class="form-check-input" type="radio" name="availability_id"
+                                                                        value="${slot.id}" id="slot_${slot.id}" onchange="selectTimeSlot(${slot.id})">
+                                                                    <label class="form-check-label" for="slot_${slot.id}">
+                                                                        <strong>${slot.formatted_time}</strong>
+                                                                    </label>
+                                                                `;
                             slotsContainer.appendChild(slotDiv);
                         });
                     } else {
@@ -607,18 +607,19 @@
             let fieldsHTML = '<div class="row">';
             for (let i = 1; i <= bagCount; i++) {
                 fieldsHTML += `
-                                                <div class="col-md-6 mb-2">
-                                                    <label for="bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                    <input type="number"
-                                                        id="bag_volume_${i}"
-                                                        name="bag_volumes[]"
-                                                        class="form-control bag-volume-input"
-                                                        step="0.01"
-                                                        min="0.01"
-                                                        required
-                                                        onchange="calculateIndividualTotal()">
-                                                </div>
-                                            `;
+                                                        <div class="col-md-6 mb-2">
+                                                            <label for="bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                            <input type="number"
+                                                                id="bag_volume_${i}"
+                                                                name="bag_volumes[]"
+                                                                class="form-control bag-volume-input"
+                                                                step="0.01"
+                                                                min="0.01"
+                                                                required
+                                                                oninput="calculateIndividualTotal()"
+                                                                onchange="calculateIndividualTotal()">
+                                                        </div>
+                                                    `;
             }
             fieldsHTML += '</div>';
 
@@ -638,7 +639,9 @@
                 }
             }
 
-            document.getElementById('total_home').textContent = total.toFixed(2);
+            // Remove .00 from whole numbers
+            const displayTotal = total % 1 === 0 ? Math.round(total) : total.toFixed(2).replace(/\.?0+$/, '');
+            document.getElementById('total_home').textContent = displayTotal;
             updateSubmitButton();
         }
 

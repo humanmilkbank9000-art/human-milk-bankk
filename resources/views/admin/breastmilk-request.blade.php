@@ -4,42 +4,6 @@
 
 @section('styles')
     <style>
-        .nav-tabs .nav-link {
-            border-radius: 8px 8px 0 0;
-            margin-right: 2px;
-            font-weight: 500;
-            transition: background 0.2s, color 0.2s;
-            white-space: normal;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .nav-tabs .nav-link.active {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        /* Keep tabs in a single row */
-        .nav-tabs {
-            flex-wrap: nowrap;
-            width: 100%;
-            display: flex;
-        }
-
-        .nav-tabs .nav-item {
-            flex: 1 1 33.333%;
-            max-width: 33.333%;
-            margin-right: 0;
-        }
-
-        .nav-tabs .nav-link {
-            margin-right: 0;
-            width: 100%;
-        }
-
         .table thead th {
             background: #f8fafc;
             font-weight: 600;
@@ -89,9 +53,6 @@
             border-radius: 12px 12px 0 0;
             font-size: 1.1rem;
             padding: 1rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
         }
 
         .table-responsive {
@@ -109,10 +70,6 @@
             font-size: 0.85rem;
             border-radius: 6px;
             padding: 0.375rem 0.75rem;
-        }
-
-        .tab-content>.tab-pane {
-            padding-top: 0.5rem;
         }
 
         /* Tablet and below */
@@ -153,10 +110,6 @@
 
             .card-header h5 {
                 font-size: 1rem;
-            }
-
-            .card-header small {
-                font-size: 0.8rem;
             }
 
             /* More compact table */
@@ -293,6 +246,17 @@
             z-index: 10001 !important;
         }
 
+        /* Ensure form controls in SweetAlert are interactive */
+        .swal2-popup input,
+        .swal2-popup textarea,
+        .swal2-popup select {
+            pointer-events: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+        }
+
         /* Ensure modal backdrop doesn't cover SweetAlert */
         .modal-backdrop {
             z-index: 1040 !important;
@@ -302,12 +266,14 @@
             z-index: 1050 !important;
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/table-layout-standard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.27/dist/sweetalert2.min.css">
 @endsection
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid page-container-standard">
 
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -324,7 +290,7 @@
         @endif
 
         <!-- Navigation Tabs -->
-        <ul class="nav nav-tabs" id="requestTabs" role="tablist">
+        <ul class="nav nav-tabs nav-tabs-standard" id="requestTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link{{ request()->get('status', 'pending') == 'pending' ? ' active' : '' }}"
                     href="?status=pending" id="pending-tab" role="tab">
@@ -350,15 +316,15 @@
             <!-- Pending Requests Tab -->
             <div class="tab-pane fade{{ request()->get('status', 'pending') == 'pending' ? ' show active' : '' }}"
                 id="pending-requests" role="tabpanel">
-                <div class="card mt-3">
+                <div class="card card-standard">
                     <div class="card-header">
                         <h5>Pending Breastmilk Requests</h5>
-                        <small class="text-muted">Review and approve/decline breastmilk requests from mothers.</small>
                     </div>
                     <div class="card-body">
                         @if($pendingRequests->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped align-middle shadow-sm rounded">
+                            <div class="table-container-standard">
+                                <table
+                                    class="table table-standard table-bordered table-striped align-middle table-standard-min-width">
                                     <thead class="table-success">
                                         <tr>
                                             <th class="text-center">Guardian</th>
@@ -380,10 +346,9 @@
                                                 </td>
                                                 <td class="align-middle">
                                                     <strong>{{ $request->infant->first_name }}
-                                                        {{ $request->infant->last_name }}</strong>
+                                                        {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong>
                                                     <br>
-                                                    <small class="text-muted">{{ $request->infant->getCurrentAgeInMonths() }}
-                                                        months</small>
+                                                    <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
                                                 <td class="align-middle text-center">
                                                     @if($request->availability)
@@ -442,15 +407,15 @@
             <!-- Dispensed Requests Tab -->
             <div class="tab-pane fade{{ request()->get('status') == 'dispensed' ? ' show active' : '' }}"
                 id="dispensed-requests" role="tabpanel">
-                <div class="card mt-3">
+                <div class="card card-standard">
                     <div class="card-header">
                         <h5>Dispensed Breastmilk Requests</h5>
-                        <small class="text-muted">Successfully dispensed breastmilk requests.</small>
                     </div>
                     <div class="card-body">
                         @if($dispensedRequests->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped align-middle shadow-sm rounded">
+                            <div class="table-container-standard">
+                                <table
+                                    class="table table-standard table-bordered table-striped align-middle table-standard-min-width">
                                     <thead class="table-success">
                                         <tr>
                                             <th class="text-center">Guardian</th>
@@ -472,9 +437,8 @@
                                                 </td>
                                                 <td>
                                                     <strong>{{ $request->infant->first_name }}
-                                                        {{ $request->infant->last_name }}</strong><br>
-                                                    <small class="text-muted">{{ $request->infant->getCurrentAgeInMonths() }} months
-                                                        old</small>
+                                                        {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
+                                                    <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
                                                 <td>
                                                     @if($request->dispensedMilk)
@@ -529,15 +493,14 @@
             <!-- Declined Requests Tab -->
             <div class="tab-pane fade{{ request()->get('status') == 'declined' ? ' show active' : '' }}"
                 id="declined-requests" role="tabpanel">
-                <div class="card mt-3">
+                <div class="card card-standard">
                     <div class="card-header">
                         <h5>Declined Breastmilk Requests</h5>
-                        <small class="text-muted">Previously declined requests.</small>
                     </div>
                     <div class="card-body">
                         @if($declinedRequests->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-striped">
+                            <div class="table-container-standard">
+                                <table class="table table-standard table-striped">
                                     <thead>
                                         <tr>
                                             <th class="column-id">Request ID</th>
@@ -559,9 +522,8 @@
                                                 </td>
                                                 <td>
                                                     <strong>{{ $request->infant->first_name }}
-                                                        {{ $request->infant->last_name }}</strong><br>
-                                                    <small class="text-muted">{{ $request->infant->getCurrentAgeInMonths() }} months
-                                                        old</small>
+                                                        {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
+                                                    <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
                                                 <td>
                                                     {{ $request->declined_at ? $request->declined_at->format('M d, Y g:i A') : 'N/A' }}
@@ -614,7 +576,7 @@
                             <!-- Request Information -->
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <div class="card p-3 h-100">
+                                    <div class="card p-3">
                                         <h6 class="mb-2"><i class="fas fa-user"></i> Guardian Information</h6>
                                         <p class="mb-1"><strong>Name:</strong> {{ $request->user->first_name ?? '' }}
                                             {{ $request->user->last_name ?? '' }}
@@ -624,13 +586,12 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="card p-3 h-100">
+                                    <div class="card p-3">
                                         <h6 class="mb-2"><i class="fas fa-baby"></i> Infant Information</h6>
                                         <p class="mb-1"><strong>Name:</strong> {{ $request->infant->first_name }}
-                                            {{ $request->infant->last_name }}
+                                            {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}
                                         </p>
-                                        <p class="mb-1"><strong>Age:</strong> {{ $request->infant->getCurrentAgeInMonths() }}
-                                            months</p>
+                                        <p class="mb-1"><strong>Age:</strong> {{ $request->infant->getFormattedAge() }}</p>
                                         <p class="mb-0"><strong>Sex:</strong> {{ ucfirst($request->infant->sex) }}</p>
                                     </div>
                                 </div>
@@ -787,9 +748,9 @@
                             <div class="card p-3">
                                 <h6 class="mb-2"><i class="fas fa-baby"></i> Infant Information</h6>
                                 <p class="mb-1"><strong>Name:</strong> {{ $request->infant->first_name }}
-                                    {{ $request->infant->last_name }}
+                                    {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}
                                 </p>
-                                <p class="mb-1"><strong>Age:</strong> {{ $request->infant->getCurrentAgeInMonths() }} months</p>
+                                <p class="mb-1"><strong>Age:</strong> {{ $request->infant->getFormattedAge() }}</p>
                                 <p class="mb-0"><strong>Sex:</strong> {{ ucfirst($request->infant->sex) }}</p>
                                 <p class="mb-0"><strong>Birth Weight:</strong>
                                     {{ $request->infant->birth_weight ? $request->infant->birth_weight . ' kg' : '-' }}</p>
@@ -931,7 +892,7 @@
                 @endif
             @endforeach
         @endforeach
-    </div>
+    </div>{{-- Close container-fluid --}}
 
     <!-- JavaScript for prescription viewing and inventory selection -->
     <script>
@@ -983,14 +944,14 @@
                             container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
                         } else {
                             container.innerHTML = `
-                                                                                                                        <div class="d-flex flex-column align-items-center justify-content-center">
-                                                                                                                            <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                                                                                                            <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                                                                                                                <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
-                                                                                                                                    style="max-width:100%; max-height:70vh; object-fit:contain;">
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                    `;
+                                                                                                                                                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                                                                                                                                                    <h6 class="mb-3">Prescription: ${data.filename}</h6>
+                                                                                                                                                                    <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                                                                                                                                                        <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
+                                                                                                                                                                            style="max-width:100%; max-height:70vh; object-fit:contain;">
+                                                                                                                                                                    </div>
+                                                                                                                                                                </div>
+                                                                                                                                                            `;
                         }
                     })
                     .catch(error => {
@@ -1018,13 +979,13 @@
                     }
 
                     container.innerHTML = `
-                                                                                    <div class="d-flex flex-column align-items-center justify-content-center">
-                                                                                        <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                                                                        <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                                                                            <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
-                                                                                        </div>
-                                                                                    </div>
-                                                                                `;
+                                                                                                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                                                                                                <h6 class="mb-3">Prescription: ${data.filename}</h6>
+                                                                                                                                <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                                                                                                                    <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                                                                                                                </div>
+                                                                                                                            </div>
+                                                                                                                        `;
                 })
                 .catch(err => {
                     container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';
@@ -1068,36 +1029,36 @@
                     data.inventory.forEach(item => {
                         const itemId = milkType === 'unpasteurized' ? item.id : item.id;
                         html += `
-                                                                                                                    <div class="card mb-2">
-                                                                                                                        <div class="card-body p-2">
-                                                                                                                            <div class="form-check">
-                                                                                                                                <input class="form-check-input" type="checkbox" 
-                                                                                                                                    id="item_${requestId}_${itemId}" 
-                                                                                                                                    onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
-                                                                                                                                <label class="form-check-label" for="item_${requestId}_${itemId}">
-                                                                                                                                    <small>
-                                                                                                                                        ${milkType === 'unpasteurized' ?
+                                                                                                                                                            <div class="card mb-2">
+                                                                                                                                                                <div class="card-body p-2">
+                                                                                                                                                                    <div class="form-check">
+                                                                                                                                                                        <input class="form-check-input" type="checkbox" 
+                                                                                                                                                                            id="item_${requestId}_${itemId}" 
+                                                                                                                                                                            onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
+                                                                                                                                                                        <label class="form-check-label" for="item_${requestId}_${itemId}">
+                                                                                                                                                                            <small>
+                                                                                                                                                                                ${milkType === 'unpasteurized' ?
                                 `<strong>Donation #${item.id}</strong><br>
-                                                                                                                                             ${item.donor_name} - ${item.donation_type}<br>
-                                                                                                                                             <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
+                                                                                                                                                                                     ${item.donor_name} - ${item.donation_type}<br>
+                                                                                                                                                                                     <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
                                 `<strong>Batch ${item.batch_number}</strong><br>
-                                                                                                                                             Pasteurized by: ${item.admin_name}<br>
-                                                                                                                                             <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
+                                                                                                                                                                                     Pasteurized by: ${item.admin_name}<br>
+                                                                                                                                                                                     <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
                             }
-                                                                                                                                    </small>
-                                                                                                                                </label>
-                                                                                                                            </div>
-                                                                                                                            <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
-                                                                                                                                <label class="form-label">Volume to deduct (ml):</label>
-                                                                                                                                <input type="number" class="form-control form-control-sm" 
-                                                                                                                                    id="volume_${requestId}_${itemId}" 
-                                                                                                                                    step="0.01" min="0.01" max="${item.volume}" 
-                                                                                                                                    value="${item.volume}"
-                                                                                                                                    onchange="updateSelectedVolume(${requestId})">
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                                `;
+                                                                                                                                                                            </small>
+                                                                                                                                                                        </label>
+                                                                                                                                                                    </div>
+                                                                                                                                                                    <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
+                                                                                                                                                                        <label class="form-label">Volume to deduct (ml):</label>
+                                                                                                                                                                        <input type="number" class="form-control form-control-sm" 
+                                                                                                                                                                            id="volume_${requestId}_${itemId}" 
+                                                                                                                                                                            step="0.01" min="0.01" max="${item.volume}" 
+                                                                                                                                                                            value="${item.volume}"
+                                                                                                                                                                            onchange="updateSelectedVolume(${requestId})">
+                                                                                                                                                                    </div>
+                                                                                                                                                                </div>
+                                                                                                                                                            </div>
+                                                                                                                                                        `;
                     });
 
                     inventoryList.innerHTML = html;
@@ -1133,7 +1094,9 @@
                 }
             });
 
-            document.getElementById(`selectedVolume${requestId}`).textContent = totalVolume.toFixed(2);
+            // Remove .00 from whole numbers
+            const displayVolume = totalVolume % 1 === 0 ? Math.round(totalVolume) : totalVolume.toFixed(2).replace(/\.?0+$/, '');
+            document.getElementById(`selectedVolume${requestId}`).textContent = displayVolume;
 
             // Validate the form
             validateDispenseForm(requestId);
@@ -1216,9 +1179,9 @@
                 Swal.fire({
                     title: 'Accept Request',
                     html: `
-                                        <p>To accept this request, you need to specify the dispensing details.</p>
-                                        <p class="text-muted">Click "Continue" to open the dispensing form.</p>
-                                    `,
+                                                                                <p>To accept this request, you need to specify the dispensing details.</p>
+                                                                                <p class="text-muted">Click "Continue" to open the dispensing form.</p>
+                                                                            `,
                     icon: 'info',
                     showCancelButton: true,
                     confirmButtonText: 'Continue to Dispense Form',
@@ -1272,19 +1235,19 @@
                 Swal.fire({
                     title: 'Decline Request',
                     html: `
-                                        <div class="text-start">
-                                            <p>Are you sure you want to decline this request?</p>
-                                            <div class="mb-3">
-                                                <label for="swalDeclineReason" class="form-label">Reason for Declining <span class="text-danger">*</span></label>
-                                                <textarea 
-                                                    id="swalDeclineReason" 
-                                                    class="form-control" 
-                                                    rows="4" 
-                                                    placeholder="Please provide a reason for declining this request...">${notes}</textarea>
-                                                <small class="text-muted">This reason will be sent to the guardian.</small>
-                                            </div>
-                                        </div>
-                                    `,
+                                                                                <div class="text-start">
+                                                                                    <p>Are you sure you want to decline this request?</p>
+                                                                                    <div class="mb-3">
+                                                                                        <label for="swalDeclineReason" class="form-label">Reason for Declining <span class="text-danger">*</span></label>
+                                                                                        <textarea 
+                                                                                            id="swalDeclineReason" 
+                                                                                            class="form-control" 
+                                                                                            rows="4" 
+                                                                                            placeholder="Please provide a reason for declining this request...">${notes}</textarea>
+                                                                                        <small class="text-muted">This reason will be sent to the guardian.</small>
+                                                                                    </div>
+                                                                                </div>
+                                                                            `,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, Decline Request',
@@ -1630,26 +1593,26 @@
             let html = '<div class="list-group">';
             batches.forEach(batch => {
                 html += `
-                            <div class="list-group-item">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" 
-                                        name="batch_${requestId}" 
-                                        id="batch_${requestId}_${batch.batch_id}" 
-                                        value="${batch.batch_id}"
-                                        data-volume="${batch.available_volume}"
-                                        onchange="handleBatchSelection(${requestId}, ${batch.batch_id}, ${batch.available_volume})">
-                                    <label class="form-check-label w-100" for="batch_${requestId}_${batch.batch_id}">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong>Batch #${batch.batch_number}</strong><br>
-                                                <small class="text-muted">Available: ${batch.available_volume} ml</small><br>
-                                                <small class="text-muted">Date: ${batch.date_pasteurized}</small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                        `;
+                                                                    <div class="list-group-item">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="radio" 
+                                                                                name="batch_${requestId}" 
+                                                                                id="batch_${requestId}_${batch.batch_id}" 
+                                                                                value="${batch.batch_id}"
+                                                                                data-volume="${batch.available_volume}"
+                                                                                onchange="handleBatchSelection(${requestId}, ${batch.batch_id}, ${batch.available_volume})">
+                                                                            <label class="form-check-label w-100" for="batch_${requestId}_${batch.batch_id}">
+                                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                                    <div>
+                                                                                        <strong>Batch #${batch.batch_number}</strong><br>
+                                                                                        <small class="text-muted">Available: ${batch.available_volume} ml</small><br>
+                                                                                        <small class="text-muted">Date: ${batch.date_pasteurized}</small>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                `;
             });
             html += '</div>';
             html += '<div class="mt-2"><small class="text-info"><i class="fas fa-info-circle"></i> For pasteurized milk, the entire batch volume will be used.</small></div>';
@@ -1671,27 +1634,27 @@
             donations.forEach(donation => {
                 const donorName = donation.donor_name || 'Anonymous';
                 html += `
-                            <div class="list-group-item">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" 
-                                        name="donation_${requestId}" 
-                                        id="donation_${requestId}_${donation.breastmilk_donation_id}" 
-                                        value="${donation.breastmilk_donation_id}"
-                                        data-volume="${donation.available_volume}"
-                                        onchange="handleDonationSelection(${requestId}, ${donation.breastmilk_donation_id}, ${donation.available_volume})">
-                                    <label class="form-check-label w-100" for="donation_${requestId}_${donation.breastmilk_donation_id}">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
-                                                <small class="text-muted">Donor: ${donorName}</small><br>
-                                                <small class="text-muted">Available: ${donation.available_volume} ml</small><br>
-                                                <small class="text-muted">Date: ${donation.donation_date}</small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                        `;
+                                                                    <div class="list-group-item">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="radio" 
+                                                                                name="donation_${requestId}" 
+                                                                                id="donation_${requestId}_${donation.breastmilk_donation_id}" 
+                                                                                value="${donation.breastmilk_donation_id}"
+                                                                                data-volume="${donation.available_volume}"
+                                                                                onchange="handleDonationSelection(${requestId}, ${donation.breastmilk_donation_id}, ${donation.available_volume})">
+                                                                            <label class="form-check-label w-100" for="donation_${requestId}_${donation.breastmilk_donation_id}">
+                                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                                    <div>
+                                                                                        <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
+                                                                                        <small class="text-muted">Donor: ${donorName}</small><br>
+                                                                                        <small class="text-muted">Available: ${donation.available_volume} ml</small><br>
+                                                                                        <small class="text-muted">Date: ${donation.donation_date}</small>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                `;
             });
             html += '</div>';
             html += '<div class="mt-2"><small class="text-info"><i class="fas fa-info-circle"></i> For unpasteurized milk, the entire donation volume will be used.</small></div>';
@@ -1747,8 +1710,10 @@
             }
 
             // Update display
-            document.getElementById(`totalSelected${requestId}`).textContent = totalSelected.toFixed(2);
-            document.getElementById(`volumeRequired${requestId}`).textContent = volumeRequired.toFixed(2);
+            const displaySelected = totalSelected % 1 === 0 ? Math.round(totalSelected) : totalSelected.toFixed(2).replace(/\.?0+$/, '');
+            const displayRequired = volumeRequired % 1 === 0 ? Math.round(volumeRequired) : volumeRequired.toFixed(2).replace(/\.?0+$/, '');
+            document.getElementById(`totalSelected${requestId}`).textContent = displaySelected;
+            document.getElementById(`volumeRequired${requestId}`).textContent = displayRequired;
         }
 
         /**
@@ -1797,13 +1762,13 @@
                     return;
                 }
 
-                const batchVolume = parseFloat(selectedBatch.dataset.volume);
+                // Use the volume entered by the user, not the full batch volume
                 selectedSources.push({
                     type: 'pasteurized',
                     id: selectedBatch.value,
-                    volume: batchVolume
+                    volume: volumeToDispense  // ← Fixed: use the amount entered by user
                 });
-                totalSelected = batchVolume;
+                totalSelected = volumeToDispense;
 
             } else if (milkType === 'unpasteurized') {
                 const selectedDonation = document.querySelector(`input[name="donation_${requestId}"]:checked`);
@@ -1818,21 +1783,23 @@
                     return;
                 }
 
-                const donationVolume = parseFloat(selectedDonation.dataset.volume);
+                // Use the volume entered by the user, not the full donation volume
                 selectedSources.push({
                     type: 'unpasteurized',
                     id: selectedDonation.value,
-                    volume: donationVolume
+                    volume: volumeToDispense  // ← Fixed: use the amount entered by user
                 });
+                totalSelected = volumeToDispense;
             }
 
             // Confirm and dispense
+            const displayVolumeToDispense = volumeToDispense % 1 === 0 ? Math.round(volumeToDispense) : volumeToDispense.toFixed(2).replace(/\.?0+$/, '');
             Swal.fire({
                 title: 'Confirm Dispensing',
                 html: `
-                            <p>Are you sure you want to dispense <strong>${volumeToDispense.toFixed(2)} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
-                            <p class="text-muted mb-0">This action cannot be undone.</p>
-                        `,
+                                                                    <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
+                                                                    <p class="text-muted mb-0">This action cannot be undone.</p>
+                                                                `,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#28a745',
@@ -1894,73 +1861,81 @@
          * Handle reject action
          */
         function handleReject(requestId) {
-            Swal.fire({
-                title: 'Reject Request',
-                html: `
-                            <div class="text-start">
-                                <label for="rejectReason" class="form-label">Reason for Rejection <span class="text-danger">*</span></label>
-                                <textarea id="rejectReason" class="form-control" rows="4" 
-                                    placeholder="Please provide a reason for rejecting this request..."></textarea>
-                            </div>
-                        `,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="fas fa-ban"></i> Reject Request',
-                cancelButtonText: '<i class="fas fa-times"></i> Cancel',
-                reverseButtons: true,
-                showLoaderOnConfirm: true,
-                preConfirm: () => {
-                    const reason = document.getElementById('rejectReason').value.trim();
-                    if (!reason) {
-                        Swal.showValidationMessage('Please provide a reason for rejection');
-                        return false;
-                    }
+            // Close the dispensing modal first to prevent backdrop interference
+            const modal = bootstrap.Modal.getInstance(document.getElementById(`dispensingModal${requestId}`));
+            if (modal) {
+                modal.hide();
+            }
 
-                    return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/reject`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            admin_notes: reason
+            // Wait a moment for the modal to close before showing SweetAlert
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'Reject Request',
+                    text: 'Please provide a reason for rejecting this request',
+                    input: 'textarea',
+                    inputPlaceholder: 'Enter your reason here...',
+                    inputAttributes: {
+                        'aria-label': 'Reason for rejection',
+                        'rows': 4
+                    },
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-ban"></i> Reject Request',
+                    cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+                    reverseButtons: true,
+                    showLoaderOnConfirm: true,
+                    inputValidator: (value) => {
+                        if (!value || !value.trim()) {
+                            return 'You need to provide a reason for rejection!';
+                        }
+                    },
+                    preConfirm: (reason) => {
+                        return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/reject`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                admin_notes: reason.trim()
+                            })
                         })
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .catch(error => {
-                            Swal.showValidationMessage(`Request failed: ${error}`);
-                        });
-                },
-                allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    if (result.value.error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Rejection Failed',
-                            text: result.value.error,
-                            confirmButtonColor: '#3085d6'
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Request Rejected',
-                            text: result.value.message || 'The request has been rejected.',
-                            confirmButtonColor: '#28a745'
-                        }).then(() => {
-                            location.reload();
-                        });
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .catch(error => {
+                                Swal.showValidationMessage(`Request failed: ${error}`);
+                            });
+                    },
+                    allowOutsideClick: () => !Swal.isLoading()
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (result.value.error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Rejection Failed',
+                                text: result.value.error,
+                                confirmButtonColor: '#3085d6'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Request Rejected',
+                                text: result.value.message || 'The request has been rejected.',
+                                confirmButtonColor: '#28a745'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
                     }
-                }
-            });
+                });
+            }, 300); // Wait 300ms for modal to close
         }
     </script>
 @endsection

@@ -4,61 +4,6 @@
 @section('pageTitle', 'Monthly Reports')
 @section('styles')
     <style>
-        .nav-tabs {
-            border-bottom: 2px solid #dee2e6;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-        }
-
-        .nav-tabs::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .nav-tabs::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .nav-tabs::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 2px;
-        }
-
-        .nav-tabs .nav-item {
-            flex: 0 0 auto;
-            white-space: nowrap;
-        }
-
-        .nav-tabs .nav-link {
-            border-radius: 8px 8px 0 0;
-            margin-right: 2px;
-            font-weight: 500;
-            transition: background 0.2s, color 0.2s;
-            padding: 0.75rem 1.25rem;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .nav-tabs .nav-link.active {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .nav-tabs .nav-link .tab-icon {
-            font-size: 1rem;
-        }
-
-        .nav-tabs .nav-link .tab-text-full {
-            display: inline;
-        }
-
-        .nav-tabs .nav-link .tab-text-short {
-            display: none;
-        }
-
         .table thead th {
             background: #f8fafc;
             font-weight: 600;
@@ -114,10 +59,6 @@
             border-radius: 6px;
         }
 
-        .tab-content>.tab-pane {
-            padding-top: 0.5rem;
-        }
-
         /* Filter form styling - always horizontal */
         .filter-form {
             display: flex;
@@ -168,11 +109,6 @@
                 font-size: 1rem;
             }
 
-            .nav-tabs .nav-link {
-                padding: 0.625rem 1rem;
-                font-size: 0.9rem;
-            }
-
             .filter-form {
                 gap: 0.5rem;
                 padding: 0.5rem;
@@ -203,15 +139,6 @@
         }
 
         @media (max-width: 576px) {
-            .nav-tabs .nav-link {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.85rem;
-            }
-
-            .nav-tabs .nav-link .tab-icon {
-                font-size: 0.9rem;
-            }
-
             .filter-form {
                 gap: 0.375rem;
                 padding: 0.5rem;
@@ -236,22 +163,8 @@
                 padding: 0.25rem 0.5rem;
             }
         }
-
-        @media (max-width: 420px) {
-            .nav-tabs .nav-link {
-                padding: 0.5rem 0.625rem;
-                font-size: 0.8rem;
-            }
-
-            .nav-tabs .nav-link .tab-text-full {
-                display: none;
-            }
-
-            .nav-tabs .nav-link .tab-text-short {
-                display: inline;
-            }
-        }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
 @endsection
 
 @section('content')

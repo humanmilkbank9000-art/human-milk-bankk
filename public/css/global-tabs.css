@@ -1,0 +1,320 @@
+/* ========================================
+   GLOBAL TAB STYLES - HORIZONTAL ALIGNMENT
+   Ensures all tabs remain horizontally aligned
+   across all screen sizes without wrapping
+   ======================================== */
+
+/* Base tab container - always horizontal, all tabs visible */
+.nav-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    margin-bottom: 1.5rem !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    gap: 0 !important;
+    width: 100% !important;
+}
+
+/* Tab items - flex to fit all tabs in viewport */
+.nav-tabs .nav-item {
+    flex: 1 1 auto !important;
+    margin-bottom: 0 !important;
+    white-space: nowrap !important;
+    min-width: 0 !important;
+}
+
+/* Tab links - base styling */
+.nav-tabs .nav-link {
+    padding: 0.75rem 1rem !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    border: 1px solid transparent !important;
+    border-radius: 0.25rem 0.25rem 0 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+    gap: 0.35rem !important;
+    flex-wrap: wrap !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+}
+
+/* Active tab styling */
+.nav-tabs .nav-link.active {
+    color: #495057 !important;
+    background-color: #fff !important;
+    border-color: #dee2e6 #dee2e6 #fff !important;
+    font-weight: 600 !important;
+}
+
+/* Hover effect */
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6 !important;
+    isolation: isolate !important;
+}
+
+/* Tab badges - always visible and properly sized */
+.nav-tabs .nav-link .badge {
+    margin-left: 0.4rem !important;
+    font-size: 0.75rem !important;
+    padding: 0.25em 0.45em !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    white-space: nowrap !important;
+    min-width: fit-content !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+}
+
+/* Tab icons */
+.nav-tabs .nav-link i {
+    font-size: 1rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Tab completion indicators */
+.tab-completed-badge {
+    display: none !important;
+    margin-left: 8px !important;
+    color: #28a745 !important;
+    font-size: 1.1rem !important;
+    font-weight: bold !important;
+}
+
+.tab-completed .tab-completed-badge {
+    display: inline-block !important;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   Adjusts sizing while maintaining
+   horizontal alignment
+   ======================================== */
+
+/* Large tablets and small desktops (768px - 991px) */
+@media (max-width: 991px) {
+    .nav-tabs .nav-link {
+        padding: 0.65rem 0.8rem !important;
+        font-size: 0.9rem !important;
+        gap: 0.3rem !important;
+    }
+    
+    .nav-tabs .nav-link i {
+        font-size: 0.95rem !important;
+    }
+    
+    .nav-tabs .nav-link .badge {
+        font-size: 0.7rem !important;
+        padding: 0.2em 0.4em !important;
+        margin-left: 0.25rem !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+
+/* Tablets (576px - 767px) */
+@media (max-width: 767px) {
+    .nav-tabs {
+        margin-bottom: 1rem !important;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.6rem 0.6rem !important;
+        font-size: 0.85rem !important;
+        gap: 0.25rem !important;
+    }
+    
+    .nav-tabs .nav-link i {
+        font-size: 0.9rem !important;
+    }
+    
+    .nav-tabs .nav-link .badge {
+        font-size: 0.65rem !important;
+        padding: 0.2em 0.35em !important;
+        margin-left: 0.2rem !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    .tab-completed-badge {
+        font-size: 0.95rem !important;
+    }
+}
+
+/* Mobile devices (up to 575px) */
+@media (max-width: 575px) {
+    .nav-tabs {
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.5rem 0.4rem !important;
+        font-size: 0.75rem !important;
+        line-height: 1.3 !important;
+        gap: 0.2rem !important;
+    }
+    
+    .nav-tabs .nav-link i {
+        font-size: 0.85rem !important;
+    }
+    
+    .nav-tabs .nav-link .badge {
+        font-size: 0.6rem !important;
+        padding: 0.15em 0.3em !important;
+        margin-left: 0.15rem !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-weight: 700 !important;
+    }
+    
+    .tab-completed-badge {
+        font-size: 0.85rem !important;
+        margin-left: 3px !important;
+    }
+}
+
+/* Extra small devices (up to 400px) */
+@media (max-width: 400px) {
+    .nav-tabs .nav-link {
+        padding: 0.4rem 0.3rem !important;
+        font-size: 0.7rem !important;
+        gap: 0.15rem !important;
+    }
+    
+    .nav-tabs .nav-link i {
+        font-size: 0.8rem !important;
+    }
+    
+    .nav-tabs .nav-link .badge {
+        font-size: 0.55rem !important;
+        padding: 0.1em 0.25em !important;
+        margin-left: 0.1rem !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-weight: 700 !important;
+    }
+}
+
+/* ========================================
+   TAB CONTENT AREA
+   ======================================== */
+
+.tab-content {
+    padding: 1rem !important;
+    min-height: 200px !important;
+}
+
+.tab-content > .tab-pane {
+    padding-top: 0.5rem !important;
+}
+
+/* ========================================
+   STEP INDICATORS (for multi-step forms)
+   ======================================== */
+
+.step-indicator {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    background-color: #6c757d !important;
+    color: white !important;
+    font-size: 0.75rem !important;
+    font-weight: bold !important;
+    margin-right: 0.5rem !important;
+    flex-shrink: 0 !important;
+}
+
+.nav-link.active .step-indicator {
+    background-color: #007bff !important;
+}
+
+.tab-completed .step-indicator {
+    background-color: #28a745 !important;
+}
+
+@media (max-width: 767px) {
+    .step-indicator {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 0.7rem !important;
+        margin-right: 0.4rem !important;
+    }
+}
+
+@media (max-width: 575px) {
+    .step-indicator {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 0.65rem !important;
+        margin-right: 0.2rem !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .step-indicator {
+        width: 16px !important;
+        height: 16px !important;
+        font-size: 0.6rem !important;
+        margin-right: 0.15rem !important;
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Ensure all badges are visible regardless of context, except notification badge */
+.badge:not(#notification-badge) {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Force badge visibility within nav tabs, except notification badge */
+.nav-tabs .badge:not(#notification-badge),
+.nav-tabs .nav-link .badge:not(#notification-badge),
+.nav-link .badge:not(#notification-badge) {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Force horizontal layout on specific elements if needed */
+.tabs-horizontal-force {
+    flex-wrap: nowrap !important;
+}
+
+/* Compact tabs for pages with many tabs */
+.nav-tabs.nav-tabs-compact .nav-link {
+    padding: 0.5rem 0.5rem !important;
+    font-size: 0.85rem !important;
+}
+
+@media (max-width: 767px) {
+    .nav-tabs.nav-tabs-compact .nav-link {
+        padding: 0.4rem 0.3rem !important;
+        font-size: 0.75rem !important;
+    }
+}
+
+@media (max-width: 575px) {
+    .nav-tabs.nav-tabs-compact .nav-link {
+        padding: 0.35rem 0.25rem !important;
+        font-size: 0.7rem !important;
+    }
+}
