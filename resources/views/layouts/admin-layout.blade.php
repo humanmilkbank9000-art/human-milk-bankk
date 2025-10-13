@@ -515,7 +515,7 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
             </a>
             <a href="{{ route('admin.donation') }}"
                 class="{{ request()->routeIs('admin.donation') ? 'active' : '' }}">
-                <i class="bi bi-droplet-half me-2 icon"></i> <span>Dante Loves Arabe</span>
+                <i class="bi bi-droplet-half me-2 icon"></i> <span>Breastmilk Donation</span>
             </a>
             <a href="{{ route('admin.request') }}"
                 class="{{ request()->routeIs('admin.request') ? 'active' : '' }}">
