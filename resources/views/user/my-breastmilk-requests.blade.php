@@ -3,8 +3,13 @@
 @section('title', 'My Breastmilk Requests')
 @section('pageTitle', 'My Breastmilk Requests')
 
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/table-layout-standard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
+@endsection
+
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid page-container-standard">
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
@@ -29,38 +34,38 @@
         </div>
 
         @if($requests->count() > 0)
-            <div class="card">
+            <div class="card card-standard">
                 <div class="card-header">
                     <h5 class="mb-0">Your Breastmilk Requests</h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-standard table-striped">
+                    <div class="table-container">
+                        <table class="table table-striped table-hover">
                             <thead>
                                 <tr>
-                                    <th class="column-id">Request ID</th>
-                                    <th>Infant</th>
-                                    <th>Appointment</th>
-                                    <th>Volume Requested</th>
-                                    <th>Status</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
+                                    <th class="text-center">Request ID</th>
+                                    <th class="text-center">Infant</th>
+                                    <th class="text-center">Appointment</th>
+                                    <th class="text-center">Volume Requested</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Submitted</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($requests as $request)
                                     <tr>
-                                        <td class="column-id">
+                                        <td data-label="Request ID" class="text-center">
                                             <strong>#{{ $request->breastmilk_request_id }}</strong>
                                         </td>
-                                        <td>
+                                        <td data-label="Infant" class="text-center">
                                             <strong>{{ $request->infant->first_name }}
-                                                {{ $request->infant->last_name }}</strong><br>
+                                                {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
                                             <small class="text-muted">
-                                                {{ $request->infant->getCurrentAgeInMonths() }} months old
+                                                {{ $request->infant->getFormattedAge() }}
                                             </small>
                                         </td>
-                                        <td>
+                                        <td data-label="Appointment" class="text-center">
                                             @if($request->availability)
                                                 <strong>{{ $request->availability->formatted_date }}</strong><br>
                                                 <small class="text-muted">{{ $request->availability->formatted_time }}</small>
@@ -68,14 +73,14 @@
                                                 <span class="text-muted">To be scheduled</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td data-label="Volume Requested" class="text-center">
                                             @if($request->volume_requested)
-                                                <strong>{{ $request->volume_requested }} ml</strong>
+                                                <strong>{{ $request->formatted_volume_requested }} ml</strong>
                                             @else
                                                 <span class="text-muted">To be determined</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td data-label="Status" class="text-center">
                                             <span class="badge bg-{{ $request->getStatusBadgeColor() }}">
                                                 {{ ucfirst($request->status) }}
                                             </span>
@@ -87,11 +92,11 @@
                                                 <br><small class="text-muted">Under review</small>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td data-label="Submitted" class="text-center">
                                             {{ $request->created_at->format('M d, Y') }}<br>
                                             <small class="text-muted">{{ $request->created_at->format('g:i A') }}</small>
                                         </td>
-                                        <td>
+                                        <td data-label="Actions" class="text-center">
                                             <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
                                                 data-bs-target="#requestModal{{ $request->breastmilk_request_id }}">
                                                 <i class="fas fa-eye"></i> View
@@ -131,12 +136,12 @@
                                             <tr>
                                                 <td><strong>Name:</strong></td>
                                                 <td>{{ $request->infant->first_name }} {{ $request->infant->middle_name }}
-                                                    {{ $request->infant->last_name }}
+                                                    {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Age:</strong></td>
-                                                <td>{{ $request->infant->getCurrentAgeInMonths() }} months</td>
+                                                <td>{{ $request->infant->getFormattedAge() }}</td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Sex:</strong></td>
@@ -183,7 +188,7 @@
                                                 <td><strong>Volume:</strong></td>
                                                 <td>
                                                     @if($request->volume_requested)
-                                                        {{ $request->volume_requested }} ml
+                                                        {{ $request->formatted_volume_requested }} ml
                                                     @else
                                                         <span class="text-muted">To be determined</span>
                                                     @endif
@@ -260,7 +265,7 @@
                 </div>
             </div>
         @endif
-    </div>
+    </div>{{-- Close container-fluid --}}
 
     <style>
         .timeline {
@@ -311,13 +316,13 @@
                     }
 
                     imgContainer.innerHTML = `
-                                    <div class="d-flex flex-column align-items-center justify-content-center">
-                                        <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                        <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                            <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
-                                        </div>
-                                    </div>
-                                `;
+                                                        <div class="d-flex flex-column align-items-center justify-content-center">
+                                                            <h6 class="mb-3">Prescription: ${data.filename}</h6>
+                                                            <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                                                <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                                            </div>
+                                                        </div>
+                                                    `;
                 })
                 .catch(err => {
                     imgContainer.innerHTML = '<div class="alert alert-danger">Failed to load prescription.</div>';

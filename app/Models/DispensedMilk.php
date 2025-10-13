@@ -81,6 +81,12 @@ class DispensedMilk extends Model
         return Carbon::parse($this->time_dispensed)->format('g:i A');
     }
 
+    public function getFormattedVolumeDispensedAttribute()
+    {
+        $vol = (float) $this->volume_dispensed;
+        return $vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+    }
+
     public function isFromUnpasteurized(): bool
     {
         // If any related sourceDonations exist, consider it unpasteurized

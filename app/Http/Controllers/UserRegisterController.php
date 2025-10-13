@@ -8,87 +8,81 @@ use App\Models\Infant;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
+use App\Services\UserRegistrationService;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\StoreInfantRequest;
 
 class UserRegisterController extends Controller
 {
+    protected UserRegistrationService $service;
+
+    public function __construct(UserRegistrationService $service)
+    {
+        $this->service = $service;
+    }
+
     // Show user registration form
     public function user_register()
     {
-        return view('user-register');
+        // Retrieve user data from session if coming back from infant registration
+        $userData = Session::get('temp_user_data', []);
+        
+        return view('user-register', compact('userData'));
     }
 
-    // Store user registration data
-    public function store_user(Request $request)
+    // Store user registration data temporarily in session
+    public function store_user(StoreUserRequest $request)
     {
-        $request->validate([
-            'first_name'     => 'required|string',
-            'middle_name'    => 'nullable|string',
-            'last_name'      => 'required|string',
-            'contact_number' => 'required|max:11',
-            'password'       => 'required|confirmed',
-            'address'        => 'required|string',
-            'date_of_birth'  => 'required|date',
-            'sex'            => 'required|in:female,male',
-        ]);
-
-        $age = Carbon::parse($request->date_of_birth)->age;
-
-        $user = User::create([
-            'first_name'     => $request->first_name,
-            'middle_name'    => $request->middle_name,
-            'last_name'      => $request->last_name,
-            'contact_number' => $request->contact_number,
-            'password'       => Hash::make($request->password),
-            'address'        => $request->address,
-            'date_of_birth'  => $request->date_of_birth,
-            'age'            => $age,
-            'sex'            => $request->sex,
-            'user_type'      => 'donor',
-        ]);
-
-        // ✅ Auto-login user with consistent session keys
-        Session::put('account_id', $user->user_id);
-        Session::put('account_name', $user->first_name);
-        Session::put('account_role', 'user');
-
-        // Redirect to infant registration step
-        return redirect()->route('user.register.infant')->with('success', 'User registered! Please register your infant.');
+        $this->service->storeTempUser($request->validated());
+        return redirect()->route('user.register.infant')->with('success', 'Please register your infant to complete the registration.');
     }
 
     // Show infant registration form
     public function user_register_infant()
     {
-        $user = User::find(Session::get('account_id'));
-        return view('user-register-infant', compact('user'));
+        // Check if user data exists in session
+        $userData = Session::get('temp_user_data');
+        
+        if (!$userData) {
+            return redirect()->route('user.register')->with('error', 'Please complete user registration first.');
+        }
+
+        // Retrieve infant data from session if coming back
+        $infantData = Session::get('temp_infant_data', []);
+        
+        return view('user-register-infant', compact('userData', 'infantData'));
     }
 
-    // Store infant data linked to user
-    public function store_infant(Request $request)
+    // Save temporary infant data to session and redirect back to user registration
+    public function save_temp_infant(Request $request)
     {
-        $request->validate([
-            'first_name'            => 'required|string',
-            'middle_name'           => 'nullable|string',
-            'last_name'             => 'required|string',
-            'infant_sex'            => 'required|in:female,male',
-            'infant_date_of_birth'  => 'required|date',
-            'birth_weight'          => 'required|numeric|min:0',
+        // Don't validate when just saving temp data - only save what's entered
+        $infantData = $request->only([
+            'first_name',
+            'middle_name', 
+            'last_name',
+            'suffix',
+            'infant_sex',
+            'infant_date_of_birth',
+            'birth_weight'
         ]);
+        
+        $this->service->storeTempInfant($infantData);
+        
+        // Clear any validation errors from the previous form submission
+        Session::forget('errors');
+        
+        return redirect()->route('user.register');
+    }
 
-        // Calculate age in months
-        $birthDate = Carbon::parse($request->infant_date_of_birth);
-        $ageInMonths = $birthDate->diffInMonths(Carbon::now());
-
-        Infant::create([
-            'user_id'        => Session::get('account_id'),
-            'first_name'     => $request->first_name,
-            'middle_name'    => $request->middle_name,
-            'last_name'      => $request->last_name,
-            'sex'            => $request->infant_sex,
-            'date_of_birth'  => $request->infant_date_of_birth,
-            'age'            => $ageInMonths,
-            'birth_weight'   => $request->birth_weight,
-        ]);
-
-        return redirect()->route('user.dashboard')->with('success', 'Infant registered successfully. Welcome!');
+    // Store infant data and save both user and infant to database
+    public function store_infant(StoreInfantRequest $request)
+    {
+        try {
+            $this->service->storeUserAndInfant($request->validated());
+            return redirect()->route('user.dashboard')->with('success', 'Registration completed successfully. Welcome!');
+        } catch (\Exception $e) {
+            return redirect()->route('user.register')->with('error', $e->getMessage());
+        }
     }
 }

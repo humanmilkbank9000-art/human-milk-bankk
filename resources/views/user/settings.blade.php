@@ -2,75 +2,6 @@
 @section('title', 'Settings')
 @section('pageTitle', 'User Settings')
 
-@section('styles')
-    <style>
-        /* Tab navigation fixes */
-        .nav-tabs {
-            display: flex;
-            flex-wrap: wrap;
-            border-bottom: 2px solid #dee2e6;
-            margin-bottom: 1.5rem;
-            overflow: visible;
-        }
-
-        .nav-tabs .nav-item {
-            flex: 0 0 auto;
-            margin-bottom: 0;
-        }
-
-        .nav-tabs .nav-link {
-            padding: 0.75rem 1.5rem;
-            white-space: nowrap;
-            overflow: visible;
-            text-overflow: clip;
-            border: 1px solid transparent;
-            border-radius: 0.25rem 0.25rem 0 0;
-            display: inline-block;
-            width: auto;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .nav-tabs .nav-link {
-                padding: 0.6rem 1.2rem;
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .nav-tabs {
-                flex-wrap: wrap;
-                /* Allow wrapping if needed */
-                gap: 0.25rem;
-            }
-
-            .nav-tabs .nav-item {
-                flex: 0 1 auto;
-                /* Flexible but don't force equal width */
-                min-width: fit-content;
-                /* Ensure text fits */
-            }
-
-            .nav-tabs .nav-link {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.8rem;
-                line-height: 1.3;
-                white-space: normal;
-                /* Allow wrapping within tab */
-                text-align: center;
-                min-width: fit-content;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .nav-tabs .nav-link {
-                padding: 0.4rem 0.5rem;
-                font-size: 0.75rem;
-            }
-        }
-    </style>
-@endsection
-
 @section('content')
     <div class="container-fluid">
         <div class="row">
@@ -109,7 +40,6 @@
                                         <th>Age</th>
                                         <th>Contact Number</th>
                                         <th>Address</th>
-                                        <th>Role</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -122,7 +52,6 @@
                                         <td>{{ $user->age ?? '-' }}</td>
                                         <td>{{ $user->contact_number ?? '-' }}</td>
                                         <td>{{ $user->address ?? '-' }}</td>
-                                        <td>{{ $user->user_type ?? 'User' }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -140,6 +69,7 @@
                                         <th>First Name</th>
                                         <th>Middle Name</th>
                                         <th>Last Name</th>
+                                        <th>Suffix</th>
                                         <th>Sex</th>
                                         <th>Date of Birth</th>
                                         <th>Age</th>
@@ -152,14 +82,15 @@
                                             <td>{{ $infant->first_name ?? '-' }}</td>
                                             <td>{{ $infant->middle_name ?? '-' }}</td>
                                             <td>{{ $infant->last_name ?? '-' }}</td>
+                                            <td>{{ $infant->suffix ?? '-' }}</td>
                                             <td>{{ $infant->sex ?? '-' }}</td>
                                             <td>{{ $infant->date_of_birth ?? '-' }}</td>
-                                            <td>{{ $infant->age ?? '-' }}</td>
+                                            <td>{{ $infant->getFormattedAge() }}</td>
                                             <td>{{ $infant->birth_weight ?? '-' }}</td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">No infant registered.</td>
+                                            <td colspan="8" class="text-center text-muted">No infant registered.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -196,4 +127,30 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Show SweetAlert on successful password update
+            @if(session('status'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: {!! json_encode(session('status')) !!},
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            // If there are validation errors related to current_password, show an error alert
+            @if($errors->has('current_password'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: {!! json_encode($errors->first('current_password')) !!},
+                    confirmButtonText: 'OK'
+                });
+            @endif
+            });
+    </script>
 @endsection

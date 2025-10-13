@@ -9,89 +9,85 @@ use App\Models\Donation;
 use App\Models\PasteurizationBatch;
 use App\Models\DispensedMilk;
 use Carbon\Carbon;
+use App\Services\ReportService;
 
 class ReportsController extends Controller
 {
-    
-public function admin_inventory() {
-        
-    return view('admin.inventory');
-}
+    protected ReportService $service;
 
+    public function __construct(ReportService $service)
+    {
+        $this->service = $service;
+    }
 
-    public function admin_monthly_reports(Request $request) {
-        $year = $request->input('year', date('Y'));
+    public function admin_inventory()
+    {
+        return view('admin.inventory');
+    }
+
+    public function admin_monthly_reports(Request $request)
+    {
+        $year = (int) $request->input('year', date('Y'));
         $month = $request->input('month', date('n'));
-        // Ensure $month is always an integer (not a string like 'October')
         if (!is_numeric($month)) {
             $month = date('n', strtotime($month));
         }
         $month = (int) $month;
 
-        // Breastmilk Request Reports
-        $requests = BreastmilkRequest::whereYear('created_at', $year)
-            ->whereMonth('created_at', $month)
-            ->get();
+        // Get the active tab
+        $activeTab = $request->input('tab', 'request');
+
+        // Delegate to service to compute data
+        $requestData = $this->service->buildRequestData($year, $month);
+        $donationData = $this->service->buildDonationData($year, $month);
+        $inventoryData = $this->service->buildInventoryData($year, $month);
+
+        // Build request stats - use data directly from service
         $requestStats = [
             'month' => Carbon::create()->month($month)->format('F'),
-            'total' => $requests->count(),
-            // Count both 'approved' and 'dispensed' as approved for reporting
-            'approved' => $requests->whereIn('status', ['approved', 'dispensed'])->count(),
-            'declined' => $requests->where('status', 'declined')->count(),
-            'pending' => $requests->where('status', 'pending')->count(),
+            'total' => $requestData['total'] ?? 0,
+            'approved' => $requestData['approved'] ?? 0,
+            'declined' => $requestData['declined'] ?? 0,
+            'pending' => $requestData['pending'] ?? 0,
         ];
 
-        // Breastmilk Donation Reports
-        // Include donations that were completed either as walk-ins (donation_date)
-        // or as home collections (scheduled_pickup_date). Some home collection
-        // records may have donation_date null and use scheduled_pickup_date
-        // for their delivery date, so check both fields.
-        $donations = Donation::whereIn('status', ['success_walk_in', 'success_home_collection'])
-            ->where(function($q) use ($year, $month) {
-                $q->whereYear('donation_date', $year)
-                  ->whereMonth('donation_date', $month);
-
-                $q->orWhere(function($q2) use ($year, $month) {
-                    $q2->whereYear('scheduled_pickup_date', $year)
-                       ->whereMonth('scheduled_pickup_date', $month);
-                });
-            })
-            ->get();
+        // Build donation stats from records
+        $donationRecords = $donationData['records'] ?? collect();
         $donationStats = [
             'month' => Carbon::create()->month($month)->format('F'),
-            'walk_in' => $donations->where('status', 'success_walk_in')->where('donation_method', 'walk_in')->count(),
-            'home_collection' => $donations->where('status', 'success_home_collection')->where('donation_method', 'home_collection')->count(),
-            'total' => $donations->count(),
-            'total_volume' => $donations->sum('total_volume'),
+            'walk_in' => $donationRecords->where('donation_type', 'Walk-in')->count(),
+            'walkin' => $donationRecords->where('donation_type', 'Walk-in')->count(), // Alternative key name
+            'home_collection' => $donationRecords->where('donation_type', 'Home Collection')->count(),
+            'total' => $donationRecords->count(),
+            'total_volume' => $donationData['total_volume'] ?? 0,
         ];
 
-        // Inventory Reports - single month aggregates
-        $unpasteurized = Donation::where('pasteurization_status', 'unpasteurized')
-            ->where(function($q) use ($year, $month) {
-                $q->whereYear('donation_date', $year)
-                  ->whereMonth('donation_date', $month);
-
-                $q->orWhere(function($q2) use ($year, $month) {
-                    $q2->whereYear('scheduled_pickup_date', $year)
-                       ->whereMonth('scheduled_pickup_date', $month);
-                });
-            })
-            ->sum('available_volume');
-        $pasteurized = PasteurizationBatch::whereYear('date_pasteurized', $year)
-            ->whereMonth('date_pasteurized', $month)
-            ->sum('available_volume');
-        $dispensed = DispensedMilk::whereYear('date_dispensed', $year)
-            ->whereMonth('date_dispensed', $month)
-            ->sum('volume_dispensed');
+        // Build inventory stats from sections
         $inventoryStats = [
             'month' => Carbon::create()->month($month)->format('F'),
-            'unpasteurized' => $unpasteurized,
-            'pasteurized' => $pasteurized,
-            'dispensed' => $dispensed,
+            'unpasteurized' => $inventoryData['sections'][0]['total'] ?? 0,
+            'pasteurized' => $inventoryData['sections'][1]['total'] ?? 0,
+            'dispensed' => $inventoryData['sections'][2]['total'] ?? 0,
         ];
 
-        // Return only single-month aggregates to simplify the view and reduce DB load
-        return view('admin.monthly-reports', compact('requestStats', 'donationStats', 'inventoryStats', 'year', 'month'));
+        // Generate list of years and months for dropdowns
+        $years = range(date('Y'), date('Y') - 5);
+        $months = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
+        ];
+
+        return view('admin.monthly-reports', compact(
+            'requestStats', 
+            'donationStats', 
+            'inventoryStats', 
+            'year', 
+            'month',
+            'years',
+            'months',
+            'activeTab'
+        ));
     }
 
 

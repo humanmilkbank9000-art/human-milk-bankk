@@ -7,7 +7,7 @@
     <style>
         @page {
             size: 8.5in 13in;
-            margin: 1in 0.75in;
+            margin: 0.75in 0.75in 0.85in 0.75in;
         }
 
         html,
@@ -19,14 +19,18 @@
             margin: 0;
             font-family: "DejaVu Sans", Arial, sans-serif;
             color: #1f2937;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 11px;
+            line-height: 1.5;
             background: #ffffff;
         }
 
         body.screen-preview {
             background: linear-gradient(180deg, #d1d5db 0%, #eceff4 40%, #d1d5db 100%);
             padding: 40px 0;
+        }
+
+        body.pdf-output {
+            font-size: 10px;
         }
 
         .page-canvas {
@@ -44,17 +48,14 @@
         }
 
         body.pdf-output .page-canvas {
-            width: auto;
+            width: 100%;
             margin: 0;
+            padding: 0;
         }
 
         header.report-header {
-            position: fixed;
-            top: -1in;
-            left: 0.75in;
-            right: 0.75in;
             text-align: center;
-            padding: 0.25in 0 0.15in 0;
+            margin-bottom: 0.3in;
         }
 
         body.screen-preview header.report-header {
@@ -65,68 +66,122 @@
             transform: translateX(-50%);
             width: calc(8.5in - 1.5in);
             padding-top: 0.4in;
+            margin-bottom: 0;
+        }
+
+        body.pdf-output header.report-header {
+            position: relative;
+            margin-top: 0;
+            padding-top: 0;
         }
 
         .header-grid {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        body.screen-preview .header-grid {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            width: 100%;
             gap: 20px;
         }
 
         .header-cell {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        body.screen-preview .header-cell {
+            display: block;
             flex: 0 0 auto;
         }
 
         .header-cell.logo-left,
         .header-cell.logo-right {
-            width: 80px;
+            width: 100px;
         }
 
-        .header-cell.center {
-            flex: 1;
+        .header-cell.logo-left {
+            text-align: left;
+            padding-left: 0;
+        }
+
+        .header-cell.logo-right {
+            text-align: right;
+            padding-right: 0;
+        }
+
+        body.screen-preview .header-cell.logo-left,
+        body.screen-preview .header-cell.logo-right {
+            width: 80px;
             text-align: center;
         }
 
+        .header-cell.center {
+            text-align: center;
+        }
+
+        body.screen-preview .header-cell.center {
+            flex: 1;
+        }
+
         .header-cell img {
-            max-height: 80px;
-            max-width: 80px;
+            max-height: 70px;
+            max-width: 70px;
             width: auto;
             height: auto;
         }
 
+        body.screen-preview .header-cell img {
+            max-height: 80px;
+            max-width: 80px;
+        }
+
         .unit-name {
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             color: #111827;
-            margin-bottom: 2px;
-            line-height: 1.3;
+            margin-bottom: 3px;
+            line-height: 1.4;
+        }
+
+        body.pdf-output .unit-name {
+            font-size: 12px;
         }
 
         .unit-address {
-            font-size: 11px;
-            color: #111827;
+            font-size: 10px;
+            color: #374151;
             margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        body.pdf-output .unit-address {
+            font-size: 9px;
         }
 
         .report-heading {
-            margin-top: 6px;
-            margin-bottom: 2px;
-            font-size: 13px;
+            margin-top: 8px;
+            margin-bottom: 0;
+            font-size: 12px;
             font-weight: 700;
             color: #111827;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.pdf-output .report-heading {
+            font-size: 11px;
         }
 
         footer.report-footer {
-            position: fixed;
-            bottom: -1in;
-            left: 0.75in;
-            right: 0.75in;
-            padding-top: 10px;
-            padding-bottom: 0.25in;
-            font-size: 10px;
-            color: #4b5563;
+            margin-top: 0.3in;
+            padding-top: 0.15in;
+            padding-bottom: 0;
+            font-size: 9px;
+            color: #6b7280;
             border-top: 1px solid #d1d5db;
         }
 
@@ -138,13 +193,61 @@
             transform: translateX(-50%);
             width: calc(8.5in - 1.5in);
             padding-bottom: 0.4in;
+            margin-top: 0;
+        }
+
+        body.pdf-output footer.report-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            padding-left: 0;
+            padding-right: 0;
+            padding-bottom: 0.2in;
+            background: white;
         }
 
         footer.report-footer .footer-grid {
+            width: 100%;
+        }
+
+        body.screen-preview footer.report-footer .footer-grid {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 8px;
+        }
+
+        body.pdf-output footer.report-footer .footer-grid {
+            display: block;
+            padding-left: 0;
+            text-align: left;
+        }
+
+        footer.report-footer .footer-grid>span {
+            vertical-align: middle;
+        }
+
+        body.screen-preview footer.report-footer .footer-grid>span {
+            display: inline;
+        }
+
+        body.pdf-output footer.report-footer .footer-grid>span {
+            display: inline;
+            margin-right: 15px;
+        }
+
+        body.pdf-output footer.report-footer .footer-grid>span:first-child {
+            text-align: left;
+        }
+
+        body.pdf-output footer.report-footer .footer-grid>span:nth-child(2) {
+            text-align: left;
+        }
+
+        body.pdf-output footer.report-footer .footer-grid>span:last-child {
+            text-align: left;
         }
 
         .page-number:after {
@@ -152,8 +255,8 @@
         }
 
         main {
-            padding: 0.75in;
-            margin-top: 0.25in;
+            padding: 0;
+            margin: 0;
         }
 
         body.screen-preview main {
@@ -165,8 +268,8 @@
         }
 
         body.pdf-output main {
-            padding-top: 0.75in;
-            padding-bottom: 0.75in;
+            padding: 0;
+            margin-bottom: 0.5in;
         }
 
         .btn-download {
@@ -189,37 +292,60 @@
         }
 
         h2.section-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin: 16px 0 12px 0;
+            font-size: 13px;
+            font-weight: 700;
+            margin: 0.2in 0 0.15in 0;
             color: #111827;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.pdf-output h2.section-title {
+            font-size: 11px;
+            margin: 0.15in 0 0.1in 0;
         }
 
         .meta-row {
+            margin-bottom: 0.25in;
+            margin-top: 0.15in;
+            line-height: 1.6;
+        }
+
+        body.screen-preview .meta-row {
             display: flex;
             gap: 24px;
             flex-wrap: wrap;
-            margin-bottom: 20px;
-            margin-top: 8px;
         }
 
         .meta-item {
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        body.screen-preview .meta-item {
             min-width: 220px;
             font-size: 11px;
         }
 
+        body.pdf-output .meta-item {
+            font-size: 9px;
+        }
+
         .meta-item span {
-            font-weight: 600;
+            font-weight: 700;
             color: #111827;
         }
 
         table.report-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            margin-bottom: 30px;
-            font-size: 11px;
+            margin-top: 0.2in;
+            margin-bottom: 0.25in;
+            font-size: 10px;
+        }
+
+        body.pdf-output table.report-table {
+            font-size: 9px;
         }
 
         table.report-table thead {
@@ -235,15 +361,26 @@
             color: #111827;
             font-weight: 700;
             border: 1px solid #9ca3af;
-            padding: 10px 8px;
+            padding: 8px 6px;
             text-align: center;
-            line-height: 1.3;
+            line-height: 1.4;
+            vertical-align: middle;
+        }
+
+        body.pdf-output table.report-table thead th {
+            padding: 6px 4px;
+            font-size: 9px;
         }
 
         table.report-table tbody td {
             border: 1px solid #d1d5db;
-            padding: 8px;
-            line-height: 1.3;
+            padding: 7px 6px;
+            line-height: 1.4;
+            vertical-align: middle;
+        }
+
+        body.pdf-output table.report-table tbody td {
+            padding: 5px 4px;
         }
 
         table.report-table tbody tr:nth-child(even) td {
@@ -254,11 +391,19 @@
             font-weight: 700;
             border: 1px solid #9ca3af;
             background: #f3f4f6;
-            padding: 10px 8px;
+            padding: 8px 6px;
+        }
+
+        body.pdf-output table.report-table tfoot td {
+            padding: 6px 4px;
         }
 
         .text-end {
             text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
         }
 
         .sr-only {
@@ -273,9 +418,44 @@
             border: 0;
         }
 
+        /* PDF-specific improvements */
+        body.pdf-output * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body.pdf-output table.report-table {
+            page-break-inside: auto;
+        }
+
+        body.pdf-output table.report-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        body.pdf-output table.report-table thead {
+            display: table-header-group;
+        }
+
+        body.pdf-output table.report-table tfoot {
+            display: table-footer-group;
+        }
+
+        /* Ensure proper text wrapping */
+        body.pdf-output td,
+        body.pdf-output th {
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
         @media print {
             .btn-download {
                 display: none !important;
+            }
+
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
             }
         }
     </style>
@@ -285,6 +465,25 @@
     @php
         $leftLogoPath = public_path('hmblsc-logo.jpg');
         $rightLogoPath = public_path('jrbgh-logo.png');
+
+        // For PDF, encode images as base64 to embed them
+        $leftLogoSrc = '';
+        $rightLogoSrc = '';
+
+        if ($isPdf) {
+            if (file_exists($leftLogoPath)) {
+                $leftLogoData = base64_encode(file_get_contents($leftLogoPath));
+                $leftLogoSrc = 'data:image/jpeg;base64,' . $leftLogoData;
+            }
+            if (file_exists($rightLogoPath)) {
+                $rightLogoData = base64_encode(file_get_contents($rightLogoPath));
+                $rightLogoSrc = 'data:image/png;base64,' . $rightLogoData;
+            }
+        } else {
+            $leftLogoSrc = file_exists($leftLogoPath) ? asset('hmblsc-logo.jpg') : '';
+            $rightLogoSrc = file_exists($rightLogoPath) ? asset('jrbgh-logo.png') : '';
+        }
+
         $timezoneName = $meta['timezoneName'] ?? config('app.timezone', 'Asia/Manila');
         $generatedSource = $meta['generatedAt'] ?? now();
 
@@ -301,8 +500,8 @@
         <header class="report-header">
             <div class="header-grid">
                 <div class="header-cell logo-left">
-                    @if (file_exists($leftLogoPath))
-                        <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo">
+                    @if ($leftLogoSrc)
+                        <img src="{{ $leftLogoSrc }}" alt="HMBLSC Logo">
                     @endif
                 </div>
                 <div class="header-cell center">
@@ -311,8 +510,8 @@
                     <div class="report-heading">{{ $meta['title'] ?? 'Breastmilk Donation Report' }}</div>
                 </div>
                 <div class="header-cell logo-right">
-                    @if (file_exists($rightLogoPath))
-                        <img src="{{ asset('jrbgh-logo.png') }}" alt="JRBGH Logo">
+                    @if ($rightLogoSrc)
+                        <img src="{{ $rightLogoSrc }}" alt="JRBGH Logo">
                     @endif
                 </div>
             </div>

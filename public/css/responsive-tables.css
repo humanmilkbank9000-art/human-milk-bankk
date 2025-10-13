@@ -1,0 +1,539 @@
+/* ===================================
+   RESPONSIVE TABLES CSS
+   Mobile-First Fluid Responsive Design
+   ================================== */
+
+/* Base table styles - Mobile First (320px+) */
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    border-collapse: collapse;
+}
+
+/* Mobile-first: Stack table on small screens */
+@media (max-width: 600px) {
+    /* Disable horizontal scrolling on mobile */
+    .table-container-standard,
+    .table-responsive {
+        overflow-x: visible !important;
+    }
+
+    /* Remove min-width constraints */
+    .table,
+    .table-standard,
+    .table-standard-min-width {
+        min-width: auto !important;
+        width: 100% !important;
+    }
+
+    /* Hide table headers on mobile */
+    .table thead {
+        display: none !important;
+    }
+
+    /* Display table body as block */
+    .table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    /* Each row becomes a card */
+    .table tbody tr {
+        display: block;
+        margin-bottom: 0.75rem; /* Reduced from 1rem */
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0.5rem; /* Reduced from 0.75rem to save space */
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Each cell becomes a full-width block with label */
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0; /* Reduced from 0.5rem */
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        text-align: right;
+        font-size: 0.85rem; /* Reduced from 0.9rem */
+    }
+
+    .table tbody td:last-child {
+        border-bottom: none;
+    }
+
+    /* Add data labels before each cell */
+    .table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-align: left;
+        flex: 1;
+        padding-right: 1rem;
+        color: #495057;
+    }
+
+    /* Action buttons in mobile */
+    .table tbody td .btn,
+    .table tbody td button {
+        font-size: 0.85rem;
+        padding: 0.375rem 0.75rem;
+        white-space: nowrap;
+    }
+
+    /* Badge adjustments */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Tablet breakpoint (600px - 1024px) - Horizontal table layout without scrolling */
+@media (min-width: 600px) and (max-width: 1024px) {
+    /* Disable horizontal scrolling */
+    .table-container-standard,
+    .table-responsive,
+    .table-container {
+        overflow-x: visible !important;
+        width: 100%;
+    }
+
+    /* Table stays as table with fixed layout for equal distribution */
+    .table {
+        display: table !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+        min-width: auto !important;
+    }
+
+    /* Keep headers visible horizontally */
+    .table thead {
+        display: table-header-group !important;
+    }
+
+    .table thead th {
+        font-size: 0.65rem !important;
+        padding: 0.4rem 0.2rem !important;
+        white-space: normal !important;
+        vertical-align: middle;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.2;
+        max-width: none !important;
+        width: auto !important;
+    }
+
+    /* Table body stays as table */
+    .table tbody {
+        display: table-row-group !important;
+    }
+
+    /* Rows stay horizontal */
+    .table tbody tr {
+        display: table-row !important;
+    }
+
+    /* Cells stay horizontal with text wrapping */
+    .table tbody td {
+        display: table-cell !important;
+        font-size: 0.65rem !important;
+        padding: 0.4rem 0.2rem !important;
+        vertical-align: middle;
+        white-space: normal !important;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.2;
+        max-width: none !important;
+        width: auto !important;
+    }
+
+    /* No data labels on tablets */
+    .table tbody td::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    /* Ultra compact buttons on tablets */
+    .table .btn,
+    .table .btn-sm {
+        font-size: 0.6rem !important;
+        padding: 0.2rem 0.4rem !important;
+        white-space: nowrap;
+        line-height: 1.2;
+    }
+
+    /* Ultra compact badges */
+    .badge {
+        font-size: 0.6rem !important;
+        padding: 0.2rem 0.4rem !important;
+        white-space: nowrap;
+    }
+
+    /* Override any fixed widths */
+    .table tbody td[style*="width"],
+    .table thead th[style*="width"] {
+        width: auto !important;
+    }
+
+    /* Action column should be narrower */
+    .table tbody td:last-child,
+    .table thead th:last-child {
+        width: auto !important;
+        min-width: auto !important;
+    }
+
+    /* Make icons smaller */
+    .table i,
+    .table svg {
+        font-size: 0.7rem !important;
+        width: 0.7rem !important;
+        height: 0.7rem !important;
+    }
+}
+
+/* Desktop breakpoint (1025px+) - Full table layout */
+@media (min-width: 1025px) {
+    .table-responsive,
+    .table-container-standard,
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        display: table !important;
+        width: 100%;
+        table-layout: auto;
+    }
+
+    .table thead {
+        display: table-header-group !important;
+    }
+
+    .table thead th {
+        white-space: normal;
+    }
+
+    .table tbody {
+        display: table-row-group !important;
+    }
+
+    .table tr {
+        display: table-row !important;
+    }
+
+    .table td,
+    .table th {
+        display: table-cell !important;
+    }
+
+    /* No data labels on desktop */
+    .table tbody td::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .table tbody td {
+        display: table-cell !important;
+        white-space: normal;
+    }
+}
+
+/* Fluid typography for table content */
+.table tbody td,
+.table thead th {
+    font-size: clamp(0.8rem, 1.5vw, 1rem);
+    padding: clamp(0.5rem, 1vw, 0.75rem);
+}
+
+/* Responsive images and media in tables */
+.table img,
+.table video,
+.table iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Ensure buttons wrap properly */
+.table .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+/* Action column responsive */
+.table td:has(.btn),
+.table td:has(button) {
+    white-space: normal;
+}
+
+/* Status badges responsive */
+.badge-status {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: clamp(0.7rem, 1.2vw, 0.875rem);
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.375rem;
+}
+
+/* Custom badge colors */
+.badge-donation-walkin {
+    background-color: #4A90E2;
+    color: #fff;
+}
+
+.badge-donation-home {
+    background-color: #81C784;
+    color: #fff;
+}
+
+/* Remove fixed widths on mobile */
+@media (max-width: 600px) {
+    .table tbody td[style*="width"],
+    .table thead th[style*="width"] {
+        width: auto !important;
+    }
+
+    /* Override inline min-width styles on mobile */
+    .table[style*="min-width"],
+    .table-responsive[style*="min-width"] {
+        min-width: auto !important;
+    }
+}
+
+/* Nested tables responsive */
+.table .table {
+    margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+    .table .table tbody tr {
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+    }
+}
+
+/* Scrollable table option for complex tables */
+.table-scrollable {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 600px) {
+    .table-scrollable {
+        border-radius: 8px;
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+    }
+}
+
+/* Table hover effects - maintain on all screens */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+    transition: background-color 0.2s ease;
+}
+
+/* Ensure proper spacing for form elements in tables */
+.table input,
+.table select,
+.table textarea {
+    max-width: 100%;
+    font-size: clamp(0.85rem, 1.5vw, 1rem);
+}
+
+/* Checkbox and radio in tables */
+.table input[type="checkbox"],
+.table input[type="radio"] {
+    transform: scale(clamp(1, 1.2vw, 1.3));
+}
+
+/* Loading/empty states */
+.table-empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+@media (max-width: 600px) {
+    .table-empty-state {
+        padding: 1.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Accessibility improvements */
+.table caption {
+    caption-side: top;
+    padding: 0.5rem 0;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Focus states for keyboard navigation */
+.table tbody tr:focus-within {
+    outline: 2px solid #007bff;
+    outline-offset: -2px;
+}
+
+/* Print styles */
+@media print {
+    .table {
+        page-break-inside: avoid;
+    }
+
+    .table thead {
+        display: table-header-group;
+    }
+
+    .table .btn {
+        display: none;
+    }
+}
+
+/* VH and VW based responsive scaling */
+.table-container {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Calc-based responsive padding */
+.table thead th,
+.table tbody td {
+    padding: calc(0.5rem + 0.3vw);
+}
+
+/* Relative units (em/rem) for flexible spacing */
+.table {
+    line-height: 1.5em;
+}
+
+.table thead th {
+    letter-spacing: 0.02em;
+}
+
+/* Smooth transitions for responsive changes */
+.table,
+.table thead,
+.table tbody,
+.table tr,
+.table td,
+.table th {
+    transition: all 0.3s ease;
+}
+
+/* Additional utility classes for responsive behavior */
+.table-fixed-header thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,0.02);
+}
+
+.table-bordered {
+    border: 1px solid #dee2e6;
+}
+
+@media (max-width: 600px) {
+    .table-bordered tbody tr {
+        border: 1px solid #dee2e6;
+    }
+}
+
+/* Text truncation for long content */
+.table-truncate {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 600px) {
+    .table-truncate {
+        max-width: none;
+        white-space: normal;
+    }
+}
+
+/* Modal table adjustments */
+.modal .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+@media (max-width: 600px) {
+    .modal .table-responsive {
+        max-height: 50vh;
+    }
+}
+
+/* Card-based table alternative for complex data */
+@media (max-width: 600px) {
+    .table-card-view tbody tr {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+
+    .table-card-view tbody td {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+    }
+}
+
+/* ============================================
+   Additional Tablet Enhancements
+   ============================================ */
+
+@media (min-width: 600px) and (max-width: 1024px) {
+    /* Compact button groups */
+    .table .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    /* Ensure content fits horizontally */
+    .table tbody td img {
+        max-width: 30px;
+        height: auto;
+    }
+
+    /* Compact form elements */
+    .table tbody td input,
+    .table tbody td select {
+        font-size: 0.65rem !important;
+        padding: 0.2rem 0.3rem !important;
+        width: 100%;
+    }
+
+    /* Text truncation for long content */
+    .table tbody td {
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    /* Allow content to wrap but stay compact */
+    .table tbody td,
+    .table thead th {
+        hyphens: auto;
+        -webkit-hyphens: auto;
+    }
+}

@@ -26,7 +26,12 @@
                 <td>{{ $row['milk_type'] ?? '-' }}</td>
                 <td>{{ $row['dispensed_date'] ?? '-' }}</td>
                 <td>{{ $row['dispensed_time'] ?? '-' }}</td>
-                <td class="text-end">{{ number_format((float) ($row['volume_dispensed'] ?? 0), 2) }}</td>
+                <td class="text-end">
+                    @php
+                        $vol = (float) ($row['volume_dispensed'] ?? 0);
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </td>
             </tr>
         @empty
             <tr>
@@ -37,7 +42,14 @@
     <tfoot>
         <tr>
             <td colspan="7"><strong>Grand Total</strong></td>
-            <td class="text-end"><strong>{{ number_format((float) $totalVolume, 2) }}</strong></td>
+            <td class="text-end">
+                <strong>
+                    @php
+                        $vol = (float) $totalVolume;
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </strong>
+            </td>
         </tr>
     </tfoot>
 </table>

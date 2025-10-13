@@ -1,0 +1,106 @@
+<!-- EXAMPLE: How Tabs Work Without Horizontal Scrollbar -->
+
+<!-- Example 1: 3 Tabs on Desktop (1200px) -->
+Desktop View (1200px width):
+┌─────────────────────────────────────────────────────────────┐
+│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
+│ │   Tab 1     │ │   Tab 2     │ │   Tab 3     │            │
+│ └─────────────┘ └─────────────┘ └─────────────┘            │
+│─────────────────────────────────────────────────────────────│
+│                   Content Area                               │
+└─────────────────────────────────────────────────────────────┘
+Each tab: ~400px width
+Padding: 0.75rem 1rem
+Font: 1rem
+
+<!-- Example 2: 3 Tabs on Tablet (768px) -->
+Tablet View (768px width):
+┌──────────────────────────────────────────┐
+│ ┌───────┐ ┌───────┐ ┌───────┐           │
+│ │ Tab 1 │ │ Tab 2 │ │ Tab 3 │           │
+│ └───────┘ └───────┘ └───────┘           │
+│──────────────────────────────────────────│
+│          Content Area                     │
+└──────────────────────────────────────────┘
+Each tab: ~256px width
+Padding: 0.6rem 0.6rem
+Font: 0.85rem
+
+<!-- Example 3: 3 Tabs on Mobile (375px) -->
+Mobile View (375px width):
+┌────────────────────────┐
+│ ┌────┐┌────┐┌────┐    │
+│ │Tab1││Tab2││Tab3│    │
+│ └────┘└────┘└────┘    │
+│────────────────────────│
+│    Content Area        │
+└────────────────────────┘
+Each tab: ~125px width
+Padding: 0.5rem 0.4rem
+Font: 0.75rem
+
+<!-- Example 4: 5 Tabs on Mobile (375px) -->
+Mobile View with 5 Tabs (375px width):
+┌────────────────────────┐
+│┌──┐┌──┐┌──┐┌──┐┌──┐   │
+││T1││T2││T3││T4││T5│   │
+│└──┘└──┘└──┘└──┘└──┘   │
+│────────────────────────│
+│    Content Area        │
+└────────────────────────┘
+Each tab: ~75px width
+Padding: 0.5rem 0.4rem
+Font: 0.75rem
+Long text shows as "Tab..."
+
+<!-- Key Features Illustrated -->
+
+✓ ALL TABS VISIBLE - No horizontal scrolling needed
+✓ FLEX DISTRIBUTION - Tabs grow/shrink to fit viewport
+✓ RESPONSIVE PADDING - Adjusts based on screen size
+✓ TEXT TRUNCATION - Long names show ellipsis (...)
+✓ NO WRAPPING - Always horizontal, never stacks
+
+<!-- CSS Behavior -->
+
+Screen Width: 1200px
+├─ Tab 1: flex-grow fills available space
+├─ Tab 2: flex-grow fills available space  
+└─ Tab 3: flex-grow fills available space
+   Total: 100% of container width
+
+Screen Width: 375px (with 5 tabs)
+├─ Tab 1: 20% width (75px)
+├─ Tab 2: 20% width (75px)
+├─ Tab 3: 20% width (75px)
+├─ Tab 4: 20% width (75px)
+└─ Tab 5: 20% width (75px)
+   Total: 100% of container width
+
+<!-- Text Overflow Examples -->
+
+Desktop (400px per tab):
+┌──────────────────────────┐
+│  Breastmilk Request      │
+└──────────────────────────┘
+
+Mobile (75px per tab):
+┌──────────┐
+│ Breast...│
+└──────────┘
+
+<!-- Compact Mode Available -->
+
+For pages with many tabs, add class="nav-tabs-compact":
+
+Normal Mode:
+┌────────┐┌────────┐┌────────┐
+│  Tab 1 ││  Tab 2 ││  Tab 3 │
+└────────┘└────────┘└────────┘
+
+Compact Mode:
+┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐
+│Tab 1││Tab 2││Tab 3││Tab 4││Tab 5│
+└─────┘└─────┘└─────┘└─────┘└─────┘
+
+Smaller padding and font size for fitting more tabs

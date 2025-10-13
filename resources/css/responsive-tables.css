@@ -82,61 +82,154 @@
     }
 }
 
-/* Tablet breakpoint (600px - 1024px) */
+/* Tablet breakpoint (600px - 1024px) - Horizontal table layout without scrolling */
 @media (min-width: 600px) and (max-width: 1024px) {
-    .table-responsive {
-        font-size: 0.9rem;
+    /* Disable horizontal scrolling */
+    .table-container-standard,
+    .table-responsive,
+    .table-container {
+        overflow-x: visible !important;
+        width: 100%;
+    }
+
+    /* Table stays as table with fixed layout for equal distribution */
+    .table {
+        display: table !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+        min-width: auto !important;
+    }
+
+    /* Keep headers visible horizontally */
+    .table thead {
+        display: table-header-group !important;
     }
 
     .table thead th {
-        font-size: 0.85rem;
-        padding: 0.6rem 0.5rem;
-        white-space: normal;
+        font-size: 0.65rem !important;
+        padding: 0.4rem 0.2rem !important;
+        white-space: normal !important;
+        vertical-align: middle;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.2;
+        max-width: none !important;
+        width: auto !important;
     }
 
+    /* Table body stays as table */
+    .table tbody {
+        display: table-row-group !important;
+    }
+
+    /* Rows stay horizontal */
+    .table tbody tr {
+        display: table-row !important;
+    }
+
+    /* Cells stay horizontal with text wrapping */
     .table tbody td {
-        font-size: 0.85rem;
-        padding: 0.6rem 0.5rem;
+        display: table-cell !important;
+        font-size: 0.65rem !important;
+        padding: 0.4rem 0.2rem !important;
+        vertical-align: middle;
+        white-space: normal !important;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.2;
+        max-width: none !important;
+        width: auto !important;
     }
 
-    /* Reduce button sizes on tablets */
-    .table .btn {
-        font-size: 0.8rem;
-        padding: 0.35rem 0.65rem;
+    /* No data labels on tablets */
+    .table tbody td::before {
+        content: none !important;
+        display: none !important;
     }
 
-    /* Badge adjustments */
+    /* Ultra compact buttons on tablets */
+    .table .btn,
+    .table .btn-sm {
+        font-size: 0.6rem !important;
+        padding: 0.2rem 0.4rem !important;
+        white-space: nowrap;
+        line-height: 1.2;
+    }
+
+    /* Ultra compact badges */
     .badge {
-        font-size: 0.75rem;
-        padding: 0.3rem 0.6rem;
+        font-size: 0.6rem !important;
+        padding: 0.2rem 0.4rem !important;
+        white-space: nowrap;
+    }
+
+    /* Override any fixed widths */
+    .table tbody td[style*="width"],
+    .table thead th[style*="width"] {
+        width: auto !important;
+    }
+
+    /* Action column should be narrower */
+    .table tbody td:last-child,
+    .table thead th:last-child {
+        width: auto !important;
+        min-width: auto !important;
+    }
+
+    /* Make icons smaller */
+    .table i,
+    .table svg {
+        font-size: 0.7rem !important;
+        width: 0.7rem !important;
+        height: 0.7rem !important;
     }
 }
 
-/* Desktop breakpoint (1024px+) */
-@media (min-width: 1024px) {
-    .table-responsive {
-        overflow-x: visible;
+/* Desktop breakpoint (1025px+) - Full table layout */
+@media (min-width: 1025px) {
+    .table-responsive,
+    .table-container-standard,
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .table {
-        display: table;
+        display: table !important;
+        width: 100%;
+        table-layout: auto;
     }
 
-    .table thead,
-    .table tbody,
-    .table tr,
-    .table td,
-    .table th {
-        display: table-row-group;
+    .table thead {
+        display: table-header-group !important;
+    }
+
+    .table thead th {
+        white-space: normal;
+    }
+
+    .table tbody {
+        display: table-row-group !important;
     }
 
     .table tr {
-        display: table-row;
+        display: table-row !important;
     }
 
     .table td,
     .table th {
-        display: table-cell;
+        display: table-cell !important;
+    }
+
+    /* No data labels on desktop */
+    .table tbody td::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .table tbody td {
+        display: table-cell !important;
+        white-space: normal;
     }
 }
 
@@ -388,5 +481,45 @@
         grid-template-columns: 120px 1fr;
         gap: 0.5rem;
         padding: 0.5rem 0;
+    }
+}
+
+/* ============================================
+   Additional Tablet Enhancements
+   ============================================ */
+
+@media (min-width: 600px) and (max-width: 1024px) {
+    /* Compact button groups */
+    .table .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    /* Ensure content fits horizontally */
+    .table tbody td img {
+        max-width: 30px;
+        height: auto;
+    }
+
+    /* Compact form elements */
+    .table tbody td input,
+    .table tbody td select {
+        font-size: 0.65rem !important;
+        padding: 0.2rem 0.3rem !important;
+        width: 100%;
+    }
+
+    /* Text truncation for long content */
+    .table tbody td {
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    /* Allow content to wrap but stay compact */
+    .table tbody td,
+    .table thead th {
+        hyphens: auto;
+        -webkit-hyphens: auto;
     }
 }

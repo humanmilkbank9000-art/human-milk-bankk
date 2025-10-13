@@ -38,7 +38,6 @@ class DebugInventory extends Command
             $this->info("Number of bags: " . ($donation->number_of_bags ?? 'NULL'));
             $this->info("Total volume: " . ($donation->total_volume ?? 'NULL'));
             $this->info("Available volume: " . ($donation->available_volume ?? 'NULL'));
-            $this->info("Inventory status: " . ($donation->inventory_status ?? 'NULL'));
             $this->info("Pasteurization status: " . ($donation->pasteurization_status ?? 'NULL'));
             $this->info("Individual bag volumes: " . json_encode($donation->individual_bag_volumes));
             $this->info("");

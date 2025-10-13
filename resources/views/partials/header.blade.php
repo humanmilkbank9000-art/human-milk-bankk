@@ -27,8 +27,8 @@ $logoutBtnId = session('account_role', 'user') === 'admin' ? 'logout-btn-admin' 
     <div class="header-content">
         <div class="header-left">
             <!-- Hospital Logos -->
-            <img src="{{ asset('jrbgh-logo.png') }}" alt="JRBGH Logo" class="header-logo header-logo-jrbgh">
-            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" class="header-logo header-logo-hmblsc">
+            <img src="{{ asset('jrbgh-logo.png') }}" alt="JRBGH Logo" class="header-logo header-logo-jrbgh" width="61" height="61" loading="eager">
+            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" class="header-logo header-logo-hmblsc" width="50" height="50" loading="eager">
             
             {{-- If a child view defines @section('suppressLayoutTitle', true) the layout title will be hidden to avoid duplication --}}
 @unless(View::hasSection('suppressLayoutTitle'))
@@ -40,6 +40,7 @@ $logoutBtnId = session('account_role', 'user') === 'admin' ? 'logout-btn-admin' 
 
             <div class="header-right">
             @include('partials.notification-bell')
+            @include('partials.chat-icon')
 
             <form id="{{ $logoutFormId }}" action="{{ route('logout') }}" method="POST" style="display:inline;margin:0;">
                 @csrf
@@ -64,17 +65,33 @@ $logoutBtnId = session('account_role', 'user') === 'admin' ? 'logout-btn-admin' 
     
     /* Header logos - responsive sizing */
 .header-logo {
-        width: auto;
         transition: all 0.3s ease;
+        /* Prevent FOUC - reserve space and fade in smoothly */
+        display: block;
+        opacity: 0;
+        animation: fadeInLogo 0.3s ease-in forwards;
+        /* Maintain aspect ratio on all screen sizes */
+        object-fit: contain;
+    }
+    
+    @keyframes fadeInLogo {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
     
     .header-logo-jrbgh {
-    height: 61px;
+        height: 61px;
+        width: 61px;
         margin-right: 8px;
     }
     
     .header-logo-hmblsc {
-    height: 50px;
+        height: 50px;
+        width: 50px;
         margin-right: 12px;
     }
     
@@ -116,11 +133,13 @@ $logoutBtnId = session('account_role', 'user') === 'admin' ? 'logout-btn-admin' 
 @media (max-width: 991px) {
         .header-logo-jrbgh {
             height: 50px;
+            width: 50px;
             margin-right: 6px;
         }
         
         .header-logo-hmblsc {
-    height: 42px;
+            height: 42px;
+            width: 42px;
             margin-right: 10px;
         }
         
@@ -137,11 +156,13 @@ $logoutBtnId = session('account_role', 'user') === 'admin' ? 'logout-btn-admin' 
 @media (max-width: 767px) {
         .header-logo-jrbgh {
             height: 38px;
+            width: 38px;
             margin-right: 4px;
         }
         
         .header-logo-hmblsc {
-    height: 32px;
+            height: 32px;
+            width: 32px;
             margin-right: 6px;
         }
         
@@ -169,11 +190,13 @@ $logoutBtnId = session('account_role', 'user') === 'admin' ? 'logout-btn-admin' 
 @media (max-width: 480px) {
         .header-logo-jrbgh {
             height: 32px;
+            width: 32px;
             margin-right: 3px;
         }
         
         .header-logo-hmblsc {
-    height: 28px;
+            height: 28px;
+            width: 28px;
             margin-right: 4px;
         }
         

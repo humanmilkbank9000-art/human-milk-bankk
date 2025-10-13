@@ -86,25 +86,12 @@
         font-size: 1.2rem;
     }
 
-    /* Tab Styles */
-    .nav-tabs .nav-link {
-        color: #495057;
-        border: 1px solid transparent;
-        border-top-left-radius: 0.25rem;
-        border-top-right-radius: 0.25rem;
+    /* Ensure SweetAlert appears above Bootstrap modals */
+    .swal2-container {
+        z-index: 9999 !important;
     }
 
-    .nav-tabs .nav-link:hover {
-        border-color: #e9ecef #e9ecef #dee2e6;
-    }
-
-    .nav-tabs .nav-link.active {
-        color: #495057;
-        background-color: #fff;
-        border-color: #dee2e6 #dee2e6 #fff;
-        font-weight: bold;
-    }
-
+    /* Tab content specific styles */
     .tab-content {
         border: 1px solid #dee2e6;
         border-top: none;
@@ -159,27 +146,6 @@
     .review-answer.no {
         background-color: #d1ecf1;
         color: #0c5460;
-    }
-
-    /* Ensure SweetAlert appears above Bootstrap modals */
-    .swal2-container {
-        z-index: 9999 !important;
-    }
-
-    /* Tab completion badge */
-    .tab-completed-badge {
-        display: none;
-        margin-left: 5px;
-        color: #28a745;
-        font-size: 1rem;
-    }
-
-    .tab-completed .tab-completed-badge {
-        display: inline-block;
-    }
-
-    .nav-tabs .nav-link {
-        position: relative;
     }
 
     /* Mobile-friendly radio buttons */
@@ -410,10 +376,10 @@
                         <hr>
                         <h6>Infant Information</h6>
                         @if($infant)
-                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}</p>
+                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</p>
                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
                             <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth }}</p>
-                            <p><strong>Age:</strong> {{ $infant->age }}</p>
+                            <p><strong>Age:</strong> {{ $infant->getFormattedAge() }}</p>
                             <p><strong>Birth Weight:</strong> {{ $infant->birth_weight }} kg</p>
                         @else
                             <p>No infant data found.</p>
@@ -561,12 +527,12 @@
                                 @if($infant)
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}</p>
+                                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</p>
                                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
                                             <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth }}</p>
                                         </div>
                                         <div class="col-md-6">
-                                            <p><strong>Age:</strong> {{ $infant->age }}</p>
+                                            <p><strong>Age:</strong> {{ $infant->getFormattedAge() }}</p>
                                             <p><strong>Birth Weight:</strong> {{ $infant->birth_weight }} kg</p>
                                         </div>
                                     </div>
@@ -917,10 +883,10 @@
             // Infant Information
             reviewHTML += '<div class="review-section">';
             reviewHTML += '<h6>Infant Information</h6>';
-            reviewHTML += '<div class="review-item"><strong>Name:</strong> {{ $infant->first_name ?? '' }} {{ $infant->last_name ?? '' }}</div>';
+            reviewHTML += '<div class="review-item"><strong>Name:</strong> {{ $infant->first_name ?? '' }} {{ $infant->last_name ?? '' }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Sex:</strong> {{ ucfirst($infant->sex ?? '') }}</div>';
             reviewHTML += '<div class="review-item"><strong>Date of Birth:</strong> {{ $infant->date_of_birth ?? '' }}</div>';
-            reviewHTML += '<div class="review-item"><strong>Age:</strong> {{ $infant->age ?? '' }}</div>';
+            reviewHTML += '<div class="review-item"><strong>Age:</strong> {{ $infant->getFormattedAge() }}</div>';
             reviewHTML += '<div class="review-item"><strong>Birth Weight:</strong> {{ $infant->birth_weight ?? '' }} kg</div>';
             reviewHTML += '</div>';
 
@@ -1070,10 +1036,17 @@
                     });
                 },
                 error: function(xhr) {
-                    let msg = xhr.responseJSON?.message || 'An error occurred. Please try again.';
+                    let msg = xhr.responseJSON?.error || xhr.responseJSON?.message || 'An error occurred. Please try again.';
+                    
+                    // If there are validation errors, display them
+                    if (xhr.status === 422 && xhr.responseJSON?.errors) {
+                        let errorMessages = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                        msg = errorMessages;
+                    }
+                    
                     Swal.fire({
                         title: 'Error!',
-                        text: msg,
+                        html: msg,
                         icon: 'error',
                         confirmButtonColor: '#dc3545',
                         confirmButtonText: 'OK'

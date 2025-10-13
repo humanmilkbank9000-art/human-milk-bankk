@@ -25,7 +25,6 @@ class FixInventoryRecords extends Command
             $this->line("  Status: {$donation->status}");
             $this->line("  Total Volume: " . ($donation->total_volume ?? 'NULL'));
             $this->line("  Available Volume: " . ($donation->available_volume ?? 'NULL'));
-            $this->line("  Inventory Status: " . ($donation->inventory_status ?? 'NULL'));
             $this->line("  Pasteurization Status: " . ($donation->pasteurization_status ?? 'NULL'));
             
             if (!$donation->isInInventory()) {

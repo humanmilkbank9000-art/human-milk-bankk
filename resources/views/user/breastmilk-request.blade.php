@@ -200,120 +200,7 @@
             z-index: 10;
         }
 
-        /* Tab styles - left-aligned, no horizontal scroll */
-        .nav-tabs {
-            border-bottom: 2px solid #dee2e6;
-            display: flex;
-            flex-wrap: wrap;
-            margin-bottom: 1.5rem;
-            gap: 0;
-            justify-content: flex-start;
-            /* Keep tabs on the left */
-        }
-
-        .nav-tabs .nav-item {
-            flex: 0 0 auto;
-            /* Don't stretch tabs */
-            min-width: 0;
-        }
-
-        .nav-tabs .nav-item.show .nav-link,
-        .nav-tabs .nav-link.active {
-            color: #495057;
-            background-color: #fff;
-            border-color: #dee2e6 #dee2e6 #fff;
-            border-bottom: 3px solid #007bff;
-        }
-
-        .nav-tabs .nav-link {
-            border: 1px solid transparent;
-            border-top-left-radius: 0.25rem;
-            border-top-right-radius: 0.25rem;
-            padding: 0.75rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            white-space: nowrap;
-            text-align: left;
-            transition: all 0.3s ease;
-        }
-
-        .nav-tabs .nav-link:hover {
-            border-color: #e9ecef #e9ecef #dee2e6;
-            isolation: isolate;
-        }
-
-        /* Tab completion badge */
-        .tab-completed-badge {
-            display: none;
-            margin-left: 8px;
-            color: #28a745;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-
-        .tab-completed .tab-completed-badge {
-            display: inline-block;
-        }
-
-        .nav-tabs .nav-link {
-            position: relative;
-        }
-
-        /* Responsive tab styles */
-        @media (max-width: 768px) {
-            .nav-tabs {
-                flex-wrap: nowrap;
-                /* Keep all tabs in one row */
-                gap: 0.25rem;
-            }
-
-            .nav-tabs .nav-link {
-                padding: 0.6rem 0.8rem;
-                font-size: 0.85rem;
-            }
-
-            .step-indicator {
-                width: 20px;
-                height: 20px;
-                font-size: 0.7rem;
-                margin-right: 6px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .nav-tabs {
-                flex-wrap: nowrap;
-                /* Keep all tabs in one row on mobile */
-                gap: 0.1rem;
-                overflow: visible;
-                /* Ensure content is visible */
-            }
-
-            .nav-tabs .nav-item {
-                flex: 1 1 0;
-                /* Equal width for all tabs */
-                min-width: 0;
-            }
-
-            .nav-tabs .nav-link {
-                padding: 0.4rem 0.3rem;
-                font-size: 0.7rem;
-                line-height: 1.2;
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-            }
-
-            .step-indicator {
-                width: 16px;
-                height: 16px;
-                font-size: 0.6rem;
-                margin-right: 3px;
-                flex-shrink: 0;
-                /* Keep indicator size fixed */
-            }
-        }
-
+        /* Step indicator styles for multi-step form */
         .step-indicator {
             display: inline-flex;
             align-items: center;
@@ -540,10 +427,10 @@
                                             @foreach($infants as $infant)
                                                 <tr>
                                                     <td>{{ $infant->first_name }} {{ $infant->middle_name }}
-                                                        {{ $infant->last_name }}
+                                                        {{ $infant->last_name }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}
                                                     </td>
                                                     <td>{{ Carbon\Carbon::parse($infant->date_of_birth)->format('M d, Y') }}</td>
-                                                    <td>{{ $infant->getCurrentAgeInMonths() }}</td>
+                                                    <td>{{ $infant->getFormattedAge() }}</td>
                                                     <td>{{ $infant->sex === 'male' ? 'Male' : 'Female' }}</td>
                                                     <td>{{ $infant->birth_weight }}</td>
                                                 </tr>
@@ -694,24 +581,32 @@
                 }
 
                 // Tab navigation
-                document.getElementById('nextToAppointment').addEventListener('click', function () {
+                document.getElementById('nextToAppointment').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     markTabAsCompleted(); // Mark infant tab as completed
                     showTab('appointment-tab');
                     updateStepIndicators(2);
                 });
 
-                document.getElementById('backToInfant').addEventListener('click', function () {
+                document.getElementById('backToInfant').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     showTab('infant-tab');
                     updateStepIndicators(1);
                 });
 
-                document.getElementById('nextToPrescription').addEventListener('click', function () {
+                document.getElementById('nextToPrescription').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     markTabAsCompleted(); // Mark appointment tab as completed
                     showTab('prescription-tab');
                     updateStepIndicators(3);
                 });
 
-                document.getElementById('backToAppointment').addEventListener('click', function () {
+                document.getElementById('backToAppointment').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     showTab('appointment-tab');
                     updateStepIndicators(2);
                 });
@@ -751,7 +646,11 @@
             }
 
             function showTab(tabId) {
-                document.querySelector(`#${tabId}`).click();
+                const tabElement = document.querySelector(`#${tabId}`);
+                if (tabElement) {
+                    const tab = new bootstrap.Tab(tabElement);
+                    tab.show();
+                }
             }
 
             function updateStepIndicators(activeStep) {
@@ -811,13 +710,13 @@
                 const today = new Date();
 
                 let calendarHTML = `
-                            <div class="calendar-header">
-                                <button type="button" class="calendar-nav-btn" onclick="navigateMonth(-1)">&lt;</button>
-                                <div class="calendar-month-year">${monthNames[currentMonth]} ${currentYear}</div>
-                                <button type="button" class="calendar-nav-btn" onclick="navigateMonth(1)">&gt;</button>
-                            </div>
-                            <div class="calendar-grid">
-                        `;
+                                            <div class="calendar-header">
+                                                <button type="button" class="calendar-nav-btn" onclick="navigateMonth(-1)">&lt;</button>
+                                                <div class="calendar-month-year">${monthNames[currentMonth]} ${currentYear}</div>
+                                                <button type="button" class="calendar-nav-btn" onclick="navigateMonth(1)">&gt;</button>
+                                            </div>
+                                            <div class="calendar-grid">
+                                        `;
 
                 // Day headers
                 dayNames.forEach(day => {
@@ -895,9 +794,9 @@
                                 const slotDiv = document.createElement('div');
                                 slotDiv.className = 'time-slot';
                                 slotDiv.innerHTML = `
-                                                                <input type="radio" name="time_slot" value="${slot.id}" id="slot_${slot.id}">
-                                                                <strong>${slot.formatted_time}</strong>
-                                                            `;
+                                                                                <input type="radio" name="time_slot" value="${slot.id}" id="slot_${slot.id}">
+                                                                                <strong>${slot.formatted_time}</strong>
+                                                                            `;
                                 slotDiv.addEventListener('click', () => selectTimeSlot(slot.id, slot.formatted_time, date));
                                 slotsContainer.appendChild(slotDiv);
                             });
@@ -927,9 +826,9 @@
                 // Show appointment details
                 const appointmentDetails = document.getElementById('appointment-details');
                 appointmentDetails.innerHTML = `
-                                                <strong>Date:</strong> ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
-                                                <strong>Time:</strong> ${formattedTime}
-                                            `;
+                                                                <strong>Date:</strong> ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+                                                                <strong>Time:</strong> ${formattedTime}
+                                                            `;
                 document.getElementById('selected-appointment-info').style.display = 'block';
 
                 // Enable next button

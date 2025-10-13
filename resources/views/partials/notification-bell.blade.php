@@ -46,7 +46,7 @@
         aria-expanded="false" title="Notifications" style="height: 40px; min-width: 48px; padding: 6px 16px;">
         <i class="bi bi-bell" style="font-size:1.1rem"></i>
         <span id="notification-badge" class="badge bg-danger position-absolute"
-            style="top:-4px;right:-8px;display:none;min-width:20px;height:20px;border-radius:10px;font-size:0.75rem;line-height:20px;padding:0 5px;">0</span>
+            style="top:-4px;right:-8px;display:none;visibility:hidden;min-width:20px;height:20px;border-radius:10px;font-size:0.75rem;line-height:20px;padding:0 5px;"></span>
     </button>
     <div class="dropdown-menu dropdown-menu-end p-2" id="notificationDropdown"
         style="width:320px; max-width:90vw; max-height:420px; overflow-y:auto; overflow-x:hidden;">
@@ -71,12 +71,21 @@
             const badge = document.getElementById('notification-badge');
             if (data.count && data.count > 0) {
                 badge.style.display = 'inline-block';
+                badge.style.visibility = 'visible';
                 badge.textContent = data.count;
             } else {
                 badge.style.display = 'none';
+                badge.style.visibility = 'hidden';
+                badge.textContent = '';
             }
         } catch (e) {
             console.error('Failed to fetch unread count', e);
+            const badge = document.getElementById('notification-badge');
+            if (badge) {
+                badge.style.display = 'none';
+                badge.style.visibility = 'hidden';
+                badge.textContent = '';
+            }
         }
     }
 
@@ -145,6 +154,8 @@
             // User notifications
             if (titleLower.includes('health screening')) {
                 return '{{ route('user.health-screening') }}';
+            } else if (titleLower.includes('pickup validated') || titleLower.includes('donation validated')) {
+                return '{{ route('user.history') }}';
             } else if (titleLower.includes('donation') || titleLower.includes('pickup')) {
                 return '{{ route('user.pending') }}';
             } else if (titleLower.includes('request')) {
