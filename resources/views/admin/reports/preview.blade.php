@@ -534,24 +534,25 @@
             @endunless
 
             <section>
-                <div class="meta-row">
-                    <div class="meta-item"><span>Covered Period:</span> {{ $meta['periodLabel'] ?? '' }}</div>
-                    <div class="meta-item"><span>Generated On:</span>
-                        {{ $generatedAt->format('M d, Y h:i A') }} {{ $timezoneAbbr }}
-                    </div>
-                </div>
+                
                 @include($view, $data ?? [])
             </section>
         </main>
 
         <footer class="report-footer">
-            <div class="footer-grid">
-                <span>City Human Milk Bank – Monthly Report Portal</span>
-                <span>Page <span class="page-number"></span></span>
-                <span>Generated:
-                    {{ $generatedAt->format('M d, Y h:i A') }} {{ $timezoneAbbr }}</span>
-            </div>
-        </footer>
+    <div class="footer-grid">
+        <div class="footer-left">
+            Development of Web App for Breastmilk Request and Donation
+        </div>
+        <div class="footer-center">
+            Page <span class="page-number"></span>
+        </div>
+        <div class="footer-right">
+            Generated: {{ $generatedAt->timezone('Asia/Manila')->format('M d, Y h:i A') }} PHT
+        </div>
+    </div>
+</footer>
+
     </div>
 </body>
 

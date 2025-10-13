@@ -191,6 +191,32 @@ class MessageController extends Controller
             }
 
             $userType = 'App\\Models\\Admin';
+
+            // Allow searching users via 'q' param (admin can search any user)
+            $q = $request->query('q');
+            if ($q) {
+                $found = $this->service->searchUsers($q);
+
+                $partnersWithUnread = $found->map(function ($partner) use ($accountId, $userType) {
+                    $unreadCount = \App\Models\Message::where([
+                        ['receiver_id', '=', $accountId],
+                        ['receiver_type', '=', $userType],
+                        ['sender_id', '=', $partner->user_id],
+                        ['sender_type', '=', 'App\\Models\\User'],
+                        ['is_read', '=', false],
+                    ])->count();
+
+                    return [
+                        'user_id' => $partner->user_id,
+                        'name' => "{$partner->first_name} {$partner->last_name}",
+                        'unread_count' => $unreadCount,
+                    ];
+                });
+
+                return response()->json(['partners' => $partnersWithUnread]);
+            }
+
+            // No search - return users that have conversations with this admin
             $partners = $this->service->getConversationPartners($accountId, $userType);
 
             // Get unread count for each partner

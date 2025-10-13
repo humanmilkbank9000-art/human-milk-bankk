@@ -121,6 +121,24 @@ class MessageService
     }
 
     /**
+     * Search users by name or contact number. Returns a Collection of User models.
+     */
+    public function searchUsers(string $q, int $limit = 20): Collection
+    {
+        $q = trim($q);
+        if ($q === '') {
+            return collect();
+        }
+
+        return User::where(function ($query) use ($q) {
+            $query->where(DB::raw("CONCAT(first_name, ' ', last_name)"), 'LIKE', "%{$q}%")
+                  ->orWhere('first_name', 'LIKE', "%{$q}%")
+                  ->orWhere('last_name', 'LIKE', "%{$q}%")
+                  ->orWhere('contact_number', 'LIKE', "%{$q}%");
+        })->limit($limit)->get();
+    }
+
+    /**
      * Get the last message in a conversation
      */
     public function getLastMessage(int $userId, string $userType, int $partnerId, string $partnerType): ?Message

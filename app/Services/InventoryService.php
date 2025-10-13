@@ -32,15 +32,18 @@ class InventoryService
     {
         DB::beginTransaction();
         try {
+            // Only include donations that are unpasteurized and still have remaining available volume
             $donations = Donation::whereIn('breastmilk_donation_id', $donationIds)
                 ->readyForPasteurization()
+                ->where('available_volume', '>', 0)
                 ->get();
 
             if ($donations->isEmpty()) {
                 throw new \RuntimeException('No valid donations found for pasteurization.');
             }
 
-            $totalVolume = $donations->sum('total_volume');
+            // Use remaining available_volume, not the original total_volume, to compute batch size
+            $totalVolume = $donations->sum('available_volume');
 
             $batch = PasteurizationBatch::create([
                 'batch_number' => PasteurizationBatch::generateBatchNumber(),

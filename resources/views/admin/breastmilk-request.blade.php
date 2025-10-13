@@ -340,37 +340,37 @@
                                     <tbody>
                                         @foreach($pendingRequests as $request)
                                             <tr>
-                                                <td class="align-middle">
+                                                <td class="align-middle" data-label="Guardian">
                                                     <strong>{{ $request->user->first_name ?? '' }}
                                                         {{ $request->user->last_name ?? '' }}</strong>
                                                 </td>
-                                                <td class="align-middle">
+                                                <td class="align-middle text-center" data-label="Contact">
+                                                    {{ $request->user->contact_number ?? '-' }}
+                                                </td>
+                                                <td class="align-middle" data-label="Infant">
                                                     <strong>{{ $request->infant->first_name }}
                                                         {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong>
                                                     <br>
                                                     <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
-                                                <td class="align-middle text-center">
+                                                <td class="align-middle text-center" data-label="Date">
                                                     @if($request->availability)
                                                         {{ $request->availability->formatted_date }}
                                                     @else
                                                         {{ Carbon\Carbon::parse($request->request_date)->format('M d, Y') }}
                                                     @endif
                                                 </td>
-                                                <td class="align-middle text-center">
+                                                <td class="align-middle text-center" data-label="Time">
                                                     @if($request->availability)
                                                         {{ $request->availability->formatted_time }}
                                                     @else
                                                         {{ Carbon\Carbon::parse($request->request_time)->format('g:i A') }}
                                                     @endif
                                                 </td>
-                                                <td class="align-middle text-center">
+                                                <td class="align-middle text-center" data-label="Submitted">
                                                     {{ $request->created_at->format('M d, Y g:i A') }}
                                                 </td>
-                                                <td class="align-middle text-center">
-                                                    {{ $request->user->contact_number ?? '-' }}
-                                                </td>
-                                                <td class="align-middle text-center">
+                                                <td class="align-middle text-center" data-label="Rx">
                                                     @if($request->hasPrescription())
                                                         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
                                                             data-bs-target="#prescriptionModal{{ $request->breastmilk_request_id }}"
@@ -381,7 +381,7 @@
                                                         <span class="badge bg-warning">No file</span>
                                                     @endif
                                                 </td>
-                                                <td class="align-middle text-center">
+                                                <td class="align-middle text-center" data-label="Action">
                                                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
                                                         data-bs-target="#dispensingModal{{ $request->breastmilk_request_id }}">
                                                         <i class="fas fa-eye"></i> View
@@ -430,17 +430,17 @@
                                     <tbody>
                                         @foreach($dispensedRequests as $request)
                                             <tr>
-                                                <td>
+                                                <td data-label="Guardian">
                                                     <strong>{{ $request->user->first_name ?? '' }}
                                                         {{ $request->user->last_name ?? '' }}</strong><br>
                                                     <small class="text-muted">ID: {{ $request->user_id }}</small>
                                                 </td>
-                                                <td>
+                                                <td data-label="Infant">
                                                     <strong>{{ $request->infant->first_name }}
                                                         {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
                                                     <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
-                                                <td>
+                                                <td data-label="Donor/Batch">
                                                     @if($request->dispensedMilk)
                                                         @php
                                                             $sd = $request->dispensedMilk->source_display ?? '-';
@@ -452,11 +452,11 @@
                                                         <span class="text-muted">-</span>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                <td data-label="Volume">
                                                     <strong>{{ $request->volume_dispensed ?? $request->volume_requested }}
                                                         ml</strong>
                                                 </td>
-                                                <td>
+                                                <td data-label="Type">
                                                     @if($request->dispensedMilk && $request->dispensedMilk->milk_type)
                                                         <span
                                                             class="badge bg-{{ $request->dispensedMilk->milk_type === 'pasteurized' ? 'success' : 'warning' }}">
@@ -466,10 +466,10 @@
                                                         <span class="text-muted">Not specified</span>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                <td data-label="Date">
                                                     {{ $request->dispensed_at ? \Carbon\Carbon::parse($request->dispensed_at)->format('M d, Y g:i A') : 'N/A' }}
                                                 </td>
-                                                <td>
+                                                <td data-label="Action">
                                                     <button class="btn btn-sm btn-info" data-bs-toggle="modal"
                                                         data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
                                                         <i class="fas fa-eye"></i> View
@@ -514,28 +514,29 @@
                                     <tbody>
                                         @foreach($declinedRequests as $request)
                                             <tr>
-                                                <td class="column-id"><strong>#{{ $request->breastmilk_request_id }}</strong></td>
-                                                <td>
+                                                <td class="column-id" data-label="Request ID">
+                                                    <strong>#{{ $request->breastmilk_request_id }}</strong></td>
+                                                <td data-label="Guardian">
                                                     <strong>{{ $request->user->first_name ?? '' }}
                                                         {{ $request->user->last_name ?? '' }}</strong><br>
                                                     <small class="text-muted">ID: {{ $request->user_id }}</small>
                                                 </td>
-                                                <td>
+                                                <td data-label="Infant">
                                                     <strong>{{ $request->infant->first_name }}
                                                         {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
                                                     <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
-                                                <td>
+                                                <td data-label="Declined Date">
                                                     {{ $request->declined_at ? $request->declined_at->format('M d, Y g:i A') : 'N/A' }}
                                                 </td>
-                                                <td>
+                                                <td data-label="Reason">
                                                     @if($request->admin_notes)
                                                         <small>{{ Str::limit($request->admin_notes, 50) }}</small>
                                                     @else
                                                         <span class="text-muted">No reason provided</span>
                                                     @endif
                                                 </td>
-                                                <td class="text-center">
+                                                <td class="text-center" data-label="Action">
                                                     <button class="btn btn-sm btn-info" data-bs-toggle="modal"
                                                         data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
                                                         <i class="fas fa-eye"></i>
@@ -944,14 +945,14 @@
                             container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
                         } else {
                             container.innerHTML = `
-                                                                                                                                                                <div class="d-flex flex-column align-items-center justify-content-center">
-                                                                                                                                                                    <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                                                                                                                                                    <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                                                                                                                                                        <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
-                                                                                                                                                                            style="max-width:100%; max-height:70vh; object-fit:contain;">
+                                                                                                                                                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                                                                                                                                                        <h6 class="mb-3">Prescription: ${data.filename}</h6>
+                                                                                                                                                                        <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                                                                                                                                                            <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
+                                                                                                                                                                                style="max-width:100%; max-height:70vh; object-fit:contain;">
+                                                                                                                                                                        </div>
                                                                                                                                                                     </div>
-                                                                                                                                                                </div>
-                                                                                                                                                            `;
+                                                                                                                                                                `;
                         }
                     })
                     .catch(error => {
@@ -979,13 +980,13 @@
                     }
 
                     container.innerHTML = `
-                                                                                                                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                                                                                                                <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                                                                                                                <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                                                                                                                    <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                                                                                                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                                                                                                                    <h6 class="mb-3">Prescription: ${data.filename}</h6>
+                                                                                                                                    <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                                                                                                                        <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                                                                                                                    </div>
                                                                                                                                 </div>
-                                                                                                                            </div>
-                                                                                                                        `;
+                                                                                                                            `;
                 })
                 .catch(err => {
                     container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';
@@ -1029,36 +1030,36 @@
                     data.inventory.forEach(item => {
                         const itemId = milkType === 'unpasteurized' ? item.id : item.id;
                         html += `
-                                                                                                                                                            <div class="card mb-2">
-                                                                                                                                                                <div class="card-body p-2">
-                                                                                                                                                                    <div class="form-check">
-                                                                                                                                                                        <input class="form-check-input" type="checkbox" 
-                                                                                                                                                                            id="item_${requestId}_${itemId}" 
-                                                                                                                                                                            onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
-                                                                                                                                                                        <label class="form-check-label" for="item_${requestId}_${itemId}">
-                                                                                                                                                                            <small>
-                                                                                                                                                                                ${milkType === 'unpasteurized' ?
+                                                                                                                                                                <div class="card mb-2">
+                                                                                                                                                                    <div class="card-body p-2">
+                                                                                                                                                                        <div class="form-check">
+                                                                                                                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                                                                                                                id="item_${requestId}_${itemId}" 
+                                                                                                                                                                                onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
+                                                                                                                                                                            <label class="form-check-label" for="item_${requestId}_${itemId}">
+                                                                                                                                                                                <small>
+                                                                                                                                                                                    ${milkType === 'unpasteurized' ?
                                 `<strong>Donation #${item.id}</strong><br>
-                                                                                                                                                                                     ${item.donor_name} - ${item.donation_type}<br>
-                                                                                                                                                                                     <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
+                                                                                                                                                                                         ${item.donor_name} - ${item.donation_type}<br>
+                                                                                                                                                                                         <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
                                 `<strong>Batch ${item.batch_number}</strong><br>
-                                                                                                                                                                                     Pasteurized by: ${item.admin_name}<br>
-                                                                                                                                                                                     <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
+                                                                                                                                                                                         Pasteurized by: ${item.admin_name}<br>
+                                                                                                                                                                                         <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
                             }
-                                                                                                                                                                            </small>
-                                                                                                                                                                        </label>
-                                                                                                                                                                    </div>
-                                                                                                                                                                    <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
-                                                                                                                                                                        <label class="form-label">Volume to deduct (ml):</label>
-                                                                                                                                                                        <input type="number" class="form-control form-control-sm" 
-                                                                                                                                                                            id="volume_${requestId}_${itemId}" 
-                                                                                                                                                                            step="0.01" min="0.01" max="${item.volume}" 
-                                                                                                                                                                            value="${item.volume}"
-                                                                                                                                                                            onchange="updateSelectedVolume(${requestId})">
+                                                                                                                                                                                </small>
+                                                                                                                                                                            </label>
+                                                                                                                                                                        </div>
+                                                                                                                                                                        <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
+                                                                                                                                                                            <label class="form-label">Volume to deduct (ml):</label>
+                                                                                                                                                                            <input type="number" class="form-control form-control-sm" 
+                                                                                                                                                                                id="volume_${requestId}_${itemId}" 
+                                                                                                                                                                                step="0.01" min="0.01" max="${item.volume}" 
+                                                                                                                                                                                value="${item.volume}"
+                                                                                                                                                                                onchange="updateSelectedVolume(${requestId})">
+                                                                                                                                                                        </div>
                                                                                                                                                                     </div>
                                                                                                                                                                 </div>
-                                                                                                                                                            </div>
-                                                                                                                                                        `;
+                                                                                                                                                            `;
                     });
 
                     inventoryList.innerHTML = html;
@@ -1179,9 +1180,9 @@
                 Swal.fire({
                     title: 'Accept Request',
                     html: `
-                                                                                <p>To accept this request, you need to specify the dispensing details.</p>
-                                                                                <p class="text-muted">Click "Continue" to open the dispensing form.</p>
-                                                                            `,
+                                                                                    <p>To accept this request, you need to specify the dispensing details.</p>
+                                                                                    <p class="text-muted">Click "Continue" to open the dispensing form.</p>
+                                                                                `,
                     icon: 'info',
                     showCancelButton: true,
                     confirmButtonText: 'Continue to Dispense Form',
@@ -1235,19 +1236,19 @@
                 Swal.fire({
                     title: 'Decline Request',
                     html: `
-                                                                                <div class="text-start">
-                                                                                    <p>Are you sure you want to decline this request?</p>
-                                                                                    <div class="mb-3">
-                                                                                        <label for="swalDeclineReason" class="form-label">Reason for Declining <span class="text-danger">*</span></label>
-                                                                                        <textarea 
-                                                                                            id="swalDeclineReason" 
-                                                                                            class="form-control" 
-                                                                                            rows="4" 
-                                                                                            placeholder="Please provide a reason for declining this request...">${notes}</textarea>
-                                                                                        <small class="text-muted">This reason will be sent to the guardian.</small>
+                                                                                    <div class="text-start">
+                                                                                        <p>Are you sure you want to decline this request?</p>
+                                                                                        <div class="mb-3">
+                                                                                            <label for="swalDeclineReason" class="form-label">Reason for Declining <span class="text-danger">*</span></label>
+                                                                                            <textarea 
+                                                                                                id="swalDeclineReason" 
+                                                                                                class="form-control" 
+                                                                                                rows="4" 
+                                                                                                placeholder="Please provide a reason for declining this request...">${notes}</textarea>
+                                                                                            <small class="text-muted">This reason will be sent to the guardian.</small>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            `,
+                                                                                `,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, Decline Request',
@@ -1593,26 +1594,26 @@
             let html = '<div class="list-group">';
             batches.forEach(batch => {
                 html += `
-                                                                    <div class="list-group-item">
-                                                                        <div class="form-check">
-                                                                            <input class="form-check-input" type="radio" 
-                                                                                name="batch_${requestId}" 
-                                                                                id="batch_${requestId}_${batch.batch_id}" 
-                                                                                value="${batch.batch_id}"
-                                                                                data-volume="${batch.available_volume}"
-                                                                                onchange="handleBatchSelection(${requestId}, ${batch.batch_id}, ${batch.available_volume})">
-                                                                            <label class="form-check-label w-100" for="batch_${requestId}_${batch.batch_id}">
-                                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                                    <div>
-                                                                                        <strong>Batch #${batch.batch_number}</strong><br>
-                                                                                        <small class="text-muted">Available: ${batch.available_volume} ml</small><br>
-                                                                                        <small class="text-muted">Date: ${batch.date_pasteurized}</small>
+                                                                        <div class="list-group-item">
+                                                                            <div class="form-check">
+                                                                                <input class="form-check-input" type="radio" 
+                                                                                    name="batch_${requestId}" 
+                                                                                    id="batch_${requestId}_${batch.batch_id}" 
+                                                                                    value="${batch.batch_id}"
+                                                                                    data-volume="${batch.available_volume}"
+                                                                                    onchange="handleBatchSelection(${requestId}, ${batch.batch_id}, ${batch.available_volume})">
+                                                                                <label class="form-check-label w-100" for="batch_${requestId}_${batch.batch_id}">
+                                                                                    <div class="d-flex justify-content-between align-items-center">
+                                                                                        <div>
+                                                                                            <strong>Batch #${batch.batch_number}</strong><br>
+                                                                                            <small class="text-muted">Available: ${batch.available_volume} ml</small><br>
+                                                                                            <small class="text-muted">Date: ${batch.date_pasteurized}</small>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </label>
+                                                                                </label>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                `;
+                                                                    `;
             });
             html += '</div>';
             html += '<div class="mt-2"><small class="text-info"><i class="fas fa-info-circle"></i> For pasteurized milk, the entire batch volume will be used.</small></div>';
@@ -1634,27 +1635,27 @@
             donations.forEach(donation => {
                 const donorName = donation.donor_name || 'Anonymous';
                 html += `
-                                                                    <div class="list-group-item">
-                                                                        <div class="form-check">
-                                                                            <input class="form-check-input" type="radio" 
-                                                                                name="donation_${requestId}" 
-                                                                                id="donation_${requestId}_${donation.breastmilk_donation_id}" 
-                                                                                value="${donation.breastmilk_donation_id}"
-                                                                                data-volume="${donation.available_volume}"
-                                                                                onchange="handleDonationSelection(${requestId}, ${donation.breastmilk_donation_id}, ${donation.available_volume})">
-                                                                            <label class="form-check-label w-100" for="donation_${requestId}_${donation.breastmilk_donation_id}">
-                                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                                    <div>
-                                                                                        <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
-                                                                                        <small class="text-muted">Donor: ${donorName}</small><br>
-                                                                                        <small class="text-muted">Available: ${donation.available_volume} ml</small><br>
-                                                                                        <small class="text-muted">Date: ${donation.donation_date}</small>
+                                                                        <div class="list-group-item">
+                                                                            <div class="form-check">
+                                                                                <input class="form-check-input" type="radio" 
+                                                                                    name="donation_${requestId}" 
+                                                                                    id="donation_${requestId}_${donation.breastmilk_donation_id}" 
+                                                                                    value="${donation.breastmilk_donation_id}"
+                                                                                    data-volume="${donation.available_volume}"
+                                                                                    onchange="handleDonationSelection(${requestId}, ${donation.breastmilk_donation_id}, ${donation.available_volume})">
+                                                                                <label class="form-check-label w-100" for="donation_${requestId}_${donation.breastmilk_donation_id}">
+                                                                                    <div class="d-flex justify-content-between align-items-center">
+                                                                                        <div>
+                                                                                            <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
+                                                                                            <small class="text-muted">Donor: ${donorName}</small><br>
+                                                                                            <small class="text-muted">Available: ${donation.available_volume} ml</small><br>
+                                                                                            <small class="text-muted">Date: ${donation.donation_date}</small>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </label>
+                                                                                </label>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                `;
+                                                                    `;
             });
             html += '</div>';
             html += '<div class="mt-2"><small class="text-info"><i class="fas fa-info-circle"></i> For unpasteurized milk, the entire donation volume will be used.</small></div>';
@@ -1797,9 +1798,9 @@
             Swal.fire({
                 title: 'Confirm Dispensing',
                 html: `
-                                                                    <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
-                                                                    <p class="text-muted mb-0">This action cannot be undone.</p>
-                                                                `,
+                                                                        <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
+                                                                        <p class="text-muted mb-0">This action cannot be undone.</p>
+                                                                    `,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#28a745',

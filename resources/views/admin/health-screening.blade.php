@@ -326,7 +326,27 @@
 
         // Decline health screening with SweetAlert confirmation
         function declineScreening(screeningId) {
-            const comments = document.getElementById('adminComments' + screeningId).value;
+            const commentsEl = document.getElementById('adminComments' + screeningId);
+            const comments = commentsEl ? commentsEl.value : '';
+
+            // Client-side enforcement: require comments before declining
+            if (!comments || !comments.trim()) {
+                Swal.fire({
+                    title: 'Comments required',
+                    text: 'Please enter comments or notes explaining why you are declining this health screening.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                }).then(() => {
+                    // focus the comments input for convenience
+                    if (commentsEl) {
+                        commentsEl.focus();
+                        commentsEl.classList.add('border', 'border-danger');
+                    }
+                });
+
+                return; // stop here
+            }
 
             Swal.fire({
                 title: 'Decline Health Screening?',
@@ -749,12 +769,10 @@
                                                 class="bi bi-chat-left-text-fill me-2"></i>Admin Action</h6>
                                         <div class="row">
                                             <div class="col-12 mb-2">
-                                                <strong>Comments/Notes (Optional):</strong>
                                                 <input type="text" class="form-control rounded mt-2"
-                                                    id="adminComments{{ $screening->health_screening_id }}"
-                                                    placeholder="Enter any comments or notes regarding this health screening decision...">
-                                                <small class="text-muted">These comments will be saved with your decision and can be
-                                                    viewed later.</small>
+                                                    id="adminComments{{ $screening->health_screening_id }}" name="comments" required
+                                                    
+                                                
                                             </div>
                                         </div>
                                     </div>

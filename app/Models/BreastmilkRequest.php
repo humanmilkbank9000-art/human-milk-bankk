@@ -38,9 +38,9 @@ class BreastmilkRequest extends Model
         'request_time' => 'datetime:H:i',
         'volume_requested' => 'decimal:2',
         'volume_dispensed' => 'decimal:2',
-        'approved_at' => 'datetime',
-        'declined_at' => 'datetime',
-        'dispensed_at' => 'datetime',
+        'approved_at' => 'timestamp',
+        'declined_at' => 'timestamp',
+        'dispensed_at' => 'timestamp',
     ];
 
     // Relationships

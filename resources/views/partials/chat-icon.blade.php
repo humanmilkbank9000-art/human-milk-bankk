@@ -382,8 +382,16 @@
 
     <!-- Dropdown menu for message list -->
     <div class="dropdown-menu dropdown-menu-end chat-dropdown-menu p-0" id="chatDropdown">
-        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
-            <strong style="font-size: 0.95rem;">Messages</strong>
+        <div class="d-flex flex-column px-3 py-2 border-bottom bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong style="font-size: 0.95rem;">Messages</strong>
+            </div>
+            <div class="d-flex">
+                @if($accountRole === 'admin')
+                    <input type="search" id="chatSearchInput" class="form-control form-control-sm"
+                        placeholder="Search users by name or contact..." style="min-width:0;">
+                @endif
+            </div>
         </div>
         <div id="chatConversationList">
             <div class="text-center text-muted py-4">
@@ -440,8 +448,24 @@
     // Load conversation list when dropdown opens
     chatIconBtn?.addEventListener('click', function () {
         console.log('Chat icon clicked, loading conversation list...');
-        setTimeout(loadConversationList, 150);
+        // Load existing conversations by default, and clear any search
+        const searchInput = document.getElementById('chatSearchInput');
+        if (searchInput) searchInput.value = '';
+        setTimeout(() => loadConversationList(), 150);
     });
+
+    // Debounced search handling
+    const chatSearchInput = document.getElementById('chatSearchInput');
+    let chatSearchTimer = null;
+    if (chatSearchInput) {
+        chatSearchInput.addEventListener('input', function (e) {
+            const q = this.value.trim();
+            if (chatSearchTimer) clearTimeout(chatSearchTimer);
+            chatSearchTimer = setTimeout(() => {
+                loadConversationList(q);
+            }, 300);
+        });
+    }
 
     // Open chat panel when conversation is clicked
     function openChatPanel(partnerId, partnerName) {
@@ -519,12 +543,14 @@
         }
     }
 
-    async function loadConversationList() {
+    async function loadConversationList(query = null) {
         try {
             @if($accountRole === 'admin')
-                // Admin: Load list of users with conversations
-                console.log('Loading conversation partners for admin...');
-                const res = await fetch('{{ route('messages.partners') }}');
+                // Admin: Load list of users with conversations or search results
+                console.log('Loading conversation partners for admin...', { query });
+                const url = new URL('{{ route('messages.partners') }}', window.location.origin);
+                if (query) url.searchParams.append('q', query);
+                const res = await fetch(url);
                 const data = await res.json();
 
                 console.log('Partners API Response:', {
@@ -537,7 +563,7 @@
 
                 if (!data.partners || data.partners.length === 0) {
                     console.warn('No conversation partners found');
-                    chatConversationList.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-chat-dots" style="font-size: 2rem; opacity: 0.3;"></i><p class="mt-2 mb-0" style="font-size: 0.85rem;">No conversations yet</p></div>';
+                    chatConversationList.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-people" style="font-size: 2rem; opacity: 0.3;"></i><p class="mt-2 mb-0" style="font-size: 0.85rem;">No results found</p></div>';
                     return;
                 }
 
@@ -549,16 +575,16 @@
 
                     // FIX: Use data attributes instead of inline onclick to handle special characters in names
                     return `
-                                    <div class="chat-conversation-item" data-partner-id="${partner.user_id}" data-partner-name="${escapeHtml(partner.name)}">
-                                        <div class="chat-conversation-avatar">${initials}</div>
-                                        <div class="chat-conversation-content">
-                                            <div class="chat-conversation-header">
-                                                <span class="chat-conversation-name">${escapeHtml(partner.name)}${unreadBadge}</span>
+                                        <div class="chat-conversation-item" data-partner-id="${partner.user_id}" data-partner-name="${escapeHtml(partner.name)}">
+                                            <div class="chat-conversation-avatar">${initials}</div>
+                                            <div class="chat-conversation-content">
+                                                <div class="chat-conversation-header">
+                                                    <span class="chat-conversation-name">${escapeHtml(partner.name)}${unreadBadge}</span>
+                                                </div>
+                                                <div class="chat-conversation-preview">Click to open chat</div>
                                             </div>
-                                            <div class="chat-conversation-preview">Click to open chat</div>
                                         </div>
-                                    </div>
-                                `;
+                                    `;
                 }).join('');
 
                 chatConversationList.innerHTML = conversationsHtml;
@@ -575,16 +601,16 @@
             @else
                 // User: Show admin as only conversation
                 chatConversationList.innerHTML = `
-                                <div class="chat-conversation-item" data-partner-id="1" data-partner-name="Admin">
-                                    <div class="chat-conversation-avatar">AD</div>
-                                    <div class="chat-conversation-content">
-                                        <div class="chat-conversation-header">
-                                            <span class="chat-conversation-name">Admin</span>
+                                    <div class="chat-conversation-item" data-partner-id="1" data-partner-name="Admin">
+                                        <div class="chat-conversation-avatar">AD</div>
+                                        <div class="chat-conversation-content">
+                                            <div class="chat-conversation-header">
+                                                <span class="chat-conversation-name">Admin</span>
+                                            </div>
+                                            <div class="chat-conversation-preview">Click to open chat</div>
                                         </div>
-                                        <div class="chat-conversation-preview">Click to open chat</div>
                                     </div>
-                                </div>
-                            `;
+                                `;
 
                 // FIX: Add event listener to admin conversation item
                 const adminConvItem = document.querySelector('.chat-conversation-item');

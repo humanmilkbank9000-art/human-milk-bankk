@@ -41,6 +41,18 @@ class StoreHealthScreeningRequest extends FormRequest
             $rules[$field] = 'nullable|string';
         }
 
+        // Conditional details fields (allow text when user specifies)
+        $detailsFields = [
+            'medical_history_02_details', 'medical_history_04_details', 'medical_history_05_details',
+            'medical_history_08_details', 'medical_history_10_details', 'medical_history_11_details', 'medical_history_13_details',
+            'sexual_history_03_details', 'sexual_history_04_details',
+            'donor_infant_04_details', 'donor_infant_05_details'
+        ];
+
+        foreach ($detailsFields as $field) {
+            $rules[$field] = 'nullable|string|max:1000';
+        }
+
         // infant_id may be provided from the request
         $rules['infant_id'] = 'nullable|exists:infant,infant_id';
 
