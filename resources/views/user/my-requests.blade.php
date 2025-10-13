@@ -54,14 +54,15 @@
                                         </td>
                                         <td>
                                             @if($request->infant)
-                                                <strong>{{ $request->infant->first_name }} {{ $request->infant->last_name }}</strong><br>
-                                                <small class="text-muted">{{ $request->infant->getCurrentAgeInMonths() }} months old</small>
+                                                <strong>{{ $request->infant->first_name }}
+                                                    {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
+                                                <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                         <td>
-                                            {{ $request->volume_requested ? $request->volume_requested . ' ml' : '-' }}
+                                            {{ $request->volume_requested ? $request->formatted_volume_requested . ' ml' : '-' }}
                                         </td>
                                         <td>
                                             {{ $request->created_at ? \Carbon\Carbon::parse($request->created_at)->format('M d, Y h:i A') : '-' }}
@@ -107,7 +108,13 @@
                                             @endif
                                         </td>
                                         <td>
-                                            {{ $request->admin_notes ?? '-' }}
+                                            @if($request->isDispensed() && $request->dispensedMilk && $request->dispensedMilk->dispensing_notes)
+                                                {{ $request->dispensedMilk->dispensing_notes }}
+                                            @elseif($request->admin_notes)
+                                                {{ $request->admin_notes }}
+                                            @else
+                                                -
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -133,76 +140,27 @@
                 'slot' => ($request->hasPrescription() ? '<div id="prescription-content-' . $request->breastmilk_request_id . '" class="text-center"><div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading prescription...</div></div>' : '<div class="alert alert-secondary">No prescription image attached.</div>'),
             ])
         @endforeach
-    </div>
+        </div>
 @endsection
 
 @section('scripts')
-<script>
-    // Fetch prescription JSON and populate the modal placeholder immediately (called from View button)
-    function fetchUserPrescription(id) {
-        try {
-            const placeholder = document.getElementById('prescription-content-' + id);
-            if (!placeholder) return;
-
-            // Show immediate spinner
-            placeholder.innerHTML = '<div class="d-flex align-items-center justify-content-center"><div class="spinner-border text-primary me-2" role="status"><span class="visually-hidden">Loading prescription...</span></div><div>Loading prescription...</div></div>';
-
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 10000);
-
-            fetch(`{{ url('/user/breastmilk-request') }}/${id}/prescription-json`, { credentials: 'same-origin', signal: controller.signal })
-                .then(response => {
-                    clearTimeout(timeout);
-                    if (!response.ok) {
-                        return response.json().then(err => { throw err; }).catch(() => { throw { error: 'Failed to load prescription (status ' + response.status + ')' }; });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data || data.error) {
-                        placeholder.innerHTML = '<div class="alert alert-danger">' + (data?.error || 'No prescription available') + '</div>';
-                        return;
-                    }
-
-                    placeholder.innerHTML = `
-                        <div class="d-flex flex-column align-items-center justify-content-center">
-                            <h6 class="mb-3">File: ${data.filename}</h6>
-                            <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
-                            </div>
-                            <div class="mt-3">
-                                <a href="${data.image}" download="${data.filename}" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-download"></i> Download</a>
-                            </div>
-                        </div>
-                    `;
-                })
-                .catch(err => {
-                    console.error('Prescription fetch error:', err);
-                    const message = (err && err.error) ? err.error : (err.name === 'AbortError' ? 'Request timed out' : 'Failed to load prescription.');
-                    placeholder.innerHTML = '<div class="alert alert-danger">' + message + '</div>';
-                });
-        } catch (e) {
-            console.error('fetchUserPrescription fatal error', e);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Attach event listener for all request modals
-        document.querySelectorAll('[id^="requestModal"]').forEach(modalEl => {
-            modalEl.addEventListener('shown.bs.modal', function (event) {
-                const id = this.id.replace('requestModal', '');
+    <script>
+        // Fetch prescription JSON and populate the modal placeholder immediately (called from View button)
+        function fetchUserPrescription(id) {
+            try {
                 const placeholder = document.getElementById('prescription-content-' + id);
                 if (!placeholder) return;
 
-                // Fetch base64 JSON via authenticated request with timeout and robust handling
+                // Show immediate spinner
+                placeholder.innerHTML = '<div class="d-flex align-items-center justify-content-center"><div class="spinner-border text-primary me-2" role="status"><span class="visually-hidden">Loading prescription...</span></div><div>Loading prescription...</div></div>';
+
                 const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                const timeout = setTimeout(() => controller.abort(), 10000);
 
                 fetch(`{{ url('/user/breastmilk-request') }}/${id}/prescription-json`, { credentials: 'same-origin', signal: controller.signal })
                     .then(response => {
                         clearTimeout(timeout);
                         if (!response.ok) {
-                            // Try to parse JSON error body
                             return response.json().then(err => { throw err; }).catch(() => { throw { error: 'Failed to load prescription (status ' + response.status + ')' }; });
                         }
                         return response.json();
@@ -230,8 +188,57 @@
                         const message = (err && err.error) ? err.error : (err.name === 'AbortError' ? 'Request timed out' : 'Failed to load prescription.');
                         placeholder.innerHTML = '<div class="alert alert-danger">' + message + '</div>';
                     });
+            } catch (e) {
+                console.error('fetchUserPrescription fatal error', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Attach event listener for all request modals
+            document.querySelectorAll('[id^="requestModal"]').forEach(modalEl => {
+                modalEl.addEventListener('shown.bs.modal', function (event) {
+                    const id = this.id.replace('requestModal', '');
+                    const placeholder = document.getElementById('prescription-content-' + id);
+                    if (!placeholder) return;
+
+                    // Fetch base64 JSON via authenticated request with timeout and robust handling
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+                    fetch(`{{ url('/user/breastmilk-request') }}/${id}/prescription-json`, { credentials: 'same-origin', signal: controller.signal })
+                        .then(response => {
+                            clearTimeout(timeout);
+                            if (!response.ok) {
+                                // Try to parse JSON error body
+                                return response.json().then(err => { throw err; }).catch(() => { throw { error: 'Failed to load prescription (status ' + response.status + ')' }; });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (!data || data.error) {
+                                placeholder.innerHTML = '<div class="alert alert-danger">' + (data?.error || 'No prescription available') + '</div>';
+                                return;
+                            }
+
+                            placeholder.innerHTML = `
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <h6 class="mb-3">File: ${data.filename}</h6>
+                                    <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                        <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                    </div>
+                                    <div class="mt-3">
+                                        <a href="${data.image}" download="${data.filename}" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-download"></i> Download</a>
+                                    </div>
+                                </div>
+                            `;
+                        })
+                        .catch(err => {
+                            console.error('Prescription fetch error:', err);
+                            const message = (err && err.error) ? err.error : (err.name === 'AbortError' ? 'Request timed out' : 'Failed to load prescription.');
+                            placeholder.innerHTML = '<div class="alert alert-danger">' + message + '</div>';
+                        });
+                });
             });
         });
-    });
-</script>
+    </script>
 @endsection

@@ -48,6 +48,29 @@
       border-radius: 0 0 1rem 1rem;
     }
 
+    /* Modal backdrop z-index */
+    .modal-backdrop {
+      z-index: 1050 !important;
+    }
+
+    /* SweetAlert z-index fix to appear above modal and backdrop */
+    .swal2-container {
+      z-index: 9999 !important;
+    }
+
+    .swal2-popup {
+      z-index: 10000 !important;
+    }
+
+    /* Ensure SweetAlert overlay is also above everything */
+    div:where(.swal2-container) {
+      z-index: 9999 !important;
+    }
+
+    div:where(.swal2-container).swal2-backdrop-show {
+      z-index: 9998 !important;
+    }
+
     @media (max-width: 600px) {
       .modal-dialog {
         max-width: 98vw;
@@ -263,6 +286,8 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
       margin-bottom: 1.25rem;
+      padding: 0 0.75rem;
+      /* Add horizontal padding to align with user dashboard */
     }
 
     .stat-card {
@@ -386,6 +411,10 @@
       padding: 1.25rem;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       margin-bottom: 1.25rem;
+      margin-left: 0.75rem;
+      /* Align with user dashboard */
+      margin-right: 0.75rem;
+      /* Align with user dashboard */
     }
 
     .chart-header {
@@ -458,7 +487,8 @@
     }
 
     #yearTimelineChart {
-      max-height: 200px;
+      max-height: 160px;
+      /* Reduced from 200px to save vertical space */
     }
 
     /* Three Panel Layout */
@@ -467,6 +497,8 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
       margin-bottom: 1.25rem;
+      padding: 0 0.75rem;
+      /* Align with user dashboard */
     }
 
     .panel-card {
@@ -671,7 +703,7 @@
       </div>
       <div>
         <div class="stat-card-value">{{ $totalDonations ?? 0 }}</div>
-        <div class="stat-card-subtitle">Breastmilk donations received</div>
+        <div class="stat-card-subtitle">Successful donations received</div>
       </div>
     </div>
 
@@ -770,7 +802,7 @@
       <div class="action-panel-icon">
         <i class="fas fa-calendar-check"></i>
       </div>
-      <div class="action-panel-title">Admin Availability</div>
+      <div class="action-panel-title">Set Availability</div>
       <div class="action-panel-description">Manage your appointment schedule and availability</div>
     </button>
 
@@ -1247,13 +1279,13 @@
           const slotDiv = document.createElement('div');
           slotDiv.className = 'time-slot-checkbox';
           slotDiv.innerHTML = `
-                                        <div class="form-check">
-                                          <input class="form-check-input" type="checkbox" value="${slot.value}" id="slot_${index}">
-                                          <label class="form-check-label" for="slot_${index}">
-                                            ${slot.text}
-                                          </label>
-                                        </div>
-                                      `;
+                                                <div class="form-check">
+                                                  <input class="form-check-input" type="checkbox" value="${slot.value}" id="slot_${index}">
+                                                  <label class="form-check-label" for="slot_${index}">
+                                                    ${slot.text}
+                                                  </label>
+                                                </div>
+                                              `;
           const checkbox = slotDiv.querySelector('input[type="checkbox"]');
           checkbox.addEventListener('change', function () {
             if (this.checked) {
@@ -1390,11 +1422,23 @@
           method: 'POST',
           body: formData,
           headers: {
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
           }
         })
-          .then(response => response.json())
+          .then(response => {
+            // Check if response is ok
+            if (!response.ok) {
+              return response.text().then(text => {
+                console.error('Response error:', text);
+                throw new Error('Server returned error: ' + response.status);
+              });
+            }
+            return response.json();
+          })
           .then(data => {
+            console.log('Response data:', data);
             if (data.success) {
               // Add the saved date to availableDates array if not already present
               const savedDate = formDate.value;
@@ -1402,16 +1446,17 @@
                 availableDates.push(savedDate);
               }
 
+              // Close modal first before showing success message
+              const modal = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
+              if (modal) modal.hide();
+
+              // Show success message after modal is closed
               Swal.fire({
                 icon: 'success',
                 title: 'Success!',
                 text: data.message || 'Availability saved successfully!',
                 confirmButtonColor: '#28a745'
               }).then(() => {
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
-                if (modal) modal.hide();
-
                 // Reload page to show updated availability
                 window.location.reload();
               });

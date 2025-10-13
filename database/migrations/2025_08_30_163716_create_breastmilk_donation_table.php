@@ -45,8 +45,17 @@ return new class extends Migration
             
             // Volume fields - can be filled by user (home collection) or admin (walk-in)
             $table->integer('number_of_bags')->nullable();
-            $table->json('individual_bag_volumes')->nullable(); // Array of individual bag volumes
-            $table->decimal('total_volume', 10, 2)->nullable();
+            $table->json('individual_bag_volumes')->nullable()->comment('Array of individual bag volumes');
+            
+            // Volume tracking fields - CRITICAL: Do not confuse these fields
+            $table->decimal('total_volume', 10, 2)->nullable()
+                ->comment('IMMUTABLE: Original donation volume - NEVER changes after initial recording');
+            
+            $table->decimal('dispensed_volume', 10, 2)->default(0)
+                ->comment('CUMULATIVE: Total volume dispensed from this donation (sum of all dispensing transactions)');
+            
+            $table->decimal('available_volume', 10, 2)->nullable()
+                ->comment('CALCULATED: Remaining volume available for dispensing (total_volume - dispensed_volume)');
             
             // Date/time fields
             $table->date('donation_date')->nullable(); // Selected by user for walk-in, assigned by admin for home collection
@@ -66,14 +75,11 @@ return new class extends Migration
             $table->unsignedBigInteger('pasteurization_batch_id')->nullable()
                 ->comment('Reference to pasteurization_batches table - no foreign key constraint');
             
-            $table->decimal('available_volume', 10, 2)->nullable()
-                ->comment('Remaining volume available for dispensing (decreases when milk is dispensed)');
-            
-            $table->enum('inventory_status', ['available', 'depleted'])->default('available')
-                ->comment('Available: has volume for dispensing, Depleted: fully dispensed');
-            
             $table->timestamp('added_to_inventory_at')->nullable()
                 ->comment('When this donation became available in inventory');
+            
+            $table->date('expiration_date')->nullable()
+                ->comment('Expiration date: 6 months from donation date for unpasteurized, 1 year for pasteurized');
 
             $table->timestamps();
         });

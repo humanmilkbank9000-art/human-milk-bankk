@@ -20,8 +20,18 @@
             <tr>
                 <td style="text-align: center;">{{ $index + 1 }}</td>
                 <td>{{ $row['batch'] ?? '-' }}</td>
-                <td class="text-end">{{ number_format((float) ($row['total'] ?? 0), 2) }}</td>
-                <td class="text-end">{{ number_format((float) ($row['available'] ?? 0), 2) }}</td>
+                <td class="text-end">
+                    @php
+                        $vol = (float) ($row['total'] ?? 0);
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </td>
+                <td class="text-end">
+                    @php
+                        $vol = (float) ($row['available'] ?? 0);
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </td>
                 <td style="text-align: center;">{{ $row['date'] ?? '-' }}</td>
                 <td style="text-align: center;">{{ $row['time'] ?? '-' }}</td>
                 <td style="text-align: center;">{{ $row['count'] ?? 0 }}</td>
@@ -35,7 +45,14 @@
     <tfoot>
         <tr>
             <td colspan="3"><strong>Grand Total Available</strong></td>
-            <td class="text-end"><strong>{{ number_format((float) $total, 2) }}</strong></td>
+            <td class="text-end">
+                <strong>
+                    @php
+                        $vol = (float) $total;
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </strong>
+            </td>
             <td colspan="3"></td>
         </tr>
     </tfoot>

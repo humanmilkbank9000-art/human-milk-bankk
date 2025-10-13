@@ -44,8 +44,18 @@
 
         @media (max-width: 576px) {
             .stats-card-wrapper {
-                flex: 1 1 calc(50% - 15px);
-                min-width: 120px;
+                flex: 1 1 calc(33.333% - 10px);
+                max-width: calc(33.333% - 10px);
+                min-width: unset;
+            }
+
+            .stats-cards-container {
+                gap: 10px;
+            }
+
+            .stats-card {
+                padding: 15px 10px;
+                min-width: unset;
             }
         }
 
@@ -182,31 +192,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Responsive tabs - keep them in a single row */
-        .nav-tabs {
-            flex-wrap: nowrap;
-            width: 100%;
-            display: flex;
-        }
-
-        .nav-tabs .nav-item {
-            flex: 1 1 33.333%;
-            max-width: 33.333%;
-            margin-right: 0;
-        }
-
-        .nav-tabs .nav-link {
-            margin-right: 0;
-            width: 100%;
-            white-space: normal;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
         /* Responsive adjustments */
         @media (max-width: 1200px) {
             .table {
@@ -231,61 +216,16 @@
             .stats-label {
                 font-size: 0.75rem;
             }
-
-            /* Compact tabs for mobile while keeping them horizontal */
-            .nav-tabs {
-                margin-left: 0;
-                margin-right: 0;
-                padding-left: 0;
-                padding-right: 0;
-            }
-
-            .nav-tabs .nav-item {
-                flex: 1 1 33.333%;
-                max-width: 33.333%;
-                padding: 0;
-            }
-
-            .nav-tabs .nav-link {
-                font-size: 0.7rem;
-                padding: 0.5rem 0.15rem;
-                margin: 0;
-                word-break: break-word;
-                line-height: 1.2;
-            }
-
-            .nav-tabs .nav-link i {
-                font-size: 0.9rem;
-                margin-bottom: 0.15rem;
-            }
-
-            .nav-tabs .badge {
-                font-size: 0.65rem;
-                padding: 0.2em 0.35em;
-                margin-top: 0.15rem;
-            }
         }
 
         @media (max-width: 576px) {
-            .nav-tabs .nav-link {
-                font-size: 0.65rem;
-                padding: 0.4rem 0.1rem;
-            }
-
-            .nav-tabs .nav-link i {
-                font-size: 0.8rem;
-            }
-
-            .nav-tabs .badge {
-                font-size: 0.6rem;
-                padding: 0.15em 0.3em;
-            }
-        }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/table-layout-standard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
 @endsection
 
 @section('content')
-    <div class="container-fluid px-2 px-md-4">
+    <div class="container-fluid page-container-standard">
 
         <!-- Inventory Statistics -->
         <div class="stats-cards-container">
@@ -304,9 +244,9 @@
                         <i class="fas fa-tint"></i>
                     </div>
                     <div class="stats-number" id="unpasteurized-volume">
-                        {{ number_format($unpasteurizedDonations->sum('available_volume'), 0) }}ml
+                        {{ number_format($unpasteurizedDonations->where('available_volume', '>', 0)->sum('available_volume'), 0) }}ml
                     </div>
-                    <div class="stats-label">Unpasteurized Volume</div>
+                    <div class="stats-label">Available Volume</div>
                 </div>
             </div>
             <div class="stats-card-wrapper">
@@ -352,7 +292,7 @@
         </div>
 
         <!-- Navigation Tabs -->
-        <ul class="nav nav-tabs" id="inventoryTabs" role="tablist">
+        <ul class="nav nav-tabs nav-tabs-standard" id="inventoryTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link{{ request()->get('status', 'unpasteurized') == 'unpasteurized' ? ' active' : '' }}"
                     href="?status=unpasteurized" id="unpasteurized-tab" role="tab">
@@ -380,11 +320,9 @@
             <!-- Section 1: Unpasteurized Breastmilk -->
             <div class="tab-pane fade{{ request()->get('status', 'unpasteurized') == 'unpasteurized' ? ' show active' : '' }}"
                 id="unpasteurized" role="tabpanel">
-                <div class="card mt-3 shadow-sm rounded-lg border-0">
-                    <div class="card-header bg-warning text-dark rounded-top">
+                <div class="card card-standard">
+                    <div class="card-header bg-warning text-dark">
                         <h5 class="mb-0"><i class="fas fa-flask"></i> Unpasteurized Breastmilk</h5>
-                        <small class="text-dark">Successful home collection and walk-in donations automatically recorded
-                            here.</small>
                     </div>
                     <div class="card-body">
                         @if($unpasteurizedDonations->count() > 0)
@@ -406,55 +344,56 @@
                                     </button>
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-striped align-middle shadow-sm rounded">
+                                <div class="table-container-standard table-wide">
+                                    <table class="table table-standard table-bordered table-striped align-middle">
                                         <thead class="table-success">
                                             <tr>
-                                                <th class="text-center align-middle px-2 py-2">
+                                                <th class="text-center align-middle px-2 py-2" style="color: #000;">
                                                     <input type="checkbox" id="selectAllCheckbox"
                                                         onchange="toggleAllDonations()">
                                                 </th>
-                                                <th class="text-center px-2 py-2">Donor</th>
-                                                <th class="text-center px-2 py-2">Type</th>
-                                                <th class="text-center px-2 py-2">Bags</th>
-                                                <th class="text-center px-2 py-2">Volume/Bag</th>
-                                                <th class="text-center px-2 py-2">Total</th>
-                                                <th class="text-center px-2 py-2">Available</th>
-                                                <th class="text-center px-2 py-2">Date</th>
-                                                <th class="text-center px-2 py-2">Time</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Donor</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Type</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Bags</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Volume/Bag</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Total</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Available</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Date</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Time</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($unpasteurizedDonations as $donation)
                                                 <tr>
-                                                    <td class="text-center align-middle">
+                                                    <td class="text-center align-middle" data-label="Select">
                                                         <input type="checkbox" class="pasteurize-checkbox donation-checkbox"
                                                             value="{{ $donation->breastmilk_donation_id }}"
                                                             onchange="updatePasteurizeButton()">
                                                     </td>
-                                                    <td style="white-space: normal;">
+                                                    <td style="white-space: normal;" data-label="Donor">
                                                         <strong>{{ $donation->user->first_name }}
                                                             {{ $donation->user->last_name }}</strong>
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td class="text-center" data-label="Type">
                                                         <span
                                                             class="badge badge-{{ $donation->donation_method === 'walk_in' ? 'primary' : 'success' }} donation-type-badge">
                                                             {{ $donation->donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection' }}
                                                         </span>
                                                     </td>
-                                                    <td class="text-center">{{ $donation->number_of_bags }}</td>
-                                                    <td class="text-center" style="white-space: normal; font-size: 0.85rem;">
+                                                    <td class="text-center" data-label="Bags">{{ $donation->number_of_bags }}</td>
+                                                    <td class="text-center" style="white-space: normal; font-size: 0.85rem;"
+                                                        data-label="Volume/Bag">
                                                         <small>{{ $donation->formatted_bag_volumes }}</small>
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td class="text-center" data-label="Total">
                                                         <span
-                                                            class="badge badge-info volume-badge">{{ $donation->total_volume }}ml</span>
+                                                            class="badge badge-info volume-badge">{{ $donation->formatted_total_volume }}ml</span>
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td class="text-center" data-label="Available">
                                                         <span
-                                                            class="badge badge-success volume-badge">{{ $donation->available_volume }}ml</span>
+                                                            class="badge badge-success volume-badge">{{ $donation->formatted_available_volume }}ml</span>
                                                     </td>
-                                                    <td class="text-center" style="white-space: nowrap;">
+                                                    <td class="text-center" style="white-space: nowrap;" data-label="Date">
                                                         <small>
                                                             @if($donation->donation_date)
                                                                 {{ $donation->donation_date->format('M d, Y') }}
@@ -465,7 +404,7 @@
                                                             @endif
                                                         </small>
                                                     </td>
-                                                    <td class="text-center" style="white-space: nowrap;">
+                                                    <td class="text-center" style="white-space: nowrap;" data-label="Time">
                                                         <small>
                                                             @if($donation->availability)
                                                                 {{ $donation->availability->formatted_time }}
@@ -498,15 +437,14 @@
             <!-- Section 2: Pasteurized Breastmilk -->
             <div class="tab-pane fade{{ request()->get('status') == 'pasteurized' ? ' show active' : '' }}" id="pasteurized"
                 role="tabpanel">
-                <div class="card mt-3 shadow-sm rounded-lg border-0">
-                    <div class="card-header bg-primary text-white rounded-top">
+                <div class="card card-standard">
+                    <div class="card-header bg-primary text-white">
                         <h5 class="mb-0"><i class="fas fa-vial"></i> Pasteurized Breastmilk</h5>
-                        <small class="text-white">Batches of pasteurized donations with FIFO management.</small>
                     </div>
                     <div class="card-body">
                         @if($pasteurizationBatches->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped align-middle shadow-sm rounded">
+                            <div class="table-container-standard">
+                                <table class="table table-standard table-bordered table-striped align-middle">
                                     <thead class="table-success">
                                         <tr>
                                             <th class="text-center px-2 py-2">Batch</th>
@@ -520,107 +458,31 @@
                                     </thead>
                                     <tbody>
                                         @foreach($pasteurizationBatches as $batch)
-                                            <tr class="batch-row batch-expandable"
-                                                onclick="toggleBatchDetails({{ $batch->batch_id }})">
-                                                <td style="white-space: normal;">
+                                            <tr class="batch-row">
+                                                <td style="white-space: normal;" data-label="Batch">
                                                     <strong>{{ $batch->batch_number }}</strong>
-                                                    <i class="fas fa-chevron-down batch-toggle-icon ms-1"
-                                                        id="icon-{{ $batch->batch_id }}"></i>
                                                 </td>
-                                                <td class="text-center">
-                                                    <span class="badge badge-info volume-badge">{{ $batch->total_volume }}ml</span>
-                                                </td>
-                                                <td class="text-center">
+                                                <td class="text-center" data-label="Total">
                                                     <span
-                                                        class="badge badge-success volume-badge">{{ $batch->available_volume }}ml</span>
+                                                        class="badge badge-info volume-badge">{{ $batch->formatted_total_volume }}ml</span>
                                                 </td>
-                                                <td class="text-center" style="white-space: nowrap;">
+                                                <td class="text-center" data-label="Available">
+                                                    <span
+                                                        class="badge badge-success volume-badge">{{ $batch->formatted_available_volume }}ml</span>
+                                                </td>
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Date">
                                                     <small>{{ $batch->formatted_date }}</small>
                                                 </td>
-                                                <td class="text-center" style="white-space: nowrap;">
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Time">
                                                     <small>{{ $batch->formatted_time }}</small>
                                                 </td>
-                                                <td class="text-center"><small>{{ $batch->donations->count() }}</small></td>
-                                                <td class="text-center" onclick="event.stopPropagation()">
+                                                <td class="text-center" data-label="Count">
+                                                    <small>{{ $batch->donations->count() }}</small></td>
+                                                <td class="text-center" data-label="Actions">
                                                     <button class="btn btn-sm btn-outline-info" title="View Details"
                                                         onclick="viewBatchDetails({{ $batch->batch_id }})">
                                                         <i class="fas fa-eye"></i> View
                                                     </button>
-                                                </td>
-                                            </tr>
-                                            <tr class="batch-details d-none" id="details-{{ $batch->batch_id }}">
-                                                <td colspan="7">
-                                                    <div class="p-3">
-                                                        <h6><i class="fas fa-list"></i> Donations in {{ $batch->batch_number }}</h6>
-                                                        <div class="table-responsive">
-                                                            <table class="table table-sm table-bordered align-middle">
-                                                                <thead class="table-light">
-                                                                    <tr>
-                                                                        <th class="text-center px-2 py-2">Donor</th>
-                                                                        <th class="text-center px-2 py-2">Type</th>
-                                                                        <th class="text-center px-2 py-2">Bags</th>
-                                                                        <th class="text-center px-2 py-2">Volume/Bag</th>
-                                                                        <th class="text-center px-2 py-2">Total</th>
-                                                                        <th class="text-center px-2 py-2">Date</th>
-                                                                        <th class="text-center px-2 py-2">Time</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    @foreach($batch->donations as $donation)
-                                                                        <tr>
-                                                                            <td style="white-space: normal;">
-                                                                                <small>{{ $donation->user->first_name }}
-                                                                                    {{ $donation->user->last_name }}</small>
-                                                                            </td>
-                                                                            <td class="text-center">
-                                                                                <span
-                                                                                    class="badge badge-{{ $donation->donation_method === 'walk_in' ? 'primary' : 'success' }} donation-type-badge">
-                                                                                    {{ $donation->donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection' }}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td class="text-center">
-                                                                                <small>{{ $donation->number_of_bags }}</small>
-                                                                            </td>
-                                                                            <td class="text-center"
-                                                                                style="white-space: normal; font-size: 0.8rem;">
-                                                                                <small>{{ $donation->formatted_bag_volumes }}</small>
-                                                                            </td>
-                                                                            <td class="text-center">
-                                                                                <small>{{ $donation->total_volume }}ml</small>
-                                                                            </td>
-                                                                            <td class="text-center" style="white-space: nowrap;">
-                                                                                <small>
-                                                                                    @if($donation->donation_date)
-                                                                                        {{ $donation->donation_date->format('M d, Y') }}
-                                                                                    @elseif($donation->scheduled_pickup_date)
-                                                                                        {{ $donation->scheduled_pickup_date->format('M d, Y') }}
-                                                                                    @else
-                                                                                        -
-                                                                                    @endif
-                                                                            </td>
-                                                                            <td>
-                                                                                @if($donation->availability)
-                                                                                    {{ $donation->availability->formatted_time }}
-                                                                                @elseif($donation->donation_time)
-                                                                                    {{ \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
-                                                                                @elseif($donation->scheduled_pickup_time)
-                                                                                    {{ $donation->scheduled_pickup_time }}
-                                                                                @else
-                                                                                    -
-                                                                                @endif
-                                                                            </td>
-                                                                        </tr>
-                                                                    @endforeach
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                        @if($batch->notes)
-                                                            <div class="mt-3">
-                                                                <h6>Notes:</h6>
-                                                                <p class="text-muted">{{ $batch->notes }}</p>
-                                                            </div>
-                                                        @endif
-                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -641,15 +503,14 @@
             <!-- Section 3: Dispensed Breastmilk -->
             <div class="tab-pane fade{{ request()->get('status') == 'dispensed' ? ' show active' : '' }}" id="dispensed"
                 role="tabpanel">
-                <div class="card mt-3 shadow-sm rounded-lg border-0">
-                    <div class="card-header bg-success text-white rounded-top">
+                <div class="card card-standard">
+                    <div class="card-header bg-success text-white">
                         <h5 class="mb-0"><i class="fas fa-hand-holding-medical"></i> Dispensed Breastmilk</h5>
-                        <small class="text-white">Records of all dispensed breastmilk to recipients.</small>
                     </div>
                     <div class="card-body">
                         @if($dispensedMilk->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped align-middle shadow-sm rounded">
+                            <div class="table-container-standard">
+                                <table class="table table-standard table-bordered table-striped align-middle">
                                     <thead class="table-success">
                                         <tr>
                                             <th class="text-center px-2 py-2">Guardian</th>
@@ -663,17 +524,16 @@
                                     <tbody>
                                         @foreach($dispensedMilk as $dispensed)
                                             <tr>
-                                                <td style="white-space: normal;">
+                                                <td style="white-space: normal;" data-label="Guardian">
                                                     <strong>{{ $dispensed->guardian->first_name }}
                                                         {{ $dispensed->guardian->last_name }}</strong>
                                                 </td>
-                                                <td style="white-space: normal;">
+                                                <td style="white-space: normal;" data-label="Recipient">
                                                     <strong>{{ $dispensed->recipient->first_name }}
                                                         {{ $dispensed->recipient->last_name }}</strong><br>
-                                                    <small class="text-muted">{{ $dispensed->recipient->getCurrentAgeInMonths() }}
-                                                        mos</small>
+                                                    <small class="text-muted">{{ $dispensed->recipient->getFormattedAge() }}</small>
                                                 </td>
-                                                <td style="white-space: normal; font-size: 0.85rem;">
+                                                <td style="white-space: normal; font-size: 0.85rem;" data-label="Source">
                                                     @php
                                                         // Prefer donor name(s) from sourceDonations (unpasteurized),
                                                         // otherwise use batch numbers from sourceBatches (pasteurized).
@@ -708,14 +568,14 @@
 
                                                     <small><strong>{{ $dispensed->source_name }}</strong></small>
                                                 </td>
-                                                <td class="text-center">
+                                                <td class="text-center" data-label="Volume">
                                                     <span
-                                                        class="badge badge-success volume-badge">{{ $dispensed->volume_dispensed }}ml</span>
+                                                        class="badge badge-success volume-badge">{{ $dispensed->formatted_volume_dispensed }}ml</span>
                                                 </td>
-                                                <td class="text-center" style="white-space: nowrap;">
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Date">
                                                     <small>{{ $dispensed->formatted_date }}</small>
                                                 </td>
-                                                <td class="text-center" style="white-space: nowrap;">
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Time">
                                                     <small>{{ $dispensed->formatted_time }}</small>
                                                 </td>
                                             </tr>
@@ -776,6 +636,35 @@
             </div>
         </div>
     </div>
+
+    <!-- Batch Details Modal -->
+    <div class="modal fade" id="batchDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-vial"></i> <span id="batchModalTitle">Batch Details</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="batchDetailsContent">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Loading batch details...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Close container-fluid --}}
 
 @endsection
 
@@ -920,30 +809,125 @@
                 });
         }
 
-        function toggleBatchDetails(batchId) {
-            const detailsRow = document.getElementById('details-' + batchId);
-            const icon = document.getElementById('icon-' + batchId);
+        function viewBatchDetails(batchId) {
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('batchDetailsModal'));
+            modal.show();
 
-            if (detailsRow.classList.contains('d-none')) {
-                detailsRow.classList.remove('d-none');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            } else {
-                detailsRow.classList.add('d-none');
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
+            // Fetch batch details
+            fetch(`{{ url('/admin/inventory/batch') }}/${batchId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load batch details');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update modal title
+                    document.getElementById('batchModalTitle').textContent = `${data.batch_number} - Details`;
+
+                    // Build the content
+                    let content = '';
+
+                    if (data.notes) {
+                        content += `
+                                            <div class="alert alert-info mb-4">
+                                                <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
+                                                <p class="mb-0">${escapeHtml(data.notes)}</p>
+                                            </div>
+                                        `;
+                    }
+
+                    content += `
+                                        <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${data.donations.length})</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-striped align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="text-center">Donor</th>
+                                                        <th class="text-center">Type</th>
+                                                        <th class="text-center">Bags</th>
+                                                        <th class="text-center">Volume/Bag</th>
+                                                        <th class="text-center">Total Volume</th>
+                                                        <th class="text-center">Date</th>
+                                                        <th class="text-center">Time</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                    `;
+
+                    data.donations.forEach(donation => {
+                        const donorName = donation.user ? `${donation.user.first_name} ${donation.user.last_name}` : 'Unknown';
+                        const donationType = donation.donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection';
+                        const badgeClass = donation.donation_method === 'walk_in' ? 'badge-primary' : 'badge-success';
+                        const date = donation.donation_date || donation.scheduled_pickup_date || '-';
+                        const time = donation.donation_time || donation.scheduled_pickup_time || '-';
+
+                        content += `
+                                            <tr>
+                                                <td>${escapeHtml(donorName)}</td>
+                                                <td class="text-center">
+                                                    <span class="badge ${badgeClass}">${donationType}</span>
+                                                </td>
+                                                <td class="text-center">${donation.number_of_bags}</td>
+                                                <td class="text-center" style="font-size: 0.85rem;">${escapeHtml(donation.bag_volumes || '-')}</td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-info">${donation.total_volume}ml</span>
+                                                </td>
+                                                <td class="text-center">${formatDate(date)}</td>
+                                                <td class="text-center">${formatTime(time)}</td>
+                                            </tr>
+                                        `;
+                    });
+
+                    content += `
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    `;
+
+                    document.getElementById('batchDetailsContent').innerHTML = content;
+                })
+                .catch(error => {
+                    document.getElementById('batchDetailsContent').innerHTML = `
+                                        <div class="alert alert-danger">
+                                            <i class="fas fa-exclamation-triangle"></i> Error loading batch details: ${escapeHtml(error.message)}
+                                        </div>
+                                    `;
+                });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString || dateString === '-') return '-';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch (e) {
+                return dateString;
             }
         }
 
-        function viewBatchDetails(batchId) {
-            fetch(`{{ url('/admin/inventory/batch') }}/${batchId}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Batch details:', data);
-                })
-                .catch(error => {
-                    alert('Error loading batch details: ' + error.message);
-                });
+        function formatTime(timeString) {
+            if (!timeString || timeString === '-') return '-';
+            try {
+                // Handle both full datetime and time-only strings
+                let date;
+                if (timeString.includes('T') || timeString.includes(' ')) {
+                    date = new Date(timeString);
+                } else {
+                    date = new Date(`2000-01-01T${timeString}`);
+                }
+                return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            } catch (e) {
+                return timeString;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function refreshInventoryStats() {

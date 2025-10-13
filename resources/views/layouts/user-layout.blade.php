@@ -8,7 +8,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>@yield('title', 'User Dashboard')</title>
+    
+    <!-- Preload critical images to prevent FOUC (Flash of Unstyled Content) -->
+    <link rel="preload" as="image" href="{{ asset('hmblsc-logo.jpg') }}" fetchpriority="high">
+    <link rel="preload" as="image" href="{{ asset('jrbgh-logo.png') }}" fetchpriority="high">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome (needed for many icons used across the app) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Load Quicksand (body) and Merriweather (headings) from Google Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Merriweather:wght@400;700;900&display=swap"
@@ -19,6 +26,8 @@
     <link href="{{ asset('css/ui-components.css') }}" rel="stylesheet">
     <!-- Responsive & Adaptive Styles -->
     <link href="{{ asset('css/responsive.css') }}?v={{ time() }}" rel="stylesheet">
+    <!-- Global Tab Styles - Horizontal Alignment -->
+    <link href="{{ asset('css/global-tabs.css') }}" rel="stylesheet">
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -116,6 +125,15 @@
 
         .modal-dialog-centered {
             min-height: calc(100% - 3.5rem);
+        }
+
+        /* Fix modal z-index to be above Facebook widgets and other elements */
+        .modal { 
+            z-index: 12000 !important; 
+        }
+        
+        .modal-backdrop { 
+            z-index: 11999 !important; 
         }
 
         .modal-content {
@@ -314,6 +332,16 @@
             display: flex;
             flex-direction: column;
         }
+        
+        /* Smooth fade-in animation for sidebar logo */
+        @keyframes fadeInSidebarLogo {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
 
         .sidebar h3 {
             margin-top: 0;
@@ -358,7 +386,7 @@
         /* Content - responsive margins handled by responsive.css */
         .content {
             flex: 1;
-            padding: 20px;
+            padding: 12px; /* reduced for compact layout */
             min-height: 100vh;
             box-sizing: border-box;
         }
@@ -392,7 +420,7 @@ $defaultTitle = $titles[$routeName] ?? 'User';
 
         <div style="margin-bottom: 16px; text-align: center; display: flex; flex-direction: column; align-items: center;">
             <!-- HMBLSC Logo -->
-            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block;">
+            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block; opacity: 0; animation: fadeInSidebarLogo 0.4s ease-in 0.1s forwards;">
             <!-- User Name -->
             <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0; color: #ecf0f1;">{{ session('account_name', 'User') }}</h3>
         </div>

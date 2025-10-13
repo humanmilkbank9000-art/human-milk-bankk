@@ -22,7 +22,12 @@
                 <td>{{ $row['guardian'] ?? '-' }}</td>
                 <td>{{ $row['recipient'] ?? '-' }}</td>
                 <td style="font-size: 10px;">{{ $row['source'] ?? '-' }}</td>
-                <td class="text-end">{{ number_format((float) ($row['volume'] ?? 0), 2) }}</td>
+                <td class="text-end">
+                    @php
+                        $vol = (float) ($row['volume'] ?? 0);
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </td>
                 <td style="text-align: center;">{{ $row['date'] ?? '-' }}</td>
                 <td style="text-align: center;">{{ $row['time'] ?? '-' }}</td>
             </tr>
@@ -35,7 +40,14 @@
     <tfoot>
         <tr>
             <td colspan="4"><strong>Grand Total Dispensed</strong></td>
-            <td class="text-end"><strong>{{ number_format((float) $total, 2) }}</strong></td>
+            <td class="text-end">
+                <strong>
+                    @php
+                        $vol = (float) $total;
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </strong>
+            </td>
             <td colspan="2"></td>
         </tr>
     </tfoot>

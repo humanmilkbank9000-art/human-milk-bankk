@@ -17,7 +17,12 @@
             <tr>
                 <td style="text-align: center;">{{ $index + 1 }}</td>
                 <td>{{ $row['identifier'] ?? '-' }}</td>
-                <td class="text-end">{{ number_format((float) ($row['volume'] ?? 0), 2) }}</td>
+                <td class="text-end">
+                    @php
+                        $vol = (float) ($row['volume'] ?? 0);
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </td>
                 <td>{{ $row['date'] ?? '-' }}</td>
             </tr>
         @empty
@@ -29,7 +34,14 @@
     <tfoot>
         <tr>
             <td colspan="3"><strong>Grand Total</strong></td>
-            <td class="text-end"><strong>{{ number_format((float) $total, 2) }}</strong></td>
+            <td class="text-end">
+                <strong>
+                    @php
+                        $vol = (float) $total;
+                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+                    @endphp
+                </strong>
+            </td>
         </tr>
     </tfoot>
 </table>

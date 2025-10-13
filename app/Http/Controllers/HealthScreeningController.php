@@ -10,9 +10,17 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\SystemAlert;
 use App\Models\Admin;
+use App\Services\HealthScreeningService;
+use App\Http\Requests\StoreHealthScreeningRequest;
 
 class HealthScreeningController extends Controller
 {
+    protected HealthScreeningService $service;
+
+    public function __construct(HealthScreeningService $service)
+    {
+        $this->service = $service;
+    }
     // ==================== USER ====================
 
     // Show user health screening form
@@ -36,72 +44,18 @@ class HealthScreeningController extends Controller
     }
 
     // Store user health screening
-    public function store(Request $request)
+    public function store(StoreHealthScreeningRequest $request)
     {
         try {
             $user_id = Session::get('account_id');
-
             if (!$user_id) {
-                return response()->json([
-                    'error' => 'User not logged in'
-                ], 401);
+                return response()->json(['error' => 'User not logged in'], 401);
             }
 
-            if (HealthScreening::where('user_id', $user_id)->exists()) {
-                return response()->json([
-                    'error' => 'You have already submitted your health screening.'
-                ], 400);
-            }
-
-            // Validation rules
-            $rules = [
-                'civil_status'   => 'required|in:single,married,divorced,widowed',
-                'occupation'     => 'required|string',
-                'type_of_donor'  => 'required|in:community,private,employee,network_office_agency',
-            ];
-
-            $requiredYesNo = [
-                'medical_history_01', 'medical_history_03', 'medical_history_07',
-                'medical_history_09', 'medical_history_14', 'medical_history_15',
-                'sexual_history_01', 'sexual_history_02', 'sexual_history_04',
-                'donor_infant_01', 'donor_infant_02', 'donor_infant_03'
-            ];
-
-            foreach ($requiredYesNo as $field) {
-                $rules[$field] = 'required|in:yes,no';
-            }
-
-            $optionalFields = [
-                'medical_history_02', 'medical_history_04', 'medical_history_05',
-                'medical_history_06', 'medical_history_08', 'medical_history_10',
-                'medical_history_11', 'medical_history_12', 'medical_history_13',
-                'sexual_history_03', 'donor_infant_04', 'donor_infant_05'
-            ];
-
-            foreach ($optionalFields as $field) {
-                $rules[$field] = 'nullable|string';
-            }
-
-            $validated = $request->validate($rules);
-
-            $data = array_merge($validated, [
-                'user_id'       => $user_id,
-                'infant_id'     => $request->infant_id,
-                'status'        => 'pending',
-                'date_accepted' => null,
-                'date_declined' => null,
-            ]);
-
-            HealthScreening::create($data);
-
-            // Notify admins about new health screening submission
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                $admin->notify(new SystemAlert('New Health Screening', 'A user submitted a health screening for review.'));
-            }
+            $screening = $this->service->create($request->validated(), $user_id);
 
             return response()->json([
-                'message'  => 'Health screening submitted successfully!',
+                'message' => 'Health screening submitted successfully!',
                 'redirect' => route('user.health-screening')
             ]);
 
@@ -128,66 +82,73 @@ class HealthScreeningController extends Controller
             ->with('user', 'infant')
             ->get();
 
-        return view('admin.health-screening', compact('healthScreenings', 'status'));
+        // Get counts for each status
+        $pendingCount = HealthScreening::where('status', 'pending')->count();
+        $acceptedCount = HealthScreening::where('status', 'accepted')->count();
+        $declinedCount = HealthScreening::where('status', 'declined')->count();
+
+        return view('admin.health-screening', compact('healthScreenings', 'status', 'pendingCount', 'acceptedCount', 'declinedCount'));
     }
 
     public function accept($id)
     {
         $screening = HealthScreening::findOrFail($id);
-        $screening->status = 'accepted';
-        $screening->date_accepted = now();
-        
-        // Save admin comments if provided
-        if (request()->has('comments') && !empty(request('comments'))) {
-            $screening->admin_notes = request('comments');
-        }
-        
-        $screening->save();
+        $comments = request()->input('comments');
 
-        // Notify the user
-        $user = \App\Models\User::find($screening->user_id);
-        if ($user) {
-            $user->notify(new SystemAlert('Health Screening Accepted', 'Your health screening has been accepted. You may now donate.'));
-        }
+        try {
+            $this->service->accept($screening, $comments);
 
-        // Check if it's an AJAX request
-        if (request()->wantsJson() || request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Health screening accepted successfully.'
-            ]);
-        }
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Health screening accepted successfully.']);
+            }
 
-        return redirect()->back()->with('success', 'Health screening accepted.');
+            return redirect()->back()->with('success', 'Health screening accepted.');
+        } catch (\Exception $e) {
+            Log::error('HealthScreening accept error: ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function reject($id)
     {
         $screening = HealthScreening::findOrFail($id);
-        $screening->status = 'declined';
-        $screening->date_declined = now();
-        
-        // Save admin comments if provided
-        if (request()->has('comments') && !empty(request('comments'))) {
-            $screening->admin_notes = request('comments');
-        }
-        
-        $screening->save();
+        $comments = request()->input('comments');
 
-        // Notify the user
-        $user = \App\Models\User::find($screening->user_id);
-        if ($user) {
-            $user->notify(new SystemAlert('Health Screening Declined', 'Your health screening has been declined.'));
-        }
+        try {
+            $this->service->reject($screening, $comments);
 
-        // Check if it's an AJAX request
-        if (request()->wantsJson() || request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Health screening declined successfully.'
-            ]);
-        }
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Health screening declined successfully.']);
+            }
 
-        return redirect()->back()->with('success', 'Health screening rejected.');
+            return redirect()->back()->with('success', 'Health screening rejected.');
+        } catch (\Exception $e) {
+            Log::error('HealthScreening reject error: ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function undoDecline($id)
+    {
+        $screening = HealthScreening::findOrFail($id);
+        $comments = request()->input('comments');
+
+        try {
+            $this->service->undoDecline($screening, $comments);
+
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Health screening has been reversed and is now accepted.']);
+            }
+
+            return redirect()->back()->with('success', 'Health screening has been accepted.');
+        } catch (\Exception $e) {
+            Log::error('HealthScreening undoDecline error: ' . $e->getMessage());
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            }
+            
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 }

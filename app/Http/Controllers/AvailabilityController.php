@@ -2,112 +2,77 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAvailabilityRequest;
+use App\Services\AvailabilityService;
 use Illuminate\Http\Request;
-use App\Models\Availability;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AvailabilityController extends Controller
 {
-    public function store(Request $request)
+    protected AvailabilityService $service;
+
+    public function __construct(AvailabilityService $service)
     {
-        $request->validate([
-            'date' => 'required|date|after_or_equal:today',
-            'time' => 'required|array|min:1',
-            'time.*' => 'required|date_format:H:i',
-        ]);
+        $this->service = $service;
+    }
 
-        $date = $request->date;
-        $savedSlots = [];
-        $duplicateSlots = [];
+    public function store(StoreAvailabilityRequest $request)
+    {
+        $data = $request->validated();
 
-        foreach ($request->time as $startTime) {
-            $endTime = Carbon::createFromFormat('H:i', $startTime)->addHour()->format('H:i');
-            
-            // Check for existing slot to prevent duplicates
-            $existing = Availability::where('available_date', $date)
-                ->where('start_time', $startTime)
-                ->first();
-                
-            if ($existing) {
-                $duplicateSlots[] = $startTime . ' - ' . $endTime;
-                continue;
+        try {
+            $result = $this->service->createSlots($data['date'], $data['time']);
+
+            $message = 'Availability saved successfully!';
+            if (!empty($result['savedSlots'])) {
+                $message .= ' Slots added: ' . implode(', ', $result['savedSlots']) . '.';
+            }
+            if (!empty($result['duplicateSlots'])) {
+                $message .= ' Note: Some slots already existed: ' . implode(', ', $result['duplicateSlots']) . '.';
             }
 
-            // Create new availability slot
-            Availability::create([
-                'available_date' => $date,
-                'start_time' => $startTime,
-                'end_time' => $endTime,
-                'status' => 'available'
-            ]);
-            
-            $savedSlots[] = $startTime . ' - ' . $endTime;
-        }
-
-        // Build success message
-        $message = 'Availability saved successfully!';
-        if (!empty($savedSlots)) {
-            $message .= ' Slots added: ' . implode(', ', $savedSlots) . '.';
-        }
-        if (!empty($duplicateSlots)) {
-            $message .= ' Note: Some slots already existed: ' . implode(', ', $duplicateSlots) . '.';
-        }
-
-        // Return JSON response for AJAX compatibility
-        if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'savedSlots' => $savedSlots,
-                'duplicateSlots' => $duplicateSlots
+                'savedSlots' => $result['savedSlots'],
+                'duplicateSlots' => $result['duplicateSlots'],
             ]);
+        } catch (\Exception $e) {
+            Log::error('Availability store error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while saving availability. Please try again.'
+            ], 500);
         }
-
-        // Fallback to redirect for non-AJAX requests
-        return redirect()->back()->with('success', $message);
     }
 
     // For future appointment system - get available slots for a date
     public function getAvailableSlots(Request $request)
     {
         $date = $request->get('date');
-        
         if (!$date) {
             return response()->json(['error' => 'Date required'], 400);
         }
 
-        $slots = Availability::forDate($date)
-            ->available()
-            ->future()
-            ->orderByTime()
-            ->get();
-        
+        $slots = $this->service->getAvailableSlotsForDate($date);
+
         return response()->json([
             'date' => $date,
-            'available_slots' => $slots->map(function ($slot) {
-                return [
-                    'id' => $slot->id,
-                    'start_time' => $slot->start_time,
-                    'end_time' => $slot->end_time,
-                    'time_slot' => $slot->time_slot,
-                    'formatted_time' => $slot->formatted_time
-                ];
-            })
+            'available_slots' => $slots,
         ]);
     }
 
     // For future use - remove availability slot
     public function destroy($id)
     {
-        $availability = Availability::findOrFail($id);
-        
-        // Check if slot is booked before deleting
-        if ($availability->status === 'booked') {
-            return redirect()->back()->with('error', 'Cannot delete a booked time slot!');
+        try {
+            $this->service->deleteSlot((int) $id);
+            return redirect()->back()->with('success', 'Time slot removed successfully!');
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            Log::error('Availability delete error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to remove time slot');
         }
-        
-        $availability->delete();
-        
-        return redirect()->back()->with('success', 'Time slot removed successfully!');
     }
 }

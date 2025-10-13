@@ -22,7 +22,7 @@
         <div class="mb-3">
             <label for="bags_home" class="form-label">Number of Bags:</label>
             <input type="number" id="bags_home" name="number_of_bags" class="form-control" min="1" max="20"
-                onchange="generateBagVolumeFields()">
+                oninput="generateBagVolumeFields()">
         </div>
         <div id="bag-volumes-container" style="display: none;">
             <label class="form-label">Volume for each bag (ml):</label>
