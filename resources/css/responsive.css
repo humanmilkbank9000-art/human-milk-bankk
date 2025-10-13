@@ -136,7 +136,7 @@ body {
     left: 0;
     top: 0;
     height: 100vh;
-    background: linear-gradient(135deg, #ffd1e3 0%, #ffc1de 100%);
+    background-color: #2c3e50;
     color: white;
     z-index: 1000;
     overflow-y: auto;
