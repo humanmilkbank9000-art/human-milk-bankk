@@ -678,7 +678,7 @@
                 Please log in to access your account or to register if you have not.
             </p>
             <p class="app-subtitle">
-                Version 1.0.0.0
+                Version 3.0.0.0
             </p>
         </div>
 
