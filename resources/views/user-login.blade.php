@@ -675,10 +675,10 @@
             </h1>
 
             <p class="app-subtitle">
-                Please log in to access your account or to register if you have not 11111.
+                Please log in to access your account or to register if you have not.
             </p>
             <p class="app-subtitle">
-                Version 1.0.0
+                Version 1.0.0.0
             </p>
         </div>
 
