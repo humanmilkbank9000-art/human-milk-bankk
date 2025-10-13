@@ -76,8 +76,8 @@
             line-height: var(--line-height-normal);
         }
 
-        /* Sidebar - Styles handled by responsive.css */
-        .sidebar {
+        /*  - Styles handled by responsive.css */
+        . {
             background-color: #2c3e50;
             color: #fff;
             padding: 20px;
@@ -86,8 +86,8 @@
             flex-direction: column;
         }
         
-        /* Smooth fade-in animation for sidebar logo */
-        @keyframes fadeInSidebarLogo {
+        /* Smooth fade-in animation for  logo */
+        @keyframes fadeInLogo {
             from {
                 opacity: 0;
             }
@@ -96,13 +96,13 @@
             }
         }
 
-        .sidebar h3 {
+        . h3 {
             margin-top: 0;
             margin-bottom: 20px;
             font-size: 1.2rem;
         }
 
-        .sidebar a {
+        . a {
             color: #ecf0f1;
             text-decoration: none;
             padding: 10px 0;
@@ -110,17 +110,17 @@
             transition: background 0.3s;
         }
 
-        .sidebar a:hover {
+        . a:hover {
             background-color: #34495e;
             border-radius: 4px;
         }
 
-        .sidebar a.active {
+        . a.active {
             background-color: #3498db;
             border-radius: 4px;
         }
 
-        .sidebar hr {
+        . hr {
             border: 0.5px solid #7f8c8d;
             margin: 20px 0;
         }
@@ -436,7 +436,7 @@
         /* Keep tables responsive but avoid forcing horizontal scroll unless necessary */
         table { width: 100%; table-layout: auto; }
 
-        /* Ensure Bootstrap dropdowns and popovers show above the fixed header/sidebar */
+        /* Ensure Bootstrap dropdowns and popovers show above the fixed header/ */
         .dropdown-menu,
         .popover,
         .tooltip {
@@ -493,14 +493,14 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
     @endphp
     @include('partials.header')
 
-    <!-- Sidebar -->
-    <div class="sidebar">
+    <!--  -->
+    <div class="">
         <!-- Bootstrap Icons CDN -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
         <div style="margin-bottom: 16px; text-align: center; display: flex; flex-direction: column; align-items: center;">
             <!-- HMBLSC Logo -->
-            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block; opacity: 0; animation: fadeInSidebarLogo 0.4s ease-in 0.1s forwards;">
+            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block; opacity: 0; animation: fadeInLogo 0.4s ease-in 0.1s forwards;">
             <!-- Admin Name -->
             <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0; color: #ecf0f1;">{{ session('account_name', 'Admin') }}</h3>
         </div>
@@ -515,7 +515,7 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
             </a>
             <a href="{{ route('admin.donation') }}"
                 class="{{ request()->routeIs('admin.donation') ? 'active' : '' }}">
-                <i class="bi bi-droplet-half me-2 icon"></i> <span>Breastmilk Donation</span>
+                <i class="bi bi-droplet-half me-2 icon"></i> <span>Dante Loves Arabe</span>
             </a>
             <a href="{{ route('admin.request') }}"
                 class="{{ request()->routeIs('admin.request') ? 'active' : '' }}">
@@ -549,8 +549,8 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
         <i class="bi bi-list" style="font-size: 1.5rem;"></i>
     </button>
 
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <!--  Overlay for Mobile -->
+    <div class="-overlay" id="Overlay"></div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -559,26 +559,26 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
         // Mobile menu toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('mobileMenuToggle');
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
+            const  = document.querySelector('.');
+            const overlay = document.getElementById('Overlay');
             
-            if (menuToggle && sidebar && overlay) {
+            if (menuToggle &&  && overlay) {
                 menuToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
+                    .classList.toggle('active');
                     overlay.classList.toggle('active');
                 });
                 
                 overlay.addEventListener('click', function() {
-                    sidebar.classList.remove('active');
+                    .classList.remove('active');
                     overlay.classList.remove('active');
                 });
                 
-                // Close sidebar when a link is clicked (mobile only)
-                const sidebarLinks = sidebar.querySelectorAll('a');
-                sidebarLinks.forEach(link => {
+                // Close  when a link is clicked (mobile only)
+                const Links = .querySelectorAll('a');
+                Links.forEach(link => {
                     link.addEventListener('click', function() {
                         if (window.innerWidth < 768) {
-                            sidebar.classList.remove('active');
+                            .classList.remove('active');
                             overlay.classList.remove('active');
                         }
                     });

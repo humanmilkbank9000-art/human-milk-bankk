@@ -7,7 +7,7 @@
     /* Modal fixes for visibility, z-index, centering, and responsiveness */
     .modal {
       z-index: 1055 !important;
-      /* Above header/sidebar */
+      /* Above header/ */
       display: flex !important;
       align-items: center;
       justify-content: center;
