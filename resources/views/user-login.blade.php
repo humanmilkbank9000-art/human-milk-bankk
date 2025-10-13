@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Human Milk Bank</title>
+
+    <!-- Preload critical images to prevent FOUC -->
+    <link rel="preload" as="image" href="{{ asset('hmblsc-logo.jpg') }}" fetchpriority="high">
+
     <!-- Load Quicksand (headings) and Merriweather (body) from Google Fonts as per design system -->
     <link
         href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Merriweather:wght@400;500&display=swap"
@@ -83,6 +87,19 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            /* Prevent FOUC - smooth fade in */
+            opacity: 0;
+            animation: fadeInLoginLogo 0.4s ease-in forwards;
+        }
+
+        @keyframes fadeInLoginLogo {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .welcome-text {
@@ -307,24 +324,54 @@
             }
 
             .welcome-panel {
-                padding: 2rem 1.75rem;
+                padding: 1.5rem 1.25rem;
+                /* More compact */
             }
 
             .form-panel {
-                padding: 2rem 1.75rem;
+                padding: 1.5rem 1.25rem;
+                /* More compact */
             }
 
             .logo {
-                width: 90px;
-                height: 90px;
+                width: 80px;
+                /* Smaller */
+                height: 80px;
+            }
+
+            .logo-container {
+                margin-bottom: 0.75rem;
+                /* Reduced */
+            }
+
+            .welcome-text {
+                font-size: 0.85rem;
+                margin-bottom: 0.5rem;
             }
 
             .app-title {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
+                /* Reduced */
+                margin-bottom: 0.875rem;
+            }
+
+            .app-subtitle {
+                font-size: 0.875rem;
             }
 
             .form-title {
-                font-size: 1.6rem;
+                font-size: 1.5rem;
+                /* Reduced */
+            }
+
+            .form-header {
+                margin-bottom: 1rem;
+                /* Reduced */
+            }
+
+            .form-group {
+                margin-bottom: 0.875rem;
+                /* Tighter */
             }
         }
 
@@ -613,7 +660,8 @@
         <div class="welcome-panel">
             <div class="logo-container">
                 <div class="logo">
-                    <img src="{{ asset('hmblsc-logo.jpg') }}" alt="Human Milk Bank Logo">
+                    <img src="{{ asset('hmblsc-logo.jpg') }}" alt="Human Milk Bank Logo" width="120" height="120"
+                        loading="eager">
                 </div>
             </div>
 
@@ -627,10 +675,10 @@
             </h1>
 
             <p class="app-subtitle">
-                Log in to access the dashboard.
+                Please log in to access your account or to register if you have not.
             </p>
             <p>
-                Version 6.0.0 
+                Version 1.0.0
             </p>
         </div>
 
@@ -661,9 +709,9 @@
 
                 <!-- Contact Number Field -->
                 <div class="form-group">
-                    <label for="phone" class="form-label">Contact Number / Username</label>
+                    <label for="phone" class="form-label">Contact Number</label>
                     <input type="text" id="phone" name="phone" class="form-input @error('phone') error @enderror"
-                        placeholder="Enter your number " required value="{{ old('phone') }}" maxlength="20">
+                        placeholder="Enter your phone number " required value="{{ old('phone') }}" maxlength="20">
                     @error('phone')
                         <span class="error-text">{{ $message }}</span>
                     @enderror
@@ -741,13 +789,13 @@
                     // Remove special characters but allow letters, numbers, and underscore
                     let sanitizedValue = value.replace(/[^a-zA-Z0-9_]/g, '');
                     e.target.value = sanitizedValue;
-                    
+
                     // Show red text while typing (indicates potential invalid username)
                     e.target.classList.add('limit-reached');
-                    
+
                     // Check if username exists in database (debounced)
                     clearTimeout(window.usernameDebounce);
-                    window.usernameDebounce = setTimeout(function() {
+                    window.usernameDebounce = setTimeout(function () {
                         checkUsernameExists(sanitizedValue, e.target);
                     }, 300); // Wait 300ms after user stops typing
                 }
@@ -768,19 +816,19 @@
                     },
                     body: JSON.stringify({ username: username })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.exists) {
-                        // Username exists - remove red styling
-                        inputElement.classList.remove('limit-reached');
-                    } else {
-                        // Username doesn't exist - keep red styling
-                        inputElement.classList.add('limit-reached');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking username:', error);
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            // Username exists - remove red styling
+                            inputElement.classList.remove('limit-reached');
+                        } else {
+                            // Username doesn't exist - keep red styling
+                            inputElement.classList.add('limit-reached');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking username:', error);
+                    });
             }
 
 

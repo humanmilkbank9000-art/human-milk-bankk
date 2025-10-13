@@ -101,6 +101,18 @@ class BreastmilkRequest extends Model
         return Carbon::parse($this->request_date)->format('M d, Y') . ' at ' . Carbon::parse($this->request_time)->format('g:i A');
     }
 
+    public function getFormattedVolumeRequestedAttribute()
+    {
+        $vol = (float) $this->volume_requested;
+        return $vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+    }
+
+    public function getFormattedVolumeDispensedAttribute()
+    {
+        $vol = (float) $this->volume_dispensed;
+        return $vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+    }
+
     // Mark as approved
     public function approve($adminId, $volumeRequested = null, $notes = null)
     {
