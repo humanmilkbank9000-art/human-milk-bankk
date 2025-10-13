@@ -677,6 +677,9 @@
             <p class="app-subtitle">
                 Please log in to access your account or to register, Hello World.
             </p>
+            <p class="app-subtitle">
+                Version 3.
+            </p>
         </div>
 
         <!-- Right Panel - Login Form -->
