@@ -679,7 +679,6 @@
             </p>
             <p>
                 <style>
-                    color: red;
                     font-weight: bold;    
                 </style>
                 VERSION 1.0.0
