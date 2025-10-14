@@ -524,7 +524,7 @@
 
             <div class="form-group">
                 <label for="contact_number" class="form-label">Contact Number</label>
-                <input type="text" id="contact_number" name="contact_number" class="form-input" maxlength="11"
+                <input type="text" id="contact_number" name="contact_number" class="form-input"
                     value="{{ old('contact_number', $userData['contact_number'] ?? '') }}" required placeholder="09XXXXXXXXX" pattern="[0-9]{11}">
                 <div id="contact-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                     Contact number must be exactly 11 digits.
