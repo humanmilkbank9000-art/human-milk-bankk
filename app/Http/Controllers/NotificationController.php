@@ -62,4 +62,32 @@ class NotificationController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function delete($id)
+    {
+        $notifiable = $this->service->resolveNotifiable();
+        if (!$notifiable) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $result = $this->service->deleteNotification($notifiable, $id);
+        
+        if (!$result) {
+            return response()->json(['error' => 'Notification not found'], 404);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Notification deleted successfully']);
+    }
+
+    public function deleteAll()
+    {
+        $notifiable = $this->service->resolveNotifiable();
+        if (!$notifiable) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $this->service->deleteAllNotifications($notifiable);
+
+        return response()->json(['success' => true, 'message' => 'All notifications deleted successfully']);
+    }
 }

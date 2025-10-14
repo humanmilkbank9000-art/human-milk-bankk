@@ -16,6 +16,23 @@
         background-color: #e9ecef !important;
     }
 
+    .notification-delete-btn {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: #dc3545;
+    }
+
+    .notification-item:hover .notification-delete-btn {
+        opacity: 1;
+    }
+
+    .notification-delete-btn:hover {
+        background-color: #fee;
+    }
+
     #notificationDropdown {
         box-sizing: border-box;
     }
@@ -52,7 +69,10 @@
         style="width:320px; max-width:90vw; max-height:420px; overflow-y:auto; overflow-x:hidden;">
         <div class="d-flex justify-content-between align-items-center px-2 mb-2">
             <strong>Notifications</strong>
-            <button class="btn btn-sm btn-link" id="markAllReadBtn">Mark all as read</button>
+            <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-link" id="markAllReadBtn">Mark all as read</button>
+                <button class="btn btn-sm btn-link text-danger" id="deleteAllNotificationsBtn">Delete all</button>
+            </div>
         </div>
         <div id="notificationList">
             <div class="text-center text-muted py-3">Loading...</div>
@@ -125,6 +145,9 @@
                             <div class="small text-muted" style="word-wrap:break-word; overflow-wrap:break-word; line-height:1.4;">${message}</div>
                             <div class="small text-muted" style="font-size:0.75rem; margin-top:2px;">${time}</div>
                         </div>
+                        <button class="notification-delete-btn" onclick="event.stopPropagation(); deleteNotification('${n.id}')" title="Delete notification">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 `;
             }).join('');
@@ -178,6 +201,57 @@
         window.location.href = redirectUrl;
     }
 
+    // Delete individual notification
+    async function deleteNotification(notificationId) {
+        const result = await Swal.fire({
+            title: 'Delete Notification?',
+            text: 'This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`{{ url('/notifications') }}/${notificationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Notification has been deleted.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    fetchUnreadCount();
+                    const dropdown = document.getElementById('notificationDropdown');
+                    const isExpanded = dropdown.style.maxHeight === '80vh';
+                    fetchNotifications(isExpanded ? 50 : 10);
+                } else {
+                    throw new Error(data.message || 'Failed to delete notification');
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to delete notification. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         fetchUnreadCount();
 
@@ -217,6 +291,60 @@
                     dropdown.style.maxHeight = '80vh';
                     this.textContent = 'View less';
                     fetchNotifications(50);
+                }
+            });
+        }
+
+        // Delete All Notifications button
+        const deleteAllBtn = document.getElementById('deleteAllNotificationsBtn');
+        if (deleteAllBtn) {
+            deleteAllBtn.addEventListener('click', async function () {
+                const result = await Swal.fire({
+                    title: 'Delete All Notifications?',
+                    text: 'This will permanently delete all your notifications. This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete all',
+                    cancelButtonText: 'Cancel'
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch('{{ route('notifications.delete_all') }}', {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            await Swal.fire({
+                                title: 'Deleted!',
+                                text: 'All notifications have been deleted.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            fetchUnreadCount();
+                            const dropdown = document.getElementById('notificationDropdown');
+                            const isExpanded = dropdown.style.maxHeight === '80vh';
+                            fetchNotifications(isExpanded ? 50 : 10);
+                        } else {
+                            throw new Error(data.message || 'Failed to delete notifications');
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to delete notifications. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
                 }
             });
         }

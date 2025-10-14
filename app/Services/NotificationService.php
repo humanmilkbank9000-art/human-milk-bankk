@@ -61,4 +61,22 @@ class NotificationService
         $notifiable->unreadNotifications->markAsRead();
         return true;
     }
+
+    public function deleteNotification($notifiable, $id)
+    {
+        $notification = $notifiable->notifications()->where('id', $id)->first();
+        
+        if (!$notification) {
+            return false;
+        }
+
+        $notification->delete();
+        return true;
+    }
+
+    public function deleteAllNotifications($notifiable)
+    {
+        $notifiable->notifications()->delete();
+        return true;
+    }
 }

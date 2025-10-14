@@ -108,13 +108,17 @@ Route::post('/user/settings/update-password', [App\Http\Controllers\LoginControl
 Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
 Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread_count');
 Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read_all');
+Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'delete'])->name('notifications.delete');
+Route::delete('/notifications', [App\Http\Controllers\NotificationController::class, 'deleteAll'])->name('notifications.delete_all');
 
 // Messages (AJAX) - Admin ↔ User Chat
 Route::get('/messages/unread-count', [App\Http\Controllers\MessageController::class, 'unreadCount'])->name('messages.unread_count');
 Route::get('/messages/conversation', [App\Http\Controllers\MessageController::class, 'getConversation'])->name('messages.conversation');
 Route::post('/messages/send', [App\Http\Controllers\MessageController::class, 'sendMessage'])->name('messages.send');
 Route::get('/messages/partners', [App\Http\Controllers\MessageController::class, 'getPartners'])->name('messages.partners');
-Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read_all');
+Route::delete('/messages/{id}', [App\Http\Controllers\MessageController::class, 'deleteMessage'])->name('messages.delete');
+Route::delete('/messages/conversation/{partnerId}', [App\Http\Controllers\MessageController::class, 'deleteConversation'])->name('messages.delete_conversation');
 
 // FAQ Routes
 Route::get('/api/faq/search', function(\Illuminate\Http\Request $request) {

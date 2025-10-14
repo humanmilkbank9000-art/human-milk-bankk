@@ -287,6 +287,43 @@
         font-size: 0.9rem;
     }
 
+    .message-delete-btn {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #dc3545;
+        background: transparent;
+        border: none;
+        font-size: 0.75rem;
+        margin-top: 2px;
+    }
+
+    .chat-message:hover .message-delete-btn {
+        opacity: 1;
+    }
+
+    .message-delete-btn:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .chat-header-delete-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        white-space: nowrap;
+    }
+
+    .chat-header-delete-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
     /* Chat Badge - Hidden by default */
     #chat-badge:empty,
     #chat-badge[data-count="0"] {
@@ -406,9 +443,14 @@
 <div class="chat-panel" id="chatPanel">
     <div class="chat-header">
         <h6><i class="bi bi-chat-heart"></i>Chat with {{ $accountRole === 'admin' ? 'User' : 'Admin' }}</h6>
-        <button class="btn btn-link text-white p-0" id="closeChatBtn">
-            <i class="bi bi-x-lg"></i>
-        </button>
+        <div class="d-flex gap-2 align-items-center">
+            <button class="chat-header-delete-btn" id="deleteConversationBtn" title="Delete conversation">
+                <i class="bi bi-trash"></i>
+            </button>
+            <button class="btn btn-link text-white p-0" id="closeChatBtn">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
     </div>
     <div class="chat-messages" id="chatMessages">
         <div class="chat-empty">
@@ -715,7 +757,12 @@
                 return `
                     <div class="chat-message ${messageClass}">
                         <div class="message-bubble">${escapeHtml(msg.message)}</div>
-                        <span class="message-time">${time}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="message-time">${time}</span>
+                            <button class="message-delete-btn" onclick="deleteMessage(${msg.id})" title="Delete message">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -795,10 +842,132 @@
         return div.innerHTML;
     }
 
+    // Delete individual message
+    async function deleteMessage(messageId) {
+        const result = await Swal.fire({
+            title: 'Delete Message?',
+            text: 'This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`{{ url('/messages') }}/${messageId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Message has been deleted.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    await loadChatMessages(true);
+                    fetchChatUnreadCount();
+                } else {
+                    throw new Error(data.message || 'Failed to delete message');
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to delete message. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        }
+    }
+
+    // Delete entire conversation
+    async function deleteConversation() {
+        if (!currentPartnerId) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No conversation selected.',
+                icon: 'error',
+                confirmButtonColor: '#dc3545'
+            });
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: 'Delete Entire Conversation?',
+            text: 'This will permanently delete all messages in this conversation. This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete all',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`{{ url('/messages/conversation') }}/${currentPartnerId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'Deleted!',
+                        text: `Conversation deleted successfully. ${data.deleted_count} message(s) removed.`,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Close chat panel and refresh
+                    chatPanel?.classList.remove('show');
+                    stopChatRefresh();
+                    currentPartnerId = null;
+                    currentPartnerName = null;
+                    if (chatMessages) {
+                        chatMessages.innerHTML = '';
+                    }
+                    fetchChatUnreadCount();
+                } else {
+                    throw new Error(data.message || 'Failed to delete conversation');
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to delete conversation. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        }
+    }
+
     // Fetch unread count on page load
     document.addEventListener('DOMContentLoaded', function () {
         fetchChatUnreadCount();
         // Poll unread count every 30 seconds
         setInterval(fetchChatUnreadCount, 30000);
+
+        // Add event listener for delete conversation button
+        const deleteConvBtn = document.getElementById('deleteConversationBtn');
+        if (deleteConvBtn) {
+            deleteConvBtn.addEventListener('click', deleteConversation);
+        }
     });
 </script>

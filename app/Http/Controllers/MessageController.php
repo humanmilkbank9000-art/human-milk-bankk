@@ -242,4 +242,69 @@ class MessageController extends Controller
             return response()->json(['error' => 'Failed to load partners'], 500);
         }
     }
+
+    /**
+     * Delete a single message
+     */
+    public function deleteMessage($id)
+    {
+        try {
+            $accountId = Session::get('account_id');
+            $accountRole = Session::get('account_role', 'user');
+
+            if (!$accountId) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            $userType = $accountRole === 'admin' ? 'App\\Models\\Admin' : 'App\\Models\\User';
+
+            $result = $this->service->deleteMessage($id, $accountId, $userType);
+
+            if (!$result) {
+                return response()->json(['error' => 'Message not found or unauthorized'], 404);
+            }
+
+            return response()->json(['success' => true, 'message' => 'Message deleted successfully']);
+        } catch (\Exception $e) {
+            Log::error('Failed to delete message: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete message'], 500);
+        }
+    }
+
+    /**
+     * Delete entire conversation with a partner
+     */
+    public function deleteConversation($partnerId)
+    {
+        try {
+            $accountId = Session::get('account_id');
+            $accountRole = Session::get('account_role', 'user');
+
+            if (!$accountId) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            $userType = $accountRole === 'admin' ? 'App\\Models\\Admin' : 'App\\Models\\User';
+            
+            // Determine partner type based on role
+            if ($accountRole === 'user') {
+                // User can only delete conversation with admin
+                $partnerType = 'App\\Models\\Admin';
+            } else {
+                // Admin deleting conversation with a user
+                $partnerType = 'App\\Models\\User';
+            }
+
+            $deletedCount = $this->service->deleteConversation($accountId, $userType, $partnerId, $partnerType);
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Conversation deleted successfully',
+                'deleted_count' => $deletedCount
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to delete conversation: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete conversation'], 500);
+        }
+    }
 }
