@@ -565,13 +565,16 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
     <script>
         (function(){
             // Only run for admins - blade provides $accountRole in some layouts; fall back to session
-            var accountRole = typeof accountRole !== 'undefined' ? accountRole : '{{ session('account_role', '') }}';
-            if(accountRole !== 'admin') return;
+            const accountRole = typeof window.accountRole !== 'undefined'
+                ? window.accountRole
+                : @json(session('account_role', ''));
+
+            if (accountRole !== 'admin') return;
 
             const pages = [
-                { url: '{{ route('admin.health-screening') }}', selector: 'span.badge.bg-warning.text-dark.ms-1', target: 'sidebar-health-badge' },
-                { url: '{{ route('admin.donation') }}', selector: 'span.badge.bg-warning.text-dark', target: 'sidebar-donation-badge' },
-                { url: '{{ route('admin.request') }}', selector: 'span.badge.bg-warning', target: 'sidebar-request-badge' },
+                { url: @json(route('admin.health-screening')), selector: 'span.badge.bg-warning.text-dark.ms-1', target: 'sidebar-health-badge' },
+                { url: @json(route('admin.donation')), selector: 'span.badge.bg-warning.text-dark', target: 'sidebar-donation-badge' },
+                { url: @json(route('admin.request')), selector: 'span.badge.bg-warning', target: 'sidebar-request-badge' }
             ];
 
             function parseCount(html, selector){
