@@ -472,6 +472,27 @@
                 <label for="contact_number" class="form-label">Contact Number</label>
                 <input type="text" id="contact_number" name="contact_number" class="form-input" maxlength="11"
                     value="{{ old('contact_number', $userData['contact_number'] ?? '') }}" required placeholder="09XXXXXXXXX" pattern="[0-9]{11}">
+                <div id="contact-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
+                    Contact number must be exactly 11 digits.
+                </div>
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var contactInput = document.getElementById('contact_number');
+                    var reqMsg = document.getElementById('contact-req');
+                    contactInput.addEventListener('input', function(e) {
+                        // Remove non-digit characters
+                        contactInput.value = contactInput.value.replace(/\D/g, '');
+                        // Show/hide requirements
+                        if (contactInput.value.length === 0) {
+                            reqMsg.style.display = 'none';
+                        } else if (!/^\d{11}$/.test(contactInput.value)) {
+                            reqMsg.style.display = 'block';
+                        } else {
+                            reqMsg.style.display = 'none';
+                        }
+                    });
+                });
+                </script>
             </div>
 
             <div class="form-row">
