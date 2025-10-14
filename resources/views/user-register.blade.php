@@ -497,6 +497,9 @@
                             </svg>
                         </button>
                     </div>
+                    <div style="color: #ff5a7a; font-size: 0.95em; margin-top: 4px;">
+                        Password must be 8-64 chars and include upper, lower, number, and special character.
+                    </div>
                 </div>
 
                 <div class="form-group">

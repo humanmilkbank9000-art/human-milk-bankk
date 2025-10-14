@@ -60,6 +60,9 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-key"></i></span>
                                     <input type="password" name="password" id="password" class="form-control">
+                                    <div style="color: #ff5a7a; font-size: 0.95em; margin-top: 4px;">
+                                        Password must be 8-64 chars and include upper, lower, number, and special character.
+                                    </div>
                                 </div>
                                 @error('password')
                                     <div class="text-danger">{{ $message }}</div>

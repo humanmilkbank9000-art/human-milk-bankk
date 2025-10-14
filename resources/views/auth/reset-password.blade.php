@@ -184,6 +184,9 @@
             <div class="form-group">
                 <label for="password">New Password</label>
                 <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8">
+                <div style="color: #ff5a7a; font-size: 0.95em; margin-top: 4px;">
+                    Password must be 8-64 chars and include upper, lower, number, and special character.
+                </div>
             </div>
             <div class="form-group">
                 <label for="password_confirmation">Confirm New Password</label>

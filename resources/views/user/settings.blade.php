@@ -113,6 +113,9 @@
                                 <div class="mb-3">
                                     <label for="new_password" class="form-label">New Password</label>
                                     <input type="password" class="form-control" id="new_password" name="new_password" required>
+                                    <div style="color: #ff5a7a; font-size: 0.95em; margin-top: 4px;">
+                                        Password must be 8-64 chars and include upper, lower, number, and special character.
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="new_password_confirmation" class="form-label">Confirm New Password</label>
