@@ -376,7 +376,7 @@
                         <hr>
                         <h6>Infant Information</h6>
                         @if($infant)
-                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</p>
+                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</p>
                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
                             <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth }}</p>
                             <p><strong>Age:</strong> {{ $infant->getFormattedAge() }}</p>
@@ -527,7 +527,7 @@
                                 @if($infant)
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</p>
+                                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</p>
                                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
                                             <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth }}</p>
                                         </div>
@@ -918,7 +918,7 @@
             // Infant Information
             reviewHTML += '<div class="review-section">';
             reviewHTML += '<h6>Infant Information</h6>';
-            reviewHTML += '<div class="review-item"><strong>Name:</strong> {{ $infant->first_name ?? '' }} {{ $infant->last_name ?? '' }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</div>';
+            reviewHTML += '<div class="review-item"><strong>Name:</strong> {{ $infant->first_name ?? '' }} {{ $infant->last_name ?? '' }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Sex:</strong> {{ ucfirst($infant->sex ?? '') }}</div>';
             reviewHTML += '<div class="review-item"><strong>Date of Birth:</strong> {{ $infant->date_of_birth ?? '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Age:</strong> {{ $infant->getFormattedAge() }}</div>';
