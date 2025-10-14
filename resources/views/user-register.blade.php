@@ -539,7 +539,7 @@
                         // Show/hide requirements
                         if (contactInput.value.length === 0) {
                             reqMsg.style.display = 'none';
-                        } else if (contactInput.value.length >= 12) {
+                        } else if (!/^\d{11}$/.test(contactInput.value)) {
                             reqMsg.style.display = 'block';
                         } else {
                             reqMsg.style.display = 'none';
