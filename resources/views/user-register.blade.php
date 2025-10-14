@@ -422,12 +422,48 @@
                     <label for="first_name" class="form-label">First Name</label>
                     <input type="text" id="first_name" name="first_name" class="form-input"
                         value="{{ old('first_name', $userData['first_name'] ?? '') }}" required style="text-transform: capitalize;">
+                    <div id="first-name-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
+                        Special characters like <, >, =, ', " are not allowed in names.
+                    </div>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var firstNameInput = document.getElementById('first_name');
+                        var firstNameReq = document.getElementById('first-name-req');
+                        firstNameInput.addEventListener('input', function() {
+                            if (firstNameInput.value === '') {
+                                firstNameReq.style.display = 'none';
+                            } else if (/[<>=\'\"]/g.test(firstNameInput.value)) {
+                                firstNameReq.style.display = 'block';
+                            } else {
+                                firstNameReq.style.display = 'none';
+                            }
+                        });
+                    });
+                    </script>
                 </div>
 
                 <div class="form-group">
                     <label for="last_name" class="form-label">Last Name</label>
                     <input type="text" id="last_name" name="last_name" class="form-input" value="{{ old('last_name', $userData['last_name'] ?? '') }}"
                         required style="text-transform: capitalize;">
+                    <div id="last-name-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
+                        Special characters like <, >, =, ', " are not allowed in names.
+                    </div>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var lastNameInput = document.getElementById('last_name');
+                        var lastNameReq = document.getElementById('last-name-req');
+                        lastNameInput.addEventListener('input', function() {
+                            if (lastNameInput.value === '') {
+                                lastNameReq.style.display = 'none';
+                            } else if (/[<>=\'\"]/g.test(lastNameInput.value)) {
+                                lastNameReq.style.display = 'block';
+                            } else {
+                                lastNameReq.style.display = 'none';
+                            }
+                        });
+                    });
+                    </script>
                 </div>
             </div>
 
@@ -436,6 +472,24 @@
                     <label for="middle_name" class="form-label">Middle Name (optional)</label>
                     <input type="text" id="middle_name" name="middle_name" class="form-input"
                         value="{{ old('middle_name', $userData['middle_name'] ?? '') }}" style="text-transform: capitalize;">
+                    <div id="middle-name-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
+                        Special characters like <, >, =, ', " are not allowed in names.
+                    </div>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var middleNameInput = document.getElementById('middle_name');
+                        var middleNameReq = document.getElementById('middle-name-req');
+                        middleNameInput.addEventListener('input', function() {
+                            if (middleNameInput.value === '') {
+                                middleNameReq.style.display = 'none';
+                            } else if (/[<>=\'\"]/g.test(middleNameInput.value)) {
+                                middleNameReq.style.display = 'block';
+                            } else {
+                                middleNameReq.style.display = 'none';
+                            }
+                        });
+                    });
+                    </script>
                 </div>
 
                 <div class="form-group">
