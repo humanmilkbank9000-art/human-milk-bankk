@@ -67,7 +67,8 @@ class PasswordResetService
             throw new \RuntimeException('We could not find an account associated with that mobile number.');
         }
 
-        $user->forceFill(['password' => Hash::make($password)])->save();
+        $sanitizedPassword = trim(strip_tags($password));
+        $user->forceFill(['password' => Hash::make($sanitizedPassword)])->save();
         DB::table('password_reset_tokens')->where('contact_number', $contactNumber)->delete();
     }
 
