@@ -497,9 +497,26 @@
                             </svg>
                         </button>
                     </div>
-                    <div style="color: #ff5a7a; font-size: 0.95em; margin-top: 4px;">
+                    <div id="password-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                         Password must be 8-64 chars and include upper, lower, number, and special character.
                     </div>
+                    <script>
+                    function checkPasswordStrength(pw) {
+                        return pw.length >= 8 && pw.length <= 64 &&
+                            /[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+                    }
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var pwInput = document.getElementById('password');
+                        var reqMsg = document.getElementById('password-req');
+                        pwInput.addEventListener('input', function() {
+                            if (!checkPasswordStrength(pwInput.value)) {
+                                reqMsg.style.display = 'block';
+                            } else {
+                                reqMsg.style.display = 'none';
+                            }
+                        });
+                    });
+                    </script>
                 </div>
 
                 <div class="form-group">
