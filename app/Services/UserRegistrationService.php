@@ -19,7 +19,7 @@ class UserRegistrationService
             'middle_name'    => $data['middle_name'] ?? null,
             'last_name'      => $data['last_name'],
             'contact_number' => $data['contact_number'],
-            'password'       => $data['password'], // plain temporarily
+                'password'       => trim(strip_tags($data['password'])), // plain temporarily
             'address'        => $data['address'],
             'date_of_birth'  => $data['date_of_birth'],
             'age'            => $age,
