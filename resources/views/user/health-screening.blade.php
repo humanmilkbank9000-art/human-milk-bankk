@@ -857,6 +857,41 @@
         function toggleConditional(field, show) {
             const input = document.getElementById(field + '_details');
             if (input) input.style.display = show ? 'block' : 'none';
+            
+            // Auto-scroll to next question after answering
+            scrollToNextQuestion(field);
+        }
+        
+        // Scroll to the next question after answering current one
+        function scrollToNextQuestion(currentField) {
+            setTimeout(() => {
+                // Find the current question item
+                const currentRadio = document.getElementById(currentField + '_yes') || document.getElementById(currentField + '_no');
+                if (!currentRadio) return;
+                
+                const currentQuestionItem = currentRadio.closest('.question-item');
+                if (!currentQuestionItem) return;
+                
+                // Find the next question item
+                const nextQuestionItem = currentQuestionItem.nextElementSibling;
+                
+                if (nextQuestionItem && nextQuestionItem.classList.contains('question-item')) {
+                    // Scroll to the next question
+                    nextQuestionItem.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center'
+                    });
+                } else {
+                    // If no next question, scroll to navigation buttons
+                    const navButtons = currentQuestionItem.parentElement.querySelector('.tab-navigation-buttons');
+                    if (navButtons) {
+                        navButtons.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center'
+                        });
+                    }
+                }
+            }, 300); // Small delay to allow conditional input to show first
         }
 
         // Show review modal
