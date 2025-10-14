@@ -125,7 +125,9 @@
                                         var pwInput = document.getElementById('new_password');
                                         var reqMsg = document.getElementById('password-req');
                                         pwInput.addEventListener('input', function() {
-                                            if (!checkPasswordStrength(pwInput.value)) {
+                                            if (pwInput.value === '') {
+                                                reqMsg.style.display = 'none';
+                                            } else if (!checkPasswordStrength(pwInput.value)) {
                                                 reqMsg.style.display = 'block';
                                             } else {
                                                 reqMsg.style.display = 'none';
