@@ -675,7 +675,14 @@
             </h1>
 
             <p class="app-subtitle">
-                Please log in to access your account or to register, Hello World.
+                Please log in to access your account or to register if you have not.
+            </p>
+            <p>
+                <style>
+                    color: red;
+                    font-weight: bold;    
+                </style>
+                VERSION 1.0.0
             </p>
         </div>
 
