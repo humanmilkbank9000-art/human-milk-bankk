@@ -253,7 +253,7 @@
                                         <th>Total Request</th>
                                         <th>Approved</th>
                                         <th>Declined</th>
-                                        <th>Pending</th>
+                                        <th>Total Dispensed (ml)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -273,7 +273,7 @@
                                             <td>{{ $selectedRequestRow['total'] ?? 0 }}</td>
                                             <td>{{ $selectedRequestRow['approved'] ?? 0 }}</td>
                                             <td>{{ $selectedRequestRow['declined'] ?? 0 }}</td>
-                                            <td>{{ $selectedRequestRow['pending'] ?? 0 }}</td>
+                                            <td>{{ $selectedRequestRow['dispensed_volume'] ?? 0 }}</td>
                                         </tr>
                                     @elseif(!empty($requestStats))
                                         <tr>
@@ -282,7 +282,7 @@
                                             <td>{{ $requestStats['total'] ?? 0 }}</td>
                                             <td>{{ $requestStats['approved'] ?? 0 }}</td>
                                             <td>{{ $requestStats['declined'] ?? 0 }}</td>
-                                            <td>{{ $requestStats['pending'] ?? 0 }}</td>
+                                            <td>{{ $requestStats['dispensed_volume'] ?? 0 }}</td>
                                         </tr>
                                     @else
                                         <tr>

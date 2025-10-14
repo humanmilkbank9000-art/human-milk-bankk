@@ -77,15 +77,34 @@ class ReportService
 
         // Count by status
         $total = $requests->count();
-        $approved = $requests->where('status', 'approved')->count();
+        // Approved should include both approved and dispensed statuses
+        $approved = $requests->whereIn('status', ['approved', 'dispensed'])->count();
         $declined = $requests->where('status', 'declined')->count();
-        $pending = $requests->where('status', 'pending')->count();
+        // Total dispensed volume for the period (sum of volume_dispensed)
+        $totalDispensedVolume = $requests->sum(function ($r) {
+            return (float) ($r->volume_dispensed ?? 0);
+        });
 
         // Map records for display
         $records = $requests->map(function ($request) {
             $guardian = $request->user ? $this->formatFullName($request->user) : '-';
             $infant = $request->infant ? $this->formatFullName($request->infant) : '-';
-            
+
+            // Dispensing related details (if dispensed)
+            $donorOrBatch = '-';
+            $milkType = '-';
+            $dispensedDate = '-';
+            $dispensedTime = '-';
+
+            if (!empty($request->dispensedMilk)) {
+                $dm = $request->dispensedMilk;
+                // use DispensedMilk accessors/helpers when available
+                $donorOrBatch = method_exists($dm, 'getSourceNameAttribute') ? $dm->source_name : ($dm->getSourceNameAttribute() ?? '-');
+                $milkType = $dm->milk_type ? ucfirst($dm->milk_type) : '-';
+                $dispensedDate = $dm->date_dispensed ? $this->formatDateValue($dm->date_dispensed) : ($dm->getFormattedDateAttribute() ?? '-');
+                $dispensedTime = $dm->time_dispensed ? $this->formatTimeValue($dm->time_dispensed) : ($dm->getFormattedTimeAttribute() ?? '-');
+            }
+
             return [
                 'guardian' => $guardian,
                 'infant' => $infant,
@@ -97,6 +116,11 @@ class ReportService
                 'approved_at' => $request->approved_at ? $this->formatDateValue($request->approved_at) : '-',
                 'declined_at' => $request->declined_at ? $this->formatDateValue($request->declined_at) : '-',
                 'dispensed_at' => $request->dispensed_at ? $this->formatDateValue($request->dispensed_at) : '-',
+                // Fields used by the requests report preview
+                'donor_or_batch' => $donorOrBatch,
+                'milk_type' => $milkType,
+                'dispensed_date' => $dispensedDate,
+                'dispensed_time' => $dispensedTime,
             ];
         });
 
@@ -105,7 +129,8 @@ class ReportService
             'total' => $total,
             'approved' => $approved,
             'declined' => $declined,
-            'pending' => $pending,
+            // expose total dispensed volume (ml) instead of pending count
+            'dispensed_volume' => $totalDispensedVolume,
         ];
     }
 

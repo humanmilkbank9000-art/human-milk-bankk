@@ -9,13 +9,15 @@
             background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
             border: none;
             border-radius: 12px;
-            padding: 20px 15px;
-            text-align: center;
+            padding: 12px 14px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, box-shadow 0.2s;
             height: 100%;
             min-width: 150px;
             flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .stats-card:hover {
@@ -66,17 +68,25 @@
         }
 
         .stats-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stats-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 0;
         }
 
         .stats-label {
             color: #6c757d;
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.78rem;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-top: 4px;
         }
 
         /* Color variants for different stats */
@@ -234,8 +244,10 @@
                     <div class="stats-icon">
                         <i class="fas fa-flask"></i>
                     </div>
-                    <div class="stats-number" id="unpasteurized-count">{{ $unpasteurizedDonations->count() }}</div>
-                    <div class="stats-label">Unpasteurized Donations</div>
+                    <div class="stats-text">
+                        <div class="stats-number" id="unpasteurized-count">{{ $unpasteurizedDonations->count() }}</div>
+                        <div class="stats-label">Unpasteurized Donations</div>
+                    </div>
                 </div>
             </div>
             <div class="stats-card-wrapper">
@@ -243,10 +255,12 @@
                     <div class="stats-icon">
                         <i class="fas fa-tint"></i>
                     </div>
-                    <div class="stats-number" id="unpasteurized-volume">
-                        {{ number_format($unpasteurizedDonations->where('available_volume', '>', 0)->sum('available_volume'), 0) }}ml
+                    <div class="stats-text">
+                        <div class="stats-number" id="unpasteurized-volume">
+                            {{ number_format($unpasteurizedDonations->where('available_volume', '>', 0)->sum('available_volume'), 0) }}ml
+                        </div>
+                        <div class="stats-label">Available Volume</div>
                     </div>
-                    <div class="stats-label">Available Volume</div>
                 </div>
             </div>
             <div class="stats-card-wrapper">
@@ -254,8 +268,10 @@
                     <div class="stats-icon">
                         <i class="fas fa-vial"></i>
                     </div>
-                    <div class="stats-number" id="pasteurized-batches">{{ $pasteurizationBatches->count() }}</div>
-                    <div class="stats-label">Active Batches</div>
+                    <div class="stats-text">
+                        <div class="stats-number" id="pasteurized-batches">{{ $pasteurizationBatches->count() }}</div>
+                        <div class="stats-label">Active Batches</div>
+                    </div>
                 </div>
             </div>
             <div class="stats-card-wrapper">
@@ -263,10 +279,12 @@
                     <div class="stats-icon">
                         <i class="fas fa-fill-drip"></i>
                     </div>
-                    <div class="stats-number" id="pasteurized-volume">
-                        {{ number_format($pasteurizationBatches->sum('available_volume'), 0) }}ml
+                    <div class="stats-text">
+                        <div class="stats-number" id="pasteurized-volume">
+                            {{ number_format($pasteurizationBatches->sum('available_volume'), 0) }}ml
+                        </div>
+                        <div class="stats-label">Pasteurized Volume</div>
                     </div>
-                    <div class="stats-label">Pasteurized Volume</div>
                 </div>
             </div>
             <div class="stats-card-wrapper">
@@ -274,8 +292,10 @@
                     <div class="stats-icon">
                         <i class="fas fa-hand-holding-medical"></i>
                     </div>
-                    <div class="stats-number" id="dispensed-records">{{ $dispensedMilk->count() }}</div>
-                    <div class="stats-label">Dispensed Records</div>
+                    <div class="stats-text">
+                        <div class="stats-number" id="dispensed-records">{{ $dispensedMilk->count() }}</div>
+                        <div class="stats-label">Dispensed Records</div>
+                    </div>
                 </div>
             </div>
             <div class="stats-card-wrapper">
@@ -283,10 +303,12 @@
                     <div class="stats-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
-                    <div class="stats-number" id="dispensed-volume">
-                        {{ number_format($dispensedMilk->sum('volume_dispensed'), 0) }}ml
+                    <div class="stats-text">
+                        <div class="stats-number" id="dispensed-volume">
+                            {{ number_format($dispensedMilk->sum('volume_dispensed'), 0) }}ml
+                        </div>
+                        <div class="stats-label">Total Dispensed</div>
                     </div>
-                    <div class="stats-label">Total Dispensed</div>
                 </div>
             </div>
         </div>
@@ -477,7 +499,8 @@
                                                     <small>{{ $batch->formatted_time }}</small>
                                                 </td>
                                                 <td class="text-center" data-label="Count">
-                                                    <small>{{ $batch->donations->count() }}</small></td>
+                                                    <small>{{ $batch->donations->count() }}</small>
+                                                </td>
                                                 <td class="text-center" data-label="Actions">
                                                     <button class="btn btn-sm btn-outline-info" title="View Details"
                                                         onclick="viewBatchDetails({{ $batch->batch_id }})">
@@ -722,7 +745,10 @@
             checkedBoxes.forEach((checkbox, index) => {
                 const row = checkbox.closest('tr');
                 const donorName = row.cells[1].textContent.trim().split('\n')[0];
-                const volume = parseFloat(row.cells[5].textContent.replace('ml', ''));
+                // Use the Available column (cell index 6) which contains remaining volume
+                // Strip non-numeric characters (commas, 'ml') before parsing
+                const rawAvailable = row.cells[6].textContent || '';
+                const volume = parseFloat(rawAvailable.replace(/[^0-9.-]+/g, '')) || 0;
                 totalVolume += volume;
 
                 donationsList += `<li>${donorName} - ${volume}ml</li>`;
@@ -831,30 +857,30 @@
 
                     if (data.notes) {
                         content += `
-                                            <div class="alert alert-info mb-4">
-                                                <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
-                                                <p class="mb-0">${escapeHtml(data.notes)}</p>
-                                            </div>
-                                        `;
+                                                <div class="alert alert-info mb-4">
+                                                    <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
+                                                    <p class="mb-0">${escapeHtml(data.notes)}</p>
+                                                </div>
+                                            `;
                     }
 
                     content += `
-                                        <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${data.donations.length})</h6>
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-striped align-middle">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th class="text-center">Donor</th>
-                                                        <th class="text-center">Type</th>
-                                                        <th class="text-center">Bags</th>
-                                                        <th class="text-center">Volume/Bag</th>
-                                                        <th class="text-center">Total Volume</th>
-                                                        <th class="text-center">Date</th>
-                                                        <th class="text-center">Time</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                    `;
+                                            <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${data.donations.length})</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-striped align-middle">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="text-center">Donor</th>
+                                                            <th class="text-center">Type</th>
+                                                            <th class="text-center">Bags</th>
+                                                            <th class="text-center">Volume/Bag</th>
+                                                            <th class="text-center">Total Volume</th>
+                                                            <th class="text-center">Date</th>
+                                                            <th class="text-center">Time</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                        `;
 
                     data.donations.forEach(donation => {
                         const donorName = donation.user ? `${donation.user.first_name} ${donation.user.last_name}` : 'Unknown';
@@ -864,36 +890,36 @@
                         const time = donation.donation_time || donation.scheduled_pickup_time || '-';
 
                         content += `
-                                            <tr>
-                                                <td>${escapeHtml(donorName)}</td>
-                                                <td class="text-center">
-                                                    <span class="badge ${badgeClass}">${donationType}</span>
-                                                </td>
-                                                <td class="text-center">${donation.number_of_bags}</td>
-                                                <td class="text-center" style="font-size: 0.85rem;">${escapeHtml(donation.bag_volumes || '-')}</td>
-                                                <td class="text-center">
-                                                    <span class="badge badge-info">${donation.total_volume}ml</span>
-                                                </td>
-                                                <td class="text-center">${formatDate(date)}</td>
-                                                <td class="text-center">${formatTime(time)}</td>
-                                            </tr>
-                                        `;
+                                                <tr>
+                                                    <td>${escapeHtml(donorName)}</td>
+                                                    <td class="text-center">
+                                                        <span class="badge ${badgeClass}">${donationType}</span>
+                                                    </td>
+                                                    <td class="text-center">${donation.number_of_bags}</td>
+                                                    <td class="text-center" style="font-size: 0.85rem;">${escapeHtml(donation.bag_volumes || '-')}</td>
+                                                    <td class="text-center">
+                                                        <span class="badge badge-info">${donation.total_volume}ml</span>
+                                                    </td>
+                                                    <td class="text-center">${formatDate(date)}</td>
+                                                    <td class="text-center">${formatTime(time)}</td>
+                                                </tr>
+                                            `;
                     });
 
                     content += `
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    `;
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        `;
 
                     document.getElementById('batchDetailsContent').innerHTML = content;
                 })
                 .catch(error => {
                     document.getElementById('batchDetailsContent').innerHTML = `
-                                        <div class="alert alert-danger">
-                                            <i class="fas fa-exclamation-triangle"></i> Error loading batch details: ${escapeHtml(error.message)}
-                                        </div>
-                                    `;
+                                            <div class="alert alert-danger">
+                                                <i class="fas fa-exclamation-triangle"></i> Error loading batch details: ${escapeHtml(error.message)}
+                                            </div>
+                                        `;
                 });
         }
 

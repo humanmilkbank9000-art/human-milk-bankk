@@ -16,7 +16,9 @@
 
     /* Nutritional Guide Card - Exact match to stat-card */
     .nutritional-guide-card {
-        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        /* Use a solid, light background for better contrast and readability on small screens */
+        background: #f8fafc;
+        /* light gray/blue tint */
         border-radius: 0.75rem;
         padding: 1rem;
         cursor: pointer;
@@ -24,7 +26,8 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         position: relative;
         overflow: hidden;
-        color: white;
+        color: #111827;
+        /* dark text for clarity */
         min-height: 140px;
         display: flex;
         flex-direction: column;
@@ -190,6 +193,8 @@
     .guide-swiper-container {
         width: 100%;
         height: 100%;
+        /* Allow horizontal touch gestures inside the swiper area while keeping vertical pan on the modal body */
+        touch-action: pan-x;
     }
 
     .guide-swiper-slide {
@@ -550,6 +555,10 @@
     </div>
 </div>
 
+<!-- Swiper.js Library (needed by nutritional guide) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
 <!-- Nutritional Guide Modal Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -703,16 +712,21 @@
             e.preventDefault();
         }, { passive: false });
 
-        // Prevent touch move on overlay
+        // Prevent touch move on overlay except when the touch starts inside the modal body or swiper
         guideModalOverlay.addEventListener('touchmove', function (e) {
+            const startTarget = e.target;
+            if (startTarget.closest && (startTarget.closest('.guide-modal-body') || startTarget.closest('.guide-swiper-container') || startTarget.closest('.swiper-wrapper'))) {
+                return; // allow inner horizontal swipes
+            }
+
             e.preventDefault();
         }, { passive: false });
 
-        // Allow scroll within modal body only
+        // Allow swipes and scrolling within the modal body; Swiper will handle horizontal gestures
         const guideModalBody = document.querySelector('.guide-modal-body');
         if (guideModalBody) {
-            guideModalBody.addEventListener('touchmove', function (e) {
-                e.stopPropagation();
+            guideModalBody.addEventListener('touchstart', function (e) {
+                // no-op; keep passive true to allow smooth scrolling and let Swiper manage horizontal swipes
             }, { passive: true });
         }
     });

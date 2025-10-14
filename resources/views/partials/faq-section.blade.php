@@ -192,6 +192,8 @@
     .swiper-container {
         width: 100%;
         height: 100%;
+        /* Allow horizontal touch gestures inside the swiper area while keeping vertical pan on the modal body */
+        touch-action: pan-x;
     }
 
     .swiper-slide {
@@ -651,16 +653,22 @@
             e.preventDefault();
         }, { passive: false });
 
-        // Prevent touch move on overlay
+        // Prevent touch move on overlay except when the touch starts inside the modal body or swiper
         faqModalOverlay.addEventListener('touchmove', function (e) {
+            // If the touch originated from within the modal body or swiper, don't prevent it
+            const startTarget = e.target;
+            if (startTarget.closest && (startTarget.closest('.faq-modal-body') || startTarget.closest('.swiper-container') || startTarget.closest('.swiper-wrapper'))) {
+                return; // allow inner horizontal swipes
+            }
+
             e.preventDefault();
         }, { passive: false });
 
-        // Allow scroll within modal body only
+        // Allow scroll and swipe within modal body (let Swiper handle horizontal swipes)
         const modalBody = document.querySelector('.faq-modal-body');
         if (modalBody) {
-            modalBody.addEventListener('touchmove', function (e) {
-                e.stopPropagation();
+            modalBody.addEventListener('touchstart', function (e) {
+                // no-op here; we rely on Swiper's touch handling for horizontal gestures
             }, { passive: true });
         }
     });

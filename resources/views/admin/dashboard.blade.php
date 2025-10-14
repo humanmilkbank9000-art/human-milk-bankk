@@ -137,34 +137,48 @@
       margin-bottom: 10px;
     }
 
+    /* On narrow screens make slots wrap into fewer columns, and below 480px make them full-width stacked */
+    @media (max-width: 768px) {
+      #timeSlotsContainer {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
     @media (max-width: 600px) {
       #timeSlotsContainer {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+
+      /* Keep two columns on small/mobile screens so time slots appear as pairs (8 9, 10 11) */
+      #timeSlotsContainer {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
     .time-slot-checkbox {
-      min-width: 120px;
+      width: 100%;
       padding: 10px;
       border-radius: 0.5rem;
       margin-bottom: 0;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
       background: #f8f9fa;
+      box-sizing: border-box;
     }
 
     @media (max-width: 600px) {
       .time-slot-checkbox {
-        min-width: 100px;
-        min-height: 32px;
-        padding: 4px 8px;
-        border-radius: 0.5rem;
-        margin-bottom: 0;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-        background: #f8f9fa;
+        min-height: 36px;
+        padding: 6px 10px;
         display: flex;
         align-items: center;
-        max-width: 99vw;
-        padding: 4px 0 8px 0;
+        justify-content: center;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
 
@@ -1267,6 +1281,21 @@
         renderTimeSlots();
         timeSlotsSection.style.display = 'block';
 
+        // On small/mobile screens ensure the modal scrolls to the time slots
+        try {
+          const modalContent = document.querySelector('#availabilityModal .modal-content');
+          if (modalContent) {
+            // Scroll modal content so the time slots section is visible
+            const offset = timeSlotsSection.offsetTop - 16; // small offset
+            modalContent.scrollTo({ top: offset, behavior: 'smooth' });
+          } else {
+            // Fallback: scroll the window
+            timeSlotsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        } catch (err) {
+          // ignore scroll errors
+        }
+
         console.log('Date selected:', formatDate(selectedDate));
       }
 
@@ -1279,13 +1308,13 @@
           const slotDiv = document.createElement('div');
           slotDiv.className = 'time-slot-checkbox';
           slotDiv.innerHTML = `
-                                                <div class="form-check">
-                                                  <input class="form-check-input" type="checkbox" value="${slot.value}" id="slot_${index}">
-                                                  <label class="form-check-label" for="slot_${index}">
-                                                    ${slot.text}
-                                                  </label>
-                                                </div>
-                                              `;
+                                                  <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="${slot.value}" id="slot_${index}">
+                                                    <label class="form-check-label" for="slot_${index}">
+                                                      ${slot.text}
+                                                    </label>
+                                                  </div>
+                                                `;
           const checkbox = slotDiv.querySelector('input[type="checkbox"]');
           checkbox.addEventListener('change', function () {
             if (this.checked) {

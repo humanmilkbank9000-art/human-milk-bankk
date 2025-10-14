@@ -287,6 +287,43 @@
         font-size: 0.9rem;
     }
 
+    .message-delete-btn {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #dc3545;
+        background: transparent;
+        border: none;
+        font-size: 0.75rem;
+        margin-top: 2px;
+    }
+
+    .chat-message:hover .message-delete-btn {
+        opacity: 1;
+    }
+
+    .message-delete-btn:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .chat-header-delete-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        white-space: nowrap;
+    }
+
+    .chat-header-delete-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
     /* Chat Badge - Hidden by default */
     #chat-badge:empty,
     #chat-badge[data-count="0"] {
@@ -382,8 +419,16 @@
 
     <!-- Dropdown menu for message list -->
     <div class="dropdown-menu dropdown-menu-end chat-dropdown-menu p-0" id="chatDropdown">
-        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
-            <strong style="font-size: 0.95rem;">Messages</strong>
+        <div class="d-flex flex-column px-3 py-2 border-bottom bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong style="font-size: 0.95rem;">Messages</strong>
+            </div>
+            <div class="d-flex">
+                @if($accountRole === 'admin')
+                    <input type="search" id="chatSearchInput" class="form-control form-control-sm"
+                        placeholder="Search users by name or contact..." style="min-width:0;">
+                @endif
+            </div>
         </div>
         <div id="chatConversationList">
             <div class="text-center text-muted py-4">
@@ -398,9 +443,14 @@
 <div class="chat-panel" id="chatPanel">
     <div class="chat-header">
         <h6><i class="bi bi-chat-heart"></i>Chat with {{ $accountRole === 'admin' ? 'User' : 'Admin' }}</h6>
-        <button class="btn btn-link text-white p-0" id="closeChatBtn">
-            <i class="bi bi-x-lg"></i>
-        </button>
+        <div class="d-flex gap-2 align-items-center">
+            <button class="chat-header-delete-btn" id="deleteConversationBtn" title="Delete conversation">
+                <i class="bi bi-trash"></i>
+            </button>
+            <button class="btn btn-link text-white p-0" id="closeChatBtn">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
     </div>
     <div class="chat-messages" id="chatMessages">
         <div class="chat-empty">
@@ -440,8 +490,24 @@
     // Load conversation list when dropdown opens
     chatIconBtn?.addEventListener('click', function () {
         console.log('Chat icon clicked, loading conversation list...');
-        setTimeout(loadConversationList, 150);
+        // Load existing conversations by default, and clear any search
+        const searchInput = document.getElementById('chatSearchInput');
+        if (searchInput) searchInput.value = '';
+        setTimeout(() => loadConversationList(), 150);
     });
+
+    // Debounced search handling
+    const chatSearchInput = document.getElementById('chatSearchInput');
+    let chatSearchTimer = null;
+    if (chatSearchInput) {
+        chatSearchInput.addEventListener('input', function (e) {
+            const q = this.value.trim();
+            if (chatSearchTimer) clearTimeout(chatSearchTimer);
+            chatSearchTimer = setTimeout(() => {
+                loadConversationList(q);
+            }, 300);
+        });
+    }
 
     // Open chat panel when conversation is clicked
     function openChatPanel(partnerId, partnerName) {
@@ -519,12 +585,14 @@
         }
     }
 
-    async function loadConversationList() {
+    async function loadConversationList(query = null) {
         try {
             @if($accountRole === 'admin')
-                // Admin: Load list of users with conversations
-                console.log('Loading conversation partners for admin...');
-                const res = await fetch('{{ route('messages.partners') }}');
+                // Admin: Load list of users with conversations or search results
+                console.log('Loading conversation partners for admin...', { query });
+                const url = new URL('{{ route('messages.partners') }}', window.location.origin);
+                if (query) url.searchParams.append('q', query);
+                const res = await fetch(url);
                 const data = await res.json();
 
                 console.log('Partners API Response:', {
@@ -537,7 +605,7 @@
 
                 if (!data.partners || data.partners.length === 0) {
                     console.warn('No conversation partners found');
-                    chatConversationList.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-chat-dots" style="font-size: 2rem; opacity: 0.3;"></i><p class="mt-2 mb-0" style="font-size: 0.85rem;">No conversations yet</p></div>';
+                    chatConversationList.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-people" style="font-size: 2rem; opacity: 0.3;"></i><p class="mt-2 mb-0" style="font-size: 0.85rem;">No results found</p></div>';
                     return;
                 }
 
@@ -549,16 +617,16 @@
 
                     // FIX: Use data attributes instead of inline onclick to handle special characters in names
                     return `
-                                    <div class="chat-conversation-item" data-partner-id="${partner.user_id}" data-partner-name="${escapeHtml(partner.name)}">
-                                        <div class="chat-conversation-avatar">${initials}</div>
-                                        <div class="chat-conversation-content">
-                                            <div class="chat-conversation-header">
-                                                <span class="chat-conversation-name">${escapeHtml(partner.name)}${unreadBadge}</span>
+                                        <div class="chat-conversation-item" data-partner-id="${partner.user_id}" data-partner-name="${escapeHtml(partner.name)}">
+                                            <div class="chat-conversation-avatar">${initials}</div>
+                                            <div class="chat-conversation-content">
+                                                <div class="chat-conversation-header">
+                                                    <span class="chat-conversation-name">${escapeHtml(partner.name)}${unreadBadge}</span>
+                                                </div>
+                                                <div class="chat-conversation-preview">Click to open chat</div>
                                             </div>
-                                            <div class="chat-conversation-preview">Click to open chat</div>
                                         </div>
-                                    </div>
-                                `;
+                                    `;
                 }).join('');
 
                 chatConversationList.innerHTML = conversationsHtml;
@@ -575,16 +643,16 @@
             @else
                 // User: Show admin as only conversation
                 chatConversationList.innerHTML = `
-                                <div class="chat-conversation-item" data-partner-id="1" data-partner-name="Admin">
-                                    <div class="chat-conversation-avatar">AD</div>
-                                    <div class="chat-conversation-content">
-                                        <div class="chat-conversation-header">
-                                            <span class="chat-conversation-name">Admin</span>
+                                    <div class="chat-conversation-item" data-partner-id="1" data-partner-name="Admin">
+                                        <div class="chat-conversation-avatar">AD</div>
+                                        <div class="chat-conversation-content">
+                                            <div class="chat-conversation-header">
+                                                <span class="chat-conversation-name">Admin</span>
+                                            </div>
+                                            <div class="chat-conversation-preview">Click to open chat</div>
                                         </div>
-                                        <div class="chat-conversation-preview">Click to open chat</div>
                                     </div>
-                                </div>
-                            `;
+                                `;
 
                 // FIX: Add event listener to admin conversation item
                 const adminConvItem = document.querySelector('.chat-conversation-item');
@@ -689,7 +757,12 @@
                 return `
                     <div class="chat-message ${messageClass}">
                         <div class="message-bubble">${escapeHtml(msg.message)}</div>
-                        <span class="message-time">${time}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="message-time">${time}</span>
+                            <button class="message-delete-btn" onclick="deleteMessage(${msg.id})" title="Delete message">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -769,10 +842,132 @@
         return div.innerHTML;
     }
 
+    // Delete individual message
+    async function deleteMessage(messageId) {
+        const result = await Swal.fire({
+            title: 'Delete Message?',
+            text: 'This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`{{ url('/messages') }}/${messageId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Message has been deleted.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    await loadChatMessages(true);
+                    fetchChatUnreadCount();
+                } else {
+                    throw new Error(data.message || 'Failed to delete message');
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to delete message. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        }
+    }
+
+    // Delete entire conversation
+    async function deleteConversation() {
+        if (!currentPartnerId) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No conversation selected.',
+                icon: 'error',
+                confirmButtonColor: '#dc3545'
+            });
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: 'Delete Entire Conversation?',
+            text: 'This will permanently delete all messages in this conversation. This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete all',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`{{ url('/messages/conversation') }}/${currentPartnerId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'Deleted!',
+                        text: `Conversation deleted successfully. ${data.deleted_count} message(s) removed.`,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Close chat panel and refresh
+                    chatPanel?.classList.remove('show');
+                    stopChatRefresh();
+                    currentPartnerId = null;
+                    currentPartnerName = null;
+                    if (chatMessages) {
+                        chatMessages.innerHTML = '';
+                    }
+                    fetchChatUnreadCount();
+                } else {
+                    throw new Error(data.message || 'Failed to delete conversation');
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to delete conversation. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        }
+    }
+
     // Fetch unread count on page load
     document.addEventListener('DOMContentLoaded', function () {
         fetchChatUnreadCount();
         // Poll unread count every 30 seconds
         setInterval(fetchChatUnreadCount, 30000);
+
+        // Add event listener for delete conversation button
+        const deleteConvBtn = document.getElementById('deleteConversationBtn');
+        if (deleteConvBtn) {
+            deleteConvBtn.addEventListener('click', deleteConversation);
+        }
     });
 </script>

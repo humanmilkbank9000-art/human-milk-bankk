@@ -122,10 +122,11 @@
             }
 
             /* ============================================
-               TABLET OPTIMIZATION FOR PENDING DONATIONS
-               9-column table - Extra compact layout
-               ============================================ */
+                       TABLET OPTIMIZATION FOR PENDING DONATIONS
+                       9-column table - Extra compact layout
+                       ============================================ */
             @media (min-width: 600px) and (max-width: 1024px) {
+
                 /* Make pending donations table even more compact */
                 #pending-donations .table thead th,
                 #pending-donations .table tbody td {
@@ -176,15 +177,51 @@
                 }
 
                 /* Allocate width percentages for better distribution */
-                #pending-donations .table thead th:nth-child(1) { width: 12%; } /* Name */
-                #pending-donations .table thead th:nth-child(2) { width: 8%; }  /* Type */
-                #pending-donations .table thead th:nth-child(3) { width: 15%; } /* Address */
-                #pending-donations .table thead th:nth-child(4) { width: 7%; }  /* Location */
-                #pending-donations .table thead th:nth-child(5) { width: 6%; }  /* Bags */
-                #pending-donations .table thead th:nth-child(6) { width: 12%; } /* Volume/Bag */
-                #pending-donations .table thead th:nth-child(7) { width: 9%; }  /* Total */
-                #pending-donations .table thead th:nth-child(8) { width: 13%; } /* Date & Time */
-                #pending-donations .table thead th:nth-child(9) { width: 11%; } /* Actions */
+                #pending-donations .table thead th:nth-child(1) {
+                    width: 12%;
+                }
+
+                /* Name */
+                #pending-donations .table thead th:nth-child(2) {
+                    width: 8%;
+                }
+
+                /* Type */
+                #pending-donations .table thead th:nth-child(3) {
+                    width: 15%;
+                }
+
+                /* Address */
+                #pending-donations .table thead th:nth-child(4) {
+                    width: 7%;
+                }
+
+                /* Location */
+                #pending-donations .table thead th:nth-child(5) {
+                    width: 6%;
+                }
+
+                /* Bags */
+                #pending-donations .table thead th:nth-child(6) {
+                    width: 12%;
+                }
+
+                /* Volume/Bag */
+                #pending-donations .table thead th:nth-child(7) {
+                    width: 9%;
+                }
+
+                /* Total */
+                #pending-donations .table thead th:nth-child(8) {
+                    width: 13%;
+                }
+
+                /* Date & Time */
+                #pending-donations .table thead th:nth-child(9) {
+                    width: 11%;
+                }
+
+                /* Actions */
             }
         </style>
     @endsection
@@ -286,7 +323,7 @@
                                                     </small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
-                                                    @if($donation->donation_method === 'home_collection' && $donation->user->latitude && $donation->user->longitude)
+                                                    @if($donation->donation_method === 'home_collection' && $donation->user->latitude !== null && $donation->user->latitude !== '' && $donation->user->longitude !== null && $donation->user->longitude !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
                                                             data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                             data-donor-address="{{ $donation->user->address }}"
@@ -404,7 +441,7 @@
                                                     <small>{{ $donation->user->address ?? 'Not provided' }}</small>
                                                 </td>
                                                 <td data-label="Map" class="text-center">
-                                                    @if($donation->user->latitude && $donation->user->longitude)
+                                                    @if($donation->user->latitude !== null && $donation->user->latitude !== '' && $donation->user->longitude !== null && $donation->user->longitude !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
                                                             data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                             data-donor-address="{{ $donation->user->address }}"
@@ -558,7 +595,7 @@
                                                     <strong>{{ $donation->formatted_total_volume }}ml</strong>
                                                 </td>
                                                 <td data-label="Map" class="text-center">
-                                                    @if($donation->user->latitude && $donation->user->longitude)
+                                                    @if($donation->user->latitude !== null && $donation->user->latitude !== '' && $donation->user->longitude !== null && $donation->user->longitude !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
                                                             data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                             data-donor-address="{{ $donation->user->address }}"
@@ -887,17 +924,17 @@
                 let fieldsHTML = '<div class="row">';
                 for (let i = 1; i <= bagCount; i++) {
                     fieldsHTML += `
-                                                                                                                                <div class="col-md-6 mb-2">
-                                                                                                                                    <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                    <input type="number" 
-                                                                                                                                           id="walkin_bag_volume_${i}" 
-                                                                                                                                           name="bag_volumes[]" 
-                                                                                                                                           class="form-control walkin-bag-volume-input" 
-                                                                                                                                           step="0.01" 
-                                                                                                                                           min="0.01" 
-                                                                                                                                           required>
-                                                                                                                                </div>
-                                                                                                                            `;
+                                                                                                                                    <div class="col-md-6 mb-2">
+                                                                                                                                        <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                        <input type="number" 
+                                                                                                                                               id="walkin_bag_volume_${i}" 
+                                                                                                                                               name="bag_volumes[]" 
+                                                                                                                                               class="form-control walkin-bag-volume-input" 
+                                                                                                                                               step="0.01" 
+                                                                                                                                               min="0.01" 
+                                                                                                                                               required>
+                                                                                                                                    </div>
+                                                                                                                                `;
                 }
                 fieldsHTML += '</div>';
 
@@ -1158,19 +1195,19 @@
                 // Restore existing value if it exists
                 const existingValue = existingValues[i] || '';
                 fieldsHTML += `
-                                                                                                                                <div class="col-md-6 mb-2">
-                                                                                                                                    <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                    <input type="number" 
-                                                                                                                                           id="walkin_bag_volume_${i}" 
-                                                                                                                                           name="bag_volumes[]" 
-                                                                                                                                           class="form-control walkin-bag-volume-input" 
-                                                                                                                                           step="0.01" 
-                                                                                                                                           min="0.01" 
-                                                                                                                                           value="${existingValue}"
-                                                                                                                                           placeholder="Enter volume"
-                                                                                                                                           required>
-                                                                                                                                </div>
-                                                                                                                            `;
+                                                                                                                                    <div class="col-md-6 mb-2">
+                                                                                                                                        <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                        <input type="number" 
+                                                                                                                                               id="walkin_bag_volume_${i}" 
+                                                                                                                                               name="bag_volumes[]" 
+                                                                                                                                               class="form-control walkin-bag-volume-input" 
+                                                                                                                                               step="0.01" 
+                                                                                                                                               min="0.01" 
+                                                                                                                                               value="${existingValue}"
+                                                                                                                                               placeholder="Enter volume"
+                                                                                                                                               required>
+                                                                                                                                    </div>
+                                                                                                                                `;
             }
             fieldsHTML += '</div>';
 
@@ -1231,24 +1268,24 @@
                 }
 
                 fieldsHTML += `
-                                                                                                    <div class="col-md-6">
-                                                                                                        <div class="input-group input-group-lg">
-                                                                                                            <span class="input-group-text bg-primary text-white fw-bold">
-                                                                                                                <i class="fas fa-flask me-2"></i>Bag ${i}
-                                                                                                            </span>
-                                                                                                            <input type="number" 
-                                                                                                                   id="home_bag_volume_${i}" 
-                                                                                                                   name="bag_volumes[]" 
-                                                                                                                   class="form-control home-bag-volume-input" 
-                                                                                                                   step="0.01" 
-                                                                                                                   min="0.01" 
-                                                                                                                   value="${existingValue}"
-                                                                                                                   placeholder="Enter volume"
-                                                                                                                   required>
-                                                                                                            <span class="input-group-text">ml</span>
+                                                                                                        <div class="col-md-6">
+                                                                                                            <div class="input-group input-group-lg">
+                                                                                                                <span class="input-group-text bg-primary text-white fw-bold">
+                                                                                                                    <i class="fas fa-flask me-2"></i>Bag ${i}
+                                                                                                                </span>
+                                                                                                                <input type="number" 
+                                                                                                                       id="home_bag_volume_${i}" 
+                                                                                                                       name="bag_volumes[]" 
+                                                                                                                       class="form-control home-bag-volume-input" 
+                                                                                                                       step="0.01" 
+                                                                                                                       min="0.01" 
+                                                                                                                       value="${existingValue}"
+                                                                                                                       placeholder="Enter volume"
+                                                                                                                       required>
+                                                                                                                <span class="input-group-text">ml</span>
+                                                                                                            </div>
                                                                                                         </div>
-                                                                                                    </div>
-                                                                                                `;
+                                                                                                    `;
             }
             fieldsHTML += '</div>';
 
@@ -1283,7 +1320,8 @@
             const latitude = parseFloat($(this).data('latitude'));
             const longitude = parseFloat($(this).data('longitude'));
 
-            if (latitude && longitude) {
+            // Use numeric validation to allow 0 coordinates
+            if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
                 showLocationModal(donorName, donorAddress, latitude, longitude);
             } else {
                 Swal.fire({

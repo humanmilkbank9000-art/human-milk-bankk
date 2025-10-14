@@ -109,21 +109,38 @@ class HealthScreeningController extends Controller
         }
     }
 
-    public function reject($id)
+    public function reject(Request $request, $id)
     {
         $screening = HealthScreening::findOrFail($id);
-        $comments = request()->input('comments');
+        $comments = $request->input('comments');
+
+        // Enforce comments when declining. For AJAX requests return JSON 422, for normal requests use validator
+        if (($request->wantsJson() || $request->ajax()) && empty(trim((string) $comments))) {
+            return response()->json(['error' => 'Comments are required when declining.'], 422);
+        }
+
+        if (!($request->wantsJson() || $request->ajax())) {
+            // For non-AJAX requests, use Laravel validation to redirect back with errors if empty
+            $request->validate([
+                'comments' => 'required|string'
+            ]);
+        }
 
         try {
             $this->service->reject($screening, $comments);
 
-            if (request()->wantsJson() || request()->ajax()) {
+            if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => true, 'message' => 'Health screening declined successfully.']);
             }
 
             return redirect()->back()->with('success', 'Health screening rejected.');
         } catch (\Exception $e) {
             Log::error('HealthScreening reject error: ' . $e->getMessage());
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+
             return redirect()->back()->with('error', $e->getMessage());
         }
     }

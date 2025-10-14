@@ -46,9 +46,11 @@ class ReportsController extends Controller
         $requestStats = [
             'month' => Carbon::create()->month($month)->format('F'),
             'total' => $requestData['total'] ?? 0,
+            // approved already includes dispensed in the service
             'approved' => $requestData['approved'] ?? 0,
             'declined' => $requestData['declined'] ?? 0,
-            'pending' => $requestData['pending'] ?? 0,
+            // expose dispensed volume in ml for display
+            'dispensed_volume' => $requestData['dispensed_volume'] ?? 0,
         ];
 
         // Build donation stats from records

@@ -510,17 +510,24 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
                     <i class="bi bi-house-door me-2 icon"></i> <span>Dashboard</span>
                 </a>
             <a href="{{ route('admin.health-screening') }}"
-                class="{{ request()->routeIs('admin.health-screening') ? 'active' : '' }}">
+                class="{{ request()->routeIs('admin.health-screening') ? 'active' : '' }}"
+                style="position:relative; padding-right:1.6rem;">
                 <i class="bi bi-clipboard-pulse me-2 icon"></i> <span>Health Screening</span>
+                {{-- badge created dynamically by JS when count > 0 to avoid empty red circle --}}
             </a>
             <a href="{{ route('admin.donation') }}"
-                class="{{ request()->routeIs('admin.donation') ? 'active' : '' }}">
+                class="{{ request()->routeIs('admin.donation') ? 'active' : '' }}"
+                style="position:relative; padding-right:1.6rem;">
                 <i class="bi bi-droplet-half me-2 icon"></i> <span>Breastmilk Donation</span>
+                {{-- badge created dynamically by JS when count > 0 to avoid empty red circle --}}
             </a>
             <a href="{{ route('admin.request') }}"
-                class="{{ request()->routeIs('admin.request') ? 'active' : '' }}">
+                class="{{ request()->routeIs('admin.request') ? 'active' : '' }}"
+                style="position:relative; padding-right:1.6rem;">
                 <i class="bi bi-envelope-paper me-2 icon"></i> <span>Breastmilk Request</span>
+                {{-- badge created dynamically by JS when count > 0 to avoid empty red circle --}}
             </a>
+
             <a href="{{ route('admin.inventory') }}"
                 class="{{ request()->routeIs('admin.inventory') ? 'active' : '' }}">
                 <i class="bi bi-box-seam me-2 icon"></i> <span>Inventory</span>
@@ -555,6 +562,82 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Only run for admins - blade provides $accountRole in some layouts; fall back to session
+            var accountRole = typeof accountRole !== 'undefined' ? accountRole : '{{ session('account_role', '') }}';
+            if(accountRole !== 'admin') return;
+
+            const pages = [
+                { url: '{{ route('admin.health-screening') }}', selector: 'span.badge.bg-warning.text-dark.ms-1', target: 'sidebar-health-badge' },
+                { url: '{{ route('admin.donation') }}', selector: 'span.badge.bg-warning.text-dark', target: 'sidebar-donation-badge' },
+                { url: '{{ route('admin.request') }}', selector: 'span.badge.bg-warning', target: 'sidebar-request-badge' },
+            ];
+
+            function parseCount(html, selector){
+                try{
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    if(selector){
+                        const el = doc.querySelector(selector);
+                        if(el){ const m = el.textContent.match(/(\d+)/); if(m) return parseInt(m[1],10); }
+                    }
+                    const candidates = ['span.pending-count-badge','span.badge.bg-warning.text-dark','span.badge.bg-warning','span.badge.ms-1','span.badge'];
+                    for(const s of candidates){ const e = doc.querySelector(s); if(e){ const m = e.textContent.match(/(\d+)/); if(m) return parseInt(m[1],10); } }
+                    const any = Array.from(doc.querySelectorAll('span,div')).find(n => /\d+/.test(n.textContent));
+                    if(any){ const m = any.textContent.match(/(\d+)/); if(m) return parseInt(m[1],10); }
+                }catch(e){ console && console.error && console.error('parse error', e); }
+                return 0;
+            }
+
+            async function updateBadges(){
+                for(const p of pages){
+                    try{
+                        const res = await fetch(p.url, { credentials: 'same-origin' });
+                        if(!res.ok) continue;
+                        const html = await res.text();
+                        const count = parseCount(html, p.selector);
+                        // find the sidebar link for this target
+                        const link = document.querySelector('[href]');
+                        // more robust: look for element by route URL
+                        const sidebarLink = Array.from(document.querySelectorAll('.sidebar a')).find(a => a.getAttribute('href') === p.url || a.href === p.url || a.getAttribute('href') === p.url.replace(window.location.origin, ''));
+                        if(!sidebarLink) continue;
+                        let badge = sidebarLink.querySelector('.dynamic-sidebar-badge');
+                        if(count > 0){
+                            if(!badge){
+                                badge = document.createElement('span');
+                                badge.className = 'badge bg-danger text-white dynamic-sidebar-badge';
+                                badge.setAttribute('aria-hidden', 'true');
+                                // style to avoid shifting text
+                                badge.style.fontSize = '0.65rem';
+                                badge.style.position = 'absolute';
+                                badge.style.right = '10px';
+                                badge.style.top = '50%';
+                                badge.style.transform = 'translateY(-50%)';
+                                badge.style.minWidth = '1.4rem';
+                                badge.style.height = '1.4rem';
+                                badge.style.lineHeight = '1.1rem';
+                                badge.style.textAlign = 'center';
+                                badge.style.padding = '0 0.35rem';
+                                badge.style.borderRadius = '50%';
+                                sidebarLink.style.position = sidebarLink.style.position || 'relative';
+                                sidebarLink.appendChild(badge);
+                            }
+                            badge.style.display = 'inline-block';
+                            badge.textContent = String(count);
+                        } else {
+                            if(badge){ badge.remove(); }
+                        }
+                    }catch(err){ console && console.error && console.error('badge fetch err', err); }
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function(){
+                updateBadges();
+                setInterval(updateBadges, 60000); // refresh every minute
+            });
+        })();
+    </script>
     <script>
         // Mobile menu toggle functionality
         document.addEventListener('DOMContentLoaded', function() {

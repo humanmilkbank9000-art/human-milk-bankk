@@ -121,6 +121,24 @@ class MessageService
     }
 
     /**
+     * Search users by name or contact number. Returns a Collection of User models.
+     */
+    public function searchUsers(string $q, int $limit = 20): Collection
+    {
+        $q = trim($q);
+        if ($q === '') {
+            return collect();
+        }
+
+        return User::where(function ($query) use ($q) {
+            $query->where(DB::raw("CONCAT(first_name, ' ', last_name)"), 'LIKE', "%{$q}%")
+                  ->orWhere('first_name', 'LIKE', "%{$q}%")
+                  ->orWhere('last_name', 'LIKE', "%{$q}%")
+                  ->orWhere('contact_number', 'LIKE', "%{$q}%");
+        })->limit($limit)->get();
+    }
+
+    /**
      * Get the last message in a conversation
      */
     public function getLastMessage(int $userId, string $userType, int $partnerId, string $partnerType): ?Message
@@ -128,5 +146,54 @@ class MessageService
         return Message::conversation($userId, $userType, $partnerId, $partnerType)
             ->latest('created_at')
             ->first();
+    }
+
+    /**
+     * Delete a single message (with authorization check)
+     */
+    public function deleteMessage(int $messageId, int $userId, string $userType): bool
+    {
+        $message = Message::where('id', $messageId)
+            ->where(function ($query) use ($userId, $userType) {
+                // User can only delete messages they sent or received
+                $query->where(function ($q) use ($userId, $userType) {
+                    $q->where('sender_id', $userId)
+                      ->where('sender_type', $userType);
+                })->orWhere(function ($q) use ($userId, $userType) {
+                    $q->where('receiver_id', $userId)
+                      ->where('receiver_type', $userType);
+                });
+            })
+            ->first();
+
+        if (!$message) {
+            return false;
+        }
+
+        $message->delete();
+        return true;
+    }
+
+    /**
+     * Delete entire conversation between two parties
+     */
+    public function deleteConversation(int $userId, string $userType, int $partnerId, string $partnerType): int
+    {
+        // Delete all messages in the conversation (both directions)
+        return Message::where(function ($query) use ($userId, $userType, $partnerId, $partnerType) {
+            $query->where(function ($q) use ($userId, $userType, $partnerId, $partnerType) {
+                // Messages from user to partner
+                $q->where('sender_id', $userId)
+                  ->where('sender_type', $userType)
+                  ->where('receiver_id', $partnerId)
+                  ->where('receiver_type', $partnerType);
+            })->orWhere(function ($q) use ($userId, $userType, $partnerId, $partnerType) {
+                // Messages from partner to user
+                $q->where('sender_id', $partnerId)
+                  ->where('sender_type', $partnerType)
+                  ->where('receiver_id', $userId)
+                  ->where('receiver_type', $userType);
+            });
+        })->delete();
     }
 }
