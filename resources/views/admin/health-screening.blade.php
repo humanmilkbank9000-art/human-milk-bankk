@@ -72,14 +72,30 @@
         /* Modal Stability Fixes */
         .modal {
             z-index: 1050 !important;
+            display: none;
+        }
+
+        .modal.show {
+            display: block !important;
         }
 
         .modal-backdrop {
             z-index: 1040 !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            opacity: 0.5;
         }
 
         .modal-dialog {
             pointer-events: all;
+            position: relative;
+            width: auto;
+            margin: 0.5rem;
+            pointer-events: none;
         }
 
         .modal-content {
@@ -104,21 +120,42 @@
             position: relative;
             flex: 1 1 auto;
             padding: 1rem;
+            max-height: 70vh;
+            overflow-y: auto;
         }
 
         .modal.fade .modal-dialog {
             transition: transform .3s ease-out;
+            transform: translate(0, -50px);
         }
 
         .modal.show .modal-dialog {
             transform: none;
         }
 
-        /* Prevent modal flickering on hover */
+        /* Prevent modal flickering and ensure proper interaction */
         .modal *,
         .modal *:before,
         .modal *:after {
             pointer-events: auto;
+        }
+
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+            padding-right: 0px !important;
+        }
+
+        /* Fix for multiple modal backdrops */
+        .modal-backdrop ~ .modal-backdrop {
+            display: none !important;
+        }
+
+        /* Ensure View buttons are always clickable */
+        .btn[data-bs-toggle="modal"] {
+            position: relative;
+            z-index: 1;
+            pointer-events: auto !important;
         }
 
         .translation {
@@ -236,30 +273,71 @@
                 });
             });
 
-            // Ensure modals are properly initialized and stable
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                modal.addEventListener('show.bs.modal', function (e) {
-                    // Prevent any background scrolling
-                    document.body.style.overflow = 'hidden';
-                });
+            // Fix modal initialization and prevent conflicts
+            setTimeout(() => {
+                // Clean up any existing modal backdrops on page load
+                document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                
+                // Ensure modals are properly initialized and stable
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach((modal, index) => {
+                    // Remove any existing event listeners by cloning the element
+                    const newModal = modal.cloneNode(true);
+                    modal.parentNode.replaceChild(newModal, modal);
+                    
+                    // Add stable event listeners to the new modal element
+                    newModal.addEventListener('show.bs.modal', function (e) {
+                        // Clean up any existing backdrops before showing new modal
+                        document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                        document.body.style.overflow = 'hidden';
+                        
+                        // Ensure proper z-index stacking
+                        this.style.zIndex = 1050 + index;
+                    });
 
-                modal.addEventListener('hidden.bs.modal', function (e) {
-                    // Restore scrolling
-                    document.body.style.overflow = 'auto';
-                    // Clean up any remaining backdrops
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    backdrops.forEach(backdrop => backdrop.remove());
-                });
-            });
+                    newModal.addEventListener('shown.bs.modal', function (e) {
+                        // Ensure backdrop is behind this modal
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.style.zIndex = 1049 + index;
+                        }
+                    });
 
-            // Prevent modal flickering by ensuring proper pointer events
-            document.querySelectorAll('.modal-dialog').forEach(dialog => {
-                dialog.addEventListener('mouseenter', function (e) {
-                    e.stopPropagation();
+                    newModal.addEventListener('hidden.bs.modal', function (e) {
+                        // Restore scrolling and clean up
+                        document.body.style.overflow = 'auto';
+                        document.body.classList.remove('modal-open');
+                        // Clean up all backdrops
+                        document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                    });
                 });
-                dialog.addEventListener('mouseleave', function (e) {
+            }, 100);
+
+            // Fix view buttons to ensure they work properly
+            document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
                     e.stopPropagation();
+                    
+                    // Clean up any existing modal states
+                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    
+                    const targetId = this.getAttribute('data-bs-target');
+                    const targetModal = document.querySelector(targetId);
+                    
+                    if (targetModal) {
+                        // Initialize Bootstrap modal if not already done
+                        let modalInstance = bootstrap.Modal.getInstance(targetModal);
+                        if (!modalInstance) {
+                            modalInstance = new bootstrap.Modal(targetModal, {
+                                backdrop: true,
+                                keyboard: true,
+                                focus: true
+                            });
+                        }
+                        modalInstance.show();
+                    }
                 });
             });
         });
