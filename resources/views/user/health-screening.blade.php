@@ -1053,6 +1053,17 @@
         function submitForm() {
             let form = $('#healthScreeningForm');
 
+            // Show loading state
+            Swal.fire({
+                title: 'Submitting...',
+                text: 'Please wait while we process your health screening.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             $.ajax({
                 url: form.attr('action'),
                 method: form.attr('method'),
@@ -1071,12 +1082,18 @@
                     });
                 },
                 error: function(xhr) {
-                    let msg = xhr.responseJSON?.error || xhr.responseJSON?.message || 'An error occurred. Please try again.';
+                    console.error('Submission error:', xhr);
+                    
+                    let msg = 'An error occurred while submitting your health screening. Please try again.';
                     
                     // If there are validation errors, display them
                     if (xhr.status === 422 && xhr.responseJSON?.errors) {
                         let errorMessages = Object.values(xhr.responseJSON.errors).flat().join('<br>');
-                        msg = errorMessages;
+                        msg = '<strong>Please fix the following errors:</strong><br><br>' + errorMessages;
+                    } else if (xhr.responseJSON?.error) {
+                        msg = xhr.responseJSON.error;
+                    } else if (xhr.responseJSON?.message) {
+                        msg = xhr.responseJSON.message;
                     }
                     
                     Swal.fire({
