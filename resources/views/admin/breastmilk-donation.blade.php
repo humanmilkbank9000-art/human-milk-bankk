@@ -880,33 +880,44 @@
             
             // Real-time search function
             function performSearch() {
-                const searchTerm = searchInput.value.toLowerCase().trim();
+                const searchTerm = searchInput.value.toLowerCase();
                 let totalCount = 0;
                 let visibleCount = 0;
 
                 // Process each tab's table
                 allTables.forEach(tableBody => {
                     const rows = Array.from(tableBody.querySelectorAll('tr'));
+                    totalCount += rows.length;
                     
-                    rows.forEach(row => {
-                        totalCount++;
-                        
-                        if (searchTerm === '') {
+                    if (searchTerm === '') {
+                        // Reset to original order
+                        rows.forEach(row => {
                             row.style.display = '';
-                            visibleCount++;
-                            return;
-                        }
-
-                        // Search in all text content of the row
-                        const rowText = row.textContent.toLowerCase();
+                        });
+                        visibleCount = totalCount;
+                    } else {
+                        // Separate matched and non-matched rows
+                        const matchedRows = [];
+                        const unmatchedRows = [];
                         
-                        if (rowText.includes(searchTerm)) {
-                            row.style.display = '';
-                            visibleCount++;
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
+                        rows.forEach(row => {
+                            // Search in all text content of the row
+                            const rowText = row.textContent.toLowerCase();
+                            
+                            if (rowText.indexOf(searchTerm) !== -1) {
+                                row.style.display = '';
+                                matchedRows.push(row);
+                                visibleCount++;
+                            } else {
+                                row.style.display = 'none';
+                                unmatchedRows.push(row);
+                            }
+                        });
+                        
+                        // Reorder: matched rows first, then unmatched
+                        matchedRows.forEach(row => tableBody.appendChild(row));
+                        unmatchedRows.forEach(row => tableBody.appendChild(row));
+                    }
                 });
 
                 // Update UI

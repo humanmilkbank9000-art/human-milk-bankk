@@ -273,14 +273,17 @@
                 let visibleCount = 0;
 
                 if (searchTerm === '') {
-                    // Show all rows
+                    // Show all rows in original order
                     allRows.forEach(row => row.style.display = '');
                     clearBtn.style.display = 'none';
                     searchResults.textContent = '';
                     return;
                 }
 
-                // Filter rows with immediate character matching
+                // Separate matched and non-matched rows
+                const matchedRows = [];
+                const unmatchedRows = [];
+                
                 allRows.forEach(row => {
                     // Get all cell content for comprehensive search
                     let rowText = '';
@@ -292,11 +295,17 @@
                     // Check if search term matches anywhere in the row
                     if (rowText.indexOf(searchTerm) !== -1) {
                         row.style.display = '';
+                        matchedRows.push(row);
                         visibleCount++;
                     } else {
                         row.style.display = 'none';
+                        unmatchedRows.push(row);
                     }
                 });
+                
+                // Reorder DOM: matched rows first, then unmatched (hidden)
+                matchedRows.forEach(row => tableBody.appendChild(row));
+                unmatchedRows.forEach(row => tableBody.appendChild(row));
 
                 // Update UI
                 clearBtn.style.display = 'inline-block';

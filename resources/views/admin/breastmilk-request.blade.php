@@ -971,32 +971,43 @@
                 // Process each tab's table
                 allTables.forEach(tableBody => {
                     const rows = Array.from(tableBody.querySelectorAll('tr'));
+                    totalCount += rows.length;
                     
-                    rows.forEach(row => {
-                        totalCount++;
-                        
-                        if (searchTerm === '') {
+                    if (searchTerm === '') {
+                        // Reset to original order
+                        rows.forEach(row => {
                             row.style.display = '';
-                            visibleCount++;
-                            return;
-                        }
-
-                        // Get all cell content for comprehensive search
-                        let rowText = '';
-                        const cells = row.querySelectorAll('td');
-                        cells.forEach(cell => {
-                            rowText += (cell.textContent || '') + ' ';
                         });
-                        rowText = rowText.toLowerCase();
+                        visibleCount = totalCount;
+                    } else {
+                        // Separate matched and non-matched rows
+                        const matchedRows = [];
+                        const unmatchedRows = [];
                         
-                        // Check if search term matches anywhere in the row (no trim)
-                        if (rowText.indexOf(searchTerm) !== -1) {
-                            row.style.display = '';
-                            visibleCount++;
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
+                        rows.forEach(row => {
+                            // Get all cell content for comprehensive search
+                            let rowText = '';
+                            const cells = row.querySelectorAll('td');
+                            cells.forEach(cell => {
+                                rowText += (cell.textContent || '') + ' ';
+                            });
+                            rowText = rowText.toLowerCase();
+                            
+                            // Check if search term matches anywhere in the row
+                            if (rowText.indexOf(searchTerm) !== -1) {
+                                row.style.display = '';
+                                matchedRows.push(row);
+                                visibleCount++;
+                            } else {
+                                row.style.display = 'none';
+                                unmatchedRows.push(row);
+                            }
+                        });
+                        
+                        // Reorder: matched rows first, then unmatched
+                        matchedRows.forEach(row => tableBody.appendChild(row));
+                        unmatchedRows.forEach(row => tableBody.appendChild(row));
+                    }
                 });
 
                 // Update UI
