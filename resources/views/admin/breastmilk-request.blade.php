@@ -371,7 +371,7 @@
             <div class="tab-pane fade{{ request()->get('status', 'pending') == 'pending' ? ' show active' : '' }}"
                 id="pending-requests" role="tabpanel">
                 <div class="card card-standard">
-                    <div class="card-header">
+                    <div class="card-header bg-success text-white">
                         <h5>Pending Breastmilk Requests</h5>
                     </div>
                     <div class="card-body">
@@ -462,7 +462,7 @@
             <div class="tab-pane fade{{ request()->get('status') == 'dispensed' ? ' show active' : '' }}"
                 id="dispensed-requests" role="tabpanel">
                 <div class="card card-standard">
-                    <div class="card-header">
+                    <div class="card-header bg-info text-white">
                         <h5>Dispensed Breastmilk Requests</h5>
                     </div>
                     <div class="card-body">
@@ -547,7 +547,7 @@
             <div class="tab-pane fade{{ request()->get('status') == 'declined' ? ' show active' : '' }}"
                 id="declined-requests" role="tabpanel">
                 <div class="card card-standard">
-                    <div class="card-header">
+                    <div class="card-header bg-danger text-white">
                         <h5>Declined Breastmilk Requests</h5>
                     </div>
                     <div class="card-body">
