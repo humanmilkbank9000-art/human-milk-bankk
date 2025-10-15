@@ -964,7 +964,7 @@
             
             // Real-time search function
             function performSearch() {
-                const searchTerm = searchInput.value.toLowerCase().trim();
+                const searchTerm = searchInput.value.toLowerCase();
                 let totalCount = 0;
                 let visibleCount = 0;
 
@@ -981,10 +981,16 @@
                             return;
                         }
 
-                        // Search in all text content of the row
-                        const rowText = row.textContent.toLowerCase();
+                        // Get all cell content for comprehensive search
+                        let rowText = '';
+                        const cells = row.querySelectorAll('td');
+                        cells.forEach(cell => {
+                            rowText += (cell.textContent || '') + ' ';
+                        });
+                        rowText = rowText.toLowerCase();
                         
-                        if (rowText.includes(searchTerm)) {
+                        // Check if search term matches anywhere in the row (no trim)
+                        if (rowText.indexOf(searchTerm) !== -1) {
                             row.style.display = '';
                             visibleCount++;
                         } else {

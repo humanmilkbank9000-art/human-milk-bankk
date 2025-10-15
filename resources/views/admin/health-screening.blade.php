@@ -269,7 +269,7 @@
 
             // Real-time search function
             function performSearch() {
-                const searchTerm = searchInput.value.toLowerCase().trim();
+                const searchTerm = searchInput.value.toLowerCase();
                 let visibleCount = 0;
 
                 if (searchTerm === '') {
@@ -280,17 +280,17 @@
                     return;
                 }
 
-                // Filter rows
+                // Filter rows with immediate character matching
                 allRows.forEach(row => {
-                    const name = row.cells[0]?.textContent.toLowerCase() || '';
-                    const contact = row.cells[1]?.textContent.toLowerCase() || '';
-                    const dateTime = row.cells[2]?.textContent.toLowerCase() || '';
+                    // Get all cell content for comprehensive search
+                    let rowText = '';
+                    for (let i = 0; i < row.cells.length; i++) {
+                        rowText += (row.cells[i].textContent || '') + ' ';
+                    }
+                    rowText = rowText.toLowerCase();
                     
-                    const matches = name.includes(searchTerm) || 
-                                  contact.includes(searchTerm) || 
-                                  dateTime.includes(searchTerm);
-
-                    if (matches) {
+                    // Check if search term matches anywhere in the row
+                    if (rowText.indexOf(searchTerm) !== -1) {
                         row.style.display = '';
                         visibleCount++;
                     } else {
