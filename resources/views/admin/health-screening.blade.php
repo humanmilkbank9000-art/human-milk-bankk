@@ -57,12 +57,64 @@
 
         .table-responsive {
             border-radius: 8px;
-            overflow: hidden;
         }
 
         .btn {
             font-size: 0.95rem;
             border-radius: 6px;
+        }
+        
+        /* Card-based responsive layout for smaller screens */
+        @media (max-width: 1200px) {
+            .table-responsive table {
+                display: none;
+            }
+            
+            .responsive-card {
+                display: block !important;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                background: white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            
+            .responsive-card .card-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .responsive-card .card-row:last-child {
+                border-bottom: none;
+            }
+            
+            .responsive-card .card-label {
+                font-weight: 600;
+                color: #495057;
+                font-size: 0.9rem;
+            }
+            
+            .responsive-card .card-value {
+                text-align: right;
+                color: #212529;
+                font-size: 0.9rem;
+            }
+            
+            .responsive-card .card-actions {
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 2px solid #e9ecef;
+                text-align: center;
+            }
+        }
+        
+        @media (min-width: 1201px) {
+            .responsive-card {
+                display: none !important;
+            }
         }
 
         .tab-content>.tab-pane {
@@ -806,6 +858,52 @@
                                     </tr>
                                 @endforeach
                             </tbody>
+                        </table>
+                    </div>
+                    
+                    {{-- Card Layout for Smaller Screens --}}
+                    @foreach($healthScreenings as $index => $screening)
+                        <div class="responsive-card" style="display: none;">
+                            <div class="card-row">
+                                <span class="card-label">Name:</span>
+                                <span class="card-value"><strong>{{ $screening->user->first_name ?? '-' }} {{ $screening->user->last_name ?? '' }}</strong></span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Contact Number:</span>
+                                <span class="card-value">{{ $screening->user->contact_number ?? '-' }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Date Submitted:</span>
+                                <span class="card-value">
+                                    <strong>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                    <small class="text-muted">{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                </span>
+                            </div>
+                            @if($status == 'accepted' && !empty($screening->date_accepted))
+                                <div class="card-row">
+                                    <span class="card-label">Date Accepted:</span>
+                                    <span class="card-value">
+                                        <strong>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                        <small class="text-muted">{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                    </span>
+                                </div>
+                            @elseif($status == 'declined' && !empty($screening->date_declined))
+                                <div class="card-row">
+                                    <span class="card-label">Date Declined:</span>
+                                    <span class="card-value">
+                                        <strong>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                        <small class="text-muted">{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                    </span>
+                                </div>
+                            @endif
+                            <div class="card-actions">
+                                <button class="btn btn-primary btn-sm w-100" data-bs-toggle="modal"
+                                    data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                    <i class="bi bi-eye"></i> View Details
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
                         </table>
                     </div>
                 </div>

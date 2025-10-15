@@ -156,9 +156,79 @@
             }
 
             /* ============================================
-                       TABLET OPTIMIZATION FOR PENDING DONATIONS
-                       9-column table - Extra compact layout
+                       RESPONSIVE LAYOUT - NO HORIZONTAL SCROLL
                        ============================================ */
+            
+            /* Card-based layout for smaller screens */
+            @media (max-width: 1200px) {
+                #pending-donations .table-responsive table {
+                    display: none;
+                }
+                
+                .donation-card {
+                    display: block !important;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                    background: white;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+                
+                .donation-card .card-header-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding-bottom: 0.75rem;
+                    margin-bottom: 0.75rem;
+                    border-bottom: 2px solid #f8f9fa;
+                }
+                
+                .donation-card .card-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 0.4rem 0;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+                
+                .donation-card .card-row:last-of-type {
+                    border-bottom: none;
+                }
+                
+                .donation-card .card-label {
+                    font-weight: 600;
+                    color: #495057;
+                    font-size: 0.85rem;
+                }
+                
+                .donation-card .card-value {
+                    text-align: right;
+                    color: #212529;
+                    font-size: 0.85rem;
+                }
+                
+                .donation-card .card-actions {
+                    margin-top: 0.75rem;
+                    padding-top: 0.75rem;
+                    border-top: 2px solid #e9ecef;
+                    display: flex;
+                    gap: 0.5rem;
+                    flex-wrap: wrap;
+                }
+                
+                .donation-card .card-actions .btn {
+                    flex: 1;
+                    min-width: 120px;
+                }
+            }
+            
+            @media (min-width: 1201px) {
+                .donation-card {
+                    display: none !important;
+                }
+            }
+            
+            /* Extra compact for tablets */
             @media (min-width: 600px) and (max-width: 1024px) {
 
                 /* Make pending donations table even more compact */
@@ -212,22 +282,22 @@
 
                 /* Allocate width percentages for better distribution */
                 #pending-donations .table thead th:nth-child(1) {
-                    width: 12%;
+                    width: 11%;
                 }
 
                 /* Name */
                 #pending-donations .table thead th:nth-child(2) {
-                    width: 8%;
+                    width: 7%;
                 }
 
                 /* Type */
                 #pending-donations .table thead th:nth-child(3) {
-                    width: 15%;
+                    width: 13%;
                 }
 
                 /* Address */
                 #pending-donations .table thead th:nth-child(4) {
-                    width: 7%;
+                    width: 6%;
                 }
 
                 /* Location */
@@ -237,25 +307,45 @@
 
                 /* Bags */
                 #pending-donations .table thead th:nth-child(6) {
-                    width: 12%;
+                    width: 11%;
                 }
 
                 /* Volume/Bag */
                 #pending-donations .table thead th:nth-child(7) {
-                    width: 9%;
+                    width: 8%;
                 }
 
                 /* Total */
                 #pending-donations .table thead th:nth-child(8) {
-                    width: 13%;
+                    width: 12%;
                 }
 
                 /* Date & Time */
                 #pending-donations .table thead th:nth-child(9) {
-                    width: 11%;
+                    width: 18%;
                 }
 
-                /* Actions */
+                /* Actions - increased from 11% to 18% */
+                
+                /* Make table horizontally scrollable as fallback */
+                #pending-donations .table-container {
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
+                
+                /* Ensure action buttons stay visible */
+                #pending-donations .table thead th:nth-child(9),
+                #pending-donations .table tbody td:nth-child(9) {
+                    position: sticky;
+                    right: 0;
+                    background-color: white;
+                    box-shadow: -2px 0 4px rgba(0,0,0,0.05);
+                    z-index: 1;
+                }
+                
+                #pending-donations .table thead th:nth-child(9) {
+                    background-color: #f8f9fa;
+                }
             }
 
             /* Mobile Modal Fixes - Ensure buttons are visible and accessible */
@@ -413,8 +503,8 @@
                     </div>
                     <div class="card-body">
                         @if($pendingDonations->count() > 0)
-                            <div class="table-container table-wide">
-                                <table class="table table-hover">
+                            <div class="table-responsive">
+                                <table class="table table-hover" style="min-width: 1200px;">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
@@ -516,6 +606,101 @@
                                     </tbody>
                                 </table>
                             </div>
+                            
+                            {{-- Card Layout for Smaller Screens --}}
+                            @foreach($pendingDonations as $donation)
+                                <div class="donation-card" style="display: none;">
+                                    <div class="card-header-row">
+                                        <div>
+                                            <strong style="font-size: 1rem;">{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</strong>
+                                        </div>
+                                        <div>
+                                            @if($donation->donation_method === 'walk_in')
+                                                <span class="badge bg-info">Walk-in</span>
+                                            @else
+                                                <span class="badge bg-primary">Home Collection</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    @if($donation->donation_method === 'home_collection')
+                                        <div class="card-row">
+                                            <span class="card-label">Address:</span>
+                                            <span class="card-value">{{ $donation->user->address ?? 'Not provided' }}</span>
+                                        </div>
+                                        @if($donation->user->latitude && $donation->user->longitude)
+                                            <div class="card-row">
+                                                <span class="card-label">Location:</span>
+                                                <span class="card-value">
+                                                    <button class="btn btn-info btn-sm view-location"
+                                                        data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
+                                                        data-donor-address="{{ $donation->user->address }}"
+                                                        data-latitude="{{ $donation->user->latitude }}"
+                                                        data-longitude="{{ $donation->user->longitude }}">
+                                                        <i class="fas fa-map-marked-alt"></i> View Map
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        @endif
+                                    @endif
+                                    
+                                    <div class="card-row">
+                                        <span class="card-label">Number of Bags:</span>
+                                        <span class="card-value"><strong>{{ $donation->number_of_bags ?? '-' }}</strong></span>
+                                    </div>
+                                    
+                                    <div class="card-row">
+                                        <span class="card-label">Volume per Bag:</span>
+                                        <span class="card-value">
+                                            @if($donation->individual_bag_volumes)
+                                                {{ $donation->formatted_bag_volumes }}
+                                            @elseif($donation->volume_per_bag)
+                                                {{ $donation->volume_per_bag }}ml each
+                                            @else
+                                                -
+                                            @endif
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="card-row">
+                                        <span class="card-label">Total Volume:</span>
+                                        <span class="card-value"><strong>{{ $donation->formatted_total_volume ?? '-' }}ml</strong></span>
+                                    </div>
+                                    
+                                    <div class="card-row">
+                                        <span class="card-label">Date & Time:</span>
+                                        <span class="card-value">
+                                            @if($donation->donation_method === 'walk_in')
+                                                {{ $donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A' }}
+                                                @if($donation->availability)
+                                                    <br>{{ $donation->availability->formatted_time }}
+                                                @elseif($donation->donation_time)
+                                                    <br>{{ \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
+                                                @endif
+                                            @else
+                                                {{ $donation->created_at->format('M d, Y') }}<br>{{ $donation->created_at->format('g:i A') }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="card-actions">
+                                        @if($donation->donation_method === 'walk_in')
+                                            <button class="btn btn-success validate-walk-in"
+                                                data-id="{{ $donation->breastmilk_donation_id }}"
+                                                data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}">
+                                                <i class="fas fa-check"></i> Validate Walk-in
+                                            </button>
+                                        @else
+                                            <button class="btn btn-primary schedule-pickup"
+                                                data-id="{{ $donation->breastmilk_donation_id }}"
+                                                data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
+                                                data-address="{{ $donation->user->address ?? 'Not provided' }}">
+                                                <i class="fas fa-calendar-alt"></i> Schedule Pickup
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
                         @else
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-inbox fa-3x mb-3"></i>
