@@ -66,6 +66,10 @@ class SmsService
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         
         $headers = array(
             "Content-Type: application/json"
@@ -74,28 +78,47 @@ class SmsService
         
         $get_sms_status = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_errno = curl_errno($ch);
         $curl_error = curl_error($ch);
         curl_close($ch);
 
         // Log the response
-        if ($curl_error) {
-            Log::error('Qproxy SMS cURL error', [
+        if ($curl_errno !== 0 || $curl_error) {
+            Log::error('Qproxy SMS cURL error - Check if API URL is correct', [
                 'mobile' => $mobile,
+                'url' => $url,
+                'token' => $token ? 'SET' : 'NOT SET',
+                'error_number' => $curl_errno,
                 'error' => $curl_error,
+                'message' => $message,
+                'note' => 'DNS Error (6) means the domain cannot be resolved. Please verify the Qproxy API URL is correct.',
             ]);
+            
+            // DNS error - likely wrong URL
+            if ($curl_errno === 6) {
+                return [
+                    'success' => false,
+                    'message' => 'SMS API endpoint unreachable. Please verify the Qproxy API URL in your .env file.',
+                    'error' => $curl_error,
+                    'error_number' => $curl_errno,
+                ];
+            }
+            
             return [
                 'success' => false,
-                'message' => 'Failed to send SMS',
+                'message' => 'Failed to send SMS: ' . $curl_error,
                 'error' => $curl_error,
+                'error_number' => $curl_errno,
             ];
         }
 
         $response = json_decode($get_sms_status, true);
 
-        Log::info('Qproxy SMS sent', [
+        Log::info('Qproxy SMS API Response', [
             'mobile' => $mobile,
             'http_code' => $http_code,
             'response' => $response,
+            'raw_response' => $get_sms_status,
         ]);
 
         return [
