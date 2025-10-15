@@ -49,6 +49,17 @@ class AuthService
         if (!Hash::check($currentPassword, $user->password)) throw new \RuntimeException('Current password is incorrect.');
         $user->password = Hash::make($newPassword);
         $user->save();
+        
+        // Send SMS notification about password change
+        try {
+            $user->notify(new \App\Notifications\PasswordChangedNotification());
+        } catch (\Throwable $e) {
+            Log::warning('Failed to send password change SMS notification', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+        
         return $user;
     }
 

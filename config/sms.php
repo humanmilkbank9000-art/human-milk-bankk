@@ -6,10 +6,11 @@ return [
     | SMS Driver
     |--------------------------------------------------------------------------
     |
-    | Supported: "log", "infobip"
+    | Supported: "log", "infobip", "qproxy"
     | 
     | - log: Logs SMS to laravel.log (for development/testing)
     | - infobip: Sends real SMS via Infobip API
+    | - qproxy: Sends real SMS via Qproxy API
     |
     */
 
@@ -41,5 +42,19 @@ return [
         'api_key' => config('services.infobip.api_key'),
         'base_url' => config('services.infobip.base_url'),
         'sender' => config('services.infobip.sender'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Qproxy Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for Qproxy SMS driver.
+    |
+    */
+
+    'qproxy' => [
+        'token' => env('QPROXY_SMS_TOKEN'),
+        'url' => env('QPROXY_SMS_URL', 'https://app.qproxy.xyz/api/sms/v1/send'),
     ],
 ];

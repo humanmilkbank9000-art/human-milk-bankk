@@ -376,7 +376,7 @@
                         <hr>
                         <h6>Infant Information</h6>
                         @if($infant)
-                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</p>
+                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</p>
                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
                             <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth }}</p>
                             <p><strong>Age:</strong> {{ $infant->getFormattedAge() }}</p>
@@ -527,7 +527,7 @@
                                 @if($infant)
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</p>
+                                            <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</p>
                                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
                                             <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth }}</p>
                                         </div>
@@ -918,7 +918,7 @@
             // Infant Information
             reviewHTML += '<div class="review-section">';
             reviewHTML += '<h6>Infant Information</h6>';
-            reviewHTML += '<div class="review-item"><strong>Name:</strong> {{ $infant->first_name ?? '' }} {{ $infant->last_name ?? '' }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}</div>';
+            reviewHTML += '<div class="review-item"><strong>Name:</strong> {{ $infant->first_name ?? '' }} {{ $infant->last_name ?? '' }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Sex:</strong> {{ ucfirst($infant->sex ?? '') }}</div>';
             reviewHTML += '<div class="review-item"><strong>Date of Birth:</strong> {{ $infant->date_of_birth ?? '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Age:</strong> {{ $infant->getFormattedAge() }}</div>';
@@ -1053,6 +1053,17 @@
         function submitForm() {
             let form = $('#healthScreeningForm');
 
+            // Show loading state
+            Swal.fire({
+                title: 'Submitting...',
+                text: 'Please wait while we process your health screening.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             $.ajax({
                 url: form.attr('action'),
                 method: form.attr('method'),
@@ -1071,12 +1082,18 @@
                     });
                 },
                 error: function(xhr) {
-                    let msg = xhr.responseJSON?.error || xhr.responseJSON?.message || 'An error occurred. Please try again.';
+                    console.error('Submission error:', xhr);
+                    
+                    let msg = 'An error occurred while submitting your health screening. Please try again.';
                     
                     // If there are validation errors, display them
                     if (xhr.status === 422 && xhr.responseJSON?.errors) {
                         let errorMessages = Object.values(xhr.responseJSON.errors).flat().join('<br>');
-                        msg = errorMessages;
+                        msg = '<strong>Please fix the following errors:</strong><br><br>' + errorMessages;
+                    } else if (xhr.responseJSON?.error) {
+                        msg = xhr.responseJSON.error;
+                    } else if (xhr.responseJSON?.message) {
+                        msg = xhr.responseJSON.message;
                     }
                     
                     Swal.fire({

@@ -19,26 +19,22 @@ class StoreHealthScreeningRequest extends FormRequest
             'type_of_donor'  => 'required|in:community,private,employee,network_office_agency',
         ];
 
-        $requiredYesNo = [
-            'medical_history_01', 'medical_history_03', 'medical_history_07',
-            'medical_history_09', 'medical_history_14', 'medical_history_15',
-            'sexual_history_01', 'sexual_history_02', 'sexual_history_04',
-            'donor_infant_01', 'donor_infant_02', 'donor_infant_03'
-        ];
-
-        foreach ($requiredYesNo as $field) {
+        // All medical history questions (15 questions)
+        for ($i = 1; $i <= 15; $i++) {
+            $field = 'medical_history_' . str_pad($i, 2, '0', STR_PAD_LEFT);
             $rules[$field] = 'required|in:yes,no';
         }
 
-        $optionalFields = [
-            'medical_history_02', 'medical_history_04', 'medical_history_05',
-            'medical_history_06', 'medical_history_08', 'medical_history_10',
-            'medical_history_11', 'medical_history_12', 'medical_history_13',
-            'sexual_history_03', 'donor_infant_04', 'donor_infant_05'
-        ];
+        // All sexual history questions (4 questions)
+        for ($i = 1; $i <= 4; $i++) {
+            $field = 'sexual_history_' . str_pad($i, 2, '0', STR_PAD_LEFT);
+            $rules[$field] = 'required|in:yes,no';
+        }
 
-        foreach ($optionalFields as $field) {
-            $rules[$field] = 'nullable|string';
+        // All donor infant questions (5 questions)
+        for ($i = 1; $i <= 5; $i++) {
+            $field = 'donor_infant_' . str_pad($i, 2, '0', STR_PAD_LEFT);
+            $rules[$field] = 'required|in:yes,no';
         }
 
         // Conditional details fields (allow text when user specifies)

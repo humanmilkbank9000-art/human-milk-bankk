@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Notifications\Channels\InfobipSmsChannel;
+use App\Notifications\Channels\QproxySmsChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
@@ -33,13 +34,28 @@ class SendRecoveryCodeNotification extends Notification
             return [InfobipSmsChannel::class];
         }
 
+        if ($driver === 'qproxy') {
+            return [QproxySmsChannel::class];
+        }
+
         // For 'log' driver or fallback, return empty array
         // The controller will handle logging directly
         return [];
     }
 
     /**
-     * Get the SMS message content.
+     * Get the SMS message content for Qproxy.
+     *
+     * @param  mixed  $notifiable
+     * @return string
+     */
+    public function toQproxy($notifiable): string
+    {
+        return $this->getMessage();
+    }
+
+    /**
+     * Get the SMS message content for Infobip.
      *
      * @param  mixed  $notifiable
      * @return string

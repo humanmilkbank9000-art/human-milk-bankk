@@ -67,8 +67,10 @@ class ReportService
 
     public function buildRequestData(int $year, int $month): array
     {
-        // Get all breastmilk requests for the given month/year
+        // Get only approved or dispensed breastmilk requests for the given month/year
+        // Exclude pending and declined requests from the report
         $requests = \App\Models\BreastmilkRequest::with(['user', 'infant', 'dispensedMilk'])
+            ->whereIn('status', ['approved', 'dispensed'])
             ->whereYear('request_date', $year)
             ->whereMonth('request_date', $month)
             ->orderBy('request_date', 'desc')
