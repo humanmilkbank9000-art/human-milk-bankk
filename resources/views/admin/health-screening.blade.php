@@ -769,10 +769,11 @@
                                                 class="bi bi-chat-left-text-fill me-2"></i>Admin Action</h6>
                                         <div class="row">
                                             <div class="col-12 mb-2">
-                                                <input type="text" class="form-control rounded mt-2"
-                                                    id="adminComments{{ $screening->health_screening_id }}" name="comments" required
-                                                    
-                                                
+                                                <textarea class="form-control admin-comments-textarea rounded mt-2"
+                                                    id="adminComments{{ $screening->health_screening_id }}" 
+                                                    name="comments" 
+                                                    rows="3"
+                                                    placeholder="Enter comments or notes (required for declining, optional for accepting)"></textarea>
                                             </div>
                                         </div>
                                     </div>
