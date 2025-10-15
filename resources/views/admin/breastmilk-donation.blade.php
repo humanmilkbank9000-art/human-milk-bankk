@@ -97,6 +97,40 @@
                 }
             }
 
+            /* Search Input Styling */
+            .input-group-text {
+                background-color: white;
+                border-right: 0;
+            }
+
+            #searchInput {
+                border-left: 0;
+                padding-left: 0;
+            }
+
+            #searchInput:focus {
+                box-shadow: none;
+                border-color: #ced4da;
+            }
+
+            .input-group:focus-within .input-group-text {
+                border-color: #86b7fe;
+            }
+
+            .input-group:focus-within #searchInput {
+                border-color: #86b7fe;
+            }
+
+            #clearSearch {
+                display: none;
+            }
+
+            @media (max-width: 768px) {
+                #searchInput {
+                    font-size: 0.9rem;
+                }
+            }
+
             @media (max-width: 400px) {
                 .card-header h5 {
                     font-size: 0.8rem;
@@ -265,6 +299,27 @@
                 </a>
             </li>
         </ul>
+
+        {{-- Search Input Below Tabs --}}
+        <div class="mb-3">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" 
+                       class="form-control border-start-0 ps-0" 
+                       id="searchInput" 
+                       placeholder="Search by donor name, address, contact..."
+                       aria-label="Search donations">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <small class="text-muted d-block mt-1">
+                <span id="searchResults"></span>
+            </small>
+        </div>
+
         <div class="tab-content" id="donationTabContent" aria-live="polite">
             <!-- Pending Donations Tab -->
             <div class="tab-pane fade show {{ $tabStatus == 'pending' ? 'active' : '' }}" id="pending-donations"
@@ -811,6 +866,80 @@
 @endsection
 
 @section('scripts')
+    {{-- Real-time Search Functionality --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            const searchResults = document.getElementById('searchResults');
+            
+            if (!searchInput) return;
+
+            // Get all tables across all tabs
+            const allTables = document.querySelectorAll('.tab-pane table tbody');
+            
+            // Real-time search function
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let totalCount = 0;
+                let visibleCount = 0;
+
+                // Process each tab's table
+                allTables.forEach(tableBody => {
+                    const rows = Array.from(tableBody.querySelectorAll('tr'));
+                    
+                    rows.forEach(row => {
+                        totalCount++;
+                        
+                        if (searchTerm === '') {
+                            row.style.display = '';
+                            visibleCount++;
+                            return;
+                        }
+
+                        // Search in all text content of the row
+                        const rowText = row.textContent.toLowerCase();
+                        
+                        if (rowText.includes(searchTerm)) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+
+                // Update UI
+                if (searchTerm === '') {
+                    clearBtn.style.display = 'none';
+                    searchResults.textContent = '';
+                } else {
+                    clearBtn.style.display = 'inline-block';
+                    searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
+                    
+                    if (visibleCount === 0) {
+                        searchResults.textContent = 'No results found';
+                        searchResults.classList.add('text-danger');
+                    } else {
+                        searchResults.classList.remove('text-danger');
+                    }
+                }
+            }
+
+            // Event listeners
+            searchInput.addEventListener('input', performSearch);
+            
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                performSearch();
+                searchInput.focus();
+            });
+
+            // Initial state
+            performSearch();
+        });
+    </script>
+
     <script>
         let currentDonationId = null;
         let currentOriginalVolumes = []; // Store original volumes globally

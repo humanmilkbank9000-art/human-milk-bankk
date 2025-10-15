@@ -212,11 +212,118 @@
                 padding: 0.15em 0.35em;
             }
         }
+
+        /* Search Input Styling */
+        .input-group-text {
+            background-color: white;
+            border-right: 0;
+        }
+
+        #searchInput {
+            border-left: 0;
+            padding-left: 0;
+        }
+
+        #searchInput:focus {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #86b7fe;
+        }
+
+        .input-group:focus-within #searchInput {
+            border-color: #86b7fe;
+        }
+
+        #clearSearch {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            #searchInput {
+                font-size: 0.9rem;
+            }
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
 @endsection
 
 @section('content')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {{-- Real-time Search Functionality --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            const searchResults = document.getElementById('searchResults');
+            const tableBody = document.querySelector('.table tbody');
+            const noDataAlert = document.querySelector('.alert-info');
+            
+            if (!searchInput || !tableBody) return;
+
+            const allRows = Array.from(tableBody.querySelectorAll('tr'));
+            const totalCount = allRows.length;
+
+            // Real-time search function
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                if (searchTerm === '') {
+                    // Show all rows
+                    allRows.forEach(row => row.style.display = '');
+                    clearBtn.style.display = 'none';
+                    searchResults.textContent = '';
+                    return;
+                }
+
+                // Filter rows
+                allRows.forEach(row => {
+                    const name = row.cells[0]?.textContent.toLowerCase() || '';
+                    const contact = row.cells[1]?.textContent.toLowerCase() || '';
+                    const dateTime = row.cells[2]?.textContent.toLowerCase() || '';
+                    
+                    const matches = name.includes(searchTerm) || 
+                                  contact.includes(searchTerm) || 
+                                  dateTime.includes(searchTerm);
+
+                    if (matches) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Update UI
+                clearBtn.style.display = 'inline-block';
+                searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
+                
+                if (visibleCount === 0) {
+                    searchResults.textContent = 'No results found';
+                    searchResults.classList.add('text-danger');
+                } else {
+                    searchResults.classList.remove('text-danger');
+                }
+            }
+
+            // Event listeners
+            searchInput.addEventListener('input', performSearch);
+            
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                performSearch();
+                searchInput.focus();
+            });
+
+            // Initial state
+            performSearch();
+        });
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -522,6 +629,26 @@
                 </a>
             </li>
         </ul>
+
+        {{-- Search Input Below Tabs --}}
+        <div class="mb-3">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" 
+                       class="form-control border-start-0 ps-0" 
+                       id="searchInput" 
+                       placeholder="Search by name, contact number..."
+                       aria-label="Search health screenings">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <small class="text-muted d-block mt-1">
+                <span id="searchResults"></span>
+            </small>
+        </div>
 
         @if($healthScreenings->isEmpty())
             <div class="alert alert-info">No health screenings found for status <strong>{{ ucfirst($status) }}</strong>.</div>
