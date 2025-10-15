@@ -70,6 +70,16 @@ class PasswordResetService
         $sanitizedPassword = trim(strip_tags($password));
         $user->forceFill(['password' => Hash::make($sanitizedPassword)])->save();
         DB::table('password_reset_tokens')->where('contact_number', $contactNumber)->delete();
+        
+        // Send SMS notification about password change
+        try {
+            $user->notify(new \App\Notifications\PasswordChangedNotification());
+        } catch (\Throwable $e) {
+            Log::warning('Failed to send password change SMS notification', [
+                'contact_number' => $contactNumber,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     protected function logRecoveryCode(string $contactNumber, string $code): void
