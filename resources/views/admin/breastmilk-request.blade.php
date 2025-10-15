@@ -486,8 +486,7 @@
                                             <tr>
                                                 <td data-label="Guardian">
                                                     <strong>{{ $request->user->first_name ?? '' }}
-                                                        {{ $request->user->last_name ?? '' }}</strong><br>
-                                                    <small class="text-muted">ID: {{ $request->user_id }}</small>
+                                                        {{ $request->user->last_name ?? '' }}</strong>
                                                 </td>
                                                 <td data-label="Infant">
                                                     <strong>{{ $request->infant->first_name }}
@@ -555,7 +554,7 @@
                         @if($declinedRequests->count() > 0)
                             <div class="table-container-standard">
                                 <table class="table table-standard table-striped">
-                                    <thead>
+                                    <thead class="table-success">
                                         <tr>
                                             <th class="column-id">Request ID</th>
                                             <th>Guardian</th>
@@ -572,8 +571,7 @@
                                                     <strong>#{{ $request->breastmilk_request_id }}</strong></td>
                                                 <td data-label="Guardian">
                                                     <strong>{{ $request->user->first_name ?? '' }}
-                                                        {{ $request->user->last_name ?? '' }}</strong><br>
-                                                    <small class="text-muted">ID: {{ $request->user_id }}</small>
+                                                        {{ $request->user->last_name ?? '' }}</strong>
                                                 </td>
                                                 <td data-label="Infant">
                                                     <strong>{{ $request->infant->first_name }}
