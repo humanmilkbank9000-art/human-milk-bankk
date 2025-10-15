@@ -228,7 +228,79 @@
             }
         }
 
+        /* Mobile Modal Fixes - Ensure buttons are visible and accessible */
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0.5rem;
+                max-height: calc(100vh - 1rem);
+            }
+
+            .modal-content {
+                max-height: calc(100vh - 1rem);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-body {
+                overflow-y: auto;
+                flex: 1 1 auto;
+                max-height: calc(100vh - 200px);
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .modal-footer {
+                position: sticky;
+                bottom: 0;
+                background: white;
+                border-top: 1px solid #dee2e6;
+                z-index: 1;
+                flex-shrink: 0;
+                padding: 0.75rem;
+            }
+
+            .modal-footer .d-flex {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .modal-footer .btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+                white-space: nowrap;
+            }
+
+            .modal-footer .d-flex.gap-2 {
+                flex-wrap: nowrap;
+            }
+        }
+
+        /* Extra small devices - stack buttons vertically */
         @media (max-width: 576px) {
+            .modal-dialog {
+                margin: 0.25rem;
+                max-width: calc(100vw - 0.5rem);
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .modal-footer .d-flex {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                margin: 0;
+            }
+
+            .modal-footer .d-flex.gap-2 {
+                flex-direction: column;
+                width: 100%;
+            }
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/table-layout-standard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
