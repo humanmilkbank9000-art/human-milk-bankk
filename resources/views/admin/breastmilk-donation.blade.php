@@ -160,9 +160,9 @@
                        ============================================ */
             
             /* Card-based layout for smaller screens */
-            @media (max-width: 1200px) {
+            @media (max-width: 1400px) {
                 #pending-donations .table-responsive table {
-                    display: none;
+                    display: none !important;
                 }
                 
                 .donation-card {
@@ -222,7 +222,7 @@
                 }
             }
             
-            @media (min-width: 1201px) {
+            @media (min-width: 1401px) {
                 .donation-card {
                     display: none !important;
                 }

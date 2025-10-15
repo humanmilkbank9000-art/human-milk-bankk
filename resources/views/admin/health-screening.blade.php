@@ -65,9 +65,9 @@
         }
         
         /* Card-based responsive layout for smaller screens */
-        @media (max-width: 1200px) {
+        @media (max-width: 1400px) {
             .table-responsive table {
-                display: none;
+                display: none !important;
             }
             
             .responsive-card {
@@ -111,7 +111,7 @@
             }
         }
         
-        @media (min-width: 1201px) {
+        @media (min-width: 1401px) {
             .responsive-card {
                 display: none !important;
             }
