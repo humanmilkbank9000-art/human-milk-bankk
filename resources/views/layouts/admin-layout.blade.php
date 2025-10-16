@@ -150,6 +150,15 @@
             box-shadow: 0 6px 18px rgba(232,81,169,0.18);
         }
 
+        /* Persisted clicked state (session) - lighter pink background */
+        .sidebar a.clicked {
+            background: rgba(232,81,169,0.14) !important;
+            color: #111 !important;
+            border-radius: 12px !important;
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
+        }
+
         /* Press state: slightly more pronounced pink */
         .sidebar a:active,
         .sidebar a.active:active {
@@ -732,6 +741,51 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
             }
         });
     </script>
+    <!-- Persist clicked sidebar item (lighter pink) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            try{
+                const sidebar = document.querySelector('.sidebar');
+                if(!sidebar) return;
+                const links = Array.from(sidebar.querySelectorAll('a'));
+                const key = 'sidebarClickedHref';
+
+                function normalizeHref(a){
+                    const h = a.getAttribute('href') || a.href || '';
+                    return h.replace(window.location.origin, '');
+                }
+
+                function markClicked(href){
+                    links.forEach(l => l.classList.remove('clicked'));
+                    const found = links.find(a => normalizeHref(a) === normalizeHref({ getAttribute: () => href }) || a.href === href || a.getAttribute('href') === href);
+                    if(found) found.classList.add('clicked');
+                }
+
+                // restore saved clicked link
+                const saved = sessionStorage.getItem(key);
+                if(saved){
+                    // try to find and mark
+                    links.forEach(a => {
+                        const ah = a.getAttribute('href') || a.href;
+                        if(ah && (ah === saved || ah === (window.location.origin + saved) || ah === saved.replace(window.location.origin, ''))){
+                            a.classList.add('clicked');
+                        }
+                    });
+                }
+
+                // attach handlers
+                links.forEach(a => {
+                    a.addEventListener('click', function(e){
+                        const href = this.getAttribute('href') || this.href || '';
+                        try{ sessionStorage.setItem(key, href); }catch(err){}
+                        links.forEach(l => l.classList.remove('clicked'));
+                        this.classList.add('clicked');
+                    });
+                });
+            }catch(err){ console && console.error && console.error('sidebar click persistence err', err); }
+        });
+    </script>
+
     <!-- Responsive Tables JavaScript -->
     <script src="{{ asset('js/responsive-tables.js') }}?v={{ time() }}"></script>
     @yield('scripts')
