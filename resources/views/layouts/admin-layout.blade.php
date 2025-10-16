@@ -31,8 +31,8 @@
     <!-- Cally calendar component -->
     <script type="module" src="https://unpkg.com/cally"></script>
 
-    <!-- Load Quicksand (body) and Merriweather (headings) from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Load Quicksand (body) from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Global Typography System -->
     <link href="{{ asset('css/typography.css') }}" rel="stylesheet">
     <!-- UI Components & Utilities -->
@@ -45,7 +45,7 @@
         /* Design system typography */
         :root{
             /* Typography - Correct assignments */
-            --heading-font: 'Merriweather', Georgia, 'Times New Roman', serif;
+            --heading-font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             --body-font: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --line-height: 1.6;
             --line-height-relaxed: 1.6;
@@ -69,7 +69,7 @@
             font-weight: 400;
         }
 
-        /* Headings use Merriweather (serif) */
+    /* Headings use Segoe UI (sans-serif) */
         h1, h2, h3, h4, h5, h6 {
             font-family: var(--heading-font);
             font-weight: 700;
