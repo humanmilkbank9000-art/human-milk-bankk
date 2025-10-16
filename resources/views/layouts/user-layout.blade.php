@@ -325,7 +325,7 @@
 
         /* Sidebar - pink theme (matches admin) */
         .sidebar {
-            background: linear-gradient(180deg, #ffd8ea 0%, #ffc0db 100%); /* soft pink gradient */
+            background: linear-gradient(180deg, #ffb3dd 0%, #e851a9 55%, #c22e8f 100%);
             color: #2b2b2b;
             padding: 20px;
             box-sizing: border-box;
@@ -352,7 +352,7 @@
         /* Sidebar badges */
         .sidebar .badge {
             background: rgba(255,255,255,0.95);
-            color: #d63384; /* pink accent */
+            color: #7a083e; /* darker compliment for visibility */
             font-weight: 700;
             border-radius: 999px;
             padding: 0.25rem 0.5rem;
@@ -360,7 +360,7 @@
         }
 
         .sidebar .icon {
-            color: #b3105b;
+            color: #a50e72; /* adjusted to harmonize with #e851a9 */
             min-width: 18px;
             text-align: center;
         }
@@ -384,9 +384,9 @@
         }
 
         .sidebar a.active {
-            background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.06));
+            background: linear-gradient(90deg, rgba(255,255,255,0.18), rgba(255,255,255,0.03));
             color: #111;
-            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.06);
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.03);
         }
 
         .sidebar hr {
