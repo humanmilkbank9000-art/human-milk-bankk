@@ -41,7 +41,6 @@
     <link href="{{ asset('css/responsive.css') }}?v={{ time() }}" rel="stylesheet">
     <!-- Global Tab Styles - Horizontal Alignment -->
     <link href="{{ asset('css/global-tabs.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/sidebar-theme.css') }}?v={{ time() }}" rel="stylesheet">
     <style>
         /* Design system typography */
         :root{
@@ -673,7 +672,6 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
             }
         });
     </script>
-    <script src="{{ asset('js/sidebar.js') }}?v={{ time() }}"></script>
     <!-- Responsive Tables JavaScript -->
     <script src="{{ asset('js/responsive-tables.js') }}?v={{ time() }}"></script>
     @yield('scripts')
