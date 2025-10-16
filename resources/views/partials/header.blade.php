@@ -96,13 +96,14 @@ $logoutBtnId = session('account_role', 'user') === 'admin' ? 'logout-btn-admin' 
     }
     
     .header-left h1 {
-    font-size: 1.125rem;
+        font-size: 1.125rem;
         margin: 0;
         padding: 0;
         user-select: none;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-weight: 700;
     }
     
     .header-right {
