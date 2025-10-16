@@ -16,10 +16,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome (needed for many icons used across the app) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Load Quicksand (body) and Merriweather (headings) from Google Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Merriweather:wght@400;700;900&display=swap"
-        rel="stylesheet">
+    <!-- Load Quicksand (body) and Segoe UI (headings) from Google Fonts -->
     <!-- Global Typography System -->
     <link href="{{ asset('css/typography.css') }}" rel="stylesheet">
     <!-- UI Components & Utilities -->
@@ -34,7 +31,7 @@
     <style>
         :root {
             /* Typography - Correct assignments */
-            --heading-font: 'Merriweather', Georgia, 'Times New Roman', serif;
+            --heading-font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             --body-font: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --line-height: 1.6;
             --line-height-relaxed: 1.6;
@@ -54,7 +51,7 @@
             line-height: var(--line-height-relaxed);
         }
 
-        /* Headings use Merriweather (serif) */
+    /* Headings use Segoe UI (sans-serif) */
         h1,
         h2,
         h3,
