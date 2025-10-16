@@ -376,6 +376,7 @@
             transition: background 0.18s, color 0.18s;
             border-radius: 8px;
             width: 100%;
+            position: relative;
         }
 
         .sidebar a:hover {
@@ -383,10 +384,32 @@
             color: #111;
         }
 
+        /* Active/selected sidebar link: light pink pill with left indicator */
         .sidebar a.active {
-            background: linear-gradient(90deg, rgba(255,255,255,0.18), rgba(255,255,255,0.03));
+            background: rgba(232,81,169,0.12); /* lightened pink */
             color: #111;
-            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.03);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            border-radius: 12px;
+            padding-left: 18px; /* allow space for indicator */
+        }
+
+        .sidebar a.active::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 60%;
+            border-radius: 999px;
+            background: #e851a9; /* prominent accent */
+            box-shadow: 0 4px 10px rgba(232,81,169,0.18);
+        }
+
+        .sidebar a:active,
+        .sidebar a.active:active {
+            background: rgba(232,81,169,0.22);
+            transform: translateY(0.5px);
         }
 
         .sidebar hr {
