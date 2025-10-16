@@ -1,0 +1,87 @@
+/* Sidebar theme extracted from layouts */
+.sidebar {
+    background: linear-gradient(180deg, #ffe6f3 0%, #ffb3dd 14%, #e851a9 60%, #c22e8f 100%);
+    color: #2b2b2b;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: rgba(43,43,43,0.92);
+}
+
+.sidebar a {
+    color: #2b2b2b;
+    text-decoration: none;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.18s, color 0.18s;
+    border-radius: 8px;
+}
+
+.sidebar a:hover {
+    background: rgba(0,0,0,0.04);
+    color: #111;
+}
+
+.sidebar a.active {
+    background: rgba(232,81,169,0.12);
+    color: #111;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    border-radius: 12px;
+    padding-left: 18px;
+}
+
+.sidebar .badge {
+    background: #ff3b3b;
+    color: #fff;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.15rem 0.45rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    font-size: 0.72rem;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar .icon {
+    color: rgba(43,43,43,0.95);
+    min-width: 18px;
+    text-align: center;
+    font-size: 1.05rem;
+}
+
+.sidebar a.active::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 70%;
+    border-radius: 8px;
+    background: #e851a9;
+    box-shadow: 0 6px 18px rgba(232,81,169,0.18);
+}
+
+/* Persisted clicked state (session/local) - lighter pink background */
+.sidebar a.clicked {
+    background: rgba(232,81,169,0.14) !important;
+    color: #111 !important;
+    border-radius: 12px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
