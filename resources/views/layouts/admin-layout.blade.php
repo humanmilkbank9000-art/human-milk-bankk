@@ -76,16 +76,17 @@
             line-height: var(--line-height-normal);
         }
 
-        /* Sidebar - Styles handled by responsive.css */
+        /* Sidebar - pink theme (matches provided design) */
         .sidebar {
-            background-color: #2c3e50;
-            color: #fff;
+            background: linear-gradient(180deg, #ffd8ea 0%, #ffc0db 100%); /* soft pink gradient */
+            color: #2b2b2b; /* dark text for contrast */
             padding: 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            border-right: 1px solid rgba(0,0,0,0.04);
         }
-        
+
         /* Smooth fade-in animation for sidebar logo */
         @keyframes fadeInSidebarLogo {
             from {
@@ -103,26 +104,46 @@
         }
 
         .sidebar a {
-            color: #ecf0f1;
+            color: #2b2b2b;
             text-decoration: none;
-            padding: 10px 0;
-            display: block;
-            transition: background 0.3s;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.18s, color 0.18s;
+            border-radius: 8px;
         }
 
         .sidebar a:hover {
-            background-color: #34495e;
-            border-radius: 4px;
+            background-color: rgba(0,0,0,0.04);
+            color: #111;
         }
 
         .sidebar a.active {
-            background-color: #3498db;
-            border-radius: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.06));
+            color: #111;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.06);
         }
 
         .sidebar hr {
-            border: 0.5px solid #7f8c8d;
+            border: 0.5px solid rgba(0,0,0,0.06);
             margin: 20px 0;
+        }
+
+        /* Sidebar badges */
+        .sidebar .badge {
+            background: rgba(255,255,255,0.95);
+            color: #d63384; /* pink accent */
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.25rem 0.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .sidebar .icon {
+            color: #b3105b;
+            min-width: 18px;
+            text-align: center;
         }
 
         .logout {
@@ -500,9 +521,9 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
 
         <div style="margin-bottom: 16px; text-align: center; display: flex; flex-direction: column; align-items: center;">
             <!-- HMBLSC Logo -->
-            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block; opacity: 0; animation: fadeInSidebarLogo 0.4s ease-in 0.1s forwards;">
+            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.7); display: block; opacity: 0; animation: fadeInSidebarLogo 0.4s ease-in 0.1s forwards;">
             <!-- Admin Name -->
-            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0; color: #ecf0f1;">{{ session('account_name', 'Admin') }}</h3>
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0; color: #2b2b2b;">{{ session('account_name', 'Admin') }}</h3>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 12px;">
                 <a href="{{ route('admin.dashboard') }}"
