@@ -76,10 +76,10 @@
             line-height: var(--line-height-normal);
         }
 
-        /* Sidebar - Styles handled by responsive.css */
+        /* Sidebar - pink theme (matches provided design) */
         .sidebar {
-            background-color: #2c3e50;
-            color: #fff;
+            background: linear-gradient(180deg, #ffe6f3 0%, #ffb3dd 14%, #e851a9 60%, #c22e8f 100%);
+            color: #2b2b2b;
             padding: 20px;
             box-sizing: border-box;
             display: flex;
@@ -103,21 +103,27 @@
         }
 
         .sidebar a {
-            color: #ecf0f1;
+            color: #2b2b2b;
             text-decoration: none;
-            padding: 10px 0;
-            display: block;
-            transition: background 0.3s;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.18s, color 0.18s;
+            border-radius: 8px;
         }
 
         .sidebar a:hover {
-            background-color: #34495e;
-            border-radius: 4px;
+            background: rgba(0,0,0,0.04);
+            color: #111;
         }
 
         .sidebar a.active {
-            background-color: #3498db;
-            border-radius: 4px;
+            background: rgba(232,81,169,0.12);
+            color: #111;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            border-radius: 12px;
+            padding-left: 18px;
         }
 
         .sidebar hr {
