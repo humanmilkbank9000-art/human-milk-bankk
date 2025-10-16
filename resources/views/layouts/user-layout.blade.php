@@ -323,15 +323,14 @@
             }
         }
 
-        /* Sidebar - pink theme (matches admin) */
+        /* Sidebar - Styles handled by responsive.css */
         .sidebar {
-            background: linear-gradient(180deg, #ffe6f3 0%, #ffb3dd 15%, #e851a9 60%, #c22e8f 100%);
-            color: #2b2b2b;
+            background-color: #2c3e50;
+            color: #fff;
             padding: 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid rgba(0,0,0,0.04);
         }
         
         /* Smooth fade-in animation for sidebar logo */
@@ -346,93 +345,32 @@
 
         .sidebar h3 {
             margin-top: 0;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-            letter-spacing: 0.6px;
-            text-transform: uppercase;
-            font-weight: 800;
-            color: rgba(43,43,43,0.92);
-
-        /* Sidebar badges */
-        .sidebar .badge {
-            background: #ff3b3b; /* red badge like screenshot */
-            color: #fff;
-            font-weight: 700;
-            border-radius: 999px;
-            padding: 0.15rem 0.45rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-            font-size: 0.72rem;
-            min-width: 1.2rem;
-            height: 1.2rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sidebar .icon {
-            color: rgba(43,43,43,0.95); /* darker charcoal icons matching screenshot */
-            min-width: 18px;
-            text-align: center;
-            font-size: 1.05rem;
-        }
+            margin-bottom: 20px;
+            font-size: 1.2rem;
         }
 
         .sidebar a {
-            color: #2b2b2b;
+            color: #ecf0f1;
             text-decoration: none;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.18s, color 0.18s;
-            border-radius: 8px;
+            padding: 10px 0 10px 16px;
+            display: block;
+            transition: background 0.3s;
+            cursor: pointer;
             width: 100%;
-            position: relative;
         }
 
         .sidebar a:hover {
-            background-color: rgba(0,0,0,0.04);
-            color: #111;
+            background-color: #34495e;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
         }
 
-        /* Active/selected sidebar link: light pink pill with left indicator */
         .sidebar a.active {
-            background: rgba(232,81,169,0.18); /* slightly brighter pill */
-            color: #111;
-            box-shadow: 0 8px 26px rgba(0,0,0,0.08);
-            border-radius: 14px;
-            padding-left: 20px; /* allow space for indicator */
-            padding-top: 12px;
-            padding-bottom: 12px;
-            margin-right: 6px;
-        }
-
-        .sidebar a.active::before {
-            content: '';
-            position: absolute;
-            left: 6px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 12px; /* thicker indicator like screenshot */
-            height: 70%;
-            border-radius: 8px;
-            background: #e851a9; /* prominent accent */
-            box-shadow: 0 6px 18px rgba(232,81,169,0.18);
-        }
-
-        /* Persisted clicked state (session) - lighter pink background */
-        .sidebar a.clicked {
-            background: rgba(232,81,169,0.14) !important;
-            color: #111 !important;
-            border-radius: 12px !important;
-            padding-top: 10px !important;
-            padding-bottom: 10px !important;
-        }
-
-        .sidebar a:active,
-        .sidebar a.active:active {
-            background: rgba(232,81,169,0.22);
-            transform: translateY(0.5px);
+            background-color: #3498db;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
         }
 
         .sidebar hr {
@@ -482,9 +420,9 @@ $defaultTitle = $titles[$routeName] ?? 'User';
 
         <div style="margin-bottom: 16px; text-align: center; display: flex; flex-direction: column; align-items: center;">
             <!-- HMBLSC Logo -->
-            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.7); display: block; opacity: 0; animation: fadeInSidebarLogo 0.4s ease-in 0.1s forwards;">
+            <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block; opacity: 0; animation: fadeInSidebarLogo 0.4s ease-in 0.1s forwards;">
             <!-- User Name -->
-            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0; color: #2b2b2b;">{{ session('account_name', 'User') }}</h3>
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0; color: #ecf0f1;">{{ session('account_name', 'User') }}</h3>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 12px;">
 
@@ -563,43 +501,6 @@ $defaultTitle = $titles[$routeName] ?? 'User';
             }
         });
     </script>
-    <!-- Persist clicked sidebar item (lighter pink) -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function(){
-            try{
-                const sidebar = document.querySelector('.sidebar');
-                if(!sidebar) return;
-                const links = Array.from(sidebar.querySelectorAll('a'));
-                const key = 'sidebarClickedHref';
-
-                function normalizeHref(a){
-                    const h = a.getAttribute('href') || a.href || '';
-                    return h.replace(window.location.origin, '');
-                }
-
-                // restore saved clicked link
-                const saved = sessionStorage.getItem(key);
-                if(saved){
-                    links.forEach(a => {
-                        const ah = a.getAttribute('href') || a.href || '';
-                        if(ah && (ah === saved || ah === (window.location.origin + saved) || ah === saved.replace(window.location.origin, ''))){
-                            a.classList.add('clicked');
-                        }
-                    });
-                }
-
-                links.forEach(a => {
-                    a.addEventListener('click', function(){
-                        const href = this.getAttribute('href') || this.href || '';
-                        try{ sessionStorage.setItem(key, href); }catch(err){}
-                        links.forEach(l => l.classList.remove('clicked'));
-                        this.classList.add('clicked');
-                    });
-                });
-            }catch(err){ console && console.error && console.error('sidebar click persistence err', err); }
-        });
-    </script>
-
     <!-- Responsive Tables JavaScript -->
     <script src="{{ asset('js/responsive-tables.js') }}?v={{ time() }}"></script>
     @yield('scripts')
