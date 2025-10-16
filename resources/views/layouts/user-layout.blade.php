@@ -448,7 +448,7 @@ $defaultTitle = $titles[$routeName] ?? 'User';
             </a>
 
                            <a href="{{ route('user.settings') }}" class="{{ request()->routeIs('user.settings') ? 'active' : '' }}">
-                <i class="bi bi-gear me-2 icon"></i> <span>Settings</span>
+                <i class="bi bi-gear me-2 icon"></i> <span style="font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; letter-spacing: 0.5px;">Settings</span>
             </a>
         </div>
         <hr>
