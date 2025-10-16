@@ -17,7 +17,7 @@
     <style>
         :root {
             --heading-font: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            --body-font: 'Merriweather', Georgia, 'Times New Roman', serif;
+            --body-font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             --line-height: 1.6;
             --pink-primary: #ec4899;
             --pink-light: #ffc0cb;
