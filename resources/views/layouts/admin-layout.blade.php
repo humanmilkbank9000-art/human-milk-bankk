@@ -41,7 +41,6 @@
     <link href="{{ asset('css/responsive.css') }}?v={{ time() }}" rel="stylesheet">
     <!-- Global Tab Styles - Horizontal Alignment -->
     <link href="{{ asset('css/global-tabs.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/sidebar-theme.css') }}?v={{ time() }}" rel="stylesheet">
     <style>
         /* Design system typography */
         :root{
@@ -77,10 +76,10 @@
             line-height: var(--line-height-normal);
         }
 
-        /* Sidebar - pink theme (matches provided design) */
+        /* Sidebar - Styles handled by responsive.css */
         .sidebar {
-            background: linear-gradient(180deg, #ffe6f3 0%, #ffb3dd 14%, #e851a9 60%, #c22e8f 100%);
-            color: #2b2b2b;
+            background-color: #2c3e50;
+            color: #fff;
             padding: 20px;
             box-sizing: border-box;
             display: flex;
@@ -104,27 +103,21 @@
         }
 
         .sidebar a {
-            color: #2b2b2b;
+            color: #ecf0f1;
             text-decoration: none;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.18s, color 0.18s;
-            border-radius: 8px;
+            padding: 10px 0;
+            display: block;
+            transition: background 0.3s;
         }
 
         .sidebar a:hover {
-            background: rgba(0,0,0,0.04);
-            color: #111;
+            background-color: #34495e;
+            border-radius: 4px;
         }
 
         .sidebar a.active {
-            background: rgba(232,81,169,0.12);
-            color: #111;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            border-radius: 12px;
-            padding-left: 18px;
+            background-color: #3498db;
+            border-radius: 4px;
         }
 
         .sidebar hr {
@@ -680,7 +673,6 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
         });
     </script>
     <!-- Responsive Tables JavaScript -->
-    <script src="{{ asset('js/sidebar.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/responsive-tables.js') }}?v={{ time() }}"></script>
     @yield('scripts')
     {{-- logout confirmation now handled in header partial --}}
