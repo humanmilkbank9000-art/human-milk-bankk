@@ -325,7 +325,7 @@
 
         /* Sidebar - pink theme (matches admin) */
         .sidebar {
-            background: linear-gradient(180deg, #ffb3dd 0%, #e851a9 55%, #c22e8f 100%);
+            background: linear-gradient(180deg, #ffe6f3 0%, #ffb3dd 15%, #e851a9 60%, #c22e8f 100%);
             color: #2b2b2b;
             padding: 20px;
             box-sizing: border-box;
@@ -346,23 +346,34 @@
 
         .sidebar h3 {
             margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: rgba(43,43,43,0.92);
 
         /* Sidebar badges */
         .sidebar .badge {
-            background: rgba(255,255,255,0.95);
-            color: #7a083e; /* darker compliment for visibility */
+            background: #ff3b3b; /* red badge like screenshot */
+            color: #fff;
             font-weight: 700;
             border-radius: 999px;
-            padding: 0.25rem 0.5rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            padding: 0.15rem 0.45rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            font-size: 0.72rem;
+            min-width: 1.2rem;
+            height: 1.2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .sidebar .icon {
-            color: #a50e72; /* adjusted to harmonize with #e851a9 */
+            color: rgba(43,43,43,0.95); /* darker charcoal icons matching screenshot */
             min-width: 18px;
             text-align: center;
+            font-size: 1.05rem;
         }
         }
 
@@ -386,24 +397,27 @@
 
         /* Active/selected sidebar link: light pink pill with left indicator */
         .sidebar a.active {
-            background: rgba(232,81,169,0.12); /* lightened pink */
+            background: rgba(232,81,169,0.18); /* slightly brighter pill */
             color: #111;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            border-radius: 12px;
-            padding-left: 18px; /* allow space for indicator */
+            box-shadow: 0 8px 26px rgba(0,0,0,0.08);
+            border-radius: 14px;
+            padding-left: 20px; /* allow space for indicator */
+            padding-top: 12px;
+            padding-bottom: 12px;
+            margin-right: 6px;
         }
 
         .sidebar a.active::before {
             content: '';
             position: absolute;
-            left: 8px;
+            left: 6px;
             top: 50%;
             transform: translateY(-50%);
-            width: 8px;
-            height: 60%;
-            border-radius: 999px;
+            width: 12px; /* thicker indicator like screenshot */
+            height: 70%;
+            border-radius: 8px;
             background: #e851a9; /* prominent accent */
-            box-shadow: 0 4px 10px rgba(232,81,169,0.18);
+            box-shadow: 0 6px 18px rgba(232,81,169,0.18);
         }
 
         .sidebar a:active,
