@@ -31,7 +31,8 @@
     <!-- Cally calendar component -->
     <script type="module" src="https://unpkg.com/cally"></script>
 
-    <!-- Load Quicksand (body) and Segoe UI (headings) from Google Fonts -->
+    <!-- Load Quicksand (body) and Merriweather (headings) from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Global Typography System -->
     <link href="{{ asset('css/typography.css') }}" rel="stylesheet">
     <!-- UI Components & Utilities -->
@@ -44,7 +45,7 @@
         /* Design system typography */
         :root{
             /* Typography - Correct assignments */
-            --heading-font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            --heading-font: 'Merriweather', Georgia, 'Times New Roman', serif;
             --body-font: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --line-height: 1.6;
             --line-height-relaxed: 1.6;
@@ -68,7 +69,7 @@
             font-weight: 400;
         }
 
-    /* Headings use Segoe UI (sans-serif) */
+        /* Headings use Merriweather (serif) */
         h1, h2, h3, h4, h5, h6 {
             font-family: var(--heading-font);
             font-weight: 700;
@@ -536,7 +537,7 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
             </a>
             <a href="{{ route('admin.settings') }}"
                 class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                <i class="bi bi-gear me-2 icon"></i> <span style="font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; letter-spacing: 0.5px;">Settings</span>
+                <i class="bi bi-gear me-2 icon"></i> <span>Settings</span>
             </a>
         </div>
 
