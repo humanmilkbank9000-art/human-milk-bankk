@@ -98,40 +98,6 @@
             }
         }
 
-        /* Search Input Styling */
-        .input-group-text {
-            background-color: white;
-            border-right: 0;
-        }
-
-        #searchInput {
-            border-left: 0;
-            padding-left: 0;
-        }
-
-        #searchInput:focus {
-            box-shadow: none;
-            border-color: #ced4da;
-        }
-
-        .input-group:focus-within .input-group-text {
-            border-color: #86b7fe;
-        }
-
-        .input-group:focus-within #searchInput {
-            border-color: #86b7fe;
-        }
-
-        #clearSearch {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            #searchInput {
-                font-size: 0.9rem;
-            }
-        }
-
         @media (max-width: 768px) {
             .table-responsive {
                 font-size: 0.85rem;
@@ -299,80 +265,6 @@
         .modal {
             z-index: 1050 !important;
         }
-
-        /* Mobile Modal Fixes - Ensure buttons are visible and accessible */
-        @media (max-width: 768px) {
-            .modal-dialog {
-                margin: 0.5rem;
-                max-height: calc(100vh - 1rem);
-            }
-
-            .modal-content {
-                max-height: calc(100vh - 1rem);
-                display: flex;
-                flex-direction: column;
-            }
-
-            .modal-body {
-                overflow-y: auto;
-                flex: 1 1 auto;
-                max-height: calc(100vh - 200px);
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .modal-footer {
-                position: sticky;
-                bottom: 0;
-                background: white;
-                border-top: 1px solid #dee2e6;
-                z-index: 1;
-                flex-shrink: 0;
-                padding: 0.75rem;
-            }
-
-            .modal-footer .d-flex {
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-
-            .modal-footer .btn {
-                font-size: 0.875rem;
-                padding: 0.5rem 0.75rem;
-                white-space: nowrap;
-            }
-
-            .modal-footer .d-flex.gap-2 {
-                flex-wrap: nowrap;
-            }
-        }
-
-        /* Extra small devices - stack buttons vertically */
-        @media (max-width: 576px) {
-            .modal-dialog {
-                margin: 0.25rem;
-                max-width: calc(100vw - 0.5rem);
-            }
-
-            .modal-footer {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-
-            .modal-footer .d-flex {
-                width: 100%;
-                flex-direction: column;
-            }
-
-            .modal-footer .btn {
-                width: 100%;
-                margin: 0;
-            }
-
-            .modal-footer .d-flex.gap-2 {
-                flex-direction: column;
-                width: 100%;
-            }
-        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/table-layout-standard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
@@ -420,32 +312,12 @@
             </li>
         </ul>
 
-        {{-- Search Input Below Tabs --}}
-        <div class="mb-3">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" 
-                       class="form-control border-start-0 ps-0" 
-                       id="searchInput" 
-                       placeholder="Search by guardian name, infant name, contact..."
-                       aria-label="Search requests">
-                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <small class="text-muted d-block mt-1">
-                <span id="searchResults"></span>
-            </small>
-        </div>
-
         <div class="tab-content" id="requestTabContent">
             <!-- Pending Requests Tab -->
             <div class="tab-pane fade{{ request()->get('status', 'pending') == 'pending' ? ' show active' : '' }}"
                 id="pending-requests" role="tabpanel">
                 <div class="card card-standard">
-                    <div class="card-header bg-success text-white">
+                    <div class="card-header">
                         <h5>Pending Breastmilk Requests</h5>
                     </div>
                     <div class="card-body">
@@ -536,7 +408,7 @@
             <div class="tab-pane fade{{ request()->get('status') == 'dispensed' ? ' show active' : '' }}"
                 id="dispensed-requests" role="tabpanel">
                 <div class="card card-standard">
-                    <div class="card-header bg-info text-white">
+                    <div class="card-header">
                         <h5>Dispensed Breastmilk Requests</h5>
                     </div>
                     <div class="card-body">
@@ -560,7 +432,8 @@
                                             <tr>
                                                 <td data-label="Guardian">
                                                     <strong>{{ $request->user->first_name ?? '' }}
-                                                        {{ $request->user->last_name ?? '' }}</strong>
+                                                        {{ $request->user->last_name ?? '' }}</strong><br>
+                                                    <small class="text-muted">ID: {{ $request->user_id }}</small>
                                                 </td>
                                                 <td data-label="Infant">
                                                     <strong>{{ $request->infant->first_name }}
@@ -621,14 +494,14 @@
             <div class="tab-pane fade{{ request()->get('status') == 'declined' ? ' show active' : '' }}"
                 id="declined-requests" role="tabpanel">
                 <div class="card card-standard">
-                    <div class="card-header bg-danger text-white">
+                    <div class="card-header">
                         <h5>Declined Breastmilk Requests</h5>
                     </div>
                     <div class="card-body">
                         @if($declinedRequests->count() > 0)
                             <div class="table-container-standard">
                                 <table class="table table-standard table-striped">
-                                    <thead class="table-success">
+                                    <thead>
                                         <tr>
                                             <th class="column-id">Request ID</th>
                                             <th>Guardian</th>
@@ -645,7 +518,8 @@
                                                     <strong>#{{ $request->breastmilk_request_id }}</strong></td>
                                                 <td data-label="Guardian">
                                                     <strong>{{ $request->user->first_name ?? '' }}
-                                                        {{ $request->user->last_name ?? '' }}</strong>
+                                                        {{ $request->user->last_name ?? '' }}</strong><br>
+                                                    <small class="text-muted">ID: {{ $request->user_id }}</small>
                                                 </td>
                                                 <td data-label="Infant">
                                                     <strong>{{ $request->infant->first_name }}
@@ -1022,97 +896,6 @@
     </div>{{-- Close container-fluid --}}
 
     <!-- JavaScript for prescription viewing and inventory selection -->
-    {{-- Real-time Search Functionality --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('searchInput');
-            const clearBtn = document.getElementById('clearSearch');
-            const searchResults = document.getElementById('searchResults');
-            
-            if (!searchInput) return;
-
-            // Get all tables across all tabs
-            const allTables = document.querySelectorAll('.tab-pane table tbody');
-            
-            // Real-time search function
-            function performSearch() {
-                const searchTerm = searchInput.value.toLowerCase();
-                let totalCount = 0;
-                let visibleCount = 0;
-
-                // Process each tab's table
-                allTables.forEach(tableBody => {
-                    const rows = Array.from(tableBody.querySelectorAll('tr'));
-                    totalCount += rows.length;
-                    
-                    if (searchTerm === '') {
-                        // Reset to original order
-                        rows.forEach(row => {
-                            row.style.display = '';
-                        });
-                        visibleCount = totalCount;
-                    } else {
-                        // Separate matched and non-matched rows
-                        const matchedRows = [];
-                        const unmatchedRows = [];
-                        
-                        rows.forEach(row => {
-                            // Get all cell content for comprehensive search
-                            let rowText = '';
-                            const cells = row.querySelectorAll('td');
-                            cells.forEach(cell => {
-                                rowText += (cell.textContent || '') + ' ';
-                            });
-                            rowText = rowText.toLowerCase();
-                            
-                            // Check if search term matches anywhere in the row
-                            if (rowText.indexOf(searchTerm) !== -1) {
-                                row.style.display = '';
-                                matchedRows.push(row);
-                                visibleCount++;
-                            } else {
-                                row.style.display = 'none';
-                                unmatchedRows.push(row);
-                            }
-                        });
-                        
-                        // Reorder: matched rows first, then unmatched
-                        matchedRows.forEach(row => tableBody.appendChild(row));
-                        unmatchedRows.forEach(row => tableBody.appendChild(row));
-                    }
-                });
-
-                // Update UI
-                if (searchTerm === '') {
-                    clearBtn.style.display = 'none';
-                    searchResults.textContent = '';
-                } else {
-                    clearBtn.style.display = 'inline-block';
-                    searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                    
-                    if (visibleCount === 0) {
-                        searchResults.textContent = 'No results found';
-                        searchResults.classList.add('text-danger');
-                    } else {
-                        searchResults.classList.remove('text-danger');
-                    }
-                }
-            }
-
-            // Event listeners
-            searchInput.addEventListener('input', performSearch);
-            
-            clearBtn.addEventListener('click', function() {
-                searchInput.value = '';
-                performSearch();
-                searchInput.focus();
-            });
-
-            // Initial state
-            performSearch();
-        });
-    </script>
-
     <script>
         // Ensure CSRF token is available for fetch
         const csrfToken = '{{ csrf_token() }}';
