@@ -78,16 +78,21 @@ class HealthScreeningController extends Controller
     {
         $status = $request->query('status', 'pending');
 
-        $healthScreenings = HealthScreening::where('status', $status)
-            ->with('user', 'infant')
-            ->get();
-
-        // Get counts for each status
+        // Counts
         $pendingCount = HealthScreening::where('status', 'pending')->count();
         $acceptedCount = HealthScreening::where('status', 'accepted')->count();
         $declinedCount = HealthScreening::where('status', 'declined')->count();
+        $archivedCount = HealthScreening::onlyTrashed()->count();
 
-        return view('admin.health-screening', compact('healthScreenings', 'status', 'pendingCount', 'acceptedCount', 'declinedCount'));
+        if ($status === 'archived') {
+            $healthScreenings = HealthScreening::onlyTrashed()->with('user', 'infant')->get();
+        } else {
+            $healthScreenings = HealthScreening::where('status', $status)
+                ->with('user', 'infant')
+                ->get();
+        }
+
+        return view('admin.health-screening', compact('healthScreenings', 'status', 'pendingCount', 'acceptedCount', 'declinedCount', 'archivedCount'));
     }
 
     public function accept($id)
@@ -166,6 +171,53 @@ class HealthScreeningController extends Controller
             }
             
             return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Archive (soft-delete) a health screening record
+     */
+    public function archive($id)
+    {
+        $screening = HealthScreening::findOrFail($id);
+
+        try {
+            $screening->delete();
+
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Record archived successfully.']);
+            }
+
+            return redirect()->back()->with('success', 'Record archived.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('HealthScreening archive error: ' . $e->getMessage());
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['error' => 'Failed to archive record.'], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to archive record.');
+        }
+    }
+
+    /**
+     * Restore (unarchive) a soft-deleted health screening record
+     */
+    public function restore($id)
+    {
+        try {
+            $screening = HealthScreening::withTrashed()->findOrFail($id);
+            $screening->restore();
+
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Record restored successfully.']);
+            }
+
+            return redirect()->back()->with('success', 'Record restored.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('HealthScreening restore error: ' . $e->getMessage());
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['error' => 'Failed to restore record.'], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to restore record.');
         }
     }
 }

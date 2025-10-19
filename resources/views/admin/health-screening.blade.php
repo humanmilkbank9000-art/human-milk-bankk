@@ -218,6 +218,120 @@
 
 @section('content')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {{-- Real-time Search Functionality --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            const searchResults = document.getElementById('searchResults');
+            const tableBody = document.querySelector('.table tbody');
+            const noDataAlert = document.querySelector('.alert-info');
+            
+            if (!searchInput || !tableBody) return;
+
+            const allRows = Array.from(tableBody.querySelectorAll('tr'));
+            const totalCount = allRows.length;
+
+            // Real-time search function
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase();
+                let visibleCount = 0;
+
+                if (searchTerm === '') {
+                    // Show all rows in original order
+                    allRows.forEach(row => row.style.display = '');
+                    clearBtn.style.display = 'none';
+                    searchResults.textContent = '';
+                    return;
+                }
+
+                // Separate matched and non-matched rows
+                const matchedRows = [];
+                const unmatchedRows = [];
+                
+                allRows.forEach(row => {
+                    // Get all cell content for comprehensive search
+                    let rowText = '';
+                    for (let i = 0; i < row.cells.length; i++) {
+                        rowText += (row.cells[i].textContent || '') + ' ';
+                    }
+                    rowText = rowText.toLowerCase();
+                    
+                    // Check if search term matches anywhere in the row
+                    if (rowText.indexOf(searchTerm) !== -1) {
+                        row.style.display = '';
+                        matchedRows.push(row);
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                        unmatchedRows.push(row);
+                    }
+                });
+                
+                // Reorder DOM: matched rows first, then unmatched (hidden)
+                matchedRows.forEach(row => tableBody.appendChild(row));
+                unmatchedRows.forEach(row => tableBody.appendChild(row));
+
+                // Update UI
+                clearBtn.style.display = 'inline-block';
+                searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
+                
+                if (visibleCount === 0) {
+                    searchResults.textContent = 'No results found';
+                    searchResults.classList.add('text-danger');
+                } else {
+                    searchResults.classList.remove('text-danger');
+                }
+            }
+
+            // Event listeners
+            searchInput.addEventListener('input', performSearch);
+            
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                performSearch();
+                searchInput.focus();
+            });
+
+            // Initial state
+            performSearch();
+        });
+    </script>
+    <script>
+        function restoreHealthScreening(id) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Restore record?',
+                    text: 'This will unarchive the record and make it visible in the main lists again.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, restore',
+                    preConfirm: () => {
+                        return fetch(`/admin/health-screening/${id}/restore`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }).then(r => r.json());
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Restored', 'Record restored successfully.', 'success').then(()=> location.reload());
+                    }
+                }).catch(()=> Swal.fire('Error', 'Failed to restore record', 'error'));
+            } else {
+                if (!confirm('Restore record?')) return;
+                fetch(`/admin/health-screening/${id}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                    .then(()=> location.reload())
+                    .catch(()=> alert('Failed to restore'));
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Handle form submissions with SweetAlert
@@ -506,6 +620,13 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link {{ $status == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}"
+                    href="{{ route('admin.health-screening', ['status' => 'archived']) }}">
+                    Archived
+                    <span class="badge {{ $status == 'archived' ? 'bg-light text-secondary' : 'bg-secondary text-white' }} ms-1">{{ $archivedCount ?? 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link {{ $status == 'accepted' ? 'active bg-success text-white' : 'text-success' }}"
                     href="{{ route('admin.health-screening', ['status' => 'accepted']) }}">
                     Accepted
@@ -544,7 +665,13 @@
                                     @elseif($status == 'declined')
                                         <th class="text-center px-4 py-3" style="width: 18%">Date and Time Declined</th>
                                     @endif
-                                    <th class="text-center px-4 py-3" style="width: 12%">Actions</th>
+                                    {{-- When showing archived items, provide a dedicated Restore column so actions are not duplicated inside modals --}}
+                                    @if($status == 'archived')
+                                        <th class="text-center px-4 py-3" style="width: 12%">View</th>
+                                        <th class="text-center px-4 py-3" style="width: 12%">Restore</th>
+                                    @else
+                                        <th class="text-center px-4 py-3" style="width: 12%">Actions</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -587,12 +714,27 @@
                                                 @endif
                                             </td>
                                         @endif
-                                        <td class="text-center align-middle">
-                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
-                                                <i class="bi bi-eye"></i> View
-                                            </button>
-                                        </td>
+                                        @if($status == 'archived')
+                                            <td class="text-center align-middle">
+                                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <button class="btn btn-sm btn-outline-success" onclick="restoreHealthScreening({{ $screening->health_screening_id }})">Restore</button>
+                                            </td>
+                                        @else
+                                            <td class="text-center align-middle">
+                                                <button class="btn btn-primary btn-sm me-1" data-bs-toggle="modal"
+                                                    data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                                @if($screening->status !== 'pending')
+                                                    <button class="btn btn-outline-danger btn-sm" onclick="archiveHealthScreening({{ $screening->health_screening_id }})">Archive</button>
+                                                @endif
+                                            </td>
+                                        @endif
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -780,24 +922,20 @@
                                 @endif
                             </div>
                             <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 @if($screening->status == 'pending')
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-danger"
-                                        onclick="declineScreening({{ $screening->health_screening_id }})">
+                                    {{-- Keep accept/decline actions for pending items only; archive/restore handled in archived tab --}}
+                                    <button type="button" class="btn btn-danger" onclick="declineScreening({{ $screening->health_screening_id }})">
                                         <i class="bi bi-x-circle me-1"></i> Decline
                                     </button>
-                                    <button type="button" class="btn btn-success"
-                                        onclick="acceptScreening({{ $screening->health_screening_id }})">
+                                    <button type="button" class="btn btn-success" onclick="acceptScreening({{ $screening->health_screening_id }})">
                                         <i class="bi bi-check-circle me-1"></i> Accept
                                     </button>
                                 @elseif($screening->status == 'declined')
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-success"
-                                        onclick="undoDeclineScreening({{ $screening->health_screening_id }})">
+                                    {{-- Allow undo/accept when declined, but do not show archive here --}}
+                                    <button type="button" class="btn btn-success" onclick="undoDeclineScreening({{ $screening->health_screening_id }})">
                                         <i class="bi bi-arrow-counterclockwise me-1"></i> Undo & Accept
                                     </button>
-                                @else
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 @endif
                             </div>
                         </div>
@@ -806,4 +944,38 @@
             @endforeach
         @endif
     </div>
+    <script>
+        function archiveHealthScreening(id) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Archive record?',
+                    text: 'This will archive (soft-delete) the record. You can restore it from the database if needed.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, archive',
+                    preConfirm: () => {
+                        return fetch(`/admin/health-screening/${id}/archive`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }).then(resp => resp.json());
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Archived', 'Record archived successfully.', 'success').then(()=> location.reload());
+                    }
+                }).catch(err => {
+                    Swal.fire('Error', 'Failed to archive record', 'error');
+                });
+            } else {
+                if (!confirm('Archive record?')) return;
+                fetch(`/admin/health-screening/${id}/archive`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                    .then(()=> location.reload())
+                    .catch(()=> alert('Failed to archive'));
+            }
+        }
+    </script>
 @endsection

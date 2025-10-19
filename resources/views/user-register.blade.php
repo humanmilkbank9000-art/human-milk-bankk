@@ -9,9 +9,9 @@
     <!-- Preload critical images to prevent FOUC -->
     <link rel="preload" as="image" href="{{ asset('hmblsc-logo.jpg') }}" fetchpriority="high">
     
-    <!-- Load Quicksand (headings) and Merriweather (body) from Google Fonts as per design system -->
+    <!-- Load Quicksand (body) from Google Fonts -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Merriweather:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap"
         rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>

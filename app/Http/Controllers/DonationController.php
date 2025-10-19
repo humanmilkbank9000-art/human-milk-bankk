@@ -26,6 +26,7 @@ class DonationController extends Controller
     public function admin_breastmilk_donation(Request $request) {
         // Get donation type filter for pending donations
         $donationType = $request->get('donation_type', 'all');
+        $status = $request->query('status', 'pending');
         
         // Get donations by status for different sections
         $pendingWalkIn = Donation::pendingWalkIn()
@@ -70,13 +71,35 @@ class DonationController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
+        $archivedCount = Donation::onlyTrashed()->count();
+
+        if ($status === 'archived') {
+            $archived = Donation::onlyTrashed()->with(['user', 'availability'])->get();
+
+            // pass the same variables the view expects to avoid undefined variable errors
+            return view('admin.breastmilk-donation', compact(
+                'pendingWalkIn',
+                'pendingHomeCollection',
+                'pendingDonations',
+                'successWalkIn',
+                'scheduledHomeCollection',
+                'successHomeCollection',
+                'status',
+                'archivedCount',
+                'donationType',
+                'archived'
+            ));
+        }
+
         return view('admin.breastmilk-donation', compact(
             'pendingWalkIn',
             'pendingHomeCollection',
             'pendingDonations',
             'successWalkIn', 
             'scheduledHomeCollection',
-            'successHomeCollection'
+            'successHomeCollection',
+            'status',
+            'archivedCount'
         ));
     }
 
@@ -193,6 +216,51 @@ class DonationController extends Controller
             return response()->json(['success' => true, 'message' => 'Pickup validated successfully']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+    /**
+     * Archive (soft-delete) a donation record
+     */
+    public function archive($id)
+    {
+        try {
+            $donation = Donation::findOrFail($id);
+            $donation->delete();
+
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Donation archived successfully.']);
+            }
+
+            return redirect()->back()->with('success', 'Donation archived.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Donation archive error: ' . $e->getMessage());
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['error' => 'Failed to archive donation.'], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to archive donation.');
+        }
+    }
+
+    /**
+     * Restore (unarchive) a donation
+     */
+    public function restore($id)
+    {
+        try {
+            $donation = Donation::withTrashed()->findOrFail($id);
+            $donation->restore();
+
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Donation restored successfully.']);
+            }
+
+            return redirect()->back()->with('success', 'Donation restored.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Donation restore error: ' . $e->getMessage());
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['error' => 'Failed to restore donation.'], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to restore donation.');
         }
     }
     // ==================== MY REQUESTS PAGE ====================

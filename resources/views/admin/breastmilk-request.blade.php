@@ -310,6 +310,11 @@
                     Declined Requests <span class="badge bg-danger">{{ $declinedRequests->count() }}</span>
                 </a>
             </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link{{ request()->get('status') == 'archived' ? ' active' : '' }}" href="?status=archived" id="archived-tab" role="tab">
+                    Archived <span class="badge bg-secondary">{{ $archivedCount ?? 0 }}</span>
+                </a>
+            </li>
         </ul>
 
         <div class="tab-content" id="requestTabContent">
@@ -382,6 +387,7 @@
                                                     @endif
                                                 </td>
                                                 <td class="align-middle text-center" data-label="Action">
+                                                    {{-- Archive hidden for pending requests to prevent accidental archiving --}}
                                                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
                                                         data-bs-target="#dispensingModal{{ $request->breastmilk_request_id }}">
                                                         <i class="fas fa-eye"></i> View
@@ -474,6 +480,7 @@
                                                         data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
                                                         <i class="fas fa-eye"></i> View
                                                     </button>
+                                                    <button class="btn btn-sm btn-danger ms-1" onclick="archiveRequest({{ $request->breastmilk_request_id }})" title="Archive request" aria-label="Archive request">Archive</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -541,6 +548,7 @@
                                                         data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
+                                                    <button class="btn btn-sm btn-danger ms-1" onclick="archiveRequest({{ $request->breastmilk_request_id }})" title="Archive request" aria-label="Archive request">Archive</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -693,6 +701,7 @@
                                 <i class="fas fa-times"></i> Close
                             </button>
                             <div class="d-flex gap-2">
+                                    {{-- Archive disabled for pending requests --}}
                                 <button type="button" class="btn btn-danger"
                                     onclick="handleReject({{ $request->breastmilk_request_id }})">
                                     <i class="fas fa-ban"></i> Reject
@@ -894,6 +903,50 @@
             @endforeach
         @endforeach
     </div>{{-- Close container-fluid --}}
+
+        <!-- Archived Requests Tab Pane -->
+        <div class="tab-pane fade{{ request()->get('status') == 'archived' ? ' show active' : '' }}" id="archived-requests" role="tabpanel">
+            <div class="card card-standard">
+                <div class="card-header bg-secondary text-white">
+                    <h5>Archived Requests</h5>
+                </div>
+                <div class="card-body">
+                    @if(!empty($archived) && $archived->count() > 0)
+                        <div class="table-container-standard">
+                            <table class="table table-standard table-striped">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">Guardian</th>
+                                        <th class="text-center">Infant</th>
+                                        <th class="text-center">Submitted</th>
+                                        <th class="text-center">Archived At</th>
+                                        <th class="text-center">Restore</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($archived as $req)
+                                        <tr>
+                                            <td class="align-middle">{{ $req->user->first_name ?? '' }} {{ $req->user->last_name ?? '' }}</td>
+                                            <td class="align-middle">{{ $req->infant->first_name ?? '' }} {{ $req->infant->last_name ?? '' }}</td>
+                                            <td class="align-middle">{{ $req->created_at->format('M d, Y g:i A') }}</td>
+                                            <td class="align-middle">{{ $req->deleted_at ? $req->deleted_at->format('M d, Y g:i A') : '-' }}</td>
+                                            <td class="align-middle text-center">
+                                                <button class="btn btn-sm btn-outline-success" onclick="restoreRequest({{ $req->breastmilk_request_id }})">Restore</button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-archive fa-3x mb-3"></i>
+                            <p>No archived requests</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
 
     <!-- JavaScript for prescription viewing and inventory selection -->
     <script>
@@ -1522,6 +1575,74 @@
                         console.error(err);
                         alert('Failed to decline request.');
                     });
+            }
+        }
+
+        // Archive request (soft-delete)
+        function archiveRequest(requestId) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Archive request?',
+                    text: 'This will archive (soft-delete) the request. You can restore it from the database if needed.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, archive',
+                    preConfirm: () => {
+                        return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/archive`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }).then(r => r.json());
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Archived', 'Request archived successfully.', 'success').then(()=> location.reload());
+                    }
+                }).catch(() => {
+                    Swal.fire('Error', 'Failed to archive request', 'error');
+                });
+            } else {
+                if (!confirm('Archive request?')) return;
+                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/archive`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                    .then(()=> location.reload())
+                    .catch(()=> alert('Failed to archive'));
+            }
+        }
+
+        // Restore archived request
+        function restoreRequest(requestId) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Restore request?',
+                    text: 'This will restore the archived request back to active lists.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, restore',
+                    preConfirm: () => {
+                        return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/restore`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }).then(r => r.json());
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Restored', 'Request restored successfully.', 'success').then(()=> location.reload());
+                    }
+                }).catch(() => {
+                    Swal.fire('Error', 'Failed to restore request', 'error');
+                });
+            } else {
+                if (!confirm('Restore request?')) return;
+                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                    .then(()=> location.reload())
+                    .catch(()=> alert('Failed to restore'));
             }
         }
 

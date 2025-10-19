@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Donation extends Model
 {
+    use SoftDeletes;
     protected $table = 'breastmilk_donation';
     protected $primaryKey = 'breastmilk_donation_id';
 
