@@ -51,6 +51,9 @@ Route::get('/admin/health-screening', [HealthScreeningController::class, 'admin_
 Route::post('/admin/health-screening/{id}/accept', [HealthScreeningController::class, 'accept'])->name('admin.health-screening.accept');
 Route::post('/admin/health-screening/{id}/reject', [HealthScreeningController::class, 'reject'])->name('admin.health-screening.reject');
 Route::post('/admin/health-screening/{id}/undo-decline', [HealthScreeningController::class, 'undoDecline'])->name('admin.health-screening.undo-decline');
+// Archive (soft-delete) endpoints
+Route::post('/admin/health-screening/{id}/archive', [HealthScreeningController::class, 'archive'])->name('admin.health-screening.archive');
+Route::post('/admin/health-screening/{id}/restore', [HealthScreeningController::class, 'restore'])->name('admin.health-screening.restore');
 
 Route::get('/user/health-screening', [HealthScreeningController::class, 'user_health_screening'])->name('user.health-screening');
 Route::post('/user/health-screening/store', [HealthScreeningController::class, 'store'])->name('health_screening.store');
@@ -59,6 +62,9 @@ Route::get('/admin/breastmilk-donation', [DonationController::class, 'admin_brea
 Route::post('/admin/donations/{id}/validate-walkin', [DonationController::class, 'validateWalkIn'])->name('admin.donation.validate-walkin');
 Route::post('/admin/donations/{id}/schedule-pickup', [DonationController::class, 'schedulePickup'])->name('admin.donation.schedule-pickup');
 Route::post('/admin/donations/{id}/validate-pickup', [DonationController::class, 'validatePickup'])->name('admin.donation.validate-pickup');
+// Archive donation
+Route::post('/admin/donations/{id}/archive', [DonationController::class, 'archive'])->name('admin.donation.archive');
+Route::post('/admin/donations/{id}/restore', [DonationController::class, 'restore'])->name('admin.donation.restore');
 Route::get('/user/donate', [DonationController::class, 'user_donate'])->name('user.donate');
 Route::post('/user/donate/store', [DonationController::class, 'store'])->name('donation.store');
 // My Requests page for user
@@ -75,6 +81,9 @@ Route::post('/admin/breastmilk-request/{id}/approve', [BreastmilkRequestControll
 Route::post('/admin/breastmilk-request/{id}/decline', [BreastmilkRequestController::class, 'decline'])->name('admin.request.decline');
 Route::post('/admin/breastmilk-request/{id}/dispense', [BreastmilkRequestController::class, 'dispense'])->name('admin.request.dispense');
 Route::post('/admin/breastmilk-request/{id}/reject', [BreastmilkRequestController::class, 'reject'])->name('admin.request.reject');
+// Archive request
+Route::post('/admin/breastmilk-request/{id}/archive', [BreastmilkRequestController::class, 'archive'])->name('admin.request.archive');
+Route::post('/admin/breastmilk-request/{id}/restore', [BreastmilkRequestController::class, 'restore'])->name('admin.request.restore');
 Route::get('/user/breastmilk-request', [BreastmilkRequestController::class, 'index'])->name('user.breastmilk-request');
 Route::post('/user/breastmilk-request/store', [BreastmilkRequestController::class, 'store'])->name('user.breastmilk-request.store');
 Route::get('/user/breastmilk-request/infant/{infantId}', [BreastmilkRequestController::class, 'getInfantInfo'])->name('user.breastmilk-request.infant');

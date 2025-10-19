@@ -129,7 +129,7 @@
             transform: scale(1.1);
         }
 
-        /* Button Title - Merriweather for emphasis */
+    /* Button Title - Segoe UI for emphasis */
         .donation-button h3 {
             margin: 0 0 0.5rem 0;
             font-size: clamp(1.25rem, 3vw, 1.5rem);

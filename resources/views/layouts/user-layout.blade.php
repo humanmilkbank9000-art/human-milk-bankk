@@ -16,9 +16,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome (needed for many icons used across the app) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Load Quicksand (body) and Merriweather (headings) from Google Fonts -->
+    <!-- Load Quicksand (body) from Google Fonts -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Merriweather:wght@400;700;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <!-- Global Typography System -->
     <link href="{{ asset('css/typography.css') }}" rel="stylesheet">
@@ -34,7 +34,7 @@
     <style>
         :root {
             /* Typography - Correct assignments */
-            --heading-font: 'Merriweather', Georgia, 'Times New Roman', serif;
+            --heading-font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             --body-font: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --line-height: 1.6;
             --line-height-relaxed: 1.6;
@@ -54,7 +54,7 @@
             line-height: var(--line-height-relaxed);
         }
 
-        /* Headings use Merriweather (serif) */
+    /* Headings use Segoe UI (sans-serif) */
         h1,
         h2,
         h3,
@@ -323,10 +323,11 @@
             }
         }
 
-        /* Sidebar - Styles handled by responsive.css */
+        /* Sidebar - theme updated: pink gradient, black text, active pill + left indicator
+           Keep original size/positioning behavior (no fixed width/height overrides) */
         .sidebar {
-            background-color: #2c3e50;
-            color: #fff;
+            background: linear-gradient(180deg, #ffd9e8 0%, #ff93c1 50%, #ff6fa6 100%);
+            color: #222222;
             padding: 20px;
             box-sizing: border-box;
             display: flex;
@@ -345,32 +346,88 @@
 
         .sidebar h3 {
             margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
+            margin-bottom: 18px;
+            font-size: 1rem;
+            color: rgba(255,255,255,0.92);
+            font-weight: 700;
+            text-align: center;
         }
+        
+            .sidebar-title {
+                font-size: 0.95rem;
+                color: rgba(255,255,255,0.92);
+                font-weight: 700;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+            }
 
         .sidebar a {
-            color: #ecf0f1;
+            color: #222222;
             text-decoration: none;
-            padding: 10px 0 10px 16px;
-            display: block;
-            transition: background 0.3s;
-            cursor: pointer;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.18s, color 0.12s;
+            border-radius: 10px;
+            position: relative;
             width: 100%;
         }
+        
+            .sidebar a span {
+                display: inline-block;
+                max-width: 150px;
+                white-space: normal;
+                color: inherit;
+                font-weight: 600;
+            }
+
+            .dynamic-sidebar-badge {
+                position: absolute;
+                right: 18px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 18px;
+                height: 18px;
+                line-height: 18px;
+                font-size: 0.7rem;
+                text-align: center;
+                padding: 0;
+                border-radius: 50%;
+                background: #d63031;
+                color: #fff;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        .sidebar .icon { color: #222222; font-size: 1.05rem; }
 
         .sidebar a:hover {
-            background-color: #34495e;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
+            background: rgba(255,255,255,0.6);
         }
 
         .sidebar a.active {
-            background-color: #3498db;
+            background: #ffffff;
+            color: #222222;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+
+        .sidebar a.active .icon,
+        .sidebar a.active span { color: #222222 !important; }
+
+        .sidebar a.active::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 56%;
+            background: #ff3478;
             border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
         }
 
         .sidebar hr {
@@ -422,7 +479,7 @@ $defaultTitle = $titles[$routeName] ?? 'User';
             <!-- HMBLSC Logo -->
             <img src="{{ asset('hmblsc-logo.jpg') }}" alt="HMBLSC Logo" width="95" height="95" loading="eager" style="width: 95px; height: 95px; object-fit: cover; margin-bottom: 12px; border-radius: 50%; border: 3px solid #ecf0f1; display: block; opacity: 0; animation: fadeInSidebarLogo 0.4s ease-in 0.1s forwards;">
             <!-- User Name -->
-            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0; color: #ecf0f1;">{{ session('account_name', 'User') }}</h3>
+            <h3 class="sidebar-title">{{ session('account_name', 'User') }}</h3>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 12px;">
 

@@ -86,7 +86,7 @@
 }
 
 .table-standard thead th {
-    font-family: var(--heading-font, 'Merriweather', serif);
+    font-family: var(--heading-font, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     font-weight: 700;
     font-size: 0.95rem;
     background: #f8fafc;
@@ -357,7 +357,7 @@
 }
 
 .card-header {
-    font-family: var(--heading-font, 'Merriweather', serif);
+    font-family: var(--heading-font, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     font-weight: 700;
     background-color: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
@@ -386,7 +386,7 @@
 }
 
 .modal-header {
-    font-family: var(--heading-font, 'Merriweather', serif);
+    font-family: var(--heading-font, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     background-color: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
     padding: 1.25rem 1.5rem;

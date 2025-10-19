@@ -1,12 +1,12 @@
 /**
  * Typography System - City Human Milk Bank
- * Font Pair: Merriweather (headings) + Quicksand (body)
+ * Font Pair: Segoe UI (headings) + Quicksand (body)
  * 
  * Design Philosophy:
- * - Merriweather (serif): Used for headings, titles, and emphasis - conveys trust, professionalism, and hierarchy
+ * - Segoe UI (sans-serif): Used for headings, titles, and emphasis - conveys a formal, modern aesthetic
  * - Quicksand (sans-serif): Used for body text, buttons, and interactive elements - provides warmth, friendliness, and readability
  * 
- * This creates a warm, human-centered interface appropriate for healthcare services.
+ * This creates a formal and accessible interface appropriate for healthcare services.
  */
 
 /* ============================================
@@ -14,7 +14,7 @@
    ============================================ */
 :root {
     /* Font Families */
-    --heading-font: 'Merriweather', Georgia, 'Times New Roman', serif;
+    --heading-font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     --body-font: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     
     /* Line Heights */
@@ -49,7 +49,7 @@ body {
 }
 
 /* ============================================
-   Headings - Merriweather (Serif)
+    Headings - Segoe UI (Sans-serif)
    ============================================ */
 
 /* Page Titles / H1 */
@@ -228,7 +228,7 @@ select {
    Tables - Mixed Typography
    ============================================ */
 
-/* Table Headers - Merriweather */
+/* Table Headers - Segoe UI */
 thead th,
 .table thead th,
 .table-header {
@@ -254,7 +254,7 @@ tbody td,
    Cards - Mixed Typography
    ============================================ */
 
-/* Card Headers - Merriweather */
+/* Card Headers - Segoe UI */
 .card-header {
     font-family: var(--heading-font);
     font-weight: var(--font-bold);
@@ -279,7 +279,7 @@ tbody td,
    Modals - Mixed Typography
    ============================================ */
 
-/* Modal Titles - Merriweather */
+/* Modal Titles - Segoe UI */
 .modal-header,
 .modal-title {
     font-family: var(--heading-font);
@@ -365,8 +365,8 @@ li {
 }
 
 /* ============================================
-   Blockquotes - Merriweather
-   ============================================ */
+    Blockquotes - Segoe UI
+    ============================================ */
 blockquote,
 .blockquote {
     font-family: var(--heading-font);

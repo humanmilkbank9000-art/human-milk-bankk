@@ -6,13 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Password - Human Milk Bank</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Merriweather:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap"
         rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         :root {
             --heading-font: 'Quicksand', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            --body-font: 'Merriweather', Georgia, 'Times New Roman', serif;
+            --body-font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             --pink-primary: #ec4899;
             --pink-light: #ffc0cb;
             --pink-lighter: #ffd4e3;

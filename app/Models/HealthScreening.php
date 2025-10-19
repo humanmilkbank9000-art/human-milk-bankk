@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class HealthScreening extends Model
 {
+    use SoftDeletes;
     protected $table = 'health_screening';
     protected $primaryKey = 'health_screening_id';
     protected $fillable = [

@@ -340,11 +340,39 @@
                     right: 0;
                     background-color: white;
                     box-shadow: -2px 0 4px rgba(0,0,0,0.05);
-                    z-index: 1;
+                    z-index: 2;
+                    vertical-align: middle;
+                    min-width: 140px;
                 }
-                
+
                 #pending-donations .table thead th:nth-child(9) {
                     background-color: #f8f9fa;
+                }
+
+                /* Fallback sticky for last column at other sizes (helps with 90% zoom) */
+                #pending-donations .table thead th:last-child,
+                #pending-donations .table tbody td:last-child {
+                    position: sticky;
+                    right: 0;
+                    background: white;
+                    z-index: 3;
+                    box-shadow: -2px 0 4px rgba(0,0,0,0.04);
+                }
+
+                /* Action buttons container: allow wrapping so buttons remain visible rather than overflow */
+                #pending-donations .table .table-actions {
+                    display: inline-flex;
+                    gap: 0.4rem;
+                    justify-content: center;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                /* Make buttons more compact when space is constrained */
+                #pending-donations .table .table-actions .btn {
+                    white-space: nowrap;
+                    padding-left: 0.45rem;
+                    padding-right: 0.45rem;
                 }
             }
 
@@ -462,6 +490,9 @@
                     Home Collection Success <span class="badge bg-success">{{ $successHomeCollection->count() }}</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ $tabStatus == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}" href="?status=archived">Archived <span class="badge bg-secondary text-white">{{ $archivedCount ?? 0 }}</span></a>
+            </li>
         </ul>
 
         {{-- Search Input Below Tabs --}}
@@ -504,7 +535,7 @@
                     <div class="card-body">
                         @if($pendingDonations->count() > 0)
                             <div class="table-responsive">
-                                <table class="table table-hover" style="min-width: 1200px;">
+                                <table class="table table-hover" style="min-width: 900px; width:100%;">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
@@ -586,20 +617,24 @@
                                                     </small>
                                                 </td>
                                                 <td data-label="Actions" class="text-center">
-                                                    @if($donation->donation_method === 'walk_in')
-                                                        <button class="btn btn-success btn-sm px-2 validate-walk-in"
-                                                            title="Validate Walk-in" data-id="{{ $donation->breastmilk_donation_id }}"
-                                                            data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}">
-                                                            <i class="fas fa-check"></i> Validate
-                                                        </button>
-                                                    @else
-                                                        <button class="btn btn-primary btn-sm px-2 schedule-pickup"
-                                                            title="Schedule Pickup" data-id="{{ $donation->breastmilk_donation_id }}"
-                                                            data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                            data-address="{{ $donation->user->address ?? 'Not provided' }}">
-                                                            <i class="fas fa-calendar-alt"></i> Schedule
-                                                        </button>
-                                                    @endif
+                                                    <div class="table-actions">
+                                                        @if($donation->donation_method === 'walk_in')
+                                                            <button class="btn btn-success btn-sm px-2 validate-walk-in"
+                                                                title="Validate Walk-in" data-id="{{ $donation->breastmilk_donation_id }}"
+                                                                data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}">
+                                                                <i class="fas fa-check"></i>
+                                                                <span class="d-none d-md-inline"> Validate</span>
+                                                            </button>
+                                                        @else
+                                                            <button class="btn btn-primary btn-sm px-2 schedule-pickup"
+                                                                title="Schedule Pickup" data-id="{{ $donation->breastmilk_donation_id }}"
+                                                                data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
+                                                                data-address="{{ $donation->user->address ?? 'Not provided' }}">
+                                                                <i class="fas fa-calendar-alt"></i>
+                                                                <span class="d-none d-md-inline"> Schedule</span>
+                                                            </button>
+                                                        @endif
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -698,6 +733,7 @@
                                                 <i class="fas fa-calendar-alt"></i> Schedule Pickup
                                             </button>
                                         @endif
+                                            {{-- Archive disabled for pending donations --}}
                                     </div>
                                 </div>
                             @endforeach
@@ -774,14 +810,17 @@
                                                     <small>{{ $donation->scheduled_pickup_time }}</small>
                                                 </td>
                                                 <td data-label="Actions" class="text-center">
-                                                    <button class="btn btn-success btn-sm px-2 validate-home-collection"
-                                                        title="Validate" data-id="{{ $donation->breastmilk_donation_id }}"
-                                                        data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                        data-bags="{{ $donation->number_of_bags }}"
-                                                        data-volumes="{{ json_encode($donation->individual_bag_volumes) }}"
-                                                        data-total="{{ $donation->formatted_total_volume }}">
-                                                        <i class="fas fa-check"></i> Validate
-                                                    </button>
+                                                    <div class="table-actions">
+                                                        <button class="btn btn-success btn-sm px-2 validate-home-collection"
+                                                            title="Validate" data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
+                                                            data-bags="{{ $donation->number_of_bags }}"
+                                                            data-volumes="{{ json_encode($donation->individual_bag_volumes) }}"
+                                                            data-total="{{ $donation->formatted_total_volume }}">
+                                                            <i class="fas fa-check"></i>
+                                                            <span class="d-none d-md-inline"> Validate</span>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -817,6 +856,7 @@
                                             <th class="text-center">Total</th>
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Time</th>
+                                            <th class="text-center">Archive</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -851,6 +891,14 @@
                                                             N/A
                                                         @endif
                                                     </small>
+                                                </td>
+                                                <td data-label="Archive" class="text-center">
+                                                    <div class="table-actions">
+                                                        <button class="btn btn-sm btn-danger" onclick="archiveDonation({{ $donation->breastmilk_donation_id }})" title="Archive donation" aria-label="Archive donation">
+                                                            <i class="fas fa-archive"></i>
+                                                            <span class="d-none d-md-inline"> Archive</span>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -887,6 +935,7 @@
                                             <th class="text-center">Map</th>
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Time</th>
+                                            <th class="text-center">Archive</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -927,6 +976,14 @@
                                                 <td data-label="Time" class="text-center">
                                                     <small>{{ $donation->scheduled_pickup_time }}</small>
                                                 </td>
+                                                <td data-label="Archive" class="text-center">
+                                                    <div class="table-actions">
+                                                        <button class="btn btn-sm btn-danger" onclick="archiveDonation({{ $donation->breastmilk_donation_id }})" title="Archive donation" aria-label="Archive donation">
+                                                            <i class="fas fa-archive"></i>
+                                                            <span class="d-none d-md-inline"> Archive</span>
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -936,6 +993,57 @@
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-home fa-3x mb-3"></i>
                                 <p>No completed home collections yet</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Archived Tab -->
+            <div class="tab-pane fade show {{ $tabStatus == 'archived' ? 'active' : '' }}" id="archived-donations"
+                role="tabpanel">
+                <div class="card card-standard">
+                    <div class="card-header bg-secondary text-white py-3">
+                        <h5 class="mb-0">Archived Donations</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(!empty($archived) && $archived->count() > 0)
+                            <div class="table-container table-wide">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Name</th>
+                                            <th class="text-center">Type</th>
+                                            <th class="text-center">Total</th>
+                                            <th class="text-center">Archived At</th>
+                                            <th class="text-center">Restore</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($archived as $donation)
+                                            <tr>
+                                                <td class="text-center">{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</td>
+                                                <td class="text-center">
+                                                    @if($donation->donation_method === 'walk_in')
+                                                        <span class="badge bg-info">Walk-in</span>
+                                                    @else
+                                                        <span class="badge bg-primary">Home Collection</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">{{ $donation->formatted_total_volume ?? '-' }}ml</td>
+                                                <td class="text-center">{{ $donation->deleted_at ? $donation->deleted_at->format('M d, Y g:i A') : '-' }}</td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-sm btn-outline-success" onclick="restoreDonation({{ $donation->breastmilk_donation_id }})">Restore</button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-archive fa-3x mb-3"></i>
+                                <p>No archived donations</p>
                             </div>
                         @endif
                     </div>
@@ -1734,4 +1842,68 @@
 
     <!-- Include Location Modal -->
     @include('partials.location-modal')
+    <script>
+        function archiveDonation(id) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Archive donation?',
+                    text: 'This will archive (soft-delete) the donation record. You can restore it from the database if needed.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, archive',
+                    preConfirm: () => {
+                        return fetch(`/admin/donations/${id}/archive`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }).then(r => r.json());
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Archived', 'Donation archived successfully.', 'success').then(()=> location.reload());
+                    }
+                }).catch(()=> Swal.fire('Error', 'Failed to archive donation', 'error'));
+            } else {
+                if (!confirm('Archive donation?')) return;
+                fetch(`/admin/donations/${id}/archive`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                    .then(()=> location.reload())
+                    .catch(()=> alert('Failed to archive'));
+            }
+        }
+    </script>
+    <script>
+        function restoreDonation(id) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Restore donation?',
+                    text: 'This will restore the archived donation back to active lists.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, restore',
+                    preConfirm: () => {
+                        return fetch(`/admin/donations/${id}/restore`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }).then(r => r.json());
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        Swal.fire('Restored', 'Donation restored successfully.', 'success').then(()=> location.reload());
+                    }
+                }).catch(()=> Swal.fire('Error', 'Failed to restore donation', 'error'));
+            } else {
+                if (!confirm('Restore donation?')) return;
+                fetch(`/admin/donations/${id}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                    .then(()=> location.reload())
+                    .catch(()=> alert('Failed to restore'));
+            }
+        }
+    </script>
 @endsection
