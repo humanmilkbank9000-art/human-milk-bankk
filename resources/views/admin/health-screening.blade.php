@@ -57,12 +57,64 @@
 
         .table-responsive {
             border-radius: 8px;
-            overflow: hidden;
         }
 
         .btn {
             font-size: 0.95rem;
             border-radius: 6px;
+        }
+        
+        /* Card-based responsive layout for smaller screens */
+        @media (max-width: 1400px) {
+            .table-responsive table {
+                display: none !important;
+            }
+            
+            .responsive-card {
+                display: block !important;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                background: white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            
+            .responsive-card .card-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .responsive-card .card-row:last-child {
+                border-bottom: none;
+            }
+            
+            .responsive-card .card-label {
+                font-weight: 600;
+                color: #495057;
+                font-size: 0.9rem;
+            }
+            
+            .responsive-card .card-value {
+                text-align: right;
+                color: #212529;
+                font-size: 0.9rem;
+            }
+            
+            .responsive-card .card-actions {
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 2px solid #e9ecef;
+                text-align: center;
+            }
+        }
+        
+        @media (min-width: 1401px) {
+            .responsive-card {
+                display: none !important;
+            }
         }
 
         .tab-content>.tab-pane {
@@ -210,6 +262,114 @@
             .nav-tabs .nav-link .badge {
                 font-size: 0.6rem;
                 padding: 0.15em 0.35em;
+            }
+        }
+
+        /* Search Input Styling */
+        .input-group-text {
+            background-color: white;
+            border-right: 0;
+        }
+
+        #searchInput {
+            border-left: 0;
+            padding-left: 0;
+        }
+
+        #searchInput:focus {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #86b7fe;
+        }
+
+        .input-group:focus-within #searchInput {
+            border-color: #86b7fe;
+        }
+
+        #clearSearch {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            #searchInput {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Mobile Modal Fixes - Ensure buttons are visible and accessible */
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0.5rem;
+                max-height: calc(100vh - 1rem);
+            }
+
+            .modal-content {
+                max-height: calc(100vh - 1rem);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-body {
+                overflow-y: auto;
+                flex: 1 1 auto;
+                max-height: calc(100vh - 200px);
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .modal-footer {
+                position: sticky;
+                bottom: 0;
+                background: white;
+                border-top: 1px solid #dee2e6;
+                z-index: 1;
+                flex-shrink: 0;
+                padding: 0.75rem;
+            }
+
+            .modal-footer .d-flex {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .modal-footer .btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+                white-space: nowrap;
+            }
+
+            .modal-footer .d-flex.gap-2 {
+                flex-wrap: nowrap;
+            }
+        }
+
+        /* Extra small devices - stack buttons vertically */
+        @media (max-width: 576px) {
+            .modal-dialog {
+                margin: 0.25rem;
+                max-width: calc(100vw - 0.5rem);
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .modal-footer .d-flex {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                margin: 0;
+            }
+
+            .modal-footer .d-flex.gap-2 {
+                flex-direction: column;
+                width: 100%;
             }
         }
     </style>
@@ -619,13 +779,7 @@
                     <span class="badge bg-warning text-dark ms-1">{{ $pendingCount }}</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link {{ $status == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}"
-                    href="{{ route('admin.health-screening', ['status' => 'archived']) }}">
-                    Archived
-                    <span class="badge {{ $status == 'archived' ? 'bg-light text-secondary' : 'bg-secondary text-white' }} ms-1">{{ $archivedCount ?? 0 }}</span>
-                </a>
-            </li>
+            <!-- Archived tab moved to end of tabs list to match requested ordering -->
             <li class="nav-item">
                 <a class="nav-link {{ $status == 'accepted' ? 'active bg-success text-white' : 'text-success' }}"
                     href="{{ route('admin.health-screening', ['status' => 'accepted']) }}">
@@ -642,7 +796,34 @@
                         class="badge {{ $status == 'declined' ? 'bg-light text-danger' : 'bg-danger text-white' }} ms-1">{{ $declinedCount }}</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ $status == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}"
+                    href="{{ route('admin.health-screening', ['status' => 'archived']) }}">
+                    Archived
+                    <span class="badge {{ $status == 'archived' ? 'bg-light text-secondary' : 'bg-secondary text-white' }} ms-1">{{ $archivedCount ?? 0 }}</span>
+                </a>
+            </li>
         </ul>
+
+        {{-- Search Input Below Tabs --}}
+        <div class="mb-3">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" 
+                       class="form-control border-start-0 ps-0" 
+                       id="searchInput" 
+                       placeholder="Search by name, contact number..."
+                       aria-label="Search health screenings">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <small class="text-muted d-block mt-1">
+                <span id="searchResults"></span>
+            </small>
+        </div>
 
         @if($healthScreenings->isEmpty())
             <div class="alert alert-info">No health screenings found for status <strong>{{ ucfirst($status) }}</strong>.</div>
@@ -738,6 +919,52 @@
                                     </tr>
                                 @endforeach
                             </tbody>
+                        </table>
+                    </div>
+                    
+                    {{-- Card Layout for Smaller Screens --}}
+                    @foreach($healthScreenings as $index => $screening)
+                        <div class="responsive-card" style="display: none;">
+                            <div class="card-row">
+                                <span class="card-label">Name:</span>
+                                <span class="card-value"><strong>{{ $screening->user->first_name ?? '-' }} {{ $screening->user->last_name ?? '' }}</strong></span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Contact Number:</span>
+                                <span class="card-value">{{ $screening->user->contact_number ?? '-' }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Date Submitted:</span>
+                                <span class="card-value">
+                                    <strong>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                    <small class="text-muted">{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                </span>
+                            </div>
+                            @if($status == 'accepted' && !empty($screening->date_accepted))
+                                <div class="card-row">
+                                    <span class="card-label">Date Accepted:</span>
+                                    <span class="card-value">
+                                        <strong>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                        <small class="text-muted">{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                    </span>
+                                </div>
+                            @elseif($status == 'declined' && !empty($screening->date_declined))
+                                <div class="card-row">
+                                    <span class="card-label">Date Declined:</span>
+                                    <span class="card-value">
+                                        <strong>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                        <small class="text-muted">{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                    </span>
+                                </div>
+                            @endif
+                            <div class="card-actions">
+                                <button class="btn btn-primary btn-sm w-100" data-bs-toggle="modal"
+                                    data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                    <i class="bi bi-eye"></i> View Details
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
                         </table>
                     </div>
                 </div>

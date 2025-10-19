@@ -45,6 +45,13 @@
             --success-color: #198754;
             --warning-color: #ffc107;
             --danger-color: #dc3545;
+            /* Pink table theme (system-themed card + pink header) */
+            --pink-50: #fff6f9; /* very light pink background */
+            --pink-100: #ffd9e8; /* soft pale pink */
+            --pink-200: #ffb6d0;
+            --pink-300: #ff93c1; /* header */
+            --pink-400: #ff6fa6; /* stronger accent */
+            --pink-accent: #ff3478;
         }
 
         body {
@@ -71,10 +78,15 @@
         .table-standard thead th {
             font-family: var(--heading-font);
             font-weight: 700;
-            background: var(--table-header-bg);
-            border-bottom: 2px solid var(--table-border);
-            padding: 0.65rem 0.6rem;
+            /* Use pink header to match design */
+            background: linear-gradient(180deg, var(--pink-300), var(--pink-200));
+            color: #ffffff;
+            border-bottom: 0; /* remove the standard border in favor of softer card look */
+            padding: 0.75rem 0.8rem;
             text-align: left;
+            vertical-align: middle;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
         }
 
         .table-standard tbody td {
@@ -88,11 +100,30 @@
         }
 
         .table-standard tbody tr:nth-child(even) {
-            background: #fbfcfd;
+            /* use a subtle pink tint for even rows */
+            background: rgba(255, 223, 234, 0.6); /* soft pink */
         }
 
         .table-standard tbody tr:hover {
-            background: #eef6ff;
+            background: rgba(255, 207, 224, 0.9);
+        }
+
+        /* Card wrapper for tables to show the rounded pink container similar to the attachment */
+        .table-card {
+            background: var(--pink-50);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: none;
+            border: 1px solid rgba(255,111,166,0.12);
+            overflow: hidden;
+        }
+
+        /* Make the actual table sit on white inside the card for contrast */
+        .table-card .table-standard {
+            background: #ffffff;
+            border-radius: 8px;
+            border-collapse: separate;
+            overflow: hidden;
         }
 
         .badge-status {
@@ -348,18 +379,25 @@
             margin-top: 0;
             margin-bottom: 18px;
             font-size: 1rem;
-            color: rgba(255,255,255,0.92);
+            color: #000; /* ensure user name is black */
             font-weight: 700;
             text-align: center;
+            /* Use system font stack for a native/formal appearance */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            letter-spacing: 0.2px;
+            text-transform: none;
         }
         
             .sidebar-title {
                 font-size: 0.95rem;
-                color: rgba(255,255,255,0.92);
+                color: #000; /* ensure sidebar title (name) is black */
                 font-weight: 700;
                 margin: 0;
                 padding: 0;
                 text-align: center;
+                /* Use system font stack for the sidebar title */
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                letter-spacing: 0.15px;
             }
 
         .sidebar a {

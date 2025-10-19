@@ -101,19 +101,26 @@
             margin-top: 0;
             margin-bottom: 18px;
             font-size: 1rem;
-            color: rgba(255,255,255,0.92); /* light heading like screenshot */
+            color: #000; /* ensure admin name is black */
             font-weight: 700;
             text-align: center;
+            /* Use system font stack for a native/formal appearance */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            letter-spacing: 0.2px;
+            text-transform: none;
         }
 
         /* semantic class for title (used in markup) */
         .sidebar-title {
             font-size: 0.95rem;
-            color: rgba(255,255,255,0.92);
+            color: #000; /* ensure sidebar title (name) is black */
             font-weight: 700;
             margin: 0;
             padding: 0;
             text-align: center;
+            /* Use system font stack for the sidebar title */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            letter-spacing: 0.15px;
         }
 
         .sidebar a {

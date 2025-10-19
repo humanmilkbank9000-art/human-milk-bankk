@@ -272,6 +272,123 @@
             min-height: 48px;
         }
     }
+
+    /* Pink table theme for health screening (colors only) */
+    .hs-table-card {
+        background: #fff0f6; /* pale pink card background */
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 10px;
+    }
+
+    /* Keep the table itself white for contrast inside the pink card */
+    .hs-table-card table {
+        background: #ffffff;
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* Pink header row */
+    .hs-table-card thead th {
+        background: linear-gradient(180deg, #ffd9e8 0%, #ff93c1 100%);
+        color: #222222; /* dark text for readability */
+        font-weight: 700;
+        padding: 0.75rem 0.9rem;
+        border-bottom: none;
+    }
+
+    /* Subtle pink stripe for even rows */
+    .hs-table-card tbody tr:nth-child(even) {
+        background: rgba(255, 223, 234, 0.55);
+    }
+
+    .hs-table-card tbody tr:hover {
+        background: rgba(255, 207, 224, 0.95);
+    }
+
+    .hs-table-card td, .hs-table-card th {
+        vertical-align: middle;
+        border-top: 1px solid rgba(0,0,0,0.03);
+    }
+
+    /* Page-wide pink theme overrides (colors only) */
+    .tab-content {
+        background-color: #fff0f6 !important;
+        border: 1px solid rgba(255,111,166,0.14) !important;
+    }
+
+    .info-card {
+        border-color: rgba(255,111,166,0.18) !important;
+        background: #fff6fb !important;
+    }
+
+    .info-card h6 {
+        border-bottom-color: #ff93c1 !important;
+        color: #ff3478 !important;
+    }
+
+    .review-section {
+        background-color: #fff0f6 !important;
+        border: 1px solid rgba(255,111,166,0.12) !important;
+    }
+
+    .review-section h6 {
+        color: #ff3478 !important;
+        border-bottom-color: rgba(255,147,193,0.8) !important;
+    }
+
+    .radio-option label {
+        background-color: #fff6fb !important;
+        border-color: rgba(255,111,166,0.2) !important;
+        color: #222 !important;
+    }
+
+    .radio-option input[type="radio"]:checked + label {
+        background-color: #ff93c1 !important;
+        border-color: #ff93c1 !important;
+        color: white !important;
+        box-shadow: 0 2px 8px rgba(255,83,140,0.18) !important;
+    }
+
+    .radio-option label:hover {
+        border-color: #ff93c1 !important;
+        background-color: #fff0f6 !important;
+    }
+
+    .radio-option input[type="radio"]:checked + label::before {
+        box-shadow: inset 0 0 0 4px #ff93c1 !important;
+    }
+
+    .question-item {
+        background-color: #fff9fb !important;
+        border-color: rgba(255,111,166,0.12) !important;
+    }
+
+    .question-item:hover {
+        box-shadow: 0 4px 20px rgba(255,111,166,0.08) !important;
+    }
+
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(180deg, #ffd9e8 0%, #ff93c1 100%) !important;
+        color: #222 !important;
+        border-color: rgba(255,147,193,0.6) !important;
+    }
+
+    /* Make primary buttons pink inside this page */
+    .tab-navigation-buttons .btn-primary,
+    #healthScreeningForm .btn-primary {
+        background-color: #ff93c1 !important;
+        border-color: #ff93c1 !important;
+        color: #fff !important;
+    }
+
+    /* Review modal header should use pink instead of Bootstrap primary */
+    .modal-header.bg-primary {
+        background-color: #ff93c1 !important;
+    }
 </style>
 @endsection
 
