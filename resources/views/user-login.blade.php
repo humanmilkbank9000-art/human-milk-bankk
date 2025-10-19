@@ -681,7 +681,7 @@
                 <style>
                     font-weight: bold;    
                 </style>
-                VERSION 2.0.0
+                VERSION 3.0.0
             </p>
             <p class="app-subtitle">
                 Version 3.
