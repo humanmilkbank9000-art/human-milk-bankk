@@ -193,11 +193,26 @@
         }
 
         .calendar-day.selected {
-            background-color: #007bff !important;
+            background-color: #ff89ceff !important;
             color: white !important;
             font-weight: bold;
             transform: scale(1.1);
             z-index: 10;
+        }
+
+        /* Make the card headers pink on this page (flat color, no gradient) */
+        .card-header.bg-primary {
+            background: #ff93c1 !important; /* solid pink */
+            border-bottom: 1px solid rgba(255,111,166,0.2) !important;
+            color: #ffffff !important; /* white text for contrast */
+        }
+
+        /* Table header should match card header (flat pink, white text) */
+        .table-standard thead th {
+            background: #ff93c1 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            border-bottom: 0 !important;
         }
 
         /* Step indicator styles for multi-step form */
@@ -215,7 +230,7 @@
         }
 
         .step-indicator.active {
-            background-color: #007bff;
+            background-color: #ff89ceff;
         }
 
         .step-indicator.completed {
@@ -238,7 +253,7 @@
         }
 
         .infant-card.selected {
-            border-color: #007bff;
+            border-color: #ff89ceff;
             background-color: #f8f9ff;
             box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
         }
@@ -259,7 +274,7 @@
         }
 
         .time-slot:hover {
-            border-color: #007bff;
+            border-color: #ff89ceff;
             background-color: #f8f9ff;
         }
 
@@ -268,8 +283,8 @@
         }
 
         .time-slot.selected {
-            border-color: #007bff;
-            background-color: #007bff;
+            border-color: #ff89ceff;
+            background-color: #ff89ceff;
             color: white;
             font-weight: 500;
         }

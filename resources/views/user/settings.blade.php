@@ -4,6 +4,40 @@
 
 @section('content')
     <div class="container-fluid">
+        @section('styles')
+            <style>
+                /* Add spacing between card header and table and ensure table sits on white rounded surface */
+                .table-card {
+                    padding: 12px;
+                }
+
+                .table-card .table {
+                    margin-top: 8px;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    overflow: hidden;
+                }
+
+                .table-card .table thead th:first-child { border-top-left-radius: 8px; }
+                .table-card .table thead th:last-child { border-top-right-radius: 8px; }
+
+                /* Page-specific lighter pink overrides for settings page */
+                .container-fluid .card-header.bg-primary,
+                .container-fluid .card-header.bg-info,
+                .container-fluid .card-header.bg-secondary {
+                    background: #ffdfe8 !important; /* lighter pastel pink */
+                    border-bottom: 1px solid rgba(255,111,166,0.08) !important;
+                    color: #222 !important; /* darker text for readability */
+                }
+
+                .table-card .table thead th {
+                    background: #ffdfe8 !important; /* match lighter pink */
+                    color: #222 !important;
+                    font-weight: 700;
+                    border-bottom: 0 !important;
+                }
+            </style>
+        @endsection
         <div class="row">
             <div class="col-lg-8 mx-auto">
                 @php
@@ -29,6 +63,7 @@
                             <h5 class="mb-0">User Registration Information</h5>
                         </div>
                         <div class="card-body p-0">
+                            <div class="table-card">
                             <table class="table table-standard table-striped table-bordered mb-0">
                                 <thead class="table-light">
                                     <tr>
@@ -55,6 +90,7 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 @elseif($tab == 'infant')
@@ -63,6 +99,7 @@
                             <h5 class="mb-0">Infant Registration Information</h5>
                         </div>
                         <div class="card-body p-0">
+                            <div class="table-card">
                             <table class="table table-standard table-striped table-bordered mb-0">
                                 <thead class="table-light">
                                     <tr>
@@ -95,6 +132,7 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 @elseif($tab == 'password')

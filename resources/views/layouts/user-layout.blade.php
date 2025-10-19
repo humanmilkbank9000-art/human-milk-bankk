@@ -45,13 +45,6 @@
             --success-color: #198754;
             --warning-color: #ffc107;
             --danger-color: #dc3545;
-            /* Pink table theme (system-themed card + pink header) */
-            --pink-50: #fff6f9; /* very light pink background */
-            --pink-100: #ffd9e8; /* soft pale pink */
-            --pink-200: #ffb6d0;
-            --pink-300: #ff93c1; /* header */
-            --pink-400: #ff6fa6; /* stronger accent */
-            --pink-accent: #ff3478;
         }
 
         body {
@@ -78,15 +71,10 @@
         .table-standard thead th {
             font-family: var(--heading-font);
             font-weight: 700;
-            /* Use pink header to match design */
-            background: linear-gradient(180deg, var(--pink-300), var(--pink-200));
-            color: #ffffff;
-            border-bottom: 0; /* remove the standard border in favor of softer card look */
-            padding: 0.75rem 0.8rem;
+            background: var(--table-header-bg);
+            border-bottom: 2px solid var(--table-border);
+            padding: 0.65rem 0.6rem;
             text-align: left;
-            vertical-align: middle;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
         }
 
         .table-standard tbody td {
@@ -100,31 +88,50 @@
         }
 
         .table-standard tbody tr:nth-child(even) {
-            /* use a subtle pink tint for even rows */
-            background: rgba(255, 223, 234, 0.6); /* soft pink */
+            background: #fbfcfd;
         }
 
         .table-standard tbody tr:hover {
-            background: rgba(255, 207, 224, 0.9);
+            background: #eef6ff;
         }
 
-        /* Card wrapper for tables to show the rounded pink container similar to the attachment */
-        .table-card {
-            background: var(--pink-50);
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: none;
-            border: 1px solid rgba(255,111,166,0.12);
-            overflow: hidden;
+        /* User-scoped pink theme for tables and card headers (applies to content area only) */
+        .content .card-header.bg-primary,
+        .content .card-header.bg-info,
+        .content .card-header.bg-secondary {
+            background: #ff93c1 !important; /* flat pink */
+            border-bottom: 1px solid rgba(255,111,166,0.18) !important;
+            color: #ffffff !important;
         }
 
-        /* Make the actual table sit on white inside the card for contrast */
-        .table-card .table-standard {
+        .content .table-standard thead th {
+            background: #ff93c1 !important; /* flat pink */
+            color: #ffffff !important;
+            font-weight: 700;
+            border-bottom: 0 !important;
+        }
+
+        .content .table-standard {
             background: #ffffff;
             border-radius: 8px;
-            border-collapse: separate;
             overflow: hidden;
         }
+
+        .content .table-standard tbody td {
+            padding: 0.7rem 0.8rem;
+        }
+
+        .content .table-standard tbody tr:nth-child(even) {
+            background: rgba(255, 223, 234, 0.55) !important; /* subtle pink */
+        }
+
+        .content .table-standard tbody tr:hover {
+            background: rgba(255, 207, 224, 0.95) !important;
+        }
+
+        /* Optional: apply pink accent to small badges inside user tables */
+        .content .badge-status.accepted { background: rgba(25,135,84,0.12); color: #198754; }
+
 
         .badge-status {
             font-family: var(--body-font);
