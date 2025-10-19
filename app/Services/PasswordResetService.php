@@ -14,17 +14,12 @@ class PasswordResetService
 
     public function generateAndSendCode(string $contactNumber): string
     {
-        Log::info('Password reset requested', ['contact_number' => $contactNumber]);
-        
         $user = User::where('contact_number', $contactNumber)->first();
         if (!$user) {
-            Log::warning('Password reset failed - user not found', ['contact_number' => $contactNumber]);
             throw new \RuntimeException('We could not find an account with that mobile number.');
         }
 
         $code = (string) random_int(100000, 999999);
-        
-        Log::info('Recovery code generated', ['contact_number' => $contactNumber, 'code' => $code]);
 
         DB::table('password_reset_tokens')->updateOrInsert(
             ['contact_number' => $contactNumber],
@@ -37,11 +32,9 @@ class PasswordResetService
             $this->logRecoveryCode($contactNumber, $code);
         } else {
             try {
-                Log::info('Attempting to send recovery code via SMS', ['contact_number' => $contactNumber]);
                 $user->notify(new \App\Notifications\SendRecoveryCodeNotification($code, $this->codeExpiryMinutes));
-                Log::info('Recovery code SMS sent successfully', ['contact_number' => $contactNumber]);
             } catch (\Throwable $exception) {
-                Log::error('Failed to send recovery code SMS', ['contact_number' => $contactNumber, 'error' => $exception->getMessage(), 'trace' => $exception->getTraceAsString()]);
+                Log::error('Failed to send recovery code SMS', ['contact_number' => $contactNumber, 'error' => $exception->getMessage()]);
                 throw new \RuntimeException('We were unable to send the recovery code. Please try again shortly.');
             }
         }

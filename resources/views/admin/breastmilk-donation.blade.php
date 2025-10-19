@@ -97,40 +97,6 @@
                 }
             }
 
-            /* Search Input Styling */
-            .input-group-text {
-                background-color: white;
-                border-right: 0;
-            }
-
-            #searchInput {
-                border-left: 0;
-                padding-left: 0;
-            }
-
-            #searchInput:focus {
-                box-shadow: none;
-                border-color: #ced4da;
-            }
-
-            .input-group:focus-within .input-group-text {
-                border-color: #86b7fe;
-            }
-
-            .input-group:focus-within #searchInput {
-                border-color: #86b7fe;
-            }
-
-            #clearSearch {
-                display: none;
-            }
-
-            @media (max-width: 768px) {
-                #searchInput {
-                    font-size: 0.9rem;
-                }
-            }
-
             @media (max-width: 400px) {
                 .card-header h5 {
                     font-size: 0.8rem;
@@ -156,79 +122,9 @@
             }
 
             /* ============================================
-                       RESPONSIVE LAYOUT - NO HORIZONTAL SCROLL
+                       TABLET OPTIMIZATION FOR PENDING DONATIONS
+                       9-column table - Extra compact layout
                        ============================================ */
-            
-            /* Card-based layout for smaller screens */
-            @media (max-width: 1400px) {
-                #pending-donations .table-responsive table {
-                    display: none !important;
-                }
-                
-                .donation-card {
-                    display: block !important;
-                    border: 1px solid #dee2e6;
-                    border-radius: 8px;
-                    padding: 1rem;
-                    margin-bottom: 1rem;
-                    background: white;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-                
-                .donation-card .card-header-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding-bottom: 0.75rem;
-                    margin-bottom: 0.75rem;
-                    border-bottom: 2px solid #f8f9fa;
-                }
-                
-                .donation-card .card-row {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 0.4rem 0;
-                    border-bottom: 1px solid #f0f0f0;
-                }
-                
-                .donation-card .card-row:last-of-type {
-                    border-bottom: none;
-                }
-                
-                .donation-card .card-label {
-                    font-weight: 600;
-                    color: #495057;
-                    font-size: 0.85rem;
-                }
-                
-                .donation-card .card-value {
-                    text-align: right;
-                    color: #212529;
-                    font-size: 0.85rem;
-                }
-                
-                .donation-card .card-actions {
-                    margin-top: 0.75rem;
-                    padding-top: 0.75rem;
-                    border-top: 2px solid #e9ecef;
-                    display: flex;
-                    gap: 0.5rem;
-                    flex-wrap: wrap;
-                }
-                
-                .donation-card .card-actions .btn {
-                    flex: 1;
-                    min-width: 120px;
-                }
-            }
-            
-            @media (min-width: 1401px) {
-                .donation-card {
-                    display: none !important;
-                }
-            }
-            
-            /* Extra compact for tablets */
             @media (min-width: 600px) and (max-width: 1024px) {
 
                 /* Make pending donations table even more compact */
@@ -282,22 +178,22 @@
 
                 /* Allocate width percentages for better distribution */
                 #pending-donations .table thead th:nth-child(1) {
-                    width: 11%;
+                    width: 12%;
                 }
 
                 /* Name */
                 #pending-donations .table thead th:nth-child(2) {
-                    width: 7%;
+                    width: 8%;
                 }
 
                 /* Type */
                 #pending-donations .table thead th:nth-child(3) {
-                    width: 13%;
+                    width: 15%;
                 }
 
                 /* Address */
                 #pending-donations .table thead th:nth-child(4) {
-                    width: 6%;
+                    width: 7%;
                 }
 
                 /* Location */
@@ -307,17 +203,17 @@
 
                 /* Bags */
                 #pending-donations .table thead th:nth-child(6) {
-                    width: 11%;
+                    width: 12%;
                 }
 
                 /* Volume/Bag */
                 #pending-donations .table thead th:nth-child(7) {
-                    width: 8%;
+                    width: 9%;
                 }
 
                 /* Total */
                 #pending-donations .table thead th:nth-child(8) {
-                    width: 12%;
+                    width: 13%;
                 }
 
                 /* Date & Time */
@@ -444,10 +340,7 @@
                     margin: 0;
                 }
 
-                .modal-footer .d-flex.gap-2 {
-                    flex-direction: column;
-                    width: 100%;
-                }
+                /* Actions */
             }
         </style>
     @endsection
@@ -494,27 +387,6 @@
                 <a class="nav-link {{ $tabStatus == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}" href="?status=archived">Archived <span class="badge bg-secondary text-white">{{ $archivedCount ?? 0 }}</span></a>
             </li>
         </ul>
-
-        {{-- Search Input Below Tabs --}}
-        <div class="mb-3">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" 
-                       class="form-control border-start-0 ps-0" 
-                       id="searchInput" 
-                       placeholder="Search by donor name, address, contact..."
-                       aria-label="Search donations">
-                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <small class="text-muted d-block mt-1">
-                <span id="searchResults"></span>
-            </small>
-        </div>
-
         <div class="tab-content" id="donationTabContent" aria-live="polite">
             <!-- Pending Donations Tab -->
             <div class="tab-pane fade show {{ $tabStatus == 'pending' ? 'active' : '' }}" id="pending-donations"
@@ -1233,91 +1105,6 @@
 @endsection
 
 @section('scripts')
-    {{-- Real-time Search Functionality --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('searchInput');
-            const clearBtn = document.getElementById('clearSearch');
-            const searchResults = document.getElementById('searchResults');
-            
-            if (!searchInput) return;
-
-            // Get all tables across all tabs
-            const allTables = document.querySelectorAll('.tab-pane table tbody');
-            
-            // Real-time search function
-            function performSearch() {
-                const searchTerm = searchInput.value.toLowerCase();
-                let totalCount = 0;
-                let visibleCount = 0;
-
-                // Process each tab's table
-                allTables.forEach(tableBody => {
-                    const rows = Array.from(tableBody.querySelectorAll('tr'));
-                    totalCount += rows.length;
-                    
-                    if (searchTerm === '') {
-                        // Reset to original order
-                        rows.forEach(row => {
-                            row.style.display = '';
-                        });
-                        visibleCount = totalCount;
-                    } else {
-                        // Separate matched and non-matched rows
-                        const matchedRows = [];
-                        const unmatchedRows = [];
-                        
-                        rows.forEach(row => {
-                            // Search in all text content of the row
-                            const rowText = row.textContent.toLowerCase();
-                            
-                            if (rowText.indexOf(searchTerm) !== -1) {
-                                row.style.display = '';
-                                matchedRows.push(row);
-                                visibleCount++;
-                            } else {
-                                row.style.display = 'none';
-                                unmatchedRows.push(row);
-                            }
-                        });
-                        
-                        // Reorder: matched rows first, then unmatched
-                        matchedRows.forEach(row => tableBody.appendChild(row));
-                        unmatchedRows.forEach(row => tableBody.appendChild(row));
-                    }
-                });
-
-                // Update UI
-                if (searchTerm === '') {
-                    clearBtn.style.display = 'none';
-                    searchResults.textContent = '';
-                } else {
-                    clearBtn.style.display = 'inline-block';
-                    searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                    
-                    if (visibleCount === 0) {
-                        searchResults.textContent = 'No results found';
-                        searchResults.classList.add('text-danger');
-                    } else {
-                        searchResults.classList.remove('text-danger');
-                    }
-                }
-            }
-
-            // Event listeners
-            searchInput.addEventListener('input', performSearch);
-            
-            clearBtn.addEventListener('click', function() {
-                searchInput.value = '';
-                performSearch();
-                searchInput.focus();
-            });
-
-            // Initial state
-            performSearch();
-        });
-    </script>
-
     <script>
         let currentDonationId = null;
         let currentOriginalVolumes = []; // Store original volumes globally
