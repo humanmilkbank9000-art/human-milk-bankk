@@ -302,6 +302,60 @@
         .shared-modal .modal-body { font-family: var(--body-font); font-weight:400; line-height:1.6; }
         .shared-modal .modal-footer { background: #fff; border-top:1px solid var(--table-border); }
 
+        /* ADMIN: make all modal headers pink for admin pages
+           - Uses a subtle gradient for depth
+           - Force color override so existing utility classes (bg-success, etc.) don't conflict
+           - Ensure close button remains visible (invert) */
+        .modal .modal-header {
+            background: linear-gradient(180deg, #ff93c1 0%, #ff7fb3 100%) !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .modal .modal-header .modal-title,
+        .modal .modal-header h5 {
+            color: #ffffff !important;
+        }
+
+        /* Make sure the default Bootstrap close button (svg) is visible on pink */
+        .modal .modal-header .btn-close {
+            filter: invert(1) brightness(1.2) !important;
+            -webkit-filter: invert(1) brightness(1.2) !important;
+        }
+
+        /* ADMIN: make all card headers pink as well (override utility classes)
+           - Applies to any .card-header used in admin pages so headers are consistent
+           - Use !important to ensure Bootstrap bg-* classes are overridden where present */
+        .card-header {
+            background: linear-gradient(180deg, #ff93c1 0%, #ff7fb3 100%) !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+        }
+
+        /* Explicitly override common utility bg classes used in the codebase */
+        .card-header.bg-primary,
+        .card-header.bg-success,
+        .card-header.bg-warning,
+        .card-header.bg-secondary,
+        .card-header.bg-info {
+            background: linear-gradient(180deg, #ff93c1 0%, #ff7fb3 100%) !important;
+            color: #ffffff !important;
+        }
+
+        .card-header h5,
+        .card-header .card-title,
+        .card-header .btn,
+        .card-header .form-select,
+        .card-header .form-select-sm {
+            color: #ffffff !important;
+        }
+
+        /* Keep small controls visible (e.g., select, buttons) on pink headers */
+        .card-header .form-select-sm {
+            background: rgba(255,255,255,0.12) !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+        }
+
         /* Ensure modal backdrop and z-index override */
         .modal-backdrop.show { opacity: 0.55; }
         .modal { z-index: 12000; }
