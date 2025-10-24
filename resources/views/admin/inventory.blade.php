@@ -228,7 +228,79 @@
             }
         }
 
+        /* Mobile Modal Fixes - Ensure buttons are visible and accessible */
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0.5rem;
+                max-height: calc(100vh - 1rem);
+            }
+
+            .modal-content {
+                max-height: calc(100vh - 1rem);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-body {
+                overflow-y: auto;
+                flex: 1 1 auto;
+                max-height: calc(100vh - 200px);
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .modal-footer {
+                position: sticky;
+                bottom: 0;
+                background: white;
+                border-top: 1px solid #dee2e6;
+                z-index: 1;
+                flex-shrink: 0;
+                padding: 0.75rem;
+            }
+
+            .modal-footer .d-flex {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .modal-footer .btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+                white-space: nowrap;
+            }
+
+            .modal-footer .d-flex.gap-2 {
+                flex-wrap: nowrap;
+            }
+        }
+
+        /* Extra small devices - stack buttons vertically */
         @media (max-width: 576px) {
+            .modal-dialog {
+                margin: 0.25rem;
+                max-width: calc(100vw - 0.5rem);
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .modal-footer .d-flex {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                margin: 0;
+            }
+
+            .modal-footer .d-flex.gap-2 {
+                flex-direction: column;
+                width: 100%;
+            }
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/table-layout-standard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
@@ -385,7 +457,12 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($unpasteurizedDonations as $donation)
+                                            @php
+                                                $unpasteurizedOrdered = $unpasteurizedDonations instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                    ? $unpasteurizedDonations->getCollection()->sortBy('created_at')
+                                                    : collect($unpasteurizedDonations)->sortBy('created_at');
+                                            @endphp
+                                            @foreach($unpasteurizedOrdered as $donation)
                                                 <tr>
                                                     <td class="text-center align-middle" data-label="Select">
                                                         <input type="checkbox" class="pasteurize-checkbox donation-checkbox"
@@ -478,8 +555,13 @@
                                             <th class="text-center px-2 py-2">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        @foreach($pasteurizationBatches as $batch)
+                                        <tbody>
+                                        @php
+                                            $batchesOrdered = $pasteurizationBatches instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $pasteurizationBatches->getCollection()->sortBy('created_at')
+                                                : collect($pasteurizationBatches)->sortBy('created_at');
+                                        @endphp
+                                        @foreach($batchesOrdered as $batch)
                                             <tr class="batch-row">
                                                 <td style="white-space: normal;" data-label="Batch">
                                                     <strong>{{ $batch->batch_number }}</strong>
@@ -502,9 +584,9 @@
                                                     <small>{{ $batch->donations->count() }}</small>
                                                 </td>
                                                 <td class="text-center" data-label="Actions">
-                                                    <button class="btn btn-sm btn-outline-info" title="View Details"
+                                                    <button class="admin-review-btn btn-sm" title="Review Details"
                                                         onclick="viewBatchDetails({{ $batch->batch_id }})">
-                                                        <i class="fas fa-eye"></i> View
+                                                        Review
                                                     </button>
                                                 </td>
                                             </tr>
@@ -545,7 +627,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($dispensedMilk as $dispensed)
+                                        @php
+                                            $dispensedOrdered = $dispensedMilk instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $dispensedMilk->getCollection()->sortBy('created_at')
+                                                : collect($dispensedMilk)->sortBy('created_at');
+                                        @endphp
+                                        @foreach($dispensedOrdered as $dispensed)
                                             <tr>
                                                 <td style="white-space: normal;" data-label="Guardian">
                                                     <strong>{{ $dispensed->guardian->first_name }}

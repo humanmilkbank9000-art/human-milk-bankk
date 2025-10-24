@@ -178,8 +178,12 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.06);
         }
 
-        .sidebar a.active .icon,
-        .sidebar a.active span { color: #222222 !important; }
+    .sidebar a.active .icon,
+    .sidebar a.active span { color: #222222 !important; }
+
+    /* Ensure the circular dynamic badge keeps white text even when its parent link sets span color to dark */
+    .sidebar a.active .dynamic-sidebar-badge,
+    .sidebar a .dynamic-sidebar-badge { color: #ffffff !important; background: #d63031 !important; }
 
         .sidebar a.active::before {
             content: '';
@@ -351,9 +355,38 @@
         }
 
         /* Keep small controls visible (e.g., select, buttons) on pink headers */
-        .card-header .form-select-sm {
-            background: rgba(255,255,255,0.12) !important;
-            border: 1px solid rgba(255,255,255,0.12) !important;
+        /* Make filter selects white with dark text so they remain readable on pink headers */
+        .card-header .form-select,
+        .card-header .form-select-sm,
+        .card-header select {
+            background: #ffffff !important;
+            color: #222222 !important;
+            border: 1px solid rgba(0,0,0,0.08) !important;
+            box-shadow: none !important;
+            height: auto !important;
+            padding-top: 0.35rem !important;
+            padding-bottom: 0.35rem !important;
+        }
+
+        /* Remove any translucent background we added previously */
+        .card-header .form-select[disabled],
+        .card-header .form-select:disabled {
+            background: #f8f9fa !important;
+            color: #6c757d !important;
+        }
+
+        /* Focus state for selects inside card headers */
+        .card-header .form-select:focus,
+        .card-header .form-select-sm:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 0.12rem rgba(0,0,0,0.06) !important;
+            border-color: rgba(0,0,0,0.12) !important;
+        }
+
+        /* Make option text dark (browser support varies) */
+        .card-header .form-select option {
+            color: #222222;
+            background: #ffffff;
         }
 
         /* Ensure modal backdrop and z-index override */
@@ -596,6 +629,37 @@
             font-size: 0.85rem;
             color: #777;
             margin-bottom: 3px;
+        }
+
+        /* Admin: standardized Review (formerly View) button used across admin pages */
+        .admin-review-btn {
+            background: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+            font-weight: 600;
+        }
+
+        .admin-review-btn:hover {
+            filter: brightness(0.95);
+            color: #fff;
+        }
+
+        .admin-review-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #000;
+            font-size: 0.95rem;
         }
 
         @yield('styles')

@@ -550,7 +550,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($pendingDonations as $donation)
+                                        @php
+                                            $pendingOrdered = $pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $pendingDonations->getCollection()->sortBy('created_at')
+                                                : collect($pendingDonations)->sortBy('created_at');
+                                        @endphp
+                                        @foreach($pendingOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
                                                     <strong>{{ $donation->user->first_name ?? '' }}
@@ -643,7 +648,7 @@
                             </div>
                             
                             {{-- Card Layout for Smaller Screens --}}
-                            @foreach($pendingDonations as $donation)
+                            @foreach($pendingOrdered as $donation)
                                 <div class="donation-card" style="display: none;">
                                     <div class="card-header-row">
                                         <div>
@@ -772,7 +777,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($scheduledHomeCollection as $donation)
+                                        @php
+                                            $scheduledOrdered = $scheduledHomeCollection instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $scheduledHomeCollection->getCollection()->sortBy('created_at')
+                                                : collect($scheduledHomeCollection)->sortBy('created_at');
+                                        @endphp
+                                        @foreach($scheduledOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
                                                     <strong>{{ $donation->user->first_name ?? '' }}
@@ -860,7 +870,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($successWalkIn as $donation)
+                                        @php
+                                            $walkInOrdered = $successWalkIn instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $successWalkIn->getCollection()->sortBy('created_at')
+                                                : collect($successWalkIn)->sortBy('created_at');
+                                        @endphp
+                                        @foreach($walkInOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
                                                     {{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}
@@ -939,7 +954,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($successHomeCollection as $donation)
+                                        @php
+                                            $homeSuccessOrdered = $successHomeCollection instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $successHomeCollection->getCollection()->sortBy('created_at')
+                                                : collect($successHomeCollection)->sortBy('created_at');
+                                        @endphp
+                                        @foreach($homeSuccessOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
                                                     <strong>{{ $donation->user->first_name ?? '' }}
@@ -1020,7 +1040,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($archived as $donation)
+                                        @php
+                                            $archivedOrdered = $archived instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $archived->getCollection()->sortBy('created_at')
+                                                : collect($archived)->sortBy('created_at');
+                                        @endphp
+                                        @foreach($archivedOrdered as $donation)
                                             <tr>
                                                 <td class="text-center">{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</td>
                                                 <td class="text-center">
@@ -1233,68 +1258,134 @@
 @endsection
 
 @section('scripts')
-    {{-- Real-time Search Functionality --}}
+    {{-- Real-time Search Functionality (improved) --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearch');
             const searchResults = document.getElementById('searchResults');
-            
+
             if (!searchInput) return;
 
-            // Get all tables across all tabs
-            const allTables = document.querySelectorAll('.tab-pane table tbody');
-            
-            // Real-time search function
+            // Helpers to extract searchable text from table rows and donation cards
+            function extractRowFields(row) {
+                // Try to get specific labeled cells first (Name, Address)
+                const nameCell = row.querySelector('[data-label="Name"]');
+                const addressCell = row.querySelector('[data-label="Address"]');
+                const nameText = nameCell ? nameCell.textContent.trim() : '';
+                const addressText = addressCell ? addressCell.textContent.trim() : '';
+                return (nameText + ' ' + addressText).toLowerCase();
+            }
+
+            function extractCardFields(card) {
+                // Donation-card layout: name in .card-header-row strong; address in a card-row where .card-label contains "Address"
+                const nameEl = card.querySelector('.card-header-row strong') || card.querySelector('strong');
+                let nameText = nameEl ? nameEl.textContent.trim() : '';
+
+                // Find card-row with label 'Address'
+                let addressText = '';
+                const rows = card.querySelectorAll('.card-row');
+                rows.forEach(r => {
+                    const label = r.querySelector('.card-label');
+                    const value = r.querySelector('.card-value');
+                    if (label && /address/i.test(label.textContent || '')) {
+                        addressText = value ? value.textContent.trim() : '';
+                    }
+                });
+
+                // Fallback: any text content
+                if (!addressText) addressText = card.textContent.trim();
+
+                return (nameText + ' ' + addressText).toLowerCase();
+            }
+
+
+            // Gather targets only within the active tab to avoid duplicates
+            function getActivePane() {
+                return document.querySelector('.tab-pane.show.active') || document.querySelector('.tab-pane.active') || document.querySelector('.tab-pane');
+            }
+
+            function isVisible(el) {
+                if (!el) return false;
+                // offsetParent is null for display:none; getClientRects ensures visibility for elements with no size
+                return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+            }
+
+            function getAllTableRowsInActivePane() {
+                const pane = getActivePane();
+                if (!pane) return [];
+                const rows = [];
+                pane.querySelectorAll('table tbody tr').forEach(r => rows.push(r));
+                return rows;
+            }
+
+            function getAllCardsInActivePane() {
+                const pane = getActivePane();
+                if (!pane) return [];
+                return Array.from(pane.querySelectorAll('.donation-card'));
+            }
+
             function performSearch() {
-                const searchTerm = searchInput.value.toLowerCase();
+                const term = searchInput.value.trim().toLowerCase();
                 let totalCount = 0;
                 let visibleCount = 0;
 
-                // Process each tab's table
-                allTables.forEach(tableBody => {
-                    const rows = Array.from(tableBody.querySelectorAll('tr'));
-                    totalCount += rows.length;
-                    
-                    if (searchTerm === '') {
-                        // Reset to original order
-                        rows.forEach(row => {
-                            row.style.display = '';
-                        });
-                        visibleCount = totalCount;
+                const rows = getAllTableRowsInActivePane();
+                const cards = getAllCardsInActivePane();
+
+                // If no term, restore all rows/cards (remove inline display overrides)
+                if (!term) {
+                    rows.forEach(row => { row.style.display = ''; });
+                    cards.forEach(card => { card.style.display = ''; });
+
+                    // Count only those that are actually visible in the current layout
+                    const visibleRows = rows.filter(r => isVisible(r));
+                    const visibleCards = cards.filter(c => isVisible(c));
+                    totalCount = visibleRows.length + visibleCards.length;
+                    visibleCount = totalCount;
+
+                    // Clear UI
+                    clearBtn.style.display = 'none';
+                    searchResults.textContent = '';
+                    searchResults.classList.remove('text-danger');
+                    return;
+                }
+
+                // With a search term: limit targets to currently visible elements to avoid matching hidden duplicates
+                const visibleRows = rows.filter(r => isVisible(r));
+                const visibleCards = cards.filter(c => isVisible(c));
+                totalCount = visibleRows.length + visibleCards.length;
+
+                // Handle table rows (desktop)
+                visibleRows.forEach(row => {
+                    const hay = extractRowFields(row);
+                    if (hay.indexOf(term) !== -1) {
+                        row.style.display = '';
+                        visibleCount++;
                     } else {
-                        // Separate matched and non-matched rows
-                        const matchedRows = [];
-                        const unmatchedRows = [];
-                        
-                        rows.forEach(row => {
-                            // Search in all text content of the row
-                            const rowText = row.textContent.toLowerCase();
-                            
-                            if (rowText.indexOf(searchTerm) !== -1) {
-                                row.style.display = '';
-                                matchedRows.push(row);
-                                visibleCount++;
-                            } else {
-                                row.style.display = 'none';
-                                unmatchedRows.push(row);
-                            }
-                        });
-                        
-                        // Reorder: matched rows first, then unmatched
-                        matchedRows.forEach(row => tableBody.appendChild(row));
-                        unmatchedRows.forEach(row => tableBody.appendChild(row));
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Handle donation-card blocks (mobile view)
+                visibleCards.forEach(card => {
+                    const hay = extractCardFields(card);
+                    if (hay.indexOf(term) !== -1) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
                     }
                 });
 
                 // Update UI
-                if (searchTerm === '') {
+                if (!term) {
                     clearBtn.style.display = 'none';
                     searchResults.textContent = '';
+                    searchResults.classList.remove('text-danger');
                 } else {
                     clearBtn.style.display = 'inline-block';
                     searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                    
                     if (visibleCount === 0) {
                         searchResults.textContent = 'No results found';
                         searchResults.classList.add('text-danger');
@@ -1304,16 +1395,14 @@
                 }
             }
 
-            // Event listeners
             searchInput.addEventListener('input', performSearch);
-            
             clearBtn.addEventListener('click', function() {
                 searchInput.value = '';
                 performSearch();
                 searchInput.focus();
             });
 
-            // Initial state
+            // Initial run to ensure correct state
             performSearch();
         });
     </script>

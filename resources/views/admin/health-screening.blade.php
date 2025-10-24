@@ -372,6 +372,51 @@
                 width: 100%;
             }
         }
+
+            /* Health Screening Action Buttons - match provided screenshot */
+            .admin-review-btn {
+                background: var(--primary-color);
+                color: #fff;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                padding: 0.45rem 0.7rem;
+                border-radius: 8px;
+                box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+            }
+
+            .admin-review-btn:hover {
+                filter: brightness(0.95);
+                color: #fff;
+            }
+
+            .admin-review-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                background: #fff; /* white circle */
+                color: #000; /* black icon */
+                border-radius: 50%;
+                margin-right: 0.55rem;
+                font-size: 0.95rem;
+            }
+
+            .hs-archive-btn {
+                background: #d73b4b; /* red */
+                color: #fff;
+                border: none;
+                padding: 0.45rem 0.8rem;
+                border-radius: 8px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .hs-archive-btn i {
+                margin-right: 0.45rem;
+            }
     </style>
     <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
 @endsection
@@ -856,7 +901,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($healthScreenings as $index => $screening)
+                                @php
+                                    $screeningsOrdered = $healthScreenings instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                        ? $healthScreenings->getCollection()->sortBy('created_at')
+                                        : collect($healthScreenings)->sortBy('created_at');
+                                @endphp
+                                @foreach($screeningsOrdered as $index => $screening)
                                     <tr>
                                         <td>{{ $screening->user->first_name ?? '-' }} {{ $screening->user->last_name ?? '' }}</td>
                                         <td>{{ $screening->user->contact_number ?? '-' }}</td>
@@ -896,24 +946,28 @@
                                             </td>
                                         @endif
                                         @if($status == 'archived')
-                                            <td class="text-center align-middle">
-                                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
-                                            </td>
+                                                <td class="text-center align-middle">
+                                                    <button class="admin-review-btn" data-bs-toggle="modal"
+                                                        data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                                        Review
+                                                    </button>
+                                                </td>
                                             <td class="text-center align-middle">
                                                 <button class="btn btn-sm btn-outline-success" onclick="restoreHealthScreening({{ $screening->health_screening_id }})">Restore</button>
                                             </td>
                                         @else
                                             <td class="text-center align-middle">
-                                                <button class="btn btn-primary btn-sm me-1" data-bs-toggle="modal"
-                                                    data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
-                                                @if($screening->status !== 'pending')
-                                                    <button class="btn btn-outline-danger btn-sm" onclick="archiveHealthScreening({{ $screening->health_screening_id }})">Archive</button>
-                                                @endif
+                                                <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
+                                                    <button class="admin-review-btn" data-bs-toggle="modal"
+                                                        data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                                        Review
+                                                    </button>
+                                                    @if($screening->status !== 'pending')
+                                                        <button class="hs-archive-btn" onclick="archiveHealthScreening({{ $screening->health_screening_id }})">
+                                                            <i class="bi bi-archive"></i> Archive
+                                                        </button>
+                                                    @endif
+                                                </div>
                                             </td>
                                         @endif
                                     </tr>
@@ -923,7 +977,7 @@
                     </div>
                     
                     {{-- Card Layout for Smaller Screens --}}
-                    @foreach($healthScreenings as $index => $screening)
+                    @foreach($screeningsOrdered as $index => $screening)
                         <div class="responsive-card" style="display: none;">
                             <div class="card-row">
                                 <span class="card-label">Name:</span>
@@ -958,10 +1012,17 @@
                                 </div>
                             @endif
                             <div class="card-actions">
-                                <button class="btn btn-primary btn-sm w-100" data-bs-toggle="modal"
-                                    data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
-                                    <i class="bi bi-eye"></i> View Details
-                                </button>
+                                <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
+                                    <button class="admin-review-btn" data-bs-toggle="modal"
+                                        data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                        Review
+                                    </button>
+                                    @if($screening->status !== 'pending')
+                                        <button class="hs-archive-btn" onclick="archiveHealthScreening({{ $screening->health_screening_id }})">
+                                            <i class="bi bi-archive"></i> Archive
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -971,7 +1032,7 @@
             </div>
 
             {{-- Modals for each health screening --}}
-            @foreach($healthScreenings as $screening)
+            @foreach($screeningsOrdered as $screening)
                 <div class="modal fade" id="detailsModal{{ $screening->health_screening_id }}" tabindex="-1"
                     aria-labelledby="detailsModalLabel{{ $screening->health_screening_id }}" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
