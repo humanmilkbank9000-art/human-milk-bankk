@@ -824,6 +824,9 @@
                                                         <button class="btn btn-success btn-sm px-2 validate-home-collection"
                                                             title="Validate" data-id="{{ $donation->breastmilk_donation_id }}"
                                                             data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
+                                                            data-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                            data-date="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('M d, Y') : '' }}"
+                                                            data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
                                                             data-volumes="{{ json_encode($donation->individual_bag_volumes) }}"
                                                             data-total="{{ $donation->formatted_total_volume }}">
@@ -1194,6 +1197,26 @@
                     <form id="validateHomeCollectionForm" method="POST" novalidate>
                         @csrf
                         <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label"><strong>Donor:</strong></label>
+                                    <input type="text" id="validate-home-donor-name" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label"><strong>Address:</strong></label>
+                                    <input type="text" id="validate-home-donor-address" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label"><strong>Date:</strong></label>
+                                    <input type="text" id="validate-home-date" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label"><strong>Time:</strong></label>
+                                    <input type="text" id="validate-home-time" class="form-control" readonly>
+                                </div>
+                            </div>
                             {{-- Hidden donation id --}}
                             <input type="hidden" id="home-donation-id" name="donation_id" value="">
 
@@ -1240,10 +1263,10 @@
                             </div>
                         </div>
                         <div class="modal-footer bg-light">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">
                                 <i class="fas fa-times me-1"></i>Cancel
                             </button>
-                            <button type="submit" class="btn btn-success btn-lg px-4" id="home-validate-submit">
+                            <button type="submit" class="btn btn-success btn-sm px-3" id="home-validate-submit">
                                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"
                                     style="display:none;" id="home-validate-spinner"></span>
                                 <i class="fas fa-check-double me-2"></i>
@@ -1458,6 +1481,11 @@
                 const bagVolumesRaw = $(this).attr('data-volumes');
                 const totalVolume = $(this).data('total');
 
+                // Optional fields sent via data-attributes
+                const donorAddress = $(this).data('address') || '';
+                const scheduledDate = $(this).data('date') || '';
+                const scheduledTimeRaw = $(this).data('time') || '';
+
                 // Try to parse bag volumes safely (data-volumes may be JSON string)
                 let bagVolumes = [];
                 try {
@@ -1474,6 +1502,28 @@
                 // Set donation id and number of bags
                 $('#home-donation-id').val(currentDonationId);
                 $('#home-bags').val(numberOfBags || '');
+
+                // Populate donor info and schedule details in the modal (readonly inputs)
+                $('#validate-home-donor-name').val(donorName || '');
+                $('#validate-home-donor-address').val(donorAddress || '');
+                $('#validate-home-date').val(scheduledDate || '');
+                // Format time to 12-hour with AM/PM if possible
+                function formatTime12(t) {
+                    if (!t) return '';
+                    // If already contains AM/PM, leave as-is
+                    if (/\b(am|pm)\b/i.test(t)) return t;
+                    // Match HH:MM or HH:MM:SS
+                    const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+                    if (!m) return t;
+                    let hh = parseInt(m[1], 10);
+                    const mm = m[2];
+                    const ampm = hh >= 12 ? 'PM' : 'AM';
+                    hh = hh % 12; if (hh === 0) hh = 12;
+                    return hh + ':' + mm + ' ' + ampm;
+                }
+
+                const scheduledTime = formatTime12(scheduledTimeRaw);
+                $('#validate-home-time').val(scheduledTime || '');
 
                 // Set form action
                 $('#validateHomeCollectionForm').attr('action', `/admin/donations/${currentDonationId}/validate-pickup`);
@@ -1760,6 +1810,11 @@
             $('#validateHomeCollectionForm').attr('action', '');
             $(this).find('button[type="submit"]').prop('disabled', false);
             currentOriginalVolumes = [];
+            // Clear donor and schedule details to avoid stale info
+            $('#validate-home-donor-name').val('');
+            $('#validate-home-donor-address').val('');
+            $('#validate-home-date').val('');
+            $('#validate-home-time').val('');
         });            // Global functions for individual bag volume management
         window.generateWalkinBagFields = function () {
             const bagCount = parseInt($('#walkin-bags').val()) || 0;
