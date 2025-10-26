@@ -466,16 +466,15 @@
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Time</th>
                                             <th class="text-center">Submitted</th>
-                                            <th class="text-center">Rx</th>
                                             <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $pendingOrdered = $pendingRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $pendingRequests->getCollection()->sortBy('created_at')
-                                                : collect($pendingRequests)->sortBy('created_at');
-                                        @endphp
+                                                @php
+                                                    $pendingOrdered = $pendingRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                        ? $pendingRequests->getCollection()->sortByDesc('created_at')
+                                                        : collect($pendingRequests)->sortByDesc('created_at');
+                                                @endphp
                                         @foreach($pendingOrdered as $request)
                                             <tr>
                                                 <td class="align-middle" data-label="Guardian">
@@ -508,17 +507,7 @@
                                                 <td class="align-middle text-center" data-label="Submitted">
                                                     {{ $request->created_at->format('M d, Y g:i A') }}
                                                 </td>
-                                                <td class="align-middle text-center" data-label="Rx">
-                                                    @if($request->hasPrescription())
-                                                        <button type="button" class="admin-review-btn btn-sm" data-bs-toggle="modal"
-                                                            data-bs-target="#prescriptionModal{{ $request->breastmilk_request_id }}"
-                                                            onclick="viewPrescriptionModal({{ $request->breastmilk_request_id }})">
-                                                            Review Prescription
-                                                        </button>
-                                                    @else
-                                                        <span class="badge bg-warning">No file</span>
-                                                    @endif
-                                                </td>
+                                                
                                                 <td class="align-middle text-center" data-label="Action">
                                                     {{-- Archive hidden for pending requests to prevent accidental archiving --}}
                                                     <button type="button" class="admin-review-btn btn-sm" data-bs-toggle="modal"
@@ -567,11 +556,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $dispensedOrdered = $dispensedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $dispensedRequests->getCollection()->sortBy('created_at')
-                                                : collect($dispensedRequests)->sortBy('created_at');
-                                        @endphp
+                                                @php
+                                                    $dispensedOrdered = $dispensedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                        ? $dispensedRequests->getCollection()->sortByDesc('created_at')
+                                                        : collect($dispensedRequests)->sortByDesc('created_at');
+                                                @endphp
                                         @foreach($dispensedOrdered as $request)
                                             <tr>
                                                 <td data-label="Guardian">
@@ -656,11 +645,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $declinedOrdered = $declinedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $declinedRequests->getCollection()->sortBy('created_at')
-                                                : collect($declinedRequests)->sortBy('created_at');
-                                        @endphp
+                                                @php
+                                                    $declinedOrdered = $declinedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                        ? $declinedRequests->getCollection()->sortByDesc('created_at')
+                                                        : collect($declinedRequests)->sortByDesc('created_at');
+                                                @endphp
                                         @foreach($declinedOrdered as $request)
                                             <tr>
                                                 <td class="column-id" data-label="Request ID">
@@ -1067,8 +1056,8 @@
                                 <tbody>
                                     @php
                                         $archivedOrdered = $archived instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                            ? $archived->getCollection()->sortBy('created_at')
-                                            : collect($archived)->sortBy('created_at');
+                                            ? $archived->getCollection()->sortByDesc('created_at')
+                                            : collect($archived)->sortByDesc('created_at');
                                     @endphp
                                     @foreach($archivedOrdered as $req)
                                         <tr>
@@ -1263,20 +1252,39 @@
 
             fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/prescription`)
                 .then(response => response.json())
-                .then(data => {
+                    .then(data => {
                     if (data.error) {
                         container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
                         return;
                     }
 
+                    // Build UI showing user details alongside the prescription image
+                    const user = data.user || null;
+                    let userHtml = '';
+                    if (user) {
+                        userHtml = `
+                            <div class="card p-3 mb-3" style="min-width:250px;">
+                                <h6 class="mb-2"><i class="fas fa-user"></i> Requester</h6>
+                                <p class="mb-1"><strong>Name:</strong> ${escapeHtml(user.full_name || '-')}</p>
+                                <p class="mb-1"><strong>Contact:</strong> ${escapeHtml(user.contact_number || '-')}</p>
+                                <p class="mb-0"><strong>Address:</strong> ${escapeHtml(user.address || '-')}</p>
+                            </div>
+                        `;
+                    }
+
                     container.innerHTML = `
-                                                                                                                                <div class="d-flex flex-column align-items-center justify-content-center">
-                                                                                                                                    <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                                                                                                                    <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                                                                                                                        <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
-                                                                                                                                    </div>
-                                                                                                                                </div>
-                                                                                                                            `;
+                        <div class="row">
+                            <div class="col-md-4 d-flex justify-content-center align-items-start">
+                                ${userHtml}
+                            </div>
+                            <div class="col-md-8 d-flex flex-column align-items-center">
+                                <h6 class="mb-3">Prescription: ${escapeHtml(data.filename || 'Prescription')}</h6>
+                                <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
+                                    <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 })
                 .catch(err => {
                     container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';

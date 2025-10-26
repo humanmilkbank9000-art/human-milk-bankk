@@ -205,22 +205,20 @@
         /* Responsive adjustments */
         @media (max-width: 1200px) {
             .table {
-                font-size: 0.85rem;
+                /* Responsive table wrapper */
             }
 
             .table th,
             .table td {
                 padding: 0.5rem 0.3rem;
             }
-        }
 
-        @media (max-width: 768px) {
             .stats-number {
                 font-size: 1.5rem;
             }
 
             .stats-icon {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
 
             .stats-label {
@@ -454,6 +452,7 @@
                                                 <th class="text-center px-2 py-2" style="color: #000;">Available</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Date</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Time</th>
+                                                <th class="text-center px-2 py-2" style="color: #000;">Expires</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -515,6 +514,24 @@
                                                                 -
                                                             @endif
                                                         </small>
+                                                    </td>
+                                                    <td class="text-center" data-label="Expires">
+                                                        @php
+                                                            // Use donation_date if present, otherwise created_at; expiry = +6 months
+                                                            $baseDate = $donation->donation_date ?? $donation->created_at;
+                                                            try {
+                                                                $expiry = \Carbon\Carbon::parse($baseDate)->addMonths(6)->setTimezone('Asia/Manila');
+                                                            } catch (\Exception $e) {
+                                                                $expiry = null;
+                                                            }
+                                                        @endphp
+                                                        @if($expiry)
+                                                            <small>{{ $expiry->format('M d, Y') }}</small>
+                                                            <br>
+                                                            <small class="text-muted">({{ $expiry->diffForHumans(now()->setTimezone('Asia/Manila')) }})</small>
+                                                        @else
+                                                            <span class="text-muted">-</span>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach

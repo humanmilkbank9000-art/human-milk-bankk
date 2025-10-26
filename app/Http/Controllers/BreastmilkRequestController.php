@@ -191,9 +191,23 @@ class BreastmilkRequestController extends Controller
         }
 
         $base64Data = $request->getPrescriptionAsBase64();
+
+        // Prepare user details to include in the JSON response for display in admin modal
+        $user = $request->user;
+        $userDetails = null;
+        if ($user) {
+            $userDetails = [
+                'full_name' => trim(($user->first_name ?? '') . ' ' . ($user->middle_name ?? '') . ' ' . ($user->last_name ?? '')),
+                'contact_number' => $user->contact_number ?? null,
+                'address' => $user->address ?? null,
+            ];
+        }
+
         return response()->json([
             'image' => 'data:' . $request->prescription_mime_type . ';base64,' . $base64Data,
-            'filename' => $request->prescription_filename
+            'filename' => $request->prescription_filename,
+            'user' => $userDetails,
+            'request_id' => $request->breastmilk_request_id,
         ]);
     }
 

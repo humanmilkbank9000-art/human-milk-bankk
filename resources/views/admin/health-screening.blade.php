@@ -903,8 +903,8 @@
                             <tbody>
                                 @php
                                     $screeningsOrdered = $healthScreenings instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                        ? $healthScreenings->getCollection()->sortBy('created_at')
-                                        : collect($healthScreenings)->sortBy('created_at');
+                                        ? $healthScreenings->getCollection()->sortByDesc('created_at')
+                                        : collect($healthScreenings)->sortByDesc('created_at');
                                 @endphp
                                 @foreach($screeningsOrdered as $index => $screening)
                                     <tr>

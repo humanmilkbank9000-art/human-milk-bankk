@@ -552,8 +552,8 @@
                                     <tbody>
                                         @php
                                             $pendingOrdered = $pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $pendingDonations->getCollection()->sortBy('created_at')
-                                                : collect($pendingDonations)->sortBy('created_at');
+                                                ? $pendingDonations->getCollection()->sortByDesc('created_at')
+                                                : collect($pendingDonations)->sortByDesc('created_at');
                                         @endphp
                                         @foreach($pendingOrdered as $donation)
                                             <tr>
@@ -779,8 +779,8 @@
                                     <tbody>
                                         @php
                                             $scheduledOrdered = $scheduledHomeCollection instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $scheduledHomeCollection->getCollection()->sortBy('created_at')
-                                                : collect($scheduledHomeCollection)->sortBy('created_at');
+                                                ? $scheduledHomeCollection->getCollection()->sortByDesc('created_at')
+                                                : collect($scheduledHomeCollection)->sortByDesc('created_at');
                                         @endphp
                                         @foreach($scheduledOrdered as $donation)
                                             <tr>
@@ -875,8 +875,8 @@
                                     <tbody>
                                         @php
                                             $walkInOrdered = $successWalkIn instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $successWalkIn->getCollection()->sortBy('created_at')
-                                                : collect($successWalkIn)->sortBy('created_at');
+                                                ? $successWalkIn->getCollection()->sortByDesc('created_at')
+                                                : collect($successWalkIn)->sortByDesc('created_at');
                                         @endphp
                                         @foreach($walkInOrdered as $donation)
                                             <tr>
@@ -959,8 +959,8 @@
                                     <tbody>
                                         @php
                                             $homeSuccessOrdered = $successHomeCollection instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $successHomeCollection->getCollection()->sortBy('created_at')
-                                                : collect($successHomeCollection)->sortBy('created_at');
+                                                ? $successHomeCollection->getCollection()->sortByDesc('created_at')
+                                                : collect($successHomeCollection)->sortByDesc('created_at');
                                         @endphp
                                         @foreach($homeSuccessOrdered as $donation)
                                             <tr>
@@ -1045,8 +1045,8 @@
                                     <tbody>
                                         @php
                                             $archivedOrdered = $archived instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $archived->getCollection()->sortBy('created_at')
-                                                : collect($archived)->sortBy('created_at');
+                                                ? $archived->getCollection()->sortByDesc('created_at')
+                                                : collect($archived)->sortByDesc('created_at');
                                         @endphp
                                         @foreach($archivedOrdered as $donation)
                                             <tr>
