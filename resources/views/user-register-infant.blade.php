@@ -938,8 +938,22 @@
                 document.getElementById('modal-infant-dob').textContent = dobDate.toLocaleDateString('en-US', options);
             }
 
-            const infantAge = document.getElementById('infant_age').value;
-            const ageText = infantAge == 1 ? `${infantAge} year old` : `${infantAge} years old`;
+            const infantAge = parseInt(document.getElementById('infant_age').value, 10) || 0; // stored as total months
+
+            // Convert months to human-friendly text
+            let ageText = '';
+            if (infantAge < 0) {
+                ageText = '0 months';
+            } else if (infantAge < 12) {
+                ageText = infantAge + (infantAge === 1 ? ' month old' : ' months old');
+            } else {
+                const years = Math.floor(infantAge / 12);
+                const months = infantAge % 12;
+                ageText = years + (years === 1 ? ' year' : ' years');
+                if (months > 0) ageText += ' ' + months + (months === 1 ? ' month' : ' months');
+                ageText += ' old';
+            }
+
             document.getElementById('modal-infant-age').textContent = ageText;
 
             const birthWeight = document.getElementById('birth_weight').value;
