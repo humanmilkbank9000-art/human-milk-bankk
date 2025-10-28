@@ -633,33 +633,38 @@
 
         /* Admin: standardized Review (formerly View) button used across admin pages */
         .admin-review-btn {
-            background: var(--primary-color);
-            color: #ffffff;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 0.75rem;
-            border-radius: 8px;
-            box-shadow: 0 1px 0 rgba(0,0,0,0.06);
-            font-weight: 600;
+            /* Force primary blue regardless of parent overrides (e.g., pink card headers) */
+            background: var(--primary-color) !important;
+            color: #ffffff !important;
+            border: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            padding: 0.4rem 0.75rem !important;
+            border-radius: 8px !important;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.06) !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
         }
 
         .admin-review-btn:hover {
-            filter: brightness(0.95);
-            color: #fff;
+            filter: brightness(0.92) !important;
+            color: #fff !important;
+            text-decoration: none !important;
         }
 
+        /* Hide the small circular icon element by default to produce a plain blue button
+           Use an explicit class if an icon is desired later */
         .admin-review-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #ffffff;
-            color: #000;
-            font-size: 0.95rem;
+            display: none !important;
+        }
+
+        /* Utility to force a Bootstrap-primary style when global overrides exist */
+        .force-blue {
+            background-color: #0d6efd !important; /* Bootstrap primary */
+            border-color: #0d6efd !important;
+            color: #ffffff !important;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.06) !important;
         }
 
         @yield('styles')
