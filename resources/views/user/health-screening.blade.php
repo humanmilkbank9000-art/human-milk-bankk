@@ -820,6 +820,43 @@
             </div>
         </div>
 
+        <!-- Donor Consent Modal -->
+        <div class="modal fade" id="consentModal" tabindex="-1" aria-labelledby="consentModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="consentModalLabel">Donor Consent</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            I certify that I am the person being referred as a prospective milk donor to the CDOC Human Milk
+                            Bank and Lactation Support Center (HMB-LSC). I have read and understood the information
+                            relayed to me and/or the learning materials given to me by the HMB-LSC staff.
+                        </p>
+                        <p>
+                            I confirm that I will answer the Donor's Screening Questionnaire truthfully and to the best of my
+                            knowledge.
+                        </p>
+                        <p>
+                            I consent to an orientation on guidelines for milk donation to be able to ensure proper and clean
+                            collection of milk prior to its pasteurization.
+                        </p>
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" value="1" id="consentCheckbox">
+                            <label class="form-check-label" for="consentCheckbox">
+                                I have read and understood the above. <strong>Accept and continue</strong>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Go Back to Review</button>
+                        <button type="button" class="btn btn-primary" id="consentContinueBtn" disabled>Accept and Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal -->
         <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -1134,15 +1171,39 @@
             reviewModal.show();
         }
 
-        // Final submit with SweetAlert
+        // Final submit: open consent modal first
         document.getElementById('finalSubmitBtn').addEventListener('click', function() {
-            // Close the review modal first
+            // Hide review modal and show consent modal
             const reviewModal = bootstrap.Modal.getInstance(document.getElementById('reviewModal'));
-            if (reviewModal) {
-                reviewModal.hide();
+            if (reviewModal) reviewModal.hide();
+
+            // Reset consent checkbox and button
+            const consentCheckbox = document.getElementById('consentCheckbox');
+            const consentContinueBtn = document.getElementById('consentContinueBtn');
+            if (consentCheckbox) { consentCheckbox.checked = false; }
+            if (consentContinueBtn) { consentContinueBtn.disabled = true; }
+
+            const consentModalEl = document.getElementById('consentModal');
+            const consentModal = new bootstrap.Modal(consentModalEl);
+            consentModal.show();
+        });
+
+        // Enable the Accept button only when checkbox is checked
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'consentCheckbox') {
+                const consentContinueBtn = document.getElementById('consentContinueBtn');
+                consentContinueBtn.disabled = !e.target.checked;
             }
-            
-            // Wait for modal to fully close before showing SweetAlert
+        });
+
+        // When user accepts consent, show confirmation SweetAlert then submit
+        document.getElementById('consentContinueBtn').addEventListener('click', function() {
+            // Hide consent modal
+            const consentModalEl = document.getElementById('consentModal');
+            const consentModalInstance = bootstrap.Modal.getInstance(consentModalEl);
+            if (consentModalInstance) consentModalInstance.hide();
+
+            // Wait a bit then show confirmation
             setTimeout(() => {
                 Swal.fire({
                     title: 'Confirm Submission',
@@ -1164,7 +1225,7 @@
                         reviewModalInstance.show();
                     }
                 });
-            }, 300);
+            }, 250);
         });
 
         function submitForm() {
