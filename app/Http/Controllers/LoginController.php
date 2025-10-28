@@ -61,7 +61,20 @@ class LoginController extends Controller
         $result = $this->authService->attemptLogin($input, $password);
 
         if (!$result['success']) {
-            return back()->withInput($request->only('phone'))->withErrors(['phone' => $result['error']]);
+            // Attach the error to the appropriate field so the UI shows it in the right place
+            $errorMessage = $result['error'] ?? 'Login failed.';
+            $errorType = $result['error_type'] ?? null;
+
+            if ($errorType === 'incorrect_password') {
+                return back()->withInput($request->only('phone'))->withErrors(['password' => $errorMessage]);
+            }
+
+            if ($errorType === 'not_found') {
+                return back()->withInput($request->only('phone'))->withErrors(['phone' => $errorMessage]);
+            }
+
+            // Fallback: use a generic session error
+            return back()->withInput($request->only('phone'))->with('error', $errorMessage);
         }
 
         if ($result['role'] === 'admin') {

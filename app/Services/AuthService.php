@@ -28,7 +28,11 @@ class AuthService
         }
 
         if (!$account) {
-            return [ 'success' => false, 'error' => 'This contact number/username is not registered in our system.' ];
+            return [
+                'success' => false,
+                'error' => 'This contact number/username is not registered in our system.',
+                'error_type' => 'not_found'
+            ];
         }
 
         if (Hash::check($password, $account->password)) {
@@ -39,7 +43,11 @@ class AuthService
             return [ 'success' => true, 'role' => $role ];
         }
 
-        return [ 'success' => false, 'error' => 'Incorrect password. Please try again.' ];
+        return [
+            'success' => false,
+            'error' => 'Incorrect password. Please try again.',
+            'error_type' => 'incorrect_password'
+        ];
     }
 
     public function updateUserPassword(int $userId, string $currentPassword, string $newPassword)

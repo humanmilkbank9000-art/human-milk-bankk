@@ -484,7 +484,7 @@
                             <p><strong>Name:</strong> {{ $user->first_name }} {{ $user->last_name }}</p>
                             <p><strong>Contact Number:</strong> {{ $user->contact_number }}</p>
                             <p><strong>Address:</strong> {{ $user->address }}</p>
-                            <p><strong>Date of Birth:</strong> {{ $user->date_of_birth }}</p>
+                            <p><strong>Date of Birth:</strong> {{ $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->format('M d, Y') : '-' }}</p>
                             <p><strong>Age:</strong> {{ $user->age }}</p>
                             <p><strong>Sex:</strong> {{ ucfirst($user->sex) }}</p>
                         @else
@@ -495,7 +495,7 @@
                         @if($infant)
                             <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</p>
                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
-                            <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth }}</p>
+                            <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth ? \Carbon\Carbon::parse($infant->date_of_birth)->format('M d, Y') : '-' }}</p>
                             <p><strong>Age:</strong> {{ $infant->getFormattedAge() }}</p>
                             <p><strong>Birth Weight:</strong> {{ $infant->birth_weight }} kg</p>
                         @else
@@ -586,7 +586,7 @@
                                             <p><strong>Name:</strong> {{ $user->first_name }} {{ $user->last_name }}</p>
                                             <p><strong>Contact Number:</strong> {{ $user->contact_number }}</p>
                                             <p><strong>Address:</strong> {{ $user->address }}</p>
-                                            <p><strong>Date of Birth:</strong> {{ $user->date_of_birth }}</p>
+                                            <p><strong>Date of Birth:</strong> {{ $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->format('M d, Y') : '-' }}</p>
                                             <p><strong>Age:</strong> {{ $user->age }}</p>
                                             <p><strong>Sex:</strong> {{ ucfirst($user->sex) }}</p>
                                         @else
@@ -646,7 +646,7 @@
                                         <div class="col-md-6">
                                             <p><strong>Name:</strong> {{ $infant->first_name }} {{ $infant->last_name }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</p>
                                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
-                                            <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth }}</p>
+                                            <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth ? \Carbon\Carbon::parse($infant->date_of_birth)->format('M d, Y') : '-' }}</p>
                                         </div>
                                         <div class="col-md-6">
                                             <p><strong>Age:</strong> {{ $infant->getFormattedAge() }}</p>
@@ -1024,7 +1024,7 @@
             reviewHTML += '<div class="review-item"><strong>Name:</strong> {{ $user->first_name ?? '' }} {{ $user->last_name ?? '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Contact Number:</strong> {{ $user->contact_number ?? '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Address:</strong> {{ $user->address ?? '' }}</div>';
-            reviewHTML += '<div class="review-item"><strong>Date of Birth:</strong> {{ $user->date_of_birth ?? '' }}</div>';
+            reviewHTML += '<div class="review-item"><strong>Date of Birth:</strong> {{ $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->format('M d, Y') : '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Age:</strong> {{ $user->age ?? '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Sex:</strong> {{ ucfirst($user->sex ?? '') }}</div>';
             reviewHTML += '<div class="review-item"><strong>Civil Status:</strong> ' + (formData.get('civil_status') || 'N/A') + '</div>';
@@ -1037,7 +1037,7 @@
             reviewHTML += '<h6>Infant Information</h6>';
             reviewHTML += '<div class="review-item"><strong>Name:</strong> {{ $infant->first_name ?? '' }} {{ $infant->last_name ?? '' }}{{ $infant?->suffix ? ' ' . $infant->suffix : '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Sex:</strong> {{ ucfirst($infant->sex ?? '') }}</div>';
-            reviewHTML += '<div class="review-item"><strong>Date of Birth:</strong> {{ $infant->date_of_birth ?? '' }}</div>';
+            reviewHTML += '<div class="review-item"><strong>Date of Birth:</strong> {{ $infant->date_of_birth ? \Carbon\Carbon::parse($infant->date_of_birth)->format('M d, Y') : '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Age:</strong> {{ $infant->getFormattedAge() }}</div>';
             reviewHTML += '<div class="review-item"><strong>Birth Weight:</strong> {{ $infant->birth_weight ?? '' }} kg</div>';
             reviewHTML += '</div>';

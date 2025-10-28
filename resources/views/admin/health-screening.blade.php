@@ -1057,8 +1057,14 @@
                                             <div class="col-md-6 mb-2">
                                                 <strong>Contact Number:</strong> {{ $screening->user->contact_number }}
                                             </div>
+                                            @php
+                                                $userDob = $screening->user->date_of_birth ?? null;
+                                            @endphp
                                             <div class="col-md-6 mb-2">
-                                                <strong>Date of Birth:</strong> {{ $screening->user->date_of_birth }}
+                                                <strong>Date of Birth:</strong>
+                                                <span>
+                                                    {{ $userDob ? \Carbon\Carbon::parse($userDob)->format('M d, Y') : '-' }}
+                                                </span>
                                             </div>
                                             <div class="col-md-6 mb-2">
                                                 <strong>Age:</strong> {{ $screening->user->age }}
@@ -1098,8 +1104,14 @@
                                             <div class="col-md-6 mb-2">
                                                 <strong>Sex:</strong> {{ ucfirst($screening->infant->sex) }}
                                             </div>
+                                            @php
+                                                $infantDob = $screening->infant->date_of_birth ?? null;
+                                            @endphp
                                             <div class="col-md-6 mb-2">
-                                                <strong>Date of Birth:</strong> {{ $screening->infant->date_of_birth }}
+                                                <strong>Date of Birth:</strong>
+                                                <span>
+                                                    {{ $infantDob ? \Carbon\Carbon::parse($infantDob)->format('M d, Y') : '-' }}
+                                                </span>
                                             </div>
                                             <div class="col-md-6 mb-2">
                                                 <strong>Age:</strong> {{ $screening->infant->getFormattedAge() }}
