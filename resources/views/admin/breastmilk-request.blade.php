@@ -740,7 +740,7 @@
                             @if($request->hasPrescription())
                                 <div class="row mb-3">
                                     <div class="col-12">
-                                            <button type="button" class="btn btn-primary btn-sm force-blue" data-bs-toggle="modal"
+                                            <button type="button" class="admin-review-btn btn-sm force-blue" data-bs-toggle="modal"
                                                 data-bs-target="#prescriptionModal{{ $request->breastmilk_request_id }}"
                                                 onclick="viewPrescriptionModal({{ $request->breastmilk_request_id }})">
                                                 Review Prescription
