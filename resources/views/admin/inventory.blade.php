@@ -163,6 +163,18 @@
             color: white;
         }
 
+        .btn-dispose {
+            background: linear-gradient(135deg, #dc2626, #c0262c);
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-dispose:hover {
+            background: linear-gradient(135deg, #b91c1c, #991b1b);
+            color: white;
+        }
+
         .volume-badge {
             font-size: 0.85rem;
             padding: 4px 8px;
@@ -430,6 +442,9 @@
                                             <i class="fas fa-square"></i> Clear All
                                         </button>
                                     </div>
+                                    <button type="button" class="btn btn-dispose me-2" onclick="disposeSelected()" disabled id="disposeBtn">
+                                        <i class="fas fa-trash-alt"></i> Dispose Selected
+                                    </button>
                                     <button type="button" class="btn btn-pasteurize" onclick="pasteurizeSelected()" disabled
                                         id="pasteurizeBtn">
                                         <i class="fas fa-fire"></i> Pasteurize Selected
@@ -792,6 +807,40 @@
         </div>
     </div>
 
+    <!-- Disposal Modal -->
+    <div class="modal fade" id="disposalModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-trash-alt"></i> Dispose Selected Bags
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> Disposing a bag is permanent and will remove it from inventory.
+                    </div>
+
+                    <div id="selectedDisposalList"></div>
+
+                    <div class="mb-3">
+                        <label for="disposalNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="disposalNotes" rows="3"
+                            placeholder="Reason for disposal (e.g. contaminated, expired)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-dispose" onclick="confirmDisposal()">
+                        <i class="fas fa-trash-alt"></i> Confirm Disposal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Batch Details Modal -->
     <div class="modal fade" id="batchDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -859,13 +908,17 @@
             // Count selected bags (we enable pasteurize when at least one bag is selected)
             const checkedBagBoxes = document.querySelectorAll('.bag-checkbox:checked');
             const pasteurizeBtn = document.getElementById('pasteurizeBtn');
+            const disposeBtn = document.getElementById('disposeBtn');
 
             pasteurizeBtn.disabled = checkedBagBoxes.length === 0;
+            if (disposeBtn) disposeBtn.disabled = checkedBagBoxes.length === 0;
 
             if (checkedBagBoxes.length > 0) {
                 pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected (${checkedBagBoxes.length} bag${checkedBagBoxes.length > 1 ? 's' : ''})`;
+                if (disposeBtn) disposeBtn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected (${checkedBagBoxes.length} bag${checkedBagBoxes.length > 1 ? 's' : ''})`;
             } else {
                 pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected`;
+                if (disposeBtn) disposeBtn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected`;
             }
         }
 
@@ -927,6 +980,171 @@
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('pasteurizationModal'));
             modal.show();
+        }
+
+        function disposeSelected() {
+            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
+
+            if (checkedBags.length === 0) {
+                alert('Please select at least one bag to dispose.');
+                return;
+            }
+
+            // Build list of selected donations/bags for modal
+            let donationsList = '<h6>Selected Bags for Disposal:</h6><ul>';
+            let totalVolume = 0;
+
+            // Group by donation id
+            const groups = {};
+            checkedBags.forEach(cb => {
+                const donationId = cb.getAttribute('data-donation-id');
+                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                if (!groups[donationId]) groups[donationId] = [];
+                groups[donationId].push(bagIndex);
+            });
+
+            Object.keys(groups).forEach(donationId => {
+                const donationRow = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`).closest('tr');
+                const donorName = donationRow.cells[1].textContent.trim().split('\n')[0];
+
+                const bagContainer = donationRow.querySelector('[data-bag-volumes]');
+                let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
+                let bagVolumes = [];
+                try {
+                    const parsed = JSON.parse(bagVolumesRaw);
+                    if (Array.isArray(parsed)) bagVolumes = parsed;
+                } catch (e) {
+                    if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
+                        bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
+                    }
+                }
+
+                groups[donationId].forEach(bi => {
+                    const rawVol = (bagVolumes[bi] !== undefined) ? ('' + bagVolumes[bi]) : '';
+                    const vol = parseFloat((rawVol + '').replace(/[^0-9.\-]+/g, '')) || 0;
+                    totalVolume += vol;
+                    const label = rawVol ? `${rawVol}ml` : `Bag ${bi + 1}`;
+                    donationsList += `<li>${donorName} - ${label}</li>`;
+                });
+            });
+
+            donationsList += `</ul><p><strong>Total Volume: ${totalVolume}ml</strong></p>`;
+
+            document.getElementById('selectedDisposalList').innerHTML = donationsList;
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('disposalModal'));
+            modal.show();
+        }
+
+        function confirmDisposal() {
+            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
+            const notes = document.getElementById('disposalNotes').value;
+
+            if (checkedBags.length === 0) {
+                alert('No bags selected to dispose.');
+                return;
+            }
+
+            const donationMap = {};
+            checkedBags.forEach(cb => {
+                const donationId = cb.getAttribute('data-donation-id');
+                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                if (!donationMap[donationId]) donationMap[donationId] = [];
+                donationMap[donationId].push(bagIndex);
+            });
+
+            // Hide modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('disposalModal'));
+            modal.hide();
+
+            // Show loading indicator
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Disposing selected bags',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('{{ route("admin.inventory.dispose") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    donation_map: donationMap,
+                    notes: notes
+                })
+            })
+                .then(async response => {
+                    const contentType = response.headers.get('content-type') || '';
+                    const text = await response.text();
+
+                    // Try to parse JSON if content-type indicates JSON
+                    if (contentType.includes('application/json')) {
+                        try {
+                            const data = JSON.parse(text);
+                            return { ok: response.ok, data };
+                        } catch (e) {
+                            return { ok: response.ok, data: null, text };
+                        }
+                    }
+
+                    // Non-JSON response (probably HTML error page)
+                    return { ok: response.ok, data: null, text };
+                })
+                .then(res => {
+                    if (res.data && res.data.success) {
+                        Swal.fire({
+                            title: 'Disposed',
+                            text: res.data.message || 'Selected bags have been disposed.',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#b91c1c'
+                        }).then(() => {
+                            location.reload();
+                        });
+                        return;
+                    }
+
+                    // If server returned JSON with an error
+                    if (res.data && !res.data.success) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: res.data.error || (res.data.message || 'Failed to dispose selected bags.'),
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#dc2626'
+                        });
+                        return;
+                    }
+
+                    // Non-JSON or unparsable response — show a helpful error including server body (trimmed)
+                    const serverText = (res.text || '').toString();
+                    const short = serverText.length > 1000 ? serverText.substring(0, 1000) + '... (truncated)' : serverText;
+                    Swal.fire({
+                        title: 'Server Error',
+                        html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(short)}</pre>`,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#dc2626'
+                    });
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message || 'An error occurred while disposing bags.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#dc2626'
+                    });
+                });
         }
 
         function confirmPasteurization() {
