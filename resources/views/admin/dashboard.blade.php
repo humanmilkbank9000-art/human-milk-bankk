@@ -231,33 +231,35 @@
       background-color: #e9ecef;
     }
 
+    /* Pink theme selected day */
     .calendar-day.selected {
-      background-color: #0d6efd;
+      background-color: #e83e8c; /* pink */
       color: white;
       font-weight: bold;
     }
 
+    /* Pink theme for days with availability */
     .calendar-day.has-availability {
-      background-color: #198754 !important;
-      border: 3px solid #0f5132 !important;
+      background-color: #ff6fa8 !important; /* lighter pink */
+      border: 3px solid #b21f66 !important; /* deep pink border */
       color: white !important;
       font-weight: 700 !important;
       position: relative;
     }
 
     .calendar-day.has-availability::after {
-      content: '✓';
+      content: '\2665'; /* heart symbol */
       position: absolute;
       top: 2px;
-      right: 4px;
+      right: 6px;
       font-size: 14px;
       color: white;
       font-weight: bold;
     }
 
     .calendar-day.has-availability.selected {
-      background-color: #0d6efd !important;
-      border-color: #0d6efd !important;
+      background-color: #e83e8c !important;
+      border-color: #e83e8c !important;
       color: white !important;
     }
 
@@ -284,13 +286,14 @@
       transition: all 0.2s;
     }
 
+    /* Pink hover/checked state for time slots */
     .time-slot-checkbox:hover {
-      border-color: #0d6efd;
-      background-color: #f8f9fa;
+      border-color: #e83e8c;
+      background-color: #fff0f6;
     }
 
     .time-slot-checkbox input:checked+label {
-      color: #0d6efd;
+      color: #e83e8c;
       font-weight: bold;
     }
 
@@ -327,7 +330,7 @@
     }
 
     .stat-card.requests {
-      background: #dc2626;
+      background: #e83e8c;
     }
 
     .stat-card.screenings {
@@ -572,7 +575,7 @@
 
     /* Admin Availability Button Panel */
     .action-panel {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #ff6fa8 0%, #e83e8c 100%);
       border-radius: 0.75rem;
       padding: 1.25rem;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -868,20 +871,8 @@
             <!-- Hidden date input for form submission -->
             <input type="hidden" id="formDate" name="date" required>
 
-            <!-- Time Slots Section -->
-            <div id="timeSlotsSection" style="display: none;">
-              <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h6 class="mb-0">Available Time Slots (8AM - 5PM)</h6>
-                  <div>
-                    <button type="button" id="selectAllBtn" class="btn btn-sm btn-outline-success me-2">Select
-                      All</button>
-                    <button type="button" id="clearAllBtn" class="btn btn-sm btn-outline-warning">Clear All</button>
-                  </div>
-                </div>
-                <div id="timeSlotsContainer"></div>
-              </div>
-
+            <!-- No time slots: admin sets date-only availability -->
+            <div id="timeSlotsSection">
               <div class="d-flex justify-content-end">
                 <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" id="saveBtn" class="btn btn-primary" disabled>Save Availability</button>
@@ -1167,28 +1158,10 @@
       const selectedDateDisplay = document.getElementById('selectedDateDisplay');
       const selectedDateText = document.getElementById('selectedDateText');
       const formDate = document.getElementById('formDate');
-      const timeSlotsContainer = document.getElementById('timeSlotsContainer');
-      const timeSlotsSection = document.getElementById('timeSlotsSection');
       const saveBtn = document.getElementById('saveBtn');
-      const selectAllBtn = document.getElementById('selectAllBtn');
-      const clearAllBtn = document.getElementById('clearAllBtn');
 
       let currentDate = new Date();
       let selectedDate = null;
-      let selectedSlots = [];
-
-      // Time slots from 8AM to 5PM (9 slots)
-      const timeSlots = [
-        { value: '08:00', label: '08:00 - 09:00', text: '8:00 AM - 9:00 AM' },
-        { value: '09:00', label: '09:00 - 10:00', text: '9:00 AM - 10:00 AM' },
-        { value: '10:00', label: '10:00 - 11:00', text: '10:00 AM - 11:00 AM' },
-        { value: '11:00', label: '11:00 - 12:00', text: '11:00 AM - 12:00 PM' },
-        { value: '12:00', label: '12:00 - 13:00', text: '12:00 PM - 1:00 PM' },
-        { value: '13:00', label: '13:00 - 14:00', text: '1:00 PM - 2:00 PM' },
-        { value: '14:00', label: '14:00 - 15:00', text: '2:00 PM - 3:00 PM' },
-        { value: '15:00', label: '15:00 - 16:00', text: '3:00 PM - 4:00 PM' },
-        { value: '16:00', label: '16:00 - 17:00', text: '4:00 PM - 5:00 PM' }
-      ];
 
       function formatDate(date) {
         return date.toISOString().split('T')[0];
@@ -1278,108 +1251,14 @@
         selectedDateDisplay.style.display = 'block';
 
         renderCalendar(); // Re-render to update selected state
-        renderTimeSlots();
-        timeSlotsSection.style.display = 'block';
 
-        // On small/mobile screens ensure the modal scrolls to the time slots
-        try {
-          const modalContent = document.querySelector('#availabilityModal .modal-content');
-          if (modalContent) {
-            // Scroll modal content so the time slots section is visible
-            const offset = timeSlotsSection.offsetTop - 16; // small offset
-            modalContent.scrollTo({ top: offset, behavior: 'smooth' });
-          } else {
-            // Fallback: scroll the window
-            timeSlotsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        } catch (err) {
-          // ignore scroll errors
-        }
+        // Enable save button (date-only availability)
+        if (saveBtn) saveBtn.disabled = false;
 
         console.log('Date selected:', formatDate(selectedDate));
       }
 
-      function renderTimeSlots() {
-        timeSlotsContainer.innerHTML = '';
-        selectedSlots = [];
-
-
-        timeSlots.forEach((slot, index) => {
-          const slotDiv = document.createElement('div');
-          slotDiv.className = 'time-slot-checkbox';
-          slotDiv.innerHTML = `
-                                                  <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="${slot.value}" id="slot_${index}">
-                                                    <label class="form-check-label" for="slot_${index}">
-                                                      ${slot.text}
-                                                    </label>
-                                                  </div>
-                                                `;
-          const checkbox = slotDiv.querySelector('input[type="checkbox"]');
-          checkbox.addEventListener('change', function () {
-            if (this.checked) {
-              selectedSlots.push(this.value);
-            } else {
-              selectedSlots = selectedSlots.filter(s => s !== this.value);
-            }
-            updateSaveButton();
-            updateSelectAllButton();
-            console.log('Selected slots:', selectedSlots);
-          });
-          timeSlotsContainer.appendChild(slotDiv);
-        });
-
-        updateSaveButton();
-        updateSelectAllButton();
-      }
-
-      function updateSaveButton() {
-        saveBtn.disabled = selectedSlots.length === 0;
-      }
-
-      function updateSelectAllButton() {
-        const allCheckboxes = document.querySelectorAll('#timeSlotsContainer input[type="checkbox"]');
-        const checkedCount = selectedSlots.length;
-        const totalCount = allCheckboxes.length;
-
-        if (checkedCount === totalCount && totalCount > 0) {
-          selectAllBtn.textContent = 'All Selected';
-          selectAllBtn.className = 'btn btn-sm btn-success me-2';
-        } else {
-          selectAllBtn.textContent = 'Select All';
-          selectAllBtn.className = 'btn btn-sm btn-outline-success me-2';
-        }
-      }
-
-      // Select All button
-      selectAllBtn.addEventListener('click', function () {
-        const checkboxes = document.querySelectorAll('#timeSlotsContainer input[type="checkbox"]');
-        const shouldSelectAll = selectedSlots.length !== checkboxes.length;
-
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = shouldSelectAll;
-        });
-
-        if (shouldSelectAll) {
-          selectedSlots = timeSlots.map(slot => slot.value);
-        } else {
-          selectedSlots = [];
-        }
-
-        updateSaveButton();
-        updateSelectAllButton();
-      });
-
-      // Clear All button
-      clearAllBtn.addEventListener('click', function () {
-        const checkboxes = document.querySelectorAll('#timeSlotsContainer input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = false;
-        });
-        selectedSlots = [];
-        updateSaveButton();
-        updateSelectAllButton();
-      });
+      // No time slots to render - admin selects date only
 
       // Navigation buttons
       prevMonthBtn.addEventListener('click', function () {
@@ -1392,46 +1271,21 @@
         renderCalendar();
       });
 
-      // Form submission
+      // Form submission (date-only availability)
       document.getElementById('availabilityForm').addEventListener('submit', function (e) {
         e.preventDefault();
-
-        if (selectedSlots.length === 0) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'No Time Slots Selected',
-            text: 'Please select at least one time slot.',
-            confirmButtonColor: '#ffc107'
-          });
-          return;
-        }
 
         if (!formDate.value) {
           Swal.fire({
             icon: 'warning',
             title: 'No Date Selected',
             text: 'Please select a date.',
-            confirmButtonColor: '#ffc107'
+            confirmButtonColor: '#ff6fa8'
           });
           return;
         }
 
-        console.log('Submitting availability:', {
-          date: formDate.value,
-          timeSlots: selectedSlots
-        });
-
-        // Remove existing hidden inputs
-        this.querySelectorAll('input[name="time[]"]').forEach(input => input.remove());
-
-        // Add selected slots as hidden inputs
-        selectedSlots.forEach(slot => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = 'time[]';
-          input.value = slot;
-          this.appendChild(input);
-        });
+        console.log('Submitting availability (date-only):', { date: formDate.value });
 
         // Show loading SweetAlert
         Swal.fire({
@@ -1444,7 +1298,7 @@
           }
         });
 
-        // Submit form via AJAX
+        // Submit form via AJAX (only date is required)
         const formData = new FormData(this);
 
         fetch(this.action, {
@@ -1457,12 +1311,8 @@
           }
         })
           .then(response => {
-            // Check if response is ok
             if (!response.ok) {
-              return response.text().then(text => {
-                console.error('Response error:', text);
-                throw new Error('Server returned error: ' + response.status);
-              });
+              return response.text().then(text => { throw new Error(text || 'Server error'); });
             }
             return response.json();
           })
@@ -1484,9 +1334,8 @@
                 icon: 'success',
                 title: 'Success!',
                 text: data.message || 'Availability saved successfully!',
-                confirmButtonColor: '#28a745'
+                confirmButtonColor: '#e83e8c'
               }).then(() => {
-                // Reload page to show updated availability
                 window.location.reload();
               });
             } else {
@@ -1494,7 +1343,7 @@
                 icon: 'error',
                 title: 'Error',
                 text: data.message || 'Failed to save availability. Please try again.',
-                confirmButtonColor: '#dc3545'
+                confirmButtonColor: '#b21f66'
               });
             }
           })
@@ -1504,7 +1353,7 @@
               icon: 'error',
               title: 'Error',
               text: 'An error occurred while saving availability. Please try again.',
-              confirmButtonColor: '#dc3545'
+              confirmButtonColor: '#b21f66'
             });
           });
       });

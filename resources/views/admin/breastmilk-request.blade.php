@@ -760,9 +760,9 @@
                                                 <i class="fas fa-flask"></i> Volume to Dispense (ml) <span
                                                     class="text-danger">*</span>
                                             </label>
-                                            <input type="number" class="form-control"
+                                            <input type="text" inputmode="numeric" pattern="[0-9]*([.][0-9]+)?" class="form-control"
                                                 id="volumeToDispense{{ $request->breastmilk_request_id }}"
-                                                name="volume_dispensed" step="0.01" min="0.01" required
+                                                name="volume_dispensed" required
                                                 oninput="updateSelectedVolume({{ $request->breastmilk_request_id }})">
                                             <div class="form-text">Enter the amount of milk to dispense</div>
                                         </div>
@@ -836,7 +836,7 @@
                                     onclick="handleReject({{ $request->breastmilk_request_id }})">
                                     <i class="fas fa-ban"></i> Reject
                                 </button>
-                                <button type="button" class="btn btn-success"
+                                <button type="button" class="btn btn-success" id="dispenseBtn{{ $request->breastmilk_request_id }}"
                                     onclick="handleDispense({{ $request->breastmilk_request_id }})">
                                     <i class="fas fa-check"></i> Dispense
                                 </button>
@@ -961,14 +961,14 @@
                         id="approveForm{{ $request->breastmilk_request_id }}">
                         @csrf
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="volume_requested" class="form-label">Volume to Dispense (ml) *</label>
-                                    <input type="number" class="form-control" name="volume_requested" step="0.01" min="0" required
-                                        id="volumeRequested{{ $request->breastmilk_request_id }}"
-                                        oninput="validateDispenseForm({{ $request->breastmilk_request_id }})">
-                                    <div class="form-text">Specify the amount of breastmilk to be dispensed.</div>
-                                </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="volume_requested" class="form-label">Volume to Dispense (ml) *</label>
+                                            <input type="number" class="form-control" name="volume_requested" step="0.01" min="0" required
+                                                id="volumeRequested{{ $request->breastmilk_request_id }}"
+                                                oninput="validateDispenseForm({{ $request->breastmilk_request_id }})">
+                                            <div class="form-text">Specify the amount of breastmilk to be dispensed.</div>
+                                        </div>
                                 <div class="mb-3">
                                     <label for="milk_type" class="form-label">Milk Type *</label>
                                     <select class="form-select" name="milk_type" required
@@ -1095,10 +1095,21 @@
 
             // Get all tables across all tabs
             const allTables = document.querySelectorAll('.tab-pane table tbody');
+
+            // Record original order for each row so we can restore it when the search is cleared
+            allTables.forEach((tableBody, tIndex) => {
+                Array.from(tableBody.querySelectorAll('tr')).forEach((row, rIndex) => {
+                    // store a per-table original index
+                    if (!row.dataset.originalOrder) {
+                        row.dataset.originalOrder = rIndex;
+                    }
+                });
+            });
             
             // Real-time search function
             function performSearch() {
-                const searchTerm = searchInput.value.toLowerCase();
+                const raw = searchInput.value || '';
+                const searchTerm = raw.trim().toLowerCase();
                 let totalCount = 0;
                 let visibleCount = 0;
 
@@ -1106,18 +1117,20 @@
                 allTables.forEach(tableBody => {
                     const rows = Array.from(tableBody.querySelectorAll('tr'));
                     totalCount += rows.length;
-                    
+
                     if (searchTerm === '') {
-                        // Reset to original order
+                        // Restore original order and show all rows
+                        rows.sort((a, b) => (parseInt(a.dataset.originalOrder || 0, 10) - parseInt(b.dataset.originalOrder || 0, 10)));
                         rows.forEach(row => {
                             row.style.display = '';
+                            tableBody.appendChild(row);
                         });
-                        visibleCount = totalCount;
+                        visibleCount += rows.length;
                     } else {
                         // Separate matched and non-matched rows
                         const matchedRows = [];
                         const unmatchedRows = [];
-                        
+
                         rows.forEach(row => {
                             // Get all cell content for comprehensive search
                             let rowText = '';
@@ -1126,7 +1139,7 @@
                                 rowText += (cell.textContent || '') + ' ';
                             });
                             rowText = rowText.toLowerCase();
-                            
+
                             // Check if search term matches anywhere in the row
                             if (rowText.indexOf(searchTerm) !== -1) {
                                 row.style.display = '';
@@ -1137,8 +1150,10 @@
                                 unmatchedRows.push(row);
                             }
                         });
-                        
-                        // Reorder: matched rows first, then unmatched
+
+                        // Reorder: matched rows first, then unmatched (keep relative original order)
+                        matchedRows.sort((a, b) => parseInt(a.dataset.originalOrder || 0, 10) - parseInt(b.dataset.originalOrder || 0, 10));
+                        unmatchedRows.sort((a, b) => parseInt(a.dataset.originalOrder || 0, 10) - parseInt(b.dataset.originalOrder || 0, 10));
                         matchedRows.forEach(row => tableBody.appendChild(row));
                         unmatchedRows.forEach(row => tableBody.appendChild(row));
                     }
@@ -1148,10 +1163,11 @@
                 if (searchTerm === '') {
                     clearBtn.style.display = 'none';
                     searchResults.textContent = '';
+                    searchResults.classList.remove('text-danger');
                 } else {
                     clearBtn.style.display = 'inline-block';
                     searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                    
+
                     if (visibleCount === 0) {
                         searchResults.textContent = 'No results found';
                         searchResults.classList.add('text-danger');
@@ -1206,6 +1222,137 @@
                 else alert(title || (icon === 'error' ? 'Error' : ''));
             }
         };
+
+        // Sanitize manual typing into volumeToDispense inputs to prevent browser auto-rounding/snapping
+        // Keep as text inputs (inputmode=numeric) and allow only digits and one decimal point.
+        document.addEventListener('input', function (e) {
+            const el = e.target;
+            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+
+            let v = String(el.value || '');
+            // Remove commas and any characters except digits and dot
+            v = v.replace(/,/g, '').replace(/[^0-9.]/g, '');
+            // Allow only first dot
+            const parts = v.split('.');
+            if (parts.length > 2) {
+                v = parts[0] + '.' + parts.slice(1).join('');
+            }
+            // Limit to two decimal places (optional)
+            if (v.indexOf('.') !== -1) {
+                const [intPart, decPart] = v.split('.');
+                v = intPart + '.' + (decPart || '').slice(0, 2);
+            }
+
+            if (el.value !== v) {
+                el.value = v;
+            }
+        });
+
+        // Prevent non-numeric keys on volumeToDispense and block mouse wheel changes
+        document.addEventListener('keydown', function (e) {
+            const el = e.target;
+            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+
+            // Allow navigation and control keys
+            const allowedKeys = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Enter','Home','End'];
+            if (allowedKeys.indexOf(e.key) !== -1) return;
+
+            // Allow one dot
+            if (e.key === '.' ) {
+                if ((el.value || '').indexOf('.') === -1) return;
+                e.preventDefault();
+                return;
+            }
+
+            // Allow digits
+            if (/^[0-9]$/.test(e.key)) return;
+
+            // Prevent anything else
+            e.preventDefault();
+        }, true);
+
+        // Prevent mouse wheel from changing focused input value (some browsers change number inputs)
+        document.addEventListener('wheel', function (e) {
+            const el = document.activeElement;
+            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+            e.preventDefault();
+        }, { passive: false });
+
+        // Sanitize paste into volumeToDispense
+        document.addEventListener('paste', function (e) {
+            const el = e.target;
+            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+            let v = text.replace(/,/g, '').replace(/[^0-9.]/g, '');
+            const parts = v.split('.');
+            if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+            if (v.indexOf('.') !== -1) {
+                const [intPart, decPart] = v.split('.');
+                v = intPart + '.' + (decPart || '').slice(0, 2);
+            }
+            el.value = v;
+            // trigger input handlers
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        // Input validation: for non-multiples of 10, show inline warning and require user to accept or apply rounded value
+        function removeVolumeWarning(requestId) {
+            const warn = document.getElementById('volumeWarning' + requestId);
+            if (warn) warn.remove();
+        }
+
+        // Auto-apply rounding on blur and show a transient notice that value was considered as roundedDown
+        function showVolumeNotice(requestId, original, roundedDown) {
+            // remove existing notice
+            const existing = document.getElementById('volumeNotice' + requestId);
+            if (existing) existing.remove();
+
+            const input = document.getElementById(`volumeToDispense${requestId}`);
+            if (!input) return;
+
+            const container = document.createElement('div');
+            container.id = 'volumeNotice' + requestId;
+            container.className = 'mt-2';
+            container.innerHTML = `
+                <div class="alert alert-info d-flex align-items-center justify-content-between">
+                    <div>
+                        You entered <strong>${original}</strong> ml — recorded as <strong>${roundedDown}</strong> ml.
+                    </div>
+                    <div class="ms-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('volumeNotice${requestId}').remove()">Dismiss</button>
+                    </div>
+                </div>
+            `;
+
+            const parent = input.parentElement || input.closest('.mb-3');
+            if (parent) parent.appendChild(container);
+
+            // auto-remove after 4 seconds
+            setTimeout(() => {
+                const el = document.getElementById('volumeNotice' + requestId);
+                if (el) el.remove();
+            }, 4000);
+        }
+
+        document.addEventListener('blur', function (e) {
+            const el = e.target;
+            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+            const raw = String(el.value || '').trim();
+            if (!raw) return;
+            const num = parseFloat(raw.replace(/,/g, ''));
+            if (isNaN(num) || num <= 0) return;
+
+            if (num >= 10 && Math.round(num) % 10 !== 0) {
+                const roundedDown = Math.floor(num / 10) * 10;
+                if (roundedDown <= 0) return;
+                // auto-apply rounded value
+                el.value = String(roundedDown);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                const requestId = el.id.replace('volumeToDispense', '');
+                showVolumeNotice(requestId, num, roundedDown);
+            }
+        }, true);
 
         function viewPrescription(requestId) {
             const container = document.getElementById('prescriptionImageContainer' + requestId);

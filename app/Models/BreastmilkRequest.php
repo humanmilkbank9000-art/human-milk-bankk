@@ -98,9 +98,9 @@ class BreastmilkRequest extends Model
     public function getFormattedAppointmentAttribute()
     {
         if ($this->availability) {
-            return $this->availability->formatted_date . ' at ' . $this->availability->formatted_time;
+            return $this->availability->formatted_date;
         }
-        return Carbon::parse($this->request_date)->format('M d, Y') . ' at ' . Carbon::parse($this->request_time)->format('g:i A');
+        return Carbon::parse($this->request_date)->format('M d, Y');
     }
 
     public function getFormattedVolumeRequestedAttribute()

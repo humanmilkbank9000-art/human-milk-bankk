@@ -72,6 +72,34 @@ class AvailabilityService
     }
 
     /**
+     * Create a date-only availability entry (no times).
+     * Returns array with savedIds and duplicates.
+     */
+    public function createDateAvailability(string $date): array
+    {
+        $saved = [];
+        $duplicate = [];
+
+        $existing = Availability::where('available_date', $date)->first();
+        if ($existing) {
+            $duplicate[] = $date;
+        } else {
+            $a = Availability::create([
+                'available_date' => $date,
+                'start_time' => null,
+                'end_time' => null,
+                'status' => 'available'
+            ]);
+            $saved[] = $a->id;
+        }
+
+        return [
+            'saved' => $saved,
+            'duplicates' => $duplicate,
+        ];
+    }
+
+    /**
      * Delete an availability slot if not booked.
      * Throws exception if cannot delete.
      */

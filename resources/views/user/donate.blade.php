@@ -362,7 +362,7 @@
 
 @section('scripts')
     <script>
-        let selectedSlotId = null;
+    let selectedSlotId = null;
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let availableDates = @json($availableDates ?? []);
@@ -377,7 +377,6 @@
         document.getElementById('walkInModal').addEventListener('hidden.bs.modal', function () {
             selectedSlotId = null;
             selectedDate = null;
-            document.getElementById('time-slots-container').style.display = 'none';
             document.getElementById('walk-in-submit-btn').disabled = true;
         });
 
@@ -513,48 +512,31 @@
             // Update calendar display
             generateCalendar();
 
-            // Load available slots for this date
-            loadAvailableSlots(dateString);
-        }
-
-        function loadAvailableSlots(date) {
-            const slotsContainer = document.getElementById('available-slots');
-            const timeContainer = document.getElementById('time-slots-container');
-
-            slotsContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Loading available times...</div>';
-            timeContainer.style.display = 'block';
-
-            fetch(`/admin/availability/slots?date=${date}`)
+            // Since system is date-only, set selectedSlotId based on available availability record for date
+            // Fetch available availability entries for this date and pick the first available id (if any)
+            fetch(`/admin/availability/slots?date=${dateString}`)
                 .then(response => response.json())
                 .then(data => {
-                    slotsContainer.innerHTML = '';
-
+                    const walkInBtn = document.getElementById('walk-in-submit-btn');
                     if (data.available_slots && data.available_slots.length > 0) {
-                        data.available_slots.forEach(slot => {
-                            const slotDiv = document.createElement('div');
-                            slotDiv.className = 'form-check mb-2';
-                            slotDiv.innerHTML = `
-                                                                    <input class="form-check-input" type="radio" name="availability_id"
-                                                                        value="${slot.id}" id="slot_${slot.id}" onchange="selectTimeSlot(${slot.id})">
-                                                                    <label class="form-check-label" for="slot_${slot.id}">
-                                                                        <strong>${slot.formatted_time}</strong>
-                                                                    </label>
-                                                                `;
-                            slotsContainer.appendChild(slotDiv);
-                        });
+                        // Choose the first availability record for this date
+                        selectedSlotId = data.available_slots[0].id;
+                        // Enable submit
+                        if (walkInBtn) walkInBtn.disabled = false;
                     } else {
-                        slotsContainer.innerHTML = '<div class="alert alert-warning">No available time slots for this date.</div>';
+                        selectedSlotId = null;
+                        if (walkInBtn) walkInBtn.disabled = true;
                     }
-
-                    updateSubmitButton();
                 })
-                .catch(error => {
-                    console.error('Error loading slots:', error);
-                    slotsContainer.innerHTML = '<div class="alert alert-danger">Error loading available times. Please try again.</div>';
+                .catch(err => {
+                    console.error('Error fetching availability for date:', err);
                 });
         }
 
+        // No time slots: availability is date-only. The selectDate flow will query availability records and enable submit.
+
         function selectTimeSlot(slotId) {
+            // legacy placeholder - no-op in date-only mode
             selectedSlotId = slotId;
             updateSubmitButton();
         }
@@ -563,7 +545,7 @@
             // Walk-in form
             const walkInBtn = document.getElementById('walk-in-submit-btn');
             if (walkInBtn) {
-                walkInBtn.disabled = !selectedSlotId || !selectedDate;
+                walkInBtn.disabled = !selectedDate || !selectedSlotId;
             }
 
             // Home collection form

@@ -21,7 +21,13 @@ class AvailabilityController extends Controller
         $data = $request->validated();
 
         try {
-            $result = $this->service->createSlots($data['date'], $data['time']);
+            // If time array provided (backwards compatibility), create time slots.
+            if (!empty($data['time']) && is_array($data['time'])) {
+                $result = $this->service->createSlots($data['date'], $data['time']);
+            } else {
+                // Create a date-only availability entry
+                $result = $this->service->createDateAvailability($data['date']);
+            }
 
             $message = 'Availability saved successfully!';
             if (!empty($result['savedSlots'])) {

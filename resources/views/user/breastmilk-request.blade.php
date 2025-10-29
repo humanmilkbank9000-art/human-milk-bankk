@@ -487,12 +487,12 @@
                                             <!-- Calendar will be generated here -->
                                         </div>
                                         <input type="hidden" name="availability_id" id="selected_availability_id">
-                                        <div id="time-slots-container" style="display: none;">
-                                            <label class="form-label">Available Time Slots:</label>
-                                            <div id="available-slots">
-                                                <!-- Time slots will be loaded here -->
+                                            <div id="time-slots-container" style="display: none;">
+                                                <label class="form-label">Available Time Slots:</label>
+                                                <div id="available-slots">
+                                                    <!-- Time slots will be loaded here -->
+                                                </div>
                                             </div>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -790,41 +790,30 @@
             window.selectDate = function (dateString) {
                 selectedDate = dateString;
                 generateCalendar();
-                loadAvailableSlots(dateString);
+                    fetch(`/admin/availability/slots?date=${dateString}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.available_slots && data.available_slots.length > 0) {
+                                selectedAvailabilityId = data.available_slots[0].id;
+                                document.getElementById('selected_availability_id').value = selectedAvailabilityId;
+                                const appointmentDetails = document.getElementById('appointment-details');
+                                appointmentDetails.innerHTML = `<strong>Date:</strong> ${new Date(dateString).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+                                document.getElementById('selected-appointment-info').style.display = 'block';
+                                document.getElementById('nextToPrescription').disabled = false;
+                            } else {
+                                selectedAvailabilityId = null;
+                                document.getElementById('selected_availability_id').value = '';
+                                document.getElementById('selected-appointment-info').style.display = 'none';
+                                document.getElementById('nextToPrescription').disabled = true;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error fetching availability:', err);
+                        });
             };
 
-            function loadAvailableSlots(date) {
-                const slotsContainer = document.getElementById('available-slots');
-                const timeContainer = document.getElementById('time-slots-container');
 
-                slotsContainer.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Loading...</div>';
-                timeContainer.style.display = 'block';
-
-                fetch(`/admin/availability/slots?date=${date}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        slotsContainer.innerHTML = '';
-                        if (data.available_slots && data.available_slots.length > 0) {
-                            data.available_slots.forEach(slot => {
-                                const slotDiv = document.createElement('div');
-                                slotDiv.className = 'time-slot';
-                                slotDiv.innerHTML = `
-                                                                                <input type="radio" name="time_slot" value="${slot.id}" id="slot_${slot.id}">
-                                                                                <strong>${slot.formatted_time}</strong>
-                                                                            `;
-                                slotDiv.addEventListener('click', () => selectTimeSlot(slot.id, slot.formatted_time, date));
-                                slotsContainer.appendChild(slotDiv);
-                            });
-                        } else {
-                            slotsContainer.innerHTML = '<div class="alert alert-warning">No available slots for this date.</div>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error loading slots:', error);
-                        slotsContainer.innerHTML = '<div class="alert alert-danger">Error loading slots. Please try again.</div>';
-                    });
-            }
-
+                // No time slots: selecting a date picks the availability record if present. Handled in selectDate above.
             function selectTimeSlot(slotId, formattedTime, date) {
                 selectedAvailabilityId = slotId;
                 document.getElementById('selected_availability_id').value = slotId;

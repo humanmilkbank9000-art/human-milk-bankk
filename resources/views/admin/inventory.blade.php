@@ -463,11 +463,11 @@
                                             @endphp
                                             @foreach($unpasteurizedOrdered as $donation)
                                                 <tr>
-                                                    <td class="text-center align-middle" data-label="Select">
-                                                        <input type="checkbox" class="pasteurize-checkbox donation-checkbox"
-                                                            value="{{ $donation->breastmilk_donation_id }}"
-                                                            onchange="updatePasteurizeButton()">
-                                                    </td>
+                            <td class="text-center align-middle" data-label="Select">
+                                <input type="checkbox" class="pasteurize-checkbox donation-checkbox"
+                                    value="{{ $donation->breastmilk_donation_id }}"
+                                    onchange="toggleDonationBags(this)">
+                                </td>
                                                     <td style="white-space: normal;" data-label="Donor">
                                                         <strong>{{ $donation->user->first_name }}
                                                             {{ $donation->user->last_name }}</strong>
@@ -478,7 +478,35 @@
                                                             {{ $donation->donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection' }}
                                                         </span>
                                                     </td>
-                                                    <td class="text-center" data-label="Bags">{{ $donation->number_of_bags }}</td>
+                                                    <td class="text-center" data-label="Bags">
+                                                        <div class="d-flex flex-wrap justify-content-center gap-1" data-bag-volumes='@json($donation->bag_volumes ?? $donation->formatted_bag_volumes ?? "")'>
+                                                            @php
+                                                                // Try to build an array of bag labels/volumes from available properties
+                                                                $rawBagVolumes = $donation->bag_volumes ?? $donation->formatted_bag_volumes ?? '';
+                                                                if (is_array($rawBagVolumes)) {
+                                                                    $bagArr = $rawBagVolumes;
+                                                                } else {
+                                                                    // Split on commas and trim
+                                                                    $bagArr = preg_split('/\s*,\s*/', trim($rawBagVolumes));
+                                                                }
+                                                            @endphp
+                                                            @for ($i = 0; $i < max(1, intval($donation->number_of_bags)); $i++)
+                                                                @php
+                                                                    $label = $bagArr[$i] ?? ('Bag ' . ($i + 1));
+                                                                @endphp
+                                                                <div class="form-check form-check-inline" style="margin:2px;">
+                                                                    <input class="form-check-input bag-checkbox" type="checkbox"
+                                                                        id="bagCheckbox{{ $donation->breastmilk_donation_id }}_{{ $i }}"
+                                                                        data-donation-id="{{ $donation->breastmilk_donation_id }}"
+                                                                        data-bag-index="{{ $i }}"
+                                                                        onchange="updatePasteurizeButton()">
+                                                                    <label class="form-check-label" for="bagCheckbox{{ $donation->breastmilk_donation_id }}_{{ $i }}" style="font-size:0.78rem;">
+                                                                        {{ $label }}
+                                                                    </label>
+                                                                </div>
+                                                            @endfor
+                                                        </div>
+                                                    </td>
                                                     <td class="text-center" style="white-space: normal; font-size: 0.85rem;"
                                                         data-label="Volume/Bag">
                                                         <small>{{ $donation->formatted_bag_volumes }}</small>
@@ -798,64 +826,98 @@
 @section('scripts')
     <script>
         function selectAllDonations() {
-            document.querySelectorAll('.donation-checkbox').forEach(cb => {
-                cb.checked = true;
-            });
+            // Check all bag checkboxes and donation master checkboxes
+            document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = true);
+            document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = true);
             document.getElementById('selectAllCheckbox').checked = true;
             updatePasteurizeButton();
         }
 
         function clearAllSelections() {
-            document.querySelectorAll('.donation-checkbox').forEach(cb => {
-                cb.checked = false;
-            });
+            document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = false);
             document.getElementById('selectAllCheckbox').checked = false;
             updatePasteurizeButton();
         }
 
         function toggleAllDonations() {
             const selectAll = document.getElementById('selectAllCheckbox');
-            document.querySelectorAll('.donation-checkbox').forEach(cb => {
-                cb.checked = selectAll.checked;
-            });
+            document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = selectAll.checked);
+            document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = selectAll.checked);
+            updatePasteurizeButton();
+        }
+
+        function toggleDonationBags(masterCheckbox) {
+            // When a donation master checkbox is toggled, toggle its row's bag checkboxes
+            const row = masterCheckbox.closest('tr');
+            if (!row) return;
+            row.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
             updatePasteurizeButton();
         }
 
         function updatePasteurizeButton() {
-            const checkedBoxes = document.querySelectorAll('.donation-checkbox:checked');
+            // Count selected bags (we enable pasteurize when at least one bag is selected)
+            const checkedBagBoxes = document.querySelectorAll('.bag-checkbox:checked');
             const pasteurizeBtn = document.getElementById('pasteurizeBtn');
 
-            pasteurizeBtn.disabled = checkedBoxes.length === 0;
+            pasteurizeBtn.disabled = checkedBagBoxes.length === 0;
 
-            if (checkedBoxes.length > 0) {
-                pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected (${checkedBoxes.length})`;
+            if (checkedBagBoxes.length > 0) {
+                pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected (${checkedBagBoxes.length} bag${checkedBagBoxes.length > 1 ? 's' : ''})`;
             } else {
                 pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected`;
             }
         }
 
         function pasteurizeSelected() {
-            const checkedBoxes = document.querySelectorAll('.donation-checkbox:checked');
+            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
 
-            if (checkedBoxes.length === 0) {
-                alert('Please select at least one donation to pasteurize.');
+            if (checkedBags.length === 0) {
+                alert('Please select at least one bag to pasteurize.');
                 return;
             }
 
-            // Build list of selected donations for modal
-            let donationsList = '<h6>Selected Donations:</h6><ul>';
+            // Build list of selected donations/bags for modal
+            let donationsList = '<h6>Selected Bags:</h6><ul>';
             let totalVolume = 0;
 
-            checkedBoxes.forEach((checkbox, index) => {
-                const row = checkbox.closest('tr');
-                const donorName = row.cells[1].textContent.trim().split('\n')[0];
-                // Use the Available column (cell index 6) which contains remaining volume
-                // Strip non-numeric characters (commas, 'ml') before parsing
-                const rawAvailable = row.cells[6].textContent || '';
-                const volume = parseFloat(rawAvailable.replace(/[^0-9.-]+/g, '')) || 0;
-                totalVolume += volume;
+            // Group by donation id
+            const groups = {};
+            checkedBags.forEach(cb => {
+                const donationId = cb.getAttribute('data-donation-id');
+                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                if (!groups[donationId]) groups[donationId] = [];
+                groups[donationId].push(bagIndex);
+            });
 
-                donationsList += `<li>${donorName} - ${volume}ml</li>`;
+            Object.keys(groups).forEach(donationId => {
+                // Find the row for this donation
+                const donationRow = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`).closest('tr');
+                const donorName = donationRow.cells[1].textContent.trim().split('\n')[0];
+
+                // Attempt to read bag volumes from the bag container data attribute
+                const bagContainer = donationRow.querySelector('[data-bag-volumes]');
+                let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
+                let bagVolumes = [];
+                try {
+                    // If it's JSON array string
+                    const parsed = JSON.parse(bagVolumesRaw);
+                    if (Array.isArray(parsed)) bagVolumes = parsed;
+                } catch (e) {
+                    // Not JSON, fall back to splitting by comma
+                    if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
+                        bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
+                    }
+                }
+
+                groups[donationId].forEach(bi => {
+                    const rawVol = (bagVolumes[bi] !== undefined) ? ('' + bagVolumes[bi]) : '';
+                    // Extract numeric portion
+                    const vol = parseFloat((rawVol + '').replace(/[^0-9.\-]+/g, '')) || 0;
+                    totalVolume += vol;
+                    const label = rawVol ? `${rawVol}ml` : `Bag ${bi + 1}`;
+                    donationsList += `<li>${donorName} - ${label}</li>`;
+                });
             });
 
             donationsList += `</ul><p><strong>Total Volume: ${totalVolume}ml</strong></p>`;
@@ -868,9 +930,22 @@
         }
 
         function confirmPasteurization() {
-            const checkedBoxes = document.querySelectorAll('.donation-checkbox:checked');
-            const donationIds = Array.from(checkedBoxes).map(cb => cb.value);
+            // Build payload based on selected bag-checkboxes grouped by donation
+            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
             const notes = document.getElementById('pasteurizationNotes').value;
+
+            if (checkedBags.length === 0) {
+                alert('No bags selected to pasteurize.');
+                return;
+            }
+
+            const donationMap = {};
+            checkedBags.forEach(cb => {
+                const donationId = cb.getAttribute('data-donation-id');
+                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                if (!donationMap[donationId]) donationMap[donationId] = [];
+                donationMap[donationId].push(bagIndex);
+            });
 
             // Hide modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('pasteurizationModal'));
@@ -895,7 +970,8 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
-                    donation_ids: donationIds,
+                    // donation_map: { donationId: [bagIndex, ...] }
+                    donation_map: donationMap,
                     notes: notes
                 })
             })

@@ -78,6 +78,7 @@ class Availability extends Model
 
     public function getTimeSlotAttribute()
     {
+        if (empty($this->start_time) || empty($this->end_time)) return '';
         return $this->start_time . ' - ' . $this->end_time;
     }
 
@@ -88,6 +89,7 @@ class Availability extends Model
 
     public function getFormattedTimeAttribute()
     {
+        if (empty($this->start_time) || empty($this->end_time)) return '';
         return Carbon::parse($this->start_time)->format('g:i A') . ' - ' . 
                Carbon::parse($this->end_time)->format('g:i A');
     }
