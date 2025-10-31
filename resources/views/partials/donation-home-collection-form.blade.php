@@ -547,7 +547,7 @@
                                 confirmButtonColor: '#28a745',
                                 confirmButtonText: 'View Pending Donations'
                             }).then(() => {
-                                window.location.href = '/user/pending';
+                                window.location.href = '/user/pending-donation';
                             });
                         } else {
                             Swal.fire({
