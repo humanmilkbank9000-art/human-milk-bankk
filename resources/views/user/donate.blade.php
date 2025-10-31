@@ -24,13 +24,11 @@
             z-index: 10002;
             /* Higher than modal's z-index */
         }
-        }
 
         .modal-content {
             position: relative;
             z-index: 10003;
             /* Higher than modal-dialog's z-index */
-        }
         }
 
         .modal-backdrop {
@@ -168,100 +166,59 @@
             }
         }
 
+        /* Calendar styles - mirrored from user breastmilk request */
         .calendar-container {
             border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            padding: 15px;
+            border-radius: 12px;
+            overflow: visible;
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto 24px auto;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
             background: #fff;
-        }
-
-        .calendar-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .calendar-nav-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .calendar-nav-btn:hover {
-            background: #0056b3;
-        }
-
-        .calendar-month-year {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-        }
-
-        .calendar-day-header {
-            text-align: center;
-            font-weight: bold;
-            padding: 8px;
-            background: #f8f9fa;
-            font-size: 0.9em;
-        }
-
-        .calendar-day {
-            text-align: center;
-            padding: 10px 5px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.2s;
-            min-height: 40px;
-            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
         }
+        .calendar-header {
+            display: grid;
+            grid-template-columns: 40px 1fr 40px;
+            align-items: center;
+            background-color: #f8f9fa;
+            padding: 18px 24px;
+            border-bottom: 1px solid #dee2e6;
+            width: 100%;
+        }
+        .calendar-nav-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .calendar-nav-btn:hover { background-color: #e9ecef; }
+        .calendar-month-year { font-weight: bold; font-size: 1.1rem; text-align: center; white-space: nowrap; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); background-color: white; width: 100%; min-width: 350px; max-width: 480px; margin: 0 auto; }
+        .calendar-day-header { background-color: #e9ecef; padding: 10px 0; text-align: center; font-weight: bold; font-size: 0.95rem; border-bottom: 1px solid #dee2e6; }
 
-        .calendar-day.other-month {
-            color: #ccc;
-            cursor: not-allowed;
+        /* Responsive calendar on smaller screens */
+        @media (max-width: 576px) {
+            .calendar-container { max-width: 100%; margin: 0 auto 20px auto; }
+            .calendar-grid { min-width: 100%; max-width: 100%; }
+            .calendar-header { padding: 12px 16px; }
+            .calendar-month-year { font-size: 1rem; }
         }
 
-        .calendar-day.past {
-            color: #999;
-            cursor: not-allowed;
-        }
-
-        .calendar-day.available {
-            background: #28a745;
-            color: white;
-            font-weight: bold;
-        }
-
-        .calendar-day.available:hover {
-            background: #218838;
-            transform: scale(1.05);
-        }
-
-        .calendar-day.selected {
-            background: #007bff;
-            color: white;
-            font-weight: bold;
-            border: 2px solid #0056b3;
-        }
-
-        .calendar-day.unavailable {
-            background: #f8f9fa;
-            color: #6c757d;
-        }
-
-        .calendar-day.unavailable:hover {
-            background: #e9ecef;
-        }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: all 0.2s; position: relative; }
+        .calendar-day:nth-child(7n) { border-right: none; }
+        .calendar-day.available { background-color: #e8f5e8; color: #155724; font-weight: 500; }
+        .calendar-day.available:hover { background-color: #d4edda; transform: scale(1.05); }
+        .calendar-day.unavailable { background-color: #f8f9fa; color: #6c757d; cursor: not-allowed; }
+        .calendar-day.past { background-color: #f8f9fa; color: #adb5bd; cursor: not-allowed; }
+        .calendar-day.selected { background-color: #ff89ceff !important; color: white !important; font-weight: bold; transform: scale(1.1); z-index: 10; }
     </style>
 @endsection
 
@@ -361,23 +318,80 @@
 @endsection
 
 @section('scripts')
+    {{-- PHP Debug: Show first 5 available dates --}}
+    <!-- DEBUG: Available dates from PHP: {{ implode(', ', array_slice($availableDates ?? [], 0, 5)) }} -->
+    
     <script>
-    let selectedSlotId = null;
+        // Backend URL for fetching availability slots
+        const SLOTS_URL = "{{ route('admin.availability.slots') }}";
+        // Use let so we can override in-browser for debugging (use ?force_test=1 to enable)
+        let availableDates = @json($availableDates ?? []);
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('force_test') === '1') {
+                // Known-good test array matching admin expected dates for Nov 2025
+                availableDates = [
+                    '2025-11-01','2025-11-02','2025-11-03','2025-11-04','2025-11-05',
+                    '2025-11-06','2025-11-07','2025-11-08','2025-11-09','2025-11-10',
+                    '2025-11-11','2025-11-12','2025-11-13','2025-11-23','2025-11-30'
+                ];
+                console.log('⚙️ Debug override: forcing availableDates for testing (force_test=1)');
+            }
+        } catch (e) {
+            // ignore in older browsers
+        }
+        let selectedDate = null;
+        let selectedSlotId = null;
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
-        let availableDates = @json($availableDates ?? []);
-        let selectedDate = null;
+        
+        // Force browser to see this as new code (cache buster v2.1)
+        console.log('User Walk-in Calendar v2.1 - Date verification');
+        console.log('Raw availableDates from backend:', availableDates);
+        console.log('First date:', availableDates[0]);
+        console.log('Type check:', typeof availableDates[0], availableDates[0] === '2025-11-01');
 
-        // Initialize calendar when walk-in modal opens
+            // parseYMD is provided globally by the layout to avoid duplication
+
+        // Initialize vanilla calendar when walk-in modal opens
         document.getElementById('walkInModal').addEventListener('shown.bs.modal', function () {
+            // reset state
+            selectedDate = null;
+            selectedSlotId = null;
+            document.getElementById('availability_id').value = '';
+            document.getElementById('selected_date').value = '';
+            const statusEl = document.getElementById('slot-status');
+            const walkInBtn = document.getElementById('walk-in-submit-btn');
+            if (statusEl) { statusEl.textContent = 'Select a highlighted date to check availability.'; statusEl.className = 'mt-2 d-block text-muted'; }
+            if (walkInBtn) walkInBtn.disabled = true;
+
+            // If admin has opened future dates, show the calendar month that contains the first available date
+            if (Array.isArray(availableDates) && availableDates.length > 0) {
+                try {
+                        const firstDate = parseYMD(availableDates[0]);
+                    if (!isNaN(firstDate)) {
+                        currentMonth = firstDate.getMonth();
+                        currentYear = firstDate.getFullYear();
+                    }
+                } catch (e) {
+                    // fallback to today
+                    currentMonth = new Date().getMonth();
+                    currentYear = new Date().getFullYear();
+                }
+            } else {
+                currentMonth = new Date().getMonth();
+                currentYear = new Date().getFullYear();
+            }
+
             generateCalendar();
         });
 
-        // Reset forms when modals are closed
+        // Reset when modal closes
         document.getElementById('walkInModal').addEventListener('hidden.bs.modal', function () {
             selectedSlotId = null;
             selectedDate = null;
-            document.getElementById('walk-in-submit-btn').disabled = true;
+            const walkInBtn = document.getElementById('walk-in-submit-btn');
+            if (walkInBtn) walkInBtn.disabled = true;
         });
 
         document.getElementById('homeCollectionModal').addEventListener('hidden.bs.modal', function () {
@@ -408,145 +422,171 @@
             });
         });
 
-        // Add SweetAlert confirmation for Home Collection Form
-        document.getElementById('homeCollectionForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const form = this;
-            const bagCount = document.getElementById('bags_home').value;
-            const totalVolume = document.getElementById('total_home').textContent;
+        // Hook for the Confirm button in the walk-in modal
+        window.submitWalkInDonation = function() {
+            const form = document.getElementById('walkInForm');
+            const walkInBtn = document.getElementById('walk-in-submit-btn');
+            const availInput = document.getElementById('availability_id');
+            const dateInput = document.getElementById('selected_date');
 
-            Swal.fire({
-                title: 'Confirm Home Collection Donation?',
-                html: `Are you sure you want to schedule a home collection with:<br>
-                                   <strong>${bagCount} bag(s)</strong> totaling <strong>${totalVolume} ml</strong>?<br><br>
-                                   <small class="text-muted">Admin will contact you to schedule a pickup time.</small>`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#6f42c1',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Yes, Schedule',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-            });
-        });
+            if (!selectedDate || !selectedSlotId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Select a date',
+                    text: 'Please select an available date before confirming.',
+                });
+                return;
+            }
+
+            if (availInput) availInput.value = selectedSlotId;
+            if (dateInput) dateInput.value = selectedDate;
+
+            if (form) {
+                if (walkInBtn) walkInBtn.disabled = true;
+                form.requestSubmit();
+            }
+        };
+
+        // Calendar functions
+        function toLocalYMD(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
 
         function generateCalendar() {
             const calendarContainer = document.getElementById('appointment-calendar');
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             const firstDay = new Date(currentYear, currentMonth, 1);
             const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const today = new Date();
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            console.log('=== USER Walk-in Calendar Rendering ===');
+            console.log('Current Month/Year:', currentMonth, currentYear);
+            console.log('Available Dates Array:', availableDates);
+            console.log('Available Dates Type:', typeof availableDates, 'Is Array:', Array.isArray(availableDates));
+            console.log('First Available Date:', availableDates[0]);
 
             let calendarHTML = `
-                                                    <div class="calendar-header">
-                                                        <button type="button" class="calendar-nav-btn" onclick="navigateMonth(-1)">‹</button>
-                                                        <div class="calendar-month-year">${monthNames[currentMonth]} ${currentYear}</div>
-                                                        <button type="button" class="calendar-nav-btn" onclick="navigateMonth(1)">›</button>
-                                                    </div>
-                                                    <div class="calendar-grid">
-                                                `;
+                <div class="calendar-header">
+                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth(-1)">&lt;</button>
+                    <div class="calendar-month-year">${monthNames[currentMonth]} ${currentYear}</div>
+                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth(1)">&gt;</button>
+                </div>
+                <div class="calendar-grid">
+            `;
 
-            // Day headers
             dayNames.forEach(day => {
                 calendarHTML += `<div class="calendar-day-header">${day}</div>`;
             });
 
-            // Empty cells for days before the first day of the month
-            const startingDayOfWeek = firstDay.getDay();
-            for (let i = 0; i < startingDayOfWeek; i++) {
-                const prevMonthDay = new Date(currentYear, currentMonth, 0 - (startingDayOfWeek - 1 - i));
-                calendarHTML += `<div class="calendar-day other-month">${prevMonthDay.getDate()}</div>`;
-            }
-
-            // Days of the current month
-            for (let day = 1; day <= lastDay.getDate(); day++) {
-                const currentDate = new Date(currentYear, currentMonth, day);
-                const dateString = currentDate.toISOString().split('T')[0];
-                const isPast = currentDate < today.setHours(0, 0, 0, 0);
+            // Show 6 weeks grid starting from Sunday before firstDay
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            for (let i = 0; i < 42; i++) {
+                // Create date by adding i days to startDate (86400000 ms = 1 day)
+                const date = new Date(startDate.getTime() + (i * 86400000));
+                const day = date.getDate();
+                const dateString = toLocalYMD(date);
+                
+                // Compare at local start-of-day to prevent timezone-related off-by-one (match admin logic)
+                const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                const isPast = dayStart < todayStart;
+                
+                const isCurrentMonth = date.getMonth() === currentMonth;
                 const isAvailable = availableDates.includes(dateString);
                 const isSelected = selectedDate === dateString;
 
+                // Debug log for November 1-5 specifically
+                if (dateString >= '2025-11-01' && dateString <= '2025-11-05') {
+                    console.log(`🔍 ${dateString}:`);
+                    console.log(`  - Date object: ${date.toString()}`);
+                    console.log(`  - isAvailable: ${isAvailable}`);
+                    console.log(`  - Check in array: ${availableDates.includes(dateString)}`);
+                    console.log(`  - isPast: ${isPast}`);
+                    console.log(`  - isCurrentMonth: ${isCurrentMonth}`);
+                    
+                    // Try to find why it might not match
+                    if (!isAvailable) {
+                        console.log(`  ⚠️ NOT AVAILABLE - Checking array for similar dates:`);
+                        availableDates.forEach((d, idx) => {
+                            if (d.indexOf('2025-11') === 0) {
+                                console.log(`    [${idx}]: "${d}" (length: ${d.length})`);
+                            }
+                        });
+                    }
+                }
+
                 let dayClass = 'calendar-day';
-                if (isPast) {
+                if (!isCurrentMonth) {
+                    dayClass += ' other-month';
+                } else if (isPast) {
                     dayClass += ' past';
                 } else if (isAvailable) {
                     dayClass += ' available';
+                    console.log('✅ HIGHLIGHTED:', dateString);
                 } else {
                     dayClass += ' unavailable';
                 }
 
-                if (isSelected) {
-                    dayClass += ' selected';
-                }
+                if (isSelected) dayClass += ' selected';
 
-                const clickHandler = (!isPast && isAvailable) ? `onclick="selectDate('${dateString}')"` : '';
+                const clickHandler = (!isPast && isAvailable && isCurrentMonth) ? `onclick="selectDate('${dateString}')"` : '';
                 calendarHTML += `<div class="${dayClass}" ${clickHandler}>${day}</div>`;
             }
 
             calendarHTML += '</div>';
             calendarContainer.innerHTML = calendarHTML;
+            console.log('=== USER Calendar Render Complete ===');
         }
 
-        function navigateMonth(direction) {
+        window.navigateMonth = function(direction) {
             currentMonth += direction;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            } else if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
             generateCalendar();
         }
 
-        function selectDate(dateString) {
+        window.selectDate = function(dateString) {
             selectedDate = dateString;
             document.getElementById('selected_date').value = dateString;
-
-            // Update calendar display
             generateCalendar();
 
-            // Since system is date-only, set selectedSlotId based on available availability record for date
-            // Fetch available availability entries for this date and pick the first available id (if any)
-            fetch(`/admin/availability/slots?date=${dateString}`)
-                .then(response => response.json())
+            fetch(`${SLOTS_URL}?date=${encodeURIComponent(dateString)}`)
+                .then(r => r.json())
                 .then(data => {
                     const walkInBtn = document.getElementById('walk-in-submit-btn');
+                    const statusEl = document.getElementById('slot-status');
                     if (data.available_slots && data.available_slots.length > 0) {
-                        // Choose the first availability record for this date
                         selectedSlotId = data.available_slots[0].id;
-                        // Enable submit
+                        document.getElementById('availability_id').value = selectedSlotId;
+                        if (statusEl) { statusEl.textContent = 'Slot available. Click Confirm to schedule your walk-in.'; statusEl.className = 'mt-2 d-block text-success'; }
                         if (walkInBtn) walkInBtn.disabled = false;
                     } else {
                         selectedSlotId = null;
+                        document.getElementById('availability_id').value = '';
+                        if (statusEl) { statusEl.textContent = 'No availability for the selected date. Please choose another date.'; statusEl.className = 'mt-2 d-block text-danger'; }
                         if (walkInBtn) walkInBtn.disabled = true;
                     }
                 })
-                .catch(err => {
-                    console.error('Error fetching availability for date:', err);
+                .catch(() => {
+                    const walkInBtn = document.getElementById('walk-in-submit-btn');
+                    const statusEl = document.getElementById('slot-status');
+                    selectedSlotId = null;
+                    document.getElementById('availability_id').value = '';
+                    if (statusEl) { statusEl.textContent = 'Unable to load availability. Please try again.'; statusEl.className = 'mt-2 d-block text-warning'; }
+                    if (walkInBtn) walkInBtn.disabled = true;
                 });
         }
 
-        // No time slots: availability is date-only. The selectDate flow will query availability records and enable submit.
-
-        function selectTimeSlot(slotId) {
-            // legacy placeholder - no-op in date-only mode
-            selectedSlotId = slotId;
-            updateSubmitButton();
-        }
-
+        // Home collection helpers (unchanged)
         function updateSubmitButton() {
-            // Walk-in form
-            const walkInBtn = document.getElementById('walk-in-submit-btn');
-            if (walkInBtn) {
-                walkInBtn.disabled = !selectedDate || !selectedSlotId;
-            }
+            // Walk-in button state is managed by flatpickr handlers
 
             // Home collection form
             const homeBtn = document.getElementById('home-submit-btn');
@@ -568,7 +608,6 @@
             }
         }
 
-        // Generate individual bag volume input fields
         function generateBagVolumeFields() {
             const bagCount = parseInt(document.getElementById('bags_home').value) || 0;
             const container = document.getElementById('bag-volume-fields');
@@ -589,19 +628,19 @@
             let fieldsHTML = '<div class="row">';
             for (let i = 1; i <= bagCount; i++) {
                 fieldsHTML += `
-                                                        <div class="col-md-6 mb-2">
-                                                            <label for="bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                            <input type="number"
-                                                                id="bag_volume_${i}"
-                                                                name="bag_volumes[]"
-                                                                class="form-control bag-volume-input"
-                                                                step="0.01"
-                                                                min="0.01"
-                                                                required
-                                                                oninput="calculateIndividualTotal()"
-                                                                onchange="calculateIndividualTotal()">
-                                                        </div>
-                                                    `;
+                    <div class="col-md-6 mb-2">
+                        <label for="bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                        <input type="number"
+                            id="bag_volume_${i}"
+                            name="bag_volumes[]"
+                            class="form-control bag-volume-input"
+                            step="0.01"
+                            min="0.01"
+                            required
+                            oninput="calculateIndividualTotal()"
+                            onchange="calculateIndividualTotal()">
+                    </div>
+                `;
             }
             fieldsHTML += '</div>';
 
@@ -609,7 +648,6 @@
             calculateIndividualTotal();
         }
 
-        // Calculate total from individual bag volumes
         function calculateIndividualTotal() {
             const bagCount = parseInt(document.getElementById('bags_home').value) || 0;
             let total = 0;
@@ -621,16 +659,13 @@
                 }
             }
 
-            // Remove .00 from whole numbers
             const displayTotal = total % 1 === 0 ? Math.round(total) : total.toFixed(2).replace(/\.?0+$/, '');
             document.getElementById('total_home').textContent = displayTotal;
             updateSubmitButton();
         }
 
-        // Add event listeners
         document.addEventListener('DOMContentLoaded', function () {
             const bagsHome = document.getElementById('bags_home');
-
             if (bagsHome) {
                 bagsHome.addEventListener('input', generateBagVolumeFields);
             }

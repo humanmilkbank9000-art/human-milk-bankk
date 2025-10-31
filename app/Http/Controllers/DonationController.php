@@ -136,7 +136,7 @@ class DonationController extends Controller
 
             if ($request->input('donation_method') === 'walk_in') {
                 $date = \Carbon\Carbon::parse($result->available_date);
-                $message = 'Walk-in appointment scheduled successfully! Please visit the center on ' . $date->format('M d, Y') . ' at ' . $result->formatted_time;
+                $message = 'Walk-in appointment scheduled successfully! Please visit the center on ' . $date->format('M d, Y');
                 
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json(['success' => true, 'message' => $message]);
