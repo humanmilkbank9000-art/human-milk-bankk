@@ -21,6 +21,40 @@ class ReportController extends Controller
 
     [$view, $payload, $meta] = $this->service->buildReportPayload($type, $year, $month);
 
+        // Ensure preview (used for on-screen print) shows only accepted/successful records
+        try {
+            $reportType = strtolower($meta['type'] ?? $type);
+
+            if (in_array($reportType, ['requests', 'request'])) {
+                $records = collect($payload['records'] ?? []);
+
+                $accepted = $records->filter(function ($r) {
+                    $status = strtolower($r['status'] ?? '');
+                    return in_array($status, ['approved', 'dispensed']);
+                })->values();
+
+                $payload['records'] = $accepted;
+                $payload['total'] = $accepted->count();
+                $payload['approved'] = $accepted->filter(function ($r) {
+                    $status = strtolower($r['status'] ?? '');
+                    return in_array($status, ['approved', 'dispensed']);
+                })->count();
+                $payload['declined'] = 0;
+                $payload['dispensed_volume'] = $accepted->sum(function ($r) {
+                    return (float) ($r['volume_dispensed'] ?? 0);
+                });
+            } elseif (in_array($reportType, ['donations', 'donation'])) {
+                $records = collect($payload['records'] ?? []);
+                // Keep only records that are present (service already filtered successful donations)
+                $payload['records'] = $records->values();
+                $payload['total_volume'] = $records->sum(function ($r) {
+                    return (float) ($r['total_volume'] ?? 0);
+                });
+            }
+        } catch (\Throwable $e) {
+            // Ignore and continue with original payload on error
+        }
+
         return view('admin.reports.preview', [
             'type' => $meta['type'],
             'view' => $view,

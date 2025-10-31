@@ -18,10 +18,12 @@ class BreastmilkRequest extends Model
         'infant_id',
         'availability_id',
         'admin_id',
+        'assisted_by_admin',
         'prescription_path',
         'prescription_filename',
         'prescription_mime_type',
         'volume_requested',
+        'milk_type',
         'request_date',
         'request_time',
         'status',
@@ -64,6 +66,11 @@ class BreastmilkRequest extends Model
     public function admin()
     {
         return $this->belongsTo(User::class, 'admin_id', 'admin_id');
+    }
+
+    public function assistedByAdmin()
+    {
+        return $this->belongsTo(Admin::class, 'assisted_by_admin', 'admin_id');
     }
 
     // Status helper methods

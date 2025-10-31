@@ -113,16 +113,8 @@ class DonationController extends Controller
         // Check health screening status
         $healthScreening = HealthScreening::where('user_id', $user_id)->latest()->first();
         
-        // Get available dates for calendar highlighting
-        $availableDates = \App\Models\Availability::available()
-            ->future()
-            ->select('available_date')
-            ->distinct()
-            ->orderBy('available_date')
-            ->pluck('available_date')
-            ->map(function($date) {
-                return $date->format('Y-m-d');
-            });
+        // Get available dates via unified service for parity with admin
+        $availableDates = app(\App\Services\AvailabilityService::class)->listAvailableDates();
         
         return view('user.donate', compact('healthScreening', 'availableDates'));
     }
@@ -132,6 +124,9 @@ class DonationController extends Controller
     {
         // Check if user is logged in
         if (!Session::has('account_id') || Session::get('account_role') !== 'user') {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Please login first.'], 401);
+            }
             return redirect()->route('login')->with('error', 'Please login first.');
         }
         $user_id = Session::get('account_id');
@@ -141,11 +136,23 @@ class DonationController extends Controller
 
             if ($request->input('donation_method') === 'walk_in') {
                 $date = \Carbon\Carbon::parse($result->available_date);
-                return redirect()->route('user.pending')->with('success', 'Walk-in appointment scheduled successfully! Please visit the center on ' . $date->format('M d, Y') . ' at ' . $result->formatted_time);
+                $message = 'Walk-in appointment scheduled successfully! Please visit the center on ' . $date->format('M d, Y') . ' at ' . $result->formatted_time;
+                
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['success' => true, 'message' => $message]);
+                }
+                return redirect()->route('user.pending')->with('success', $message);
             }
 
-            return redirect()->route('user.pending')->with('success', 'Home collection request submitted successfully! The admin will contact you to schedule a pickup time.');
+            $message = 'Home collection request submitted successfully! The admin will contact you to schedule a pickup time.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $message]);
+            }
+            return redirect()->route('user.pending')->with('success', $message);
         } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            }
             return redirect()->route('user.donate')->with('error', $e->getMessage());
         }
     }
@@ -208,6 +215,17 @@ class DonationController extends Controller
         }
     }
 
+    public function reschedulePickup(SchedulePickupRequest $request, $id)
+    {
+        try {
+            $donation = Donation::findOrFail($id);
+            $this->service->reschedulePickup($donation, $request->validated());
+            return response()->json(['success' => true, 'message' => 'Pickup rescheduled successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
     public function validatePickup(ValidateDonationRequest $request, $id)
     {
         try {
@@ -218,6 +236,49 @@ class DonationController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+    
+    /**
+     * Show donation details
+     */
+    public function show($id)
+    {
+        try {
+            $donation = Donation::with(['user', 'availability'])
+                ->findOrFail($id);
+
+            // Parse bag details if they exist
+            $bagDetails = [];
+            if ($donation->bag_details) {
+                $bagDetails = is_string($donation->bag_details) 
+                    ? json_decode($donation->bag_details, true) 
+                    : $donation->bag_details;
+            }
+
+            return response()->json([
+                'success' => true,
+                'donation' => [
+                    'id' => $donation->breastmilk_donation_id,
+                    'donor_name' => ($donation->user->first_name ?? '') . ' ' . ($donation->user->last_name ?? ''),
+                    'contact' => $donation->user->contact_number ?? $donation->user->phone ?? 'N/A',
+                    'address' => $donation->user->address ?? 'Not provided',
+                    'latitude' => $donation->user->latitude ?? null,
+                    'longitude' => $donation->user->longitude ?? null,
+                    'donation_method' => $donation->donation_method,
+                    'donation_date' => $donation->donation_date ? $donation->donation_date->format('m/d/Y') : 'N/A',
+                    'donation_time' => $donation->donation_time ? \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') : ($donation->availability ? $donation->availability->formatted_time : 'N/A'),
+                    'number_of_bags' => $donation->number_of_bags ?? 0,
+                    'total_volume' => $donation->formatted_total_volume ?? 'N/A',
+                    'bag_details' => $bagDetails,
+                    'status' => $donation->status,
+                    'updated_at' => $donation->updated_at ? $donation->updated_at->format('M d, Y g:i A') : 'N/A',
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Donation show error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to load donation details.'], 500);
+        }
+    }
+    
     /**
      * Archive (soft-delete) a donation record
      */

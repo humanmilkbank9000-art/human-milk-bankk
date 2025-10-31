@@ -180,6 +180,21 @@
             padding: 4px 8px;
         }
 
+        /* Per-bag vertical stack helper to ensure Date/Time/Volume lines align */
+        .per-bag-list {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem; /* consistent spacing between bag lines */
+        }
+
+        .selected-volume-info {
+            font-size: 0.95rem;
+            color: #343a40;
+            min-width: 170px;
+            text-align: right;
+        }
+
         .donation-type-badge {
             font-size: 0.8rem;
         }
@@ -442,23 +457,25 @@
                                             <i class="fas fa-square"></i> Clear All
                                         </button>
                                     </div>
-                                    <button type="button" class="btn btn-dispose me-2" onclick="disposeSelected()" disabled id="disposeBtn">
-                                        <i class="fas fa-trash-alt"></i> Dispose Selected
-                                    </button>
-                                    <button type="button" class="btn btn-pasteurize" onclick="pasteurizeSelected()" disabled
-                                        id="pasteurizeBtn">
-                                        <i class="fas fa-fire"></i> Pasteurize Selected
-                                    </button>
+                                    <div class="d-flex align-items-center">
+                                        <div id="selectedVolumeInfo" class="me-3 selected-volume-info">
+                                            Selected: <span id="selectedVolumeValue">0</span> / 9000 ml
+                                        </div>
+                                        <button type="button" class="btn btn-dispose me-2" onclick="disposeSelected()" disabled id="disposeBtn">
+                                            <i class="fas fa-trash-alt"></i> Dispose Selected
+                                        </button>
+                                        <button type="button" class="btn btn-pasteurize" onclick="pasteurizeSelected()" disabled
+                                            id="pasteurizeBtn">
+                                            <i class="fas fa-fire"></i> Pasteurize Selected
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div class="table-container-standard table-wide">
                                     <table class="table table-standard table-bordered table-striped align-middle">
                                         <thead class="table-success">
                                             <tr>
-                                                <th class="text-center align-middle px-2 py-2" style="color: #000;">
-                                                    <input type="checkbox" id="selectAllCheckbox"
-                                                        onchange="toggleAllDonations()">
-                                                </th>
+                                                <th class="text-center align-middle px-2 py-2" style="color: #000;">&nbsp;</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Donor</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Type</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Bags</th>
@@ -493,38 +510,48 @@
                                                             {{ $donation->donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection' }}
                                                         </span>
                                                     </td>
-                                                    <td class="text-center" data-label="Bags">
-                                                        <div class="d-flex flex-wrap justify-content-center gap-1" data-bag-volumes='@json($donation->bag_volumes ?? $donation->formatted_bag_volumes ?? "")'>
-                                                            @php
-                                                                // Try to build an array of bag labels/volumes from available properties
-                                                                $rawBagVolumes = $donation->bag_volumes ?? $donation->formatted_bag_volumes ?? '';
-                                                                if (is_array($rawBagVolumes)) {
-                                                                    $bagArr = $rawBagVolumes;
-                                                                } else {
-                                                                    // Split on commas and trim
-                                                                    $bagArr = preg_split('/\s*,\s*/', trim($rawBagVolumes));
-                                                                }
-                                                            @endphp
-                                                            @for ($i = 0; $i < max(1, intval($donation->number_of_bags)); $i++)
-                                                                @php
-                                                                    $label = $bagArr[$i] ?? ('Bag ' . ($i + 1));
-                                                                @endphp
-                                                                <div class="form-check form-check-inline" style="margin:2px;">
-                                                                    <input class="form-check-input bag-checkbox" type="checkbox"
+                                                    <td class="text-center align-top" data-label="Bags">
+                                                        @php
+                                                            $rawBagVolumes = $donation->bag_volumes ?? $donation->formatted_bag_volumes ?? '';
+                                                            if (is_array($rawBagVolumes)) {
+                                                                $bagVolumes = $rawBagVolumes;
+                                                            } elseif (is_string($rawBagVolumes) && trim($rawBagVolumes) !== '') {
+                                                                $bagVolumes = preg_split('/\s*,\s*/', trim($rawBagVolumes));
+                                                            } else {
+                                                                $bagVolumes = [];
+                                                            }
+                                                            $bagsCount = max(1, intval($donation->number_of_bags));
+                                                        @endphp
+                                                        <div class="bag-list per-bag-list text-start" data-bag-volumes='@json($bagVolumes)'>
+                                                            @for ($i = 0; $i < $bagsCount; $i++)
+                                                                <div class="d-flex align-items-center mb-1">
+                                                                    <input class="form-check-input bag-checkbox me-2" type="checkbox"
                                                                         id="bagCheckbox{{ $donation->breastmilk_donation_id }}_{{ $i }}"
                                                                         data-donation-id="{{ $donation->breastmilk_donation_id }}"
                                                                         data-bag-index="{{ $i }}"
                                                                         onchange="updatePasteurizeButton()">
-                                                                    <label class="form-check-label" for="bagCheckbox{{ $donation->breastmilk_donation_id }}_{{ $i }}" style="font-size:0.78rem;">
-                                                                        {{ $label }}
+                                                                    <label class="form-check-label mb-0" for="bagCheckbox{{ $donation->breastmilk_donation_id }}_{{ $i }}" style="font-size:0.88rem;">
+                                                                        Bag {{ $i + 1 }}
                                                                     </label>
                                                                 </div>
                                                             @endfor
                                                         </div>
                                                     </td>
-                                                    <td class="text-center" style="white-space: normal; font-size: 0.85rem;"
-                                                        data-label="Volume/Bag">
-                                                        <small>{{ $donation->formatted_bag_volumes }}</small>
+                                                    <td class="text-center align-top" style="white-space: normal; font-size: 0.85rem;" data-label="Volume/Bag">
+                                                        <div class="volume-list per-bag-list text-start">
+                                                            @for ($i = 0; $i < $bagsCount; $i++)
+                                                                @php
+                                                                    $vol = isset($bagVolumes[$i]) ? $bagVolumes[$i] : '';
+                                                                @endphp
+                                                                <div>
+                                                                    @if($vol !== '')
+                                                                        <small>{{ stripos($vol, 'ml') === false ? $vol . 'ml' : $vol }}</small>
+                                                                    @else
+                                                                        <span class="text-muted">-</span>
+                                                                    @endif
+                                                                </div>
+                                                            @endfor
+                                                        </div>
                                                     </td>
                                                     <td class="text-center" data-label="Total">
                                                         <span
@@ -534,29 +561,37 @@
                                                         <span
                                                             class="badge badge-success volume-badge">{{ $donation->formatted_available_volume }}ml</span>
                                                     </td>
-                                                    <td class="text-center" style="white-space: nowrap;" data-label="Date">
-                                                        <small>
-                                                            @if($donation->donation_date)
-                                                                {{ $donation->donation_date->format('M d, Y') }}
-                                                            @elseif($donation->scheduled_pickup_date)
-                                                                {{ $donation->scheduled_pickup_date->format('M d, Y') }}
-                                                            @else
-                                                                -
-                                                            @endif
-                                                        </small>
+                                                    <td class="text-center align-top" style="white-space: nowrap;" data-label="Date">
+                                                        <div class="per-bag-list text-start">
+                                                            @for ($i = 0; $i < $bagsCount; $i++)
+                                                                <div><small>
+                                                                    @if($donation->donation_date)
+                                                                        {{ $donation->donation_date->format('M d, Y') }}
+                                                                    @elseif($donation->scheduled_pickup_date)
+                                                                        {{ $donation->scheduled_pickup_date->format('M d, Y') }}
+                                                                    @else
+                                                                        -
+                                                                    @endif
+                                                                </small></div>
+                                                            @endfor
+                                                        </div>
                                                     </td>
-                                                    <td class="text-center" style="white-space: nowrap;" data-label="Time">
-                                                        <small>
-                                                            @if($donation->availability)
-                                                                {{ $donation->availability->formatted_time }}
-                                                            @elseif($donation->donation_time)
-                                                                {{ \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
-                                                            @elseif($donation->scheduled_pickup_time)
-                                                                {{ $donation->scheduled_pickup_time }}
-                                                            @else
-                                                                -
-                                                            @endif
-                                                        </small>
+                                                    <td class="text-center align-top" style="white-space: nowrap;" data-label="Time">
+                                                        <div class="per-bag-list text-start">
+                                                            @for ($i = 0; $i < $bagsCount; $i++)
+                                                                <div><small>
+                                                                    @if($donation->availability)
+                                                                        {{ $donation->availability->formatted_time }}
+                                                                    @elseif($donation->donation_time)
+                                                                        {{ \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
+                                                                    @elseif($donation->scheduled_pickup_time)
+                                                                        {{ $donation->scheduled_pickup_time }}
+                                                                    @else
+                                                                        -
+                                                                    @endif
+                                                                </small></div>
+                                                            @endfor
+                                                        </div>
                                                     </td>
                                                     <td class="text-center" data-label="Expires">
                                                         @php
@@ -570,8 +605,6 @@
                                                         @endphp
                                                         @if($expiry)
                                                             <small>{{ $expiry->format('M d, Y') }}</small>
-                                                            <br>
-                                                            <small class="text-muted">({{ $expiry->diffForHumans(now()->setTimezone('Asia/Manila')) }})</small>
                                                         @else
                                                             <span class="text-muted">-</span>
                                                         @endif
@@ -607,11 +640,11 @@
                                     <thead class="table-success">
                                         <tr>
                                             <th class="text-center px-2 py-2">Batch</th>
-                                            <th class="text-center px-2 py-2">Total</th>
+                                            <th class="text-center px-2 py-2">No. of Donation</th>
+                                            <th class="text-center px-2 py-2">Total Volume</th>
                                             <th class="text-center px-2 py-2">Available</th>
                                             <th class="text-center px-2 py-2">Date</th>
                                             <th class="text-center px-2 py-2">Time</th>
-                                            <th class="text-center px-2 py-2">Count</th>
                                             <th class="text-center px-2 py-2">Actions</th>
                                         </tr>
                                     </thead>
@@ -626,13 +659,14 @@
                                                 <td style="white-space: normal;" data-label="Batch">
                                                     <strong>{{ $batch->batch_number }}</strong>
                                                 </td>
-                                                <td class="text-center" data-label="Total">
-                                                    <span
-                                                        class="badge badge-info volume-badge">{{ $batch->formatted_total_volume }}ml</span>
+                                                <td class="text-center" data-label="No. of Donation">
+                                                    <small>{{ $batch->donations->count() }}</small>
+                                                </td>
+                                                <td class="text-center" data-label="Total Volume">
+                                                    <span class="badge badge-info volume-badge">{{ $batch->formatted_total_volume }}ml</span>
                                                 </td>
                                                 <td class="text-center" data-label="Available">
-                                                    <span
-                                                        class="badge badge-success volume-badge">{{ $batch->formatted_available_volume }}ml</span>
+                                                    <span class="badge badge-success volume-badge">{{ $batch->formatted_available_volume }}ml</span>
                                                 </td>
                                                 <td class="text-center" style="white-space: nowrap;" data-label="Date">
                                                     <small>{{ $batch->formatted_date }}</small>
@@ -640,12 +674,8 @@
                                                 <td class="text-center" style="white-space: nowrap;" data-label="Time">
                                                     <small>{{ $batch->formatted_time }}</small>
                                                 </td>
-                                                <td class="text-center" data-label="Count">
-                                                    <small>{{ $batch->donations->count() }}</small>
-                                                </td>
-                                                <td class="text-center" data-label="Actions">
-                                                    <button class="admin-review-btn btn-sm" title="Review Details"
-                                                        onclick="viewBatchDetails({{ $batch->batch_id }})">
+                                                <td class="text-center" data-label="Action">
+                                                    <button class="admin-review-btn btn-sm" title="Review Details" onclick="viewBatchDetails({{ $batch->batch_id }})">
                                                         Review
                                                     </button>
                                                 </td>
@@ -878,21 +908,24 @@
             // Check all bag checkboxes and donation master checkboxes
             document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = true);
             document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = true);
-            document.getElementById('selectAllCheckbox').checked = true;
+            const headerCheckbox = document.getElementById('selectAllCheckbox');
+            if (headerCheckbox) headerCheckbox.checked = true;
             updatePasteurizeButton();
         }
 
         function clearAllSelections() {
             document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = false);
             document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = false);
-            document.getElementById('selectAllCheckbox').checked = false;
+            const headerCheckbox = document.getElementById('selectAllCheckbox');
+            if (headerCheckbox) headerCheckbox.checked = false;
             updatePasteurizeButton();
         }
 
         function toggleAllDonations() {
             const selectAll = document.getElementById('selectAllCheckbox');
-            document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = selectAll.checked);
-            document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = selectAll.checked);
+            const checked = selectAll ? selectAll.checked : false;
+            document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = checked);
+            document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = checked);
             updatePasteurizeButton();
         }
 
@@ -909,7 +942,6 @@
             const checkedBagBoxes = document.querySelectorAll('.bag-checkbox:checked');
             const pasteurizeBtn = document.getElementById('pasteurizeBtn');
             const disposeBtn = document.getElementById('disposeBtn');
-
             pasteurizeBtn.disabled = checkedBagBoxes.length === 0;
             if (disposeBtn) disposeBtn.disabled = checkedBagBoxes.length === 0;
 
@@ -919,6 +951,57 @@
             } else {
                 pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected`;
                 if (disposeBtn) disposeBtn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected`;
+            }
+
+            // Update the selected total volume display
+            updateSelectedVolume();
+        }
+
+        // Maximum selectable total volume (ml)
+        const MAX_SELECTABLE_VOLUME = 9000;
+
+        function updateSelectedVolume() {
+            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
+            let totalVolume = 0;
+
+            checkedBags.forEach(cb => {
+                const donationId = cb.getAttribute('data-donation-id');
+                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                const donationRowEl = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`);
+                if (!donationRowEl) return;
+                const row = donationRowEl.closest('tr');
+                if (!row) return;
+
+                const bagContainer = row.querySelector('[data-bag-volumes]');
+                let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
+                let bagVolumes = [];
+                try {
+                    const parsed = JSON.parse(bagVolumesRaw);
+                    if (Array.isArray(parsed)) bagVolumes = parsed;
+                } catch (e) {
+                    if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
+                        bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
+                    }
+                }
+
+                const rawVol = (bagVolumes[bagIndex] !== undefined) ? ('' + bagVolumes[bagIndex]) : '';
+                const vol = parseFloat((rawVol + '').replace(/[^0-9.\-]+/g, '')) || 0;
+                totalVolume += vol;
+            });
+
+            const displayEl = document.getElementById('selectedVolumeValue');
+            if (displayEl) {
+                // Format with thousand separators
+                displayEl.textContent = Math.round(totalVolume).toLocaleString();
+                // Optionally change color if exceeds max
+                const parent = document.getElementById('selectedVolumeInfo');
+                if (parent) {
+                    if (totalVolume > MAX_SELECTABLE_VOLUME) {
+                        parent.style.color = '#b91c1c'; // red
+                    } else {
+                        parent.style.color = '#343a40';
+                    }
+                }
             }
         }
 
@@ -1079,6 +1162,8 @@
                 },
                 body: JSON.stringify({
                     donation_map: donationMap,
+                    // include donation_ids array for compatibility with older callers
+                    donation_ids: Object.keys(donationMap).map(k => parseInt(k)),
                     notes: notes
                 })
             })
@@ -1100,6 +1185,19 @@
                     return { ok: response.ok, data: null, text };
                 })
                 .then(res => {
+                    // Handle Laravel validation errors (422) which return { message, errors: { field: [msg,...] } }
+                    if (res.data && res.data.errors) {
+                        // Build a readable error message
+                        const errs = [];
+                        Object.keys(res.data.errors).forEach(k => {
+                            const arr = res.data.errors[k] || [];
+                            if (Array.isArray(arr)) arr.forEach(m => errs.push(m));
+                        });
+                        const msg = errs.join('\n') || res.data.message || 'Validation failed.';
+                        Swal.fire({ title: 'Validation Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(msg)}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                        return;
+                    }
+
                     if (res.data && res.data.success) {
                         Swal.fire({
                             title: 'Disposed',
@@ -1185,24 +1283,54 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
                     // donation_map: { donationId: [bagIndex, ...] }
                     donation_map: donationMap,
+                    // include donation_ids array for compatibility with older callers
+                    donation_ids: Object.keys(donationMap).map(k => parseInt(k)),
                     notes: notes
                 })
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
+                .then(async response => {
+                    const contentType = response.headers.get('content-type') || '';
+                    const text = await response.text();
+
+                    if (contentType.includes('application/json')) {
+                        try {
+                            const data = JSON.parse(text);
+                            return { ok: response.ok, data };
+                        } catch (e) {
+                            return { ok: response.ok, data: null, text };
+                        }
+                    }
+
+                    // Non-JSON response (probably HTML error page)
+                    return { ok: response.ok, data: null, text };
+                })
+                .then(res => {
+                    // Handle Laravel validation errors
+                    if (res.data && res.data.errors) {
+                        const errs = [];
+                        Object.keys(res.data.errors).forEach(k => {
+                            const arr = res.data.errors[k] || [];
+                            if (Array.isArray(arr)) arr.forEach(m => errs.push(m));
+                        });
+                        const msg = errs.join('\n') || res.data.message || 'Validation failed.';
+                        Swal.fire({ title: 'Validation Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(msg)}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                        return;
+                    }
+
+                    if (res.data && res.data.success) {
                         // Show success SweetAlert
                         Swal.fire({
                             title: 'Success!',
-                            html: `<strong>${data.simple_batch_name}</strong> created successfully!<br><br>` +
+                            html: `<strong>${res.data.simple_batch_name}</strong> created successfully!<br><br>` +
                                 `<div style="font-size: 1.1em;">` +
-                                `Processed <strong>${data.donations_count}</strong> donations<br>` +
-                                `Totaling <strong>${data.total_volume}ml</strong>` +
+                                `Processed <strong>${res.data.donations_count}</strong> donations<br>` +
+                                `Totaling <strong>${res.data.total_volume}ml</strong>` +
                                 `</div>`,
                             icon: 'success',
                             confirmButtonText: 'OK',
@@ -1212,15 +1340,26 @@
                         }).then(() => {
                             location.reload(); // Refresh page to show updated inventory
                         });
-                    } else {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: data.error || 'Unknown error occurred',
-                            icon: 'error',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#dc2626'
-                        });
+                        return;
                     }
+
+                    // If server returned JSON with an error
+                    if (res.data && !res.data.success) {
+                        const msg = res.data.error || res.data.message || 'Failed to create pasteurization batch.';
+                        Swal.fire({ title: 'Error', text: msg, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                        return;
+                    }
+
+                    // Non-JSON or unparsable response — show a helpful error including server body (trimmed)
+                    const serverText = (res.text || '').toString();
+                    const short = serverText.length > 1000 ? serverText.substring(0, 1000) + '... (truncated)' : serverText;
+                    Swal.fire({
+                        title: 'Server Error',
+                        html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(short)}</pre>`,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#dc2626'
+                    });
                 })
                 .catch(error => {
                     Swal.fire({
@@ -1247,68 +1386,88 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Update modal title
-                    document.getElementById('batchModalTitle').textContent = `${data.batch_number} - Details`;
+                    // Normalize payload: controller may return { batch, donations } or a flat batch object
+                    const payload = data || {};
+                    const batch = payload.batch ?? payload;
+                    const donations = payload.donations ?? (Array.isArray(batch.donations) ? batch.donations : []);
 
-                    // Build the content
+                    // Determine batch number safely
+                    const batchNumber = (batch && (batch.batch_number || batch.batchNumber || batch.batch_id || batch.id)) || 'Batch';
+                    document.getElementById('batchModalTitle').textContent = `${batchNumber} - Details`;
+
+                    // Build the content to mimic the unpasteurized table alignment with per-bag lists
                     let content = '';
 
-                    if (data.notes) {
+                    if (batch && batch.notes) {
                         content += `
-                                                <div class="alert alert-info mb-4">
-                                                    <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
-                                                    <p class="mb-0">${escapeHtml(data.notes)}</p>
-                                                </div>
-                                            `;
+                        <div class="alert alert-info mb-4">
+                            <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
+                            <p class="mb-0">${escapeHtml(batch.notes)}</p>
+                        </div>`;
                     }
 
                     content += `
-                                            <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${data.donations.length})</h6>
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered table-striped align-middle">
-                                                    <thead class="table-light">
-                                                        <tr>
-                                                            <th class="text-center">Donor</th>
-                                                            <th class="text-center">Type</th>
-                                                            <th class="text-center">Bags</th>
-                                                            <th class="text-center">Volume/Bag</th>
-                                                            <th class="text-center">Total Volume</th>
-                                                            <th class="text-center">Date</th>
-                                                            <th class="text-center">Time</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                        `;
+                        <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${(donations || []).length})</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center">Donor</th>
+                                        <th class="text-center">Type</th>
+                                        <th class="text-center">Bags</th>
+                                        <th class="text-center">Volume/Bag</th>
+                                        <th class="text-center">Total Volume</th>
+                                        <th class="text-center">Date</th>
+                                        <th class="text-center">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
 
-                    data.donations.forEach(donation => {
-                        const donorName = donation.user ? `${donation.user.first_name} ${donation.user.last_name}` : 'Unknown';
-                        const donationType = donation.donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection';
-                        const badgeClass = donation.donation_method === 'walk_in' ? 'badge-primary' : 'badge-success';
-                        const date = donation.donation_date || donation.scheduled_pickup_date || '-';
-                        const time = donation.donation_time || donation.scheduled_pickup_time || '-';
+                    (donations || []).forEach(donation => {
+                        const donorName = donation.donor_name || (donation.user ? `${donation.user.first_name} ${donation.user.last_name}` : 'Unknown');
+                        const donationType = donation.donation_type || (donation.donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection');
+                        const badgeClass = (donation.donation_type && donation.donation_type.toLowerCase().includes('walk')) ? 'badge-primary' : 'badge-success';
+                        const bags = donation.number_of_bags || 1;
+                        const volumePerBag = donation.volume_per_bag || '-';
+                        const totalVol = donation.total_volume || 0;
+                        const date = donation.date || '-';
+                        const time = donation.time || '-';
+
+                        // Build per-bag volume list (volume_per_bag might be a comma-separated string)
+                        let perBagHtml = '';
+                        if (typeof volumePerBag === 'string' && volumePerBag.trim() !== '') {
+                            const parts = volumePerBag.split(/\s*,\s*/);
+                            parts.forEach(p => {
+                                perBagHtml += `<div>${escapeHtml(p)}</div>`;
+                            });
+                        } else if (Array.isArray(volumePerBag)) {
+                            volumePerBag.forEach(p => perBagHtml += `<div>${escapeHtml(p)}</div>`);
+                        } else {
+                            // Fallback: repeat dash per bag
+                            for (let i = 0; i < bags; i++) perBagHtml += `<div>-</div>`;
+                        }
+
+                        // Repeat date/time per bag for consistent alignment
+                        let dateHtml = '';
+                        let timeHtml = '';
+                        for (let i = 0; i < bags; i++) {
+                            dateHtml += `<div><small>${escapeHtml(date)}</small></div>`;
+                            timeHtml += `<div><small>${escapeHtml(time)}</small></div>`;
+                        }
 
                         content += `
-                                                <tr>
-                                                    <td>${escapeHtml(donorName)}</td>
-                                                    <td class="text-center">
-                                                        <span class="badge ${badgeClass}">${donationType}</span>
-                                                    </td>
-                                                    <td class="text-center">${donation.number_of_bags}</td>
-                                                    <td class="text-center" style="font-size: 0.85rem;">${escapeHtml(donation.bag_volumes || '-')}</td>
-                                                    <td class="text-center">
-                                                        <span class="badge badge-info">${donation.total_volume}ml</span>
-                                                    </td>
-                                                    <td class="text-center">${formatDate(date)}</td>
-                                                    <td class="text-center">${formatTime(time)}</td>
-                                                </tr>
-                                            `;
+                            <tr>
+                                <td style="white-space: normal;">${escapeHtml(donorName)}</td>
+                                <td class="text-center"><span class="badge ${badgeClass}">${escapeHtml(donationType)}</span></td>
+                                <td class="text-center">${bags}</td>
+                                <td class="text-start" style="font-size:0.9rem;">${perBagHtml}</td>
+                                <td class="text-center"><span class="badge badge-info">${totalVol}ml</span></td>
+                                <td class="text-center">${dateHtml}</td>
+                                <td class="text-center">${timeHtml}</td>
+                            </tr>`;
                     });
 
-                    content += `
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        `;
+                    content += `</tbody></table></div>`;
 
                     document.getElementById('batchDetailsContent').innerHTML = content;
                 })
@@ -1324,7 +1483,7 @@
         function formatDate(dateString) {
             if (!dateString || dateString === '-') return '-';
             try {
-                const date = new Date(dateString);
+                const date = parseYMD(dateString);
                 return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             } catch (e) {
                 return dateString;
@@ -1368,6 +1527,13 @@
                 .catch(error => {
                     console.error('Error refreshing stats:', error);
                 });
+        }
+
+        // Initialize selected volume display once page scripts have loaded
+        try {
+            updatePasteurizeButton();
+        } catch (e) {
+            // ignore if functions are not yet available
         }
     </script>
 @endsection

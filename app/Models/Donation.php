@@ -33,17 +33,39 @@ class Donation extends Model
         'pasteurization_batch_id',
         'added_to_inventory_at',
         'expiration_date',
+        // Home collection fields
+        'first_expression_date',
+        'last_expression_date',
+        'latitude',
+        'longitude',
+        'bag_details',
+        // Lifestyle/health screening questions
+        'good_health',
+        'no_smoking',
+        'no_medication',
+        'no_alcohol',
+        'no_fever',
+        'no_cough_colds',
+        'no_breast_infection',
+        'followed_hygiene',
+        'followed_labeling',
+        'followed_storage',
     ];
 
     protected $casts = [
         'donation_date' => 'date',
         'scheduled_pickup_date' => 'date',
+        'first_expression_date' => 'date',
+        'last_expression_date' => 'date',
         'individual_bag_volumes' => 'array',
+        'bag_details' => 'array',
         'total_volume' => 'decimal:2',
         'dispensed_volume' => 'decimal:2',
         'available_volume' => 'decimal:2',
         'added_to_inventory_at' => 'datetime',
         'expiration_date' => 'date',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
     ];
 
     // Relationships
@@ -255,6 +277,36 @@ class Donation extends Model
         }
         
         return false;
+    }
+
+    /**
+     * Consume volume from a specific bag index (0-based).
+     * Adjust individual_bag_volumes, available_volume and dispensed_volume accordingly.
+     */
+    public function consumeFromBag(int $bagIndex, float $amount): bool
+    {
+        $amount = (float)$amount;
+        if (empty($this->individual_bag_volumes) || !isset($this->individual_bag_volumes[$bagIndex])) {
+            return false;
+        }
+
+        $bagVol = (float)$this->individual_bag_volumes[$bagIndex];
+        if ($bagVol < $amount) {
+            return false;
+        }
+
+        // Subtract from that bag
+        $this->individual_bag_volumes[$bagIndex] = $bagVol - $amount;
+
+        // Update aggregated fields
+        $this->available_volume = max(0, (float)$this->available_volume - $amount);
+        $this->dispensed_volume = (float)($this->dispensed_volume ?? 0) + $amount;
+
+        // If bag becomes zero, decrement number_of_bags accordingly (keep integer)
+        $nonEmpty = array_filter($this->individual_bag_volumes, function ($v) { return (float)$v > 0; });
+        $this->number_of_bags = count($nonEmpty);
+
+        return $this->save();
     }
 
     public function moveToBatch(int $batchId): bool

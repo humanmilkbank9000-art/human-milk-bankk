@@ -540,13 +540,12 @@
                                         <tr>
                                             <th class="text-center">Name</th>
                                             <th class="text-center">Type</th>
+                                            <th class="text-center">Contact</th>
                                             <th class="text-center">Address</th>
                                             <th class="text-center">Location</th>
-                                            <th class="text-center">Bags</th>
-                                            <th class="text-center">Volume/Bag</th>
-                                            <th class="text-center">Total</th>
-                                            <th class="text-center">Date & Time</th>
-                                            <th class="text-center">Actions</th>
+                                            <th class="text-center">Date</th>
+                                            <th class="text-center">Total Volume</th>
+                                            <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -558,8 +557,7 @@
                                         @foreach($pendingOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }}
-                                                        {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</strong>
                                                 </td>
                                                 <td data-label="Type" class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
@@ -567,6 +565,9 @@
                                                     @else
                                                         <span class="badge bg-primary">Home Collection</span>
                                                     @endif
+                                                </td>
+                                                <td data-label="Contact" class="text-center">
+                                                    {{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
                                                     <small>
@@ -590,24 +591,7 @@
                                                         <span class="text-muted">-</span>
                                                     @endif
                                                 </td>
-                                                <td data-label="Bags" class="text-center">
-                                                    <strong>{{ $donation->number_of_bags ?? '-' }}</strong>
-                                                </td>
-                                                <td data-label="Volume/Bag" class="text-center">
-                                                    <small>
-                                                        @if($donation->individual_bag_volumes)
-                                                            {{ $donation->formatted_bag_volumes }}
-                                                        @elseif($donation->volume_per_bag)
-                                                            {{ $donation->volume_per_bag }}ml each
-                                                        @else
-                                                            -
-                                                        @endif
-                                                    </small>
-                                                </td>
-                                                <td data-label="Total" class="text-center">
-                                                    <strong>{{ $donation->formatted_total_volume ?? '-' }}ml</strong>
-                                                </td>
-                                                <td data-label="Date & Time" class="text-center">
+                                                <td data-label="Date" class="text-center">
                                                     <small>
                                                         @if($donation->donation_method === 'walk_in')
                                                             {{ $donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A' }}
@@ -621,8 +605,11 @@
                                                         @endif
                                                     </small>
                                                 </td>
-                                                <td data-label="Actions" class="text-center">
-                                                    <div class="table-actions">
+                                                <td data-label="Total Volume" class="text-center">
+                                                    <strong>{{ $donation->formatted_total_volume ?? '-' }}ml</strong>
+                                                </td>
+                                                <td data-label="Action" class="text-center">
+                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap" style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
                                                         @if($donation->donation_method === 'walk_in')
                                                             <button class="btn btn-success btn-sm px-2 validate-walk-in"
                                                                 title="Validate Walk-in" data-id="{{ $donation->breastmilk_donation_id }}"
@@ -634,7 +621,11 @@
                                                             <button class="btn btn-primary btn-sm px-2 schedule-pickup"
                                                                 title="Schedule Pickup" data-id="{{ $donation->breastmilk_donation_id }}"
                                                                 data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                                data-address="{{ $donation->user->address ?? 'Not provided' }}">
+                                                                data-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                                data-first-expression="{{ $donation->first_expression_date ? $donation->first_expression_date->format('M d, Y') : '' }}"
+                                                                data-last-expression="{{ $donation->last_expression_date ? $donation->last_expression_date->format('M d, Y') : '' }}"
+                                                                data-bag-details="{{ json_encode($donation->bag_details) }}"
+                                                                data-total="{{ $donation->total_volume }}">
                                                                 <i class="fas fa-calendar-alt"></i>
                                                                 <span class="d-none d-md-inline"> Schedule</span>
                                                             </button>
@@ -662,7 +653,12 @@
                                             @endif
                                         </div>
                                     </div>
-                                    
+
+                                    <div class="card-row">
+                                        <span class="card-label">Contact:</span>
+                                        <span class="card-value">{{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}</span>
+                                    </div>
+
                                     @if($donation->donation_method === 'home_collection')
                                         <div class="card-row">
                                             <span class="card-label">Address:</span>
@@ -683,32 +679,9 @@
                                             </div>
                                         @endif
                                     @endif
-                                    
+
                                     <div class="card-row">
-                                        <span class="card-label">Number of Bags:</span>
-                                        <span class="card-value"><strong>{{ $donation->number_of_bags ?? '-' }}</strong></span>
-                                    </div>
-                                    
-                                    <div class="card-row">
-                                        <span class="card-label">Volume per Bag:</span>
-                                        <span class="card-value">
-                                            @if($donation->individual_bag_volumes)
-                                                {{ $donation->formatted_bag_volumes }}
-                                            @elseif($donation->volume_per_bag)
-                                                {{ $donation->volume_per_bag }}ml each
-                                            @else
-                                                -
-                                            @endif
-                                        </span>
-                                    </div>
-                                    
-                                    <div class="card-row">
-                                        <span class="card-label">Total Volume:</span>
-                                        <span class="card-value"><strong>{{ $donation->formatted_total_volume ?? '-' }}ml</strong></span>
-                                    </div>
-                                    
-                                    <div class="card-row">
-                                        <span class="card-label">Date & Time:</span>
+                                        <span class="card-label">Date:</span>
                                         <span class="card-value">
                                             @if($donation->donation_method === 'walk_in')
                                                 {{ $donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A' }}
@@ -722,7 +695,12 @@
                                             @endif
                                         </span>
                                     </div>
-                                    
+
+                                    <div class="card-row">
+                                        <span class="card-label">Total Volume:</span>
+                                        <span class="card-value"><strong>{{ $donation->formatted_total_volume ?? '-' }}ml</strong></span>
+                                    </div>
+
                                     <div class="card-actions">
                                         @if($donation->donation_method === 'walk_in')
                                             <button class="btn btn-success validate-walk-in"
@@ -738,7 +716,6 @@
                                                 <i class="fas fa-calendar-alt"></i> Schedule Pickup
                                             </button>
                                         @endif
-                                            {{-- Archive disabled for pending donations --}}
                                     </div>
                                 </div>
                             @endforeach
@@ -760,20 +737,19 @@
                         <h5 class="mb-0">Scheduled Home Collection</h5>
                     </div>
                     <div class="card-body">
-                        @if($scheduledHomeCollection->count() > 0)
+                            @if($scheduledHomeCollection->count() > 0)
                             <div class="table-container table-wide">
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
-                                            <th class="text-center">Bags</th>
-                                            <th class="text-center">Volume/Bag</th>
-                                            <th class="text-center">Total</th>
+                                            <th class="text-center">Contact</th>
                                             <th class="text-center">Address</th>
-                                            <th class="text-center">Map</th>
+                                            <th class="text-center">Location</th>
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Time</th>
-                                            <th class="text-center">Actions</th>
+                                            <th class="text-center">Total volume</th>
+                                            <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -785,22 +761,15 @@
                                         @foreach($scheduledOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }}
-                                                        {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</strong>
                                                 </td>
-                                                <td data-label="Bags" class="text-center">
-                                                    <strong>{{ $donation->number_of_bags }}</strong>
-                                                </td>
-                                                <td data-label="Volume/Bag" class="text-center">
-                                                    <small>{{ $donation->formatted_bag_volumes }}</small>
-                                                </td>
-                                                <td data-label="Total" class="text-center">
-                                                    <strong>{{ $donation->formatted_total_volume }}ml</strong>
+                                                <td data-label="Contact" class="text-center">
+                                                    {{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
                                                     <small>{{ $donation->user->address ?? 'Not provided' }}</small>
                                                 </td>
-                                                <td data-label="Map" class="text-center">
+                                                <td data-label="Location" class="text-center">
                                                     @if($donation->user->latitude !== null && $donation->user->latitude !== '' && $donation->user->longitude !== null && $donation->user->longitude !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
                                                             data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
@@ -819,8 +788,11 @@
                                                 <td data-label="Time" class="text-center">
                                                     <small>{{ $donation->scheduled_pickup_time }}</small>
                                                 </td>
-                                                <td data-label="Actions" class="text-center">
-                                                    <div class="table-actions">
+                                                <td data-label="Total volume" class="text-center">
+                                                    <strong>{{ $donation->formatted_total_volume }}ml</strong>
+                                                </td>
+                                                <td data-label="Action" class="text-center">
+                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap" style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
                                                         <button class="btn btn-success btn-sm px-2 validate-home-collection"
                                                             title="Validate" data-id="{{ $donation->breastmilk_donation_id }}"
                                                             data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
@@ -828,10 +800,24 @@
                                                             data-date="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('M d, Y') : '' }}"
                                                             data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
-                                                            data-volumes="{{ json_encode($donation->individual_bag_volumes) }}"
+                                                            data-bag-details="{{ json_encode($donation->bag_details) }}"
                                                             data-total="{{ $donation->formatted_total_volume }}">
                                                             <i class="fas fa-check"></i>
                                                             <span class="d-none d-md-inline"> Validate</span>
+                                                        </button>
+                                                        
+                                                        {{-- Reschedule button for scheduled pickups --}}
+                                                        <button class="btn btn-outline-primary btn-sm px-2 reschedule-pickup"
+                                                            title="Reschedule Pickup" data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
+                                                            data-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                            data-date-iso="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('Y-m-d') : '' }}"
+                                                            data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
+                                                            data-bags="{{ $donation->number_of_bags }}"
+                                                            data-bag-details="{{ json_encode($donation->bag_details) }}"
+                                                            data-total="{{ $donation->formatted_total_volume }}">
+                                                            <i class="fas fa-calendar-alt"></i>
+                                                            <span class="d-none d-md-inline"> Reschedule</span>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -858,60 +844,48 @@
                         <h5 class="mb-0">Completed Walk-in Donations</h5>
                     </div>
                     <div class="card-body">
-                        @if($successWalkIn->count() > 0)
+                            @if($successWalkIn->count() > 0)
                             <div class="table-container table-wide">
                                 <table class="table table-striped table-hover">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
-                                            <th class="text-center">Bags</th>
-                                            <th class="text-center">Volume/Bag</th>
+                                            <th class="text-center">Address</th>
                                             <th class="text-center">Total</th>
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Time</th>
-                                            <th class="text-center">Archive</th>
+                                            <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @php
                                             $walkInOrdered = $successWalkIn instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $successWalkIn->getCollection()->sortByDesc('created_at')
-                                                : collect($successWalkIn)->sortByDesc('created_at');
+                                                ? $successWalkIn->getCollection()->sortByDesc('updated_at')
+                                                : collect($successWalkIn)->sortByDesc('updated_at');
                                         @endphp
                                         @foreach($walkInOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
                                                     {{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}
                                                 </td>
-                                                <td data-label="Bags" class="text-center">
-                                                    {{ $donation->number_of_bags ?? 'N/A' }}
-                                                </td>
-                                                <td data-label="Volume/Bag" class="text-center">
-                                                    @if($donation->individual_bag_volumes)
-                                                        {{ $donation->formatted_bag_volumes }}
-                                                    @else
-                                                        {{ $donation->volume_per_bag ?? 'N/A' }}ml each
-                                                    @endif
+                                                <td data-label="Address" class="text-center">
+                                                    <small>{{ $donation->user->address ?? 'Not provided' }}</small>
                                                 </td>
                                                 <td data-label="Total" class="text-center">
                                                     {{ $donation->formatted_total_volume ?? 'N/A' }}ml
                                                 </td>
                                                 <td data-label="Date" class="text-center">
-                                                    <small>{{ $donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A' }}</small>
+                                                    <small>{{ $donation->updated_at ? $donation->updated_at->format('M d, Y') : ($donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A') }}</small>
                                                 </td>
                                                 <td data-label="Time" class="text-center">
-                                                    <small>
-                                                        @if($donation->availability)
-                                                            {{ $donation->availability->formatted_time }}
-                                                        @elseif($donation->donation_time)
-                                                            {{ \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
-                                                        @else
-                                                            N/A
-                                                        @endif
-                                                    </small>
+                                                    <small>{{ $donation->updated_at ? $donation->updated_at->format('g:i A') : (isset($donation->donation_time) ? \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') : 'N/A') }}</small>
                                                 </td>
-                                                <td data-label="Archive" class="text-center">
-                                                    <div class="table-actions">
+                                                <td data-label="Action" class="text-center">
+                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap" style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
+                                                        <button class="btn btn-sm btn-primary me-1 view-donation" data-id="{{ $donation->breastmilk_donation_id }}" title="View donation">
+                                                            <i class="fas fa-eye"></i>
+                                                            <span class="d-none d-md-inline"> View</span>
+                                                        </button>
                                                         <button class="btn btn-sm btn-danger" onclick="archiveDonation({{ $donation->breastmilk_donation_id }})" title="Archive donation" aria-label="Archive donation">
                                                             <i class="fas fa-archive"></i>
                                                             <span class="d-none d-md-inline"> Archive</span>
@@ -947,13 +921,11 @@
                                         <tr>
                                             <th class="text-center">Name</th>
                                             <th class="text-center">Address</th>
-                                            <th class="text-center">Bags</th>
-                                            <th class="text-center">Volume/Bag</th>
-                                            <th class="text-center">Total</th>
-                                            <th class="text-center">Map</th>
+                                            <th class="text-center">Location</th>
+                                            <th class="text-center">Total volume</th>
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Time</th>
-                                            <th class="text-center">Archive</th>
+                                            <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -971,27 +943,21 @@
                                                 <td data-label="Address" class="text-center">
                                                     <small>{{ $donation->user->address ?? 'Not provided' }}</small>
                                                 </td>
-                                                <td data-label="Bags" class="text-center">
-                                                    <strong>{{ $donation->number_of_bags }}</strong>
-                                                </td>
-                                                <td data-label="Volume/Bag" class="text-center">
-                                                    <small>{{ $donation->formatted_bag_volumes }}</small>
-                                                </td>
-                                                <td data-label="Total" class="text-center">
-                                                    <strong>{{ $donation->formatted_total_volume }}ml</strong>
-                                                </td>
-                                                <td data-label="Map" class="text-center">
+                                                <td data-label="Location" class="text-center">
                                                     @if($donation->user->latitude !== null && $donation->user->latitude !== '' && $donation->user->longitude !== null && $donation->user->longitude !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
                                                             data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                             data-donor-address="{{ $donation->user->address }}"
                                                             data-latitude="{{ $donation->user->latitude }}"
                                                             data-longitude="{{ $donation->user->longitude }}">
-                                                            <i class="fas fa-map-marked-alt"></i> Map
+                                                            <i class="fas fa-map-marked-alt"></i>
                                                         </button>
                                                     @else
                                                         <span class="text-muted">-</span>
                                                     @endif
+                                                </td>
+                                                <td data-label="Total volume" class="text-center">
+                                                    <strong>{{ $donation->formatted_total_volume }}ml</strong>
                                                 </td>
                                                 <td data-label="Date" class="text-center">
                                                     <small>{{ $donation->scheduled_pickup_date->format('M d, Y') }}</small>
@@ -999,8 +965,12 @@
                                                 <td data-label="Time" class="text-center">
                                                     <small>{{ $donation->scheduled_pickup_time }}</small>
                                                 </td>
-                                                <td data-label="Archive" class="text-center">
-                                                    <div class="table-actions">
+                                                <td data-label="Action" class="text-center">
+                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap" style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
+                                                        <button class="btn btn-sm btn-primary me-1 view-donation" data-id="{{ $donation->breastmilk_donation_id }}" title="View donation">
+                                                            <i class="fas fa-eye"></i>
+                                                            <span class="d-none d-md-inline"> View</span>
+                                                        </button>
                                                         <button class="btn btn-sm btn-danger" onclick="archiveDonation({{ $donation->breastmilk_donation_id }})" title="Archive donation" aria-label="Archive donation">
                                                             <i class="fas fa-archive"></i>
                                                             <span class="d-none d-md-inline"> Archive</span>
@@ -1140,7 +1110,7 @@
         <!-- Schedule Pickup Modal -->
         <div class="modal fade" id="schedulePickupModal" tabindex="-1" aria-labelledby="schedulePickupModalLabel"
             aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="schedulePickupModalLabel">Schedule Home Collection Pickup</h5>
@@ -1149,16 +1119,59 @@
                     <form id="schedulePickupForm" method="POST">
                         @csrf
                         <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label"><strong>Donor:</strong></label>
-                                <div id="schedule-donor-name" class="form-control-plaintext"></div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label"><strong>Donor:</strong></label>
+                                    <div id="schedule-donor-name" class="form-control-plaintext"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><strong>Address:</strong></label>
+                                    <div id="schedule-donor-address" class="form-control-plaintext"></div>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label"><strong>Address:</strong></label>
-                                <div id="schedule-donor-address" class="form-control-plaintext"></div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label"><strong>First Expression Date:</strong></label>
+                                    <div id="schedule-first-expression" class="form-control-plaintext"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><strong>Last Expression Date:</strong></label>
+                                    <div id="schedule-last-expression" class="form-control-plaintext"></div>
+                                </div>
                             </div>
 
+                            <!-- Bag Details Table -->
+                            <div class="mb-3">
+                                <label class="form-label"><strong>Bag Details:</strong></label>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm" id="schedule-bag-details-table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Bag #</th>
+                                                <th>Time</th>
+                                                <th>Date</th>
+                                                <th>Volume (ml)</th>
+                                                <th>Storage</th>
+                                                <th>Temp (°C)</th>
+                                                <th>Collection Method</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="schedule-bag-details-body">
+                                            <!-- Rows will be generated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Total Volume -->
+                            <div class="alert alert-info mb-3">
+                                <strong>Total Volume:</strong> <span id="schedule-total-volume">0</span> ml
+                            </div>
+
+                            <hr>
+
+                            <h6 class="mb-3">Schedule Pickup</h6>
                             <div class="mb-3">
                                 <label for="pickup-date" class="form-label">Pickup Date <span
                                         class="text-danger">*</span></label>
@@ -1178,6 +1191,94 @@
                             <button type="submit" class="btn btn-primary">Schedule Pickup</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Donation Details Modal -->
+        <div class="modal fade" id="viewDonationModal" tabindex="-1" aria-labelledby="viewDonationModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #f8a5c2 0%, #f48fb1 100%); color: #000;">
+                        <h5 class="modal-title fw-bold" id="viewDonationModalLabel">
+                            Home Collection Success
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <!-- Loading State -->
+                        <div id="donation-loading" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">Loading donation details...</p>
+                        </div>
+
+                        <!-- Donation Details Content -->
+                        <div id="donation-details" style="display: none;">
+                            <!-- Donor Information Box -->
+                            <div class="border rounded p-3 mb-3" style="background-color: #f0f0f0;">
+                                <div class="mb-2">
+                                    <strong>Name:</strong> <span id="view-donor-name"></span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Contact:</strong> <span id="view-donor-contact"></span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Address:</strong> <span id="view-donor-address"></span>
+                                </div>
+                                <div>
+                                    <strong>Location:</strong> 
+                                    <button class="btn btn-info btn-sm ms-2" id="view-location-btn" style="display: none;">
+                                        <i class="fas fa-map-marked-alt"></i> Map
+                                    </button>
+                                    <span id="view-location-none" class="text-muted" style="display: none;">-</span>
+                                </div>
+                            </div>
+
+                            <!-- Total Bag and Volume Summary -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <strong>Total Bag:</strong> <span id="view-total-bags"></span>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Total Vol:</strong> <span id="view-total-volume"></span>
+                                </div>
+                            </div>
+
+                            <!-- Bag Details Table -->
+                            <div class="border rounded p-3" style="background-color: #ffffff;">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr class="text-center">
+                                                <th>Bag</th>
+                                                <th>Volume</th>
+                                                <th>Date</th>
+                                                <th>Time</th>
+                                                <th>Storage Location</th>
+                                                <th>Temp(°C)</th>
+                                                <th>Milk Collection Method</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="view-bag-details-body">
+                                            <!-- Bag details will be inserted here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Error State -->
+                        <div id="donation-error" class="alert alert-danger" style="display: none;" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="error-message">Failed to load donation details.</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1227,29 +1328,27 @@
                             <!-- Info Message -->
                             <div class="alert alert-info mb-4">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Edit the number of bags and volumes collected</strong> - Update the number of bags
-                                and each bag volume to reflect the actual amount collected during pickup.
+                                <strong>Review Home Collection Details</strong> - Verify all bag information collected during pickup.
                             </div>
 
-                            <!-- Number of Bags Input -->
-                            <div class="mb-3">
-                                <label for="home-bags" class="form-label fw-bold">
-                                    <i class="fas fa-shopping-bag me-2 text-primary"></i>Number of Bags <span
-                                        class="text-danger">*</span>
-                                </label>
-                                <input type="number" class="form-control" id="home-bags" name="number_of_bags" min="1"
-                                    max="20" required onchange="generateHomeBagFields()" oninput="generateHomeBagFields()">
-                                <small class="text-muted">Change this number to add or remove bag volume fields</small>
-                            </div>
-
-                            <!-- Bag Volumes Section -->
-                            <div class="mb-3">
-                                <label class="form-label fw-bold fs-5">
-                                    <i class="fas fa-flask me-2 text-primary"></i>Bag Volumes (ml)
-                                </label>
-                                <div id="home-volume-fields" class="mb-3">
-                                    <!-- Individual bag volume inputs will be generated here -->
-                                </div>
+                            <!-- Bag Details Table -->
+                            <div class="table-responsive mb-3">
+                                <table class="table table-bordered table-hover" id="home-bag-details-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width:8%">Bag #</th>
+                                            <th style="width:12%">Time</th>
+                                            <th style="width:15%">Date</th>
+                                            <th style="width:12%">Volume (ml)</th>
+                                            <th style="width:12%">Storage</th>
+                                            <th style="width:12%">Temp (°C)</th>
+                                            <th style="width:29%">Collection Method</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="home-bag-details-body">
+                                        <!-- Rows will be generated here -->
+                                    </tbody>
+                                </table>
                             </div>
 
                             <!-- Total Volume Display -->
@@ -1260,6 +1359,12 @@
                                     </label>
                                     <h2 class="mb-0 text-info fw-bold" id="home-total">0 ml</h2>
                                 </div>
+                            </div>
+                            
+                            <!-- Hidden inputs for form submission -->
+                            <input type="hidden" id="home-bags" name="number_of_bags" value="">
+                            <div id="home-volume-fields" style="display:none;">
+                                <!-- Hidden volume inputs for form submission -->
                             </div>
                         </div>
                         <div class="modal-footer bg-light">
@@ -1466,10 +1571,128 @@
                 currentDonationId = $(this).data('id');
                 const donorName = $(this).data('donor');
                 const donorAddress = $(this).data('address') || 'Not provided';
+                const firstExpression = $(this).data('first-expression') || '--';
+                const lastExpression = $(this).data('last-expression') || '--';
+                const bagDetailsRaw = $(this).attr('data-bag-details');
+                const totalVolume = $(this).data('total') || 0;
 
+                // Populate donor info
                 $('#schedule-donor-name').text(donorName);
                 $('#schedule-donor-address').text(donorAddress);
+                $('#schedule-first-expression').text(firstExpression);
+                $('#schedule-last-expression').text(lastExpression);
+
+                // Parse bag details
+                let bagDetails = [];
+                try {
+                    if (typeof bagDetailsRaw === 'string' && bagDetailsRaw.trim() !== '' && bagDetailsRaw !== 'null') {
+                        bagDetails = JSON.parse(bagDetailsRaw);
+                    } else if (Array.isArray(bagDetailsRaw)) {
+                        bagDetails = bagDetailsRaw;
+                    }
+                } catch (err) {
+                    console.warn('Failed to parse bag details for donation', currentDonationId, err);
+                    console.log('Raw bag details:', bagDetailsRaw);
+                    bagDetails = [];
+                }
+
+                console.log('Parsed bag details:', bagDetails);
+
+                // Populate bag details table
+                const tbody = $('#schedule-bag-details-body');
+                tbody.empty();
+                
+                // Helper function to format time
+                function formatTime12(t) {
+                    if (!t) return '--';
+                    if (/\b(am|pm)\b/i.test(t)) return t;
+                    const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+                    if (!m) return t;
+                    let hh = parseInt(m[1], 10);
+                    const mm = m[2];
+                    const ampm = hh >= 12 ? 'PM' : 'AM';
+                    hh = hh % 12; if (hh === 0) hh = 12;
+                    return hh + ':' + mm + ' ' + ampm;
+                }
+                
+                let total = 0;
+                if (bagDetails && bagDetails.length > 0) {
+                    bagDetails.forEach((bag, index) => {
+                        const bagNum = bag.bag_number || (index + 1);
+                        const time = formatTime12(bag.time) || '--';
+                        const date = bag.date || '--';
+                        const volume = bag.volume || 0;
+                        const storage = bag.storage_location || '--';
+                        const temp = bag.temperature || '--';
+                        const method = bag.collection_method || '--';
+                        
+                        total += parseFloat(volume) || 0;
+                        
+                        const row = `
+                            <tr>
+                                <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                <td>${time}</td>
+                                <td>${date}</td>
+                                <td class="text-end">${volume}</td>
+                                <td>${storage}</td>
+                                <td class="text-end">${temp}</td>
+                                <td><small>${method}</small></td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available (donation created before system update)</td></tr>');
+                }
+                
+                // Update total volume - use passed total if bag details not available
+                const displayTotal = total > 0 ? total : totalVolume;
+                $('#schedule-total-volume').text(parseFloat(displayTotal).toFixed(2));
+
                 $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/schedule-pickup`);
+                $('#schedulePickupModal').modal('show');
+            });
+
+            // Reschedule existing pickup - show only date/time in the schedule modal
+            $(document).on('click', '.reschedule-pickup', function () {
+                currentDonationId = $(this).data('id');
+                const dateIso = $(this).data('date-iso') || '';
+                const timeRaw = $(this).data('time') || '';
+
+                // Prefill date/time inputs; #pickup-date expects ISO yyyy-mm-dd, #pickup-time expects 24hr HH:MM
+                $('#pickup-date').val(dateIso || '');
+
+                // Convert timeRaw (possibly 'g:i A') to 24-hour HH:MM for input if necessary
+                function to24Hour(t) {
+                    if (!t) return '';
+                    if (/^\d{2}:\d{2}$/.test(t)) return t;
+                    const m = t.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+                    if (!m) return '';
+                    let hh = parseInt(m[1], 10);
+                    const mm = m[2];
+                    const ampm = m[3].toLowerCase();
+                    if (ampm === 'pm' && hh < 12) hh += 12;
+                    if (ampm === 'am' && hh === 12) hh = 0;
+                    return (hh < 10 ? '0' + hh : hh) + ':' + mm;
+                }
+
+                $('#pickup-time').val(to24Hour(timeRaw));
+
+                // Hide other modal sections so only date/time are visible
+                $('#schedule-donor-name').closest('.row').hide();
+                $('#schedule-first-expression').closest('.row').hide();
+                // hide bag details container and total volume alert
+                $('#schedule-bag-details-body').closest('.table-responsive').closest('.mb-3').hide();
+                $('#schedule-total-volume').closest('.alert').hide();
+                // hide header/label for scheduling
+                $('#schedulePickupModal').find('hr').hide();
+                $('#schedulePickupModal').find('h6.mb-3').hide();
+
+                // Set form action to reschedule endpoint and update modal title/button
+                $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/reschedule-pickup`);
+                $('#schedulePickupModalLabel').text('Reschedule Home Collection Pickup');
+                $('#schedulePickupForm button[type="submit"]').text('Reschedule Pickup');
+
                 $('#schedulePickupModal').modal('show');
             });
 
@@ -1478,7 +1701,7 @@
                 currentDonationId = $(this).data('id');
                 const donorName = $(this).data('donor');
                 const numberOfBags = $(this).data('bags');
-                const bagVolumesRaw = $(this).attr('data-volumes');
+                const bagDetailsRaw = $(this).attr('data-bag-details');
                 const totalVolume = $(this).data('total');
 
                 // Optional fields sent via data-attributes
@@ -1486,18 +1709,21 @@
                 const scheduledDate = $(this).data('date') || '';
                 const scheduledTimeRaw = $(this).data('time') || '';
 
-                // Try to parse bag volumes safely (data-volumes may be JSON string)
-                let bagVolumes = [];
+                // Try to parse bag details safely (data-bag-details may be JSON string)
+                let bagDetails = [];
                 try {
-                    if (typeof bagVolumesRaw === 'string' && bagVolumesRaw.trim() !== '') {
-                        bagVolumes = JSON.parse(bagVolumesRaw);
-                    } else if (Array.isArray(bagVolumesRaw)) {
-                        bagVolumes = bagVolumesRaw;
+                    if (typeof bagDetailsRaw === 'string' && bagDetailsRaw.trim() !== '' && bagDetailsRaw !== 'null') {
+                        bagDetails = JSON.parse(bagDetailsRaw);
+                    } else if (Array.isArray(bagDetailsRaw)) {
+                        bagDetails = bagDetailsRaw;
                     }
                 } catch (err) {
-                    console.warn('Failed to parse bag volumes for donation', currentDonationId, err);
-                    bagVolumes = [];
+                    console.warn('Failed to parse bag details for donation', currentDonationId, err);
+                    console.log('Raw bag details:', bagDetailsRaw);
+                    bagDetails = [];
                 }
+
+                console.log('Validate modal - Parsed bag details:', bagDetails);
 
                 // Set donation id and number of bags
                 $('#home-donation-id').val(currentDonationId);
@@ -1507,6 +1733,7 @@
                 $('#validate-home-donor-name').val(donorName || '');
                 $('#validate-home-donor-address').val(donorAddress || '');
                 $('#validate-home-date').val(scheduledDate || '');
+                
                 // Format time to 12-hour with AM/PM if possible
                 function formatTime12(t) {
                     if (!t) return '';
@@ -1528,11 +1755,51 @@
                 // Set form action
                 $('#validateHomeCollectionForm').attr('action', `/admin/donations/${currentDonationId}/validate-pickup`);
 
-                // Store original volumes for pre-population
-                currentOriginalVolumes = bagVolumes || [];
+                // Populate bag details table
+                const tbody = $('#home-bag-details-body');
+                tbody.empty();
+                
+                let totalVol = 0;
+                const volumeFieldsContainer = $('#home-volume-fields');
+                volumeFieldsContainer.empty();
 
-                // Generate bag fields with existing data
-                generateHomeBagFields();
+                if (bagDetails && bagDetails.length > 0) {
+                    bagDetails.forEach((bag, index) => {
+                        const bagNum = bag.bag_number || (index + 1);
+                        const time = formatTime12(bag.time) || '--';
+                        const date = bag.date || '--';
+                        const volume = bag.volume || 0;
+                        const storage = bag.storage_location || '--';
+                        const temp = bag.temperature || '--';
+                        const method = bag.collection_method || '--';
+                        
+                        totalVol += parseFloat(volume) || 0;
+                        
+                        // Add row to table
+                        const row = `
+                            <tr>
+                                <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                <td>${time}</td>
+                                <td>${date}</td>
+                                <td class="text-end">${volume}</td>
+                                <td>${storage}</td>
+                                <td class="text-end">${temp}</td>
+                                <td><small>${method}</small></td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                        
+                        // Add hidden input for volume (for form submission)
+                        volumeFieldsContainer.append(`<input type="hidden" name="bag_volumes[]" value="${volume}">`);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available (donation created before system update)</td></tr>');
+                    // If no bag details, use total volume from data attribute
+                    totalVol = totalVolume || 0;
+                }
+                
+                // Update total display
+                $('#home-total').text(totalVol.toFixed(2) + ' ml');
 
                 $('#home-form-error').hide().text('');
                 $('#validateHomeCollectionModal').modal('show');
@@ -1675,21 +1942,30 @@
             $('#schedulePickupForm').submit(function (e) {
                 e.preventDefault();
                 const submitBtn = $(this).find('button[type="submit"]');
-                submitBtn.prop('disabled', true).text('Scheduling...');
+
+                const action = $(this).attr('action') || '';
+                const isReschedule = action.indexOf('/reschedule-pickup') !== -1;
+
+                // Use different texts depending on scheduling vs rescheduling
+                const busyText = isReschedule ? 'Rescheduling...' : 'Scheduling...';
+                const idleText = isReschedule ? 'Reschedule Pickup' : 'Schedule Pickup';
+                const successTitle = isReschedule ? 'Pickup rescheduled' : 'Pickup scheduled';
+                const successDefault = isReschedule ? 'Pickup rescheduled successfully.' : 'Pickup scheduled successfully.';
+
+                submitBtn.prop('disabled', true).text(busyText);
 
                 $.ajax({
-                    url: $(this).attr('action'),
+                    url: action,
                     method: 'POST',
                     data: $(this).serialize(),
                     success: function (response) {
-                        if (response.success) {
-                            // Close modal first, then show SweetAlert
+                        if (response && response.success) {
                             $('#schedulePickupModal').modal('hide');
                             setTimeout(() => {
                                 Swal.fire({
                                     icon: 'success',
-                                    title: 'Pickup scheduled',
-                                    text: response.message || 'Pickup scheduled successfully.',
+                                    title: successTitle,
+                                    text: response.message || successDefault,
                                     timer: 1400,
                                     showConfirmButton: false
                                 }).then(() => {
@@ -1700,14 +1976,19 @@
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                text: response.message || 'An error occurred.'
+                                text: (response && response.message) ? response.message : 'An error occurred.'
                             });
-                            submitBtn.prop('disabled', false).text('Schedule Pickup');
+                            submitBtn.prop('disabled', false).text(idleText);
                         }
                     },
-                    error: function () {
-                        alert('An error occurred. Please try again.');
-                        submitBtn.prop('disabled', false).text('Schedule Pickup');
+                    error: function (xhr) {
+                        const msg = xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: msg
+                        });
+                        submitBtn.prop('disabled', false).text(idleText);
                     }
                 });
             });
@@ -1796,6 +2077,24 @@
             $('#walkin-donation-id').val('');
             $('#validateWalkInForm').attr('action', '');
             $(this).find('button[type="submit"]').prop('disabled', false);
+        });
+
+        // Reset schedule modal to default when closed (restore title, button text, action)
+        $('#schedulePickupModal').on('hidden.bs.modal', function () {
+            $('#schedulePickupModalLabel').text('Schedule Home Collection Pickup');
+            $('#schedulePickupForm button[type="submit"]').text('Schedule Pickup');
+            $('#schedulePickupForm').attr('action', '');
+            $('#pickup-date').val('');
+            $('#pickup-time').val('');
+            $('#schedule-bag-details-body').empty();
+            $('#schedule-total-volume').text('0');
+            // Ensure all sections are visible again (in case reschedule hid some)
+            $('#schedule-donor-name').closest('.row').show();
+            $('#schedule-first-expression').closest('.row').show();
+            $('#schedule-bag-details-body').closest('.table-responsive').closest('.mb-3').show();
+            $('#schedule-total-volume').closest('.alert').show();
+            $('#schedulePickupModal').find('hr').show();
+            $('#schedulePickupModal').find('h6.mb-3').show();
         });
 
         $('#validateHomeCollectionModal').on('hidden.bs.modal', function () {
@@ -1986,6 +2285,132 @@
 
     <!-- Include Location Modal -->
     @include('partials.location-modal')
+    
+    <script>
+        // View Donation Details Handler
+        $(document).on('click', '.view-donation', function() {
+            const donationId = $(this).data('id');
+            
+            // Show modal and reset states
+            $('#viewDonationModal').modal('show');
+            $('#donation-loading').show();
+            $('#donation-details').hide();
+            $('#donation-error').hide();
+            $('#view-location-btn').hide();
+            $('#view-location-none').hide();
+            
+            // Fetch donation details
+            $.ajax({
+                url: `/admin/donations/${donationId}`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.donation) {
+                        const donation = response.donation;
+                        
+                        // Populate donor information
+                        $('#view-donor-name').text(donation.donor_name || 'N/A');
+                        $('#view-donor-contact').text(donation.contact || 'N/A');
+                        $('#view-donor-address').text(donation.address || 'Not provided');
+                        
+                        // Handle location data
+                        if (donation.latitude && donation.longitude) {
+                            $('#view-location-btn').show().off('click').on('click', function() {
+                                showLocationModal(
+                                    donation.donor_name,
+                                    donation.address,
+                                    parseFloat(donation.latitude),
+                                    parseFloat(donation.longitude)
+                                );
+                            });
+                        } else {
+                            $('#view-location-none').show();
+                        }
+                        
+                        // Populate totals
+                        $('#view-total-bags').text(donation.number_of_bags || 0);
+                        $('#view-total-volume').text(donation.total_volume || 'N/A');
+                        
+                        // Populate bag details table
+                        const bagDetailsBody = $('#view-bag-details-body');
+                        bagDetailsBody.empty();
+                        
+                        if (donation.bag_details && donation.bag_details.length > 0) {
+                            donation.bag_details.forEach((bag, index) => {
+                                const bagNum = bag.bag_number || (index + 1);
+                                const volume = bag.volume || 0;
+                                const date = bag.date || donation.donation_date || 'N/A';
+                                const time = bag.time || donation.donation_time || 'N/A';
+                                const storage = bag.storage_location || '-';
+                                const temp = bag.temperature || '-';
+                                const method = bag.collection_method || '-';
+                                
+                                const row = `
+                                    <tr class="text-center">
+                                        <td>${bagNum}</td>
+                                        <td>${volume}</td>
+                                        <td>${date}</td>
+                                        <td>${time}</td>
+                                        <td>${storage}</td>
+                                        <td>${temp}</td>
+                                        <td>${method}</td>
+                                    </tr>
+                                `;
+                                bagDetailsBody.append(row);
+                            });
+                        } else {
+                            // If no bag details, create rows based on number of bags
+                            const numBags = donation.number_of_bags || 0;
+                            if (numBags > 0) {
+                                for (let i = 1; i <= numBags; i++) {
+                                    const row = `
+                                        <tr class="text-center">
+                                            <td>${i}</td>
+                                            <td>120</td>
+                                            <td>${donation.donation_date || 'N/A'}</td>
+                                            <td>${donation.donation_time || 'N/A'}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                        </tr>
+                                    `;
+                                    bagDetailsBody.append(row);
+                                }
+                            } else {
+                                bagDetailsBody.append(`
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">No bag details available</td>
+                                    </tr>
+                                `);
+                            }
+                        }
+                        
+                        // Show details, hide loading
+                        $('#donation-loading').hide();
+                        $('#donation-details').show();
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching donation details:', error);
+                    $('#donation-loading').hide();
+                    $('#error-message').text(xhr.responseJSON?.message || 'Failed to load donation details. Please try again.');
+                    $('#donation-error').show();
+                }
+            });
+        });
+        
+        // Reset modal when closed
+        $('#viewDonationModal').on('hidden.bs.modal', function() {
+            $('#donation-loading').show();
+            $('#donation-details').hide();
+            $('#donation-error').hide();
+            $('#view-bag-details-body').empty();
+            $('#view-location-btn').hide().off('click');
+            $('#view-location-none').hide();
+        });
+    </script>
+    
     <script>
         function archiveDonation(id) {
             if (typeof Swal !== 'undefined') {

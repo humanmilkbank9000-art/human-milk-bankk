@@ -45,7 +45,41 @@ return new class extends Migration
             
             // Volume fields - can be filled by user (home collection) or admin (walk-in)
             $table->integer('number_of_bags')->nullable();
-            $table->json('individual_bag_volumes')->nullable()->comment('Array of individual bag volumes');
+            
+            // Home collection expression dates
+            $table->date('first_expression_date')->nullable();
+            $table->date('last_expression_date')->nullable();
+            
+            // Home collection location
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            
+            // Bag details stored as JSON (flexible for any number of bags)
+            // Each array element corresponds to one bag with the following structure:
+            // [{time: "14:30", date: "2025-10-30", volume: 150, storage_location: "REF", temperature: 4, collection_method: "Manual hands expression"}, ...]
+            $table->json('bag_details')->nullable()->comment('Array of bag objects containing time, date, volume, storage_location, temperature, collection_method');
+            
+            // Lifestyle/health screening questions for home collection
+            $table->enum('good_health', ['YES', 'NO'])->nullable()
+                ->comment('I am in good health (Maayo akong kahimtang sa akong kalawasan)');
+            $table->enum('no_smoking', ['YES', 'NO'])->nullable()
+                ->comment('I do not smoke (Dili ako gapangarilyo)');
+            $table->enum('no_medication', ['YES', 'NO'])->nullable()
+                ->comment('I am not taking medication or herbal supplements (Dili ako gatumar ug mga tambal o supplements)');
+            $table->enum('no_alcohol', ['YES', 'NO'])->nullable()
+                ->comment('I am not consuming alcohol (Dili ako gainom ug alkohol)');
+            $table->enum('no_fever', ['YES', 'NO'])->nullable()
+                ->comment('I have not had a fever (Wala ako naghilanat)');
+            $table->enum('no_cough_colds', ['YES', 'NO'])->nullable()
+                ->comment('I have not had cough or colds (Wala ako mag-ubo o sip-on)');
+            $table->enum('no_breast_infection', ['YES', 'NO'])->nullable()
+                ->comment('I have no breast infections (Wala ako impeksyon sa akong totoy)');
+            $table->enum('followed_hygiene', ['YES', 'NO'])->nullable()
+                ->comment('I have followed all hygiene instructions (Gisunod nako ang tanan mga instruksyon tumong sa kalimpyohanon)');
+            $table->enum('followed_labeling', ['YES', 'NO'])->nullable()
+                ->comment('I have followed all labeling instructions (Gisunod nako ang tanan mga instruksyon tumong sa pagmarka)');
+            $table->enum('followed_storage', ['YES', 'NO'])->nullable()
+                ->comment('I have followed all storage instructions (Gisunod nako ang tanan mga instruksyon tumong sa pag-tipig sa gatas)');
             
             // Volume tracking fields - CRITICAL: Do not confuse these fields
             $table->decimal('total_volume', 10, 2)->nullable()
@@ -82,6 +116,7 @@ return new class extends Migration
                 ->comment('Expiration date: 6 months from donation date for unpasteurized, 1 year for pasteurized');
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

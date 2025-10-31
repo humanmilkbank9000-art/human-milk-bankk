@@ -11,8 +11,6 @@ class Availability extends Model
 
     protected $fillable = [
         'available_date',
-        'start_time',
-        'end_time',
         'status',
         'notes'
     ];
@@ -40,18 +38,12 @@ class Availability extends Model
     public function scopeFuture($query)
     {
         $now = Carbon::now();
-        return $query->where(function ($q) use ($now) {
-            $q->where('available_date', '>', $now->toDateString())
-              ->orWhere(function ($subQ) use ($now) {
-                  $subQ->where('available_date', '=', $now->toDateString())
-                       ->where('start_time', '>', $now->format('H:i'));
-              });
-        });
+        return $query->where('available_date', '>=', $now->toDateString());
     }
 
     public function scopeOrderByTime($query)
     {
-        return $query->orderBy('available_date')->orderBy('start_time');
+        return $query->orderBy('available_date');
     }
 
     // Status checking methods
@@ -76,22 +68,17 @@ class Availability extends Model
         return Carbon::parse($this->available_date)->format('l');
     }
 
-    public function getTimeSlotAttribute()
-    {
-        if (empty($this->start_time) || empty($this->end_time)) return '';
-        return $this->start_time . ' - ' . $this->end_time;
-    }
-
     public function getFormattedDateAttribute()
     {
         return Carbon::parse($this->available_date)->format('M d, Y');
     }
 
+    // The system uses date-only availability; provide a friendly default time for displays
     public function getFormattedTimeAttribute()
     {
-        if (empty($this->start_time) || empty($this->end_time)) return '';
-        return Carbon::parse($this->start_time)->format('g:i A') . ' - ' . 
-               Carbon::parse($this->end_time)->format('g:i A');
+        // Return empty string if you prefer hiding time in UIs
+        // return '';
+        return '9:00 AM';
     }
 
     public function isBookable()

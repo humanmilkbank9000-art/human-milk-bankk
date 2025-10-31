@@ -103,9 +103,10 @@ class BreastmilkRequestController extends Controller
             $breastmilkRequest = $result['request'];
             $availability = $result['availability'];
 
+            $timePart = !empty($availability->formatted_time) ? ' at ' . $availability->formatted_time : '';
             return redirect()->route('user.my-requests')
                 ->with('success', 'Breastmilk request submitted successfully! Your appointment is scheduled for ' . 
-                    $availability->formatted_date . ' at ' . $availability->formatted_time . '. Please bring the original prescription.');
+                    $availability->formatted_date . $timePart . '. Please bring the original prescription.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -550,15 +551,17 @@ class BreastmilkRequestController extends Controller
                 ->with(['user'])
                 ->orderBy('donation_date', 'asc')
                 ->get()
-                ->map(function ($donation) {
-                    return [
-                        'breastmilk_donation_id' => $donation->breastmilk_donation_id,
-                        'donor_name' => ($donation->user->first_name ?? 'Anonymous') . ' ' . ($donation->user->last_name ?? ''),
-                        'donation_method' => ucfirst(str_replace('_', ' ', $donation->donation_method ?? 'N/A')),
-                        'available_volume' => $donation->available_volume,
-                        'donation_date' => $donation->donation_date ? Carbon::parse($donation->donation_date)->format('M d, Y') : 'N/A',
-                    ];
-                });
+                    ->map(function ($donation) {
+                        return [
+                            'breastmilk_donation_id' => $donation->breastmilk_donation_id,
+                            'donor_name' => ($donation->user->first_name ?? 'Anonymous') . ' ' . ($donation->user->last_name ?? ''),
+                            'donation_method' => ucfirst(str_replace('_', ' ', $donation->donation_method ?? 'N/A')),
+                            'available_volume' => $donation->available_volume,
+                            'donation_date' => $donation->donation_date ? Carbon::parse($donation->donation_date)->format('M d, Y') : 'N/A',
+                            'number_of_bags' => $donation->number_of_bags,
+                            'individual_bag_volumes' => $donation->individual_bag_volumes ?? []
+                        ];
+                    });
 
             return response()->json(['donations' => $donations]);
         } elseif ($milkType === 'pasteurized') {
@@ -581,6 +584,33 @@ class BreastmilkRequestController extends Controller
         }
 
         return response()->json(['error' => 'Invalid milk type'], 400);
+    }
+
+    /**
+     * AJAX: check if a contact number already exists in users table
+     */
+    public function checkContact(Request $request)
+    {
+        if (!Session::has('account_id') || Session::get('account_role') !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $contact = $request->get('contact');
+        if (!$contact) {
+            return response()->json(['error' => 'Missing contact parameter'], 400);
+        }
+
+        $user = \App\Models\User::where('contact_number', $contact)->first();
+        if ($user) {
+            return response()->json(['exists' => true, 'user' => [
+                'user_id' => $user->user_id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'contact_number' => $user->contact_number,
+            ]]);
+        }
+
+        return response()->json(['exists' => false]);
     }
     private function deductPasteurizedInventory($volumeNeeded, $dispensedId)
     {
@@ -608,6 +638,175 @@ class BreastmilkRequestController extends Controller
             ]);
 
             $remainingVolume -= $volumeToTake;
+        }
+    }
+
+    public function storeAssisted(Request $request)
+    {
+        // Validate admin access
+        if (!Session::has('account_id') || Session::get('account_role') !== 'admin') {
+            return redirect()->route('login')->with('error', 'Unauthorized access.');
+        }
+
+        // Validate request data
+        $validated = $request->validate([
+            'guardian_first_name' => 'required|string|max:255',
+            'guardian_last_name' => 'required|string|max:255',
+            // enforce normalized mobile format (e.g., 09XXXXXXXXX) and max length
+            'guardian_contact' => ['required','string','max:20','regex:/^09\d{9}$/'],
+            'infant_first_name' => 'required|string|max:255',
+            'infant_last_name' => 'required|string|max:255',
+            'infant_date_of_birth' => 'required|date|before_or_equal:today',
+            'infant_sex' => 'required|in:Male,Female',
+            'infant_weight' => 'required|numeric|min:0.5|max:20',
+            'medical_condition' => 'required|string',
+            'prescription' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'request_date' => 'required|date',
+            'volume_needed' => 'required|numeric|min:1',
+            'milk_type' => 'required|in:unpasteurized,pasteurized',
+            'admin_notes' => 'nullable|string'
+            // optional fields for immediate dispensing when assisting
+            ,'dispense_now' => 'nullable|in:1',
+            'selected_sources_json' => 'nullable|string'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Check if user exists by contact number
+            $user = \App\Models\User::where('contact_number', $validated['guardian_contact'])->first();
+
+            // If user exists but provided name does not match, prevent accidental duplicate/linking
+            if ($user && (trim(strtolower($user->first_name)) !== trim(strtolower($validated['guardian_first_name'])) || trim(strtolower($user->last_name)) !== trim(strtolower($validated['guardian_last_name'])))) {
+                DB::rollBack();
+                return redirect()->back()->withInput()->with('error', 'The contact number you entered is already registered to another user (Name: ' . ($user->first_name ?? '') . ' ' . ($user->last_name ?? '') . '). If you intend to link to that user, enter their exact name; otherwise use a different contact number.');
+            }
+
+            // If user doesn't exist, create a new one
+            if (!$user) {
+                $user = \App\Models\User::create([
+                    'first_name' => $validated['guardian_first_name'],
+                    'last_name' => $validated['guardian_last_name'],
+                    'contact_number' => $validated['guardian_contact'],
+                    'email' => null, // Walk-in users may not have email
+                    'password' => bcrypt('temporary_password_' . time()), // Temporary password
+                    'role' => 'user',
+                    'status' => 'walk_in', // Mark as walk-in user
+                    'email_verified_at' => null
+                ]);
+            }
+
+            // Create infant record
+            $infant = Infant::create([
+                'user_id' => $user->user_id,
+                'first_name' => $validated['infant_first_name'],
+                'last_name' => $validated['infant_last_name'],
+                'date_of_birth' => $validated['infant_date_of_birth'],
+                'sex' => $validated['infant_sex'],
+                'birth_weight' => $validated['infant_weight'],
+                'current_weight' => $validated['infant_weight']
+            ]);
+
+            // Handle prescription upload
+            $prescriptionPath = null;
+            if ($request->hasFile('prescription')) {
+                $file = $request->file('prescription');
+                $prescriptionPath = $file->store('prescriptions', 'public');
+            }
+
+            // Create breastmilk request
+            $breastmilkRequest = BreastmilkRequest::create([
+                'user_id' => $user->user_id,
+                'infant_id' => $infant->infant_id,
+                'request_date' => $validated['request_date'],
+                'request_time' => now()->format('H:i:s'),
+                'volume_requested' => $validated['volume_needed'],
+                'milk_type' => $validated['milk_type'],
+                'prescription_path' => $prescriptionPath,
+                'status' => 'pending',
+                'admin_notes' => 'Medical Condition: ' . $validated['medical_condition'] . 
+                    ($validated['admin_notes'] ? "\nStaff Notes: " . $validated['admin_notes'] : ''),
+                'assisted_by_admin' => Session::get('account_id'), // Track which admin assisted
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            DB::commit();
+
+            // If admin chose to dispense immediately, attempt to record dispensing
+            if ($request->has('dispense_now') && $request->input('dispense_now') == '1') {
+                $selectedJson = $request->input('selected_sources_json');
+                $sources = [];
+                if ($selectedJson) {
+                    $decoded = json_decode($selectedJson, true);
+                    if (is_array($decoded)) {
+                        // normalize sources: expect {type,id,volume}
+                        foreach ($decoded as $s) {
+                            if (!empty($s['type']) && !empty($s['id']) && !empty($s['volume'])) {
+                                $sources[] = [
+                                    'type' => $s['type'],
+                                    'id' => $s['id'],
+                                    'volume' => (float)$s['volume']
+                                ];
+                            }
+                        }
+                    }
+                }
+
+                if (empty($sources)) {
+                    // no sources selected — inform admin
+                    return redirect()->route('admin.request')
+                        ->with('warning', 'Assisted request created but no inventory sources were selected for immediate dispensing.');
+                }
+
+                try {
+                    // Use the same approval+dispense flow used by admins when approving user requests
+                    $adminId = Session::get('account_id');
+                    // Normalize selected sources to selected_items expected by approveAndDispense
+                    $selectedItems = [];
+                    foreach ($sources as $s) {
+                        $si = ['id' => $s['id'], 'volume' => $s['volume']];
+                        if (isset($s['bag_index'])) $si['bag_index'] = (int)$s['bag_index'];
+                        $selectedItems[] = $si;
+                    }
+
+                    $payload = [
+                        'volume_requested' => $validated['volume_needed'],
+                        'milk_type' => $validated['milk_type'],
+                        'selected_items' => $selectedItems,
+                        'admin_notes' => $validated['admin_notes'] ?? null
+                    ];
+
+                    $this->service->approveAndDispense($breastmilkRequest, $payload, $adminId);
+
+                    return redirect()->route('admin.request')
+                        ->with('success', 'Assisted request submitted and dispensed successfully for ' . $validated['guardian_first_name'] . ' ' . $validated['guardian_last_name']);
+                } catch (\Exception $e) {
+                    Log::error('Error dispensing during assisted request: ' . $e->getMessage());
+                    // Dispense failed but request created — notify admin and redirect
+                    return redirect()->route('admin.request')
+                        ->with('error', 'Assisted request was created but dispensing failed: ' . $e->getMessage());
+                }
+            }
+
+            // Notify all admins about the new assisted request
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                $admin->notify(new SystemAlert(
+                    'New Assisted Walk-in Request',
+                    'A new breastmilk request has been submitted by staff for ' . $validated['guardian_first_name'] . ' ' . $validated['guardian_last_name']
+                ));
+            }
+
+            return redirect()->route('admin.request')
+                ->with('success', 'Assisted request submitted successfully for ' . $validated['guardian_first_name'] . ' ' . $validated['guardian_last_name']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating assisted request: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to submit assisted request. Please try again.');
         }
     }
 }

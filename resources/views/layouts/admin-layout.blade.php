@@ -870,6 +870,18 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
     </script>
     <!-- Responsive Tables JavaScript -->
     <script src="{{ asset('js/responsive-tables.js') }}?v={{ time() }}"></script>
+    <!-- Global date utils: parse YYYY-MM-DD into a local Date to avoid TZ shifts -->
+    <script>
+        function parseYMD(s) {
+            if (!s || typeof s !== 'string') return new Date(NaN);
+            const parts = s.split('-');
+            if (parts.length !== 3) return new Date(s);
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            return new Date(y, m, d);
+        }
+    </script>
     @yield('scripts')
     {{-- logout confirmation now handled in header partial --}}
 </body>

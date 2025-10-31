@@ -21,27 +21,21 @@ class AvailabilityController extends Controller
         $data = $request->validated();
 
         try {
-            // If time array provided (backwards compatibility), create time slots.
-            if (!empty($data['time']) && is_array($data['time'])) {
-                $result = $this->service->createSlots($data['date'], $data['time']);
-            } else {
-                // Create a date-only availability entry
-                $result = $this->service->createDateAvailability($data['date']);
-            }
+            $result = $this->service->createDateAvailability($data['date']);
 
             $message = 'Availability saved successfully!';
-            if (!empty($result['savedSlots'])) {
-                $message .= ' Slots added: ' . implode(', ', $result['savedSlots']) . '.';
-            }
-            if (!empty($result['duplicateSlots'])) {
-                $message .= ' Note: Some slots already existed: ' . implode(', ', $result['duplicateSlots']) . '.';
+            if (!empty($result['reopened'])) {
+                $message = 'Existing date re-opened for bookings.';
+            } elseif (!empty($result['duplicates'])) {
+                $message = 'This date already has availability set.';
             }
 
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'savedSlots' => $result['savedSlots'],
-                'duplicateSlots' => $result['duplicateSlots'],
+                'saved' => $result['saved'],
+                'duplicates' => $result['duplicates'],
+                'reopened' => $result['reopened'] ?? [],
             ]);
         } catch (\Exception $e) {
             Log::error('Availability store error: ' . $e->getMessage());
@@ -68,17 +62,39 @@ class AvailabilityController extends Controller
         ]);
     }
 
-    // For future use - remove availability slot
-    public function destroy($id)
+    // Remove availability date
+    public function destroy(Request $request, $id)
     {
         try {
             $this->service->deleteSlot((int) $id);
-            return redirect()->back()->with('success', 'Time slot removed successfully!');
+
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Availability date removed successfully!'
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Availability date removed successfully!');
         } catch (\RuntimeException $e) {
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 409);
+            }
+
             return redirect()->back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             Log::error('Availability delete error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Unable to remove time slot');
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unable to remove availability date'
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Unable to remove availability date');
         }
     }
 }

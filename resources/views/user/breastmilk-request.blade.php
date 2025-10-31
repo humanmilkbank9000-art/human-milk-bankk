@@ -714,6 +714,15 @@
             }
 
             // Calendar functionality (same as donation)
+            function toLocalYMD(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            // parseYMD is provided globally by the layout to avoid duplication
+
             function generateCalendar() {
                 const calendarContainer = document.getElementById('appointment-calendar');
                 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -722,7 +731,8 @@
 
                 const firstDay = new Date(currentYear, currentMonth, 1);
                 const lastDay = new Date(currentYear, currentMonth + 1, 0);
-                const today = new Date();
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
                 let calendarHTML = `
                                             <div class="calendar-header">
@@ -746,8 +756,8 @@
                     const date = new Date(startDate);
                     date.setDate(startDate.getDate() + i);
                     const day = date.getDate();
-                    const dateString = date.toISOString().split('T')[0];
-                    const isPast = date < today.setHours(0, 0, 0, 0);
+                    const dateString = toLocalYMD(date);
+                    const isPast = date < today;
                     const isCurrentMonth = date.getMonth() === currentMonth;
                     const isAvailable = availableDates.includes(dateString);
                     const isSelected = selectedDate === dateString;
@@ -793,14 +803,15 @@
                     fetch(`/admin/availability/slots?date=${dateString}`)
                         .then(response => response.json())
                         .then(data => {
-                            if (data.available_slots && data.available_slots.length > 0) {
-                                selectedAvailabilityId = data.available_slots[0].id;
-                                document.getElementById('selected_availability_id').value = selectedAvailabilityId;
-                                const appointmentDetails = document.getElementById('appointment-details');
-                                appointmentDetails.innerHTML = `<strong>Date:</strong> ${new Date(dateString).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
-                                document.getElementById('selected-appointment-info').style.display = 'block';
-                                document.getElementById('nextToPrescription').disabled = false;
-                            } else {
+                                if (data.available_slots && data.available_slots.length > 0) {
+                                    selectedAvailabilityId = data.available_slots[0].id;
+                                    document.getElementById('selected_availability_id').value = selectedAvailabilityId;
+                                    const appointmentDetails = document.getElementById('appointment-details');
+                                    const parsed = parseYMD(dateString);
+                                    appointmentDetails.innerHTML = `<strong>Date:</strong> ${parsed.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+                                    document.getElementById('selected-appointment-info').style.display = 'block';
+                                    document.getElementById('nextToPrescription').disabled = false;
+                                } else {
                                 selectedAvailabilityId = null;
                                 document.getElementById('selected_availability_id').value = '';
                                 document.getElementById('selected-appointment-info').style.display = 'none';
@@ -829,8 +840,9 @@
 
                 // Show appointment details
                 const appointmentDetails = document.getElementById('appointment-details');
+                const parsed = parseYMD(date);
                 appointmentDetails.innerHTML = `
-                                                                <strong>Date:</strong> ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+                                                                <strong>Date:</strong> ${parsed.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
                                                                 <strong>Time:</strong> ${formattedTime}
                                                             `;
                 document.getElementById('selected-appointment-info').style.display = 'block';

@@ -792,7 +792,7 @@
 
                             <div class="tab-navigation-buttons">
                                 <button type="button" class="btn btn-secondary" onclick="previousTab('sexual-history-tab')">← Previous</button>
-                                <button type="button" class="btn btn-success" onclick="showReviewModal()">Review & Submit</button>
+                                <button type="button" class="btn btn-success" onclick="showReviewModal()">Review</button>
                             </div>
                         </div>
 
@@ -834,14 +834,30 @@
                             Bank and Lactation Support Center (HMB-LSC). I have read and understood the information
                             relayed to me and/or the learning materials given to me by the HMB-LSC staff.
                         </p>
+                        <p><em>
+                            Nagpamatuod nga ako usa ka tao na posibleng maka donor sa gatas para sa human milk bank,
+                            Akong nabasa og nasabtan tanan ang mga nakasulat nini pinaagi sa pag splekar og pagpasabot
+                            sa ako pinaagi sa bisaya nga pagstorya. Og ako nanumpa nga akong natubag ang mga
+                            pangutana nga matuod og sigun sa akong kaalam.
+                        </em></p>
+
                         <p>
                             I confirm that I will answer the Donor's Screening Questionnaire truthfully and to the best of my
                             knowledge.
                         </p>
+                        <p><em>
+                            Gikumpirma nako nga akong tubagon ang mga pangutana sa Donor's Screening Questionnaire
+                            nga matinud-anon og sa labing maayo sa akong kahibalo.
+                        </em></p>
+
                         <p>
                             I consent to an orientation on guidelines for milk donation to be able to ensure proper and clean
                             collection of milk prior to its pasteurization.
                         </p>
+                        <p><em>
+                            Nisugot ko sa mga gabayan sa pagdonar sa gatas sa inahan para masiguro ang ensakto og
+                            limpyo nga pagkuha niini bag o paman kini i proseso.
+                        </em></p>
                         <div class="form-check mt-3">
                             <input class="form-check-input" type="checkbox" value="1" id="consentCheckbox">
                             <label class="form-check-label" for="consentCheckbox">

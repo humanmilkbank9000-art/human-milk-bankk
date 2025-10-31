@@ -44,8 +44,8 @@ class DonationService
                 DB::rollBack();
                 throw new \RuntimeException('The selected time slot is no longer available.');
             }
-
-            $availability->markAsBooked();
+            // Do NOT mark the availability as booked so multiple users can select the same date.
+            // Keeping status as 'available' allows multi-book per day while admin can still block dates when needed.
 
             Donation::create([
                 'health_screening_id' => $healthScreening->health_screening_id,
@@ -72,9 +72,32 @@ class DonationService
 
     protected function createHomeCollection(array $data, $healthScreening, int $userId)
     {
-        if (count($data['bag_volumes'] ?? []) !== (int)($data['number_of_bags'] ?? 0)) {
-            throw new \RuntimeException('Number of bag volumes must match the number of bags.');
+        // Prepare bag details from the form data
+        $bagDetails = [];
+        $bagTimes = $data['bag_time'] ?? [];
+        $bagDates = $data['bag_date'] ?? [];
+        $bagNumbers = $data['bag_number'] ?? [];
+        $bagVolumes = $data['bag_volume'] ?? [];
+        $bagStorage = $data['bag_storage'] ?? [];
+        $bagTemps = $data['bag_temp'] ?? [];
+        $bagMethods = $data['bag_method'] ?? [];
+
+        $numberOfBags = count($bagVolumes);
+        
+        for ($i = 0; $i < $numberOfBags; $i++) {
+            $bagDetails[] = [
+                'bag_number' => $bagNumbers[$i] ?? ($i + 1),
+                'time' => $bagTimes[$i] ?? null,
+                'date' => $bagDates[$i] ?? null,
+                'volume' => $bagVolumes[$i] ?? null,
+                'storage_location' => $bagStorage[$i] ?? null,
+                'temperature' => $bagTemps[$i] ?? null,
+                'collection_method' => $bagMethods[$i] ?? null,
+            ];
         }
+
+        // Calculate total volume
+        $totalVolume = array_sum($bagVolumes);
 
         $donation = new Donation();
         $donation->health_screening_id = $healthScreening->health_screening_id;
@@ -82,7 +105,17 @@ class DonationService
         $donation->user_id = $userId;
         $donation->donation_method = 'home_collection';
         $donation->status = 'pending_home_collection';
-        $donation->setBagVolumes($data['bag_volumes'] ?? []);
+        
+        // Home collection specific fields
+        $donation->number_of_bags = $numberOfBags;
+        $donation->total_volume = $totalVolume;
+        $donation->available_volume = $totalVolume;
+        $donation->first_expression_date = $data['first_expression_date'] ?? null;
+        $donation->last_expression_date = $data['last_expression_date'] ?? null;
+        $donation->latitude = $data['latitude'] ?? null;
+        $donation->longitude = $data['longitude'] ?? null;
+        $donation->bag_details = $bagDetails;
+        
         $donation->save();
 
         $this->notifyAdmins('New Donation (Home Collection)', 'A user submitted a home collection donation request.');
@@ -136,6 +169,28 @@ class DonationService
         $user = \App\Models\User::find($donation->user_id);
         if ($user) {
             $user->notify(new \App\Notifications\SystemAlert('Pickup Scheduled', 'Your home collection pickup has been scheduled.'));
+        }
+
+        return $donation;
+    }
+
+    /**
+     * Reschedule an existing scheduled pickup (only allowed when currently scheduled)
+     */
+    public function reschedulePickup(Donation $donation, array $data)
+    {
+        if ($donation->status !== 'scheduled_home_collection' || $donation->donation_method !== 'home_collection') {
+            throw new \RuntimeException('Donation must be scheduled to be rescheduled');
+        }
+
+        $donation->update([
+            'scheduled_pickup_date' => $data['scheduled_pickup_date'],
+            'scheduled_pickup_time' => $data['scheduled_pickup_time'],
+        ]);
+
+        $user = \App\Models\User::find($donation->user_id);
+        if ($user) {
+            $user->notify(new \App\Notifications\SystemAlert('Pickup Rescheduled', 'Your home collection pickup has been rescheduled.'));
         }
 
         return $donation;

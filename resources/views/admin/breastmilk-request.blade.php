@@ -397,6 +397,14 @@
             </div>
         @endif
 
+        <!-- Page Header with Action Button -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0"><i class="fas fa-heart"></i> Breastmilk Request Management</h4>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assistedRequestModal">
+                <i class="fas fa-user-plus"></i> Assist Walk-in Request
+            </button>
+        </div>
+
         <!-- Navigation Tabs -->
         <ul class="nav nav-tabs nav-tabs-standard" id="requestTabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -461,11 +469,10 @@
                                     <thead class="table-success">
                                         <tr>
                                             <th class="text-center">Guardian</th>
-                                            <th class="text-center">Contact</th>
                                             <th class="text-center">Infant</th>
-                                            <th class="text-center">Date</th>
-                                            <th class="text-center">Time</th>
+                                            <th class="text-center">Contact</th>
                                             <th class="text-center">Submitted</th>
+                                            <th class="text-center">Schedule date</th>
                                             <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
@@ -481,33 +488,25 @@
                                                     <strong>{{ $request->user->first_name ?? '' }}
                                                         {{ $request->user->last_name ?? '' }}</strong>
                                                 </td>
-                                                <td class="align-middle text-center" data-label="Contact">
-                                                    {{ $request->user->contact_number ?? '-' }}
-                                                </td>
                                                 <td class="align-middle" data-label="Infant">
                                                     <strong>{{ $request->infant->first_name }}
                                                         {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong>
                                                     <br>
                                                     <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
-                                                <td class="align-middle text-center" data-label="Date">
-                                                    @if($request->availability)
-                                                        {{ $request->availability->formatted_date }}
-                                                    @else
-                                                        {{ Carbon\Carbon::parse($request->request_date)->format('M d, Y') }}
-                                                    @endif
-                                                </td>
-                                                <td class="align-middle text-center" data-label="Time">
-                                                    @if($request->availability)
-                                                        {{ $request->availability->formatted_time }}
-                                                    @else
-                                                        {{ Carbon\Carbon::parse($request->request_time)->format('g:i A') }}
-                                                    @endif
+                                                <td class="align-middle text-center" data-label="Contact">
+                                                    {{ $request->user->contact_number ?? '-' }}
                                                 </td>
                                                 <td class="align-middle text-center" data-label="Submitted">
                                                     {{ $request->created_at->format('M d, Y g:i A') }}
                                                 </td>
-                                                
+                                                <td class="align-middle text-center" data-label="Schedule date">
+                                                    @if($request->availability)
+                                                        {{ $request->availability->formatted_date }} @if(!empty($request->availability->formatted_time)) {{ $request->availability->formatted_time }}@endif
+                                                    @else
+                                                        {{ Carbon\Carbon::parse($request->request_date)->format('M d, Y') }} {{ Carbon\Carbon::parse($request->request_time)->format('g:i A') }}
+                                                    @endif
+                                                </td>
                                                 <td class="align-middle text-center" data-label="Action">
                                                     {{-- Archive hidden for pending requests to prevent accidental archiving --}}
                                                     <button type="button" class="admin-review-btn btn-sm" data-bs-toggle="modal"
@@ -552,6 +551,7 @@
                                             <th class="text-center">Volume</th>
                                             <th class="text-center">Type</th>
                                             <th class="text-center">Date</th>
+                                            <th class="text-center">Time</th>
                                             <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
@@ -599,7 +599,10 @@
                                                     @endif
                                                 </td>
                                                 <td data-label="Date">
-                                                    {{ $request->dispensed_at ? \Carbon\Carbon::parse($request->dispensed_at)->format('M d, Y g:i A') : 'N/A' }}
+                                                    {{ $request->dispensed_at ? \Carbon\Carbon::parse($request->dispensed_at)->format('M d, Y') : 'N/A' }}
+                                                </td>
+                                                <td data-label="Time">
+                                                    {{ $request->dispensed_at ? \Carbon\Carbon::parse($request->dispensed_at)->format('g:i A') : 'N/A' }}
                                                 </td>
                                                 <td data-label="Action">
                                                     <button class="admin-review-btn btn-sm" data-bs-toggle="modal"
@@ -636,12 +639,12 @@
                                 <table class="table table-standard table-striped">
                                     <thead class="table-success">
                                         <tr>
-                                            <th class="column-id">Request ID</th>
-                                            <th>Guardian</th>
-                                            <th>Infant</th>
-                                            <th>Declined Date</th>
-                                            <th>Reason</th>
-                                            <th>Action</th>
+                                            <th class="text-center">Guardian</th>
+                                            <th class="text-center">Infant</th>
+                                            <th class="text-center">Reason</th>
+                                            <th class="text-center">Date</th>
+                                            <th class="text-center">Time</th>
+                                            <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -652,8 +655,6 @@
                                                 @endphp
                                         @foreach($declinedOrdered as $request)
                                             <tr>
-                                                <td class="column-id" data-label="Request ID">
-                                                    <strong>#{{ $request->breastmilk_request_id }}</strong></td>
                                                 <td data-label="Guardian">
                                                     <strong>{{ $request->user->first_name ?? '' }}
                                                         {{ $request->user->last_name ?? '' }}</strong>
@@ -663,15 +664,18 @@
                                                         {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
                                                     <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
-                                                <td data-label="Declined Date">
-                                                    {{ $request->declined_at ? $request->declined_at->format('M d, Y g:i A') : 'N/A' }}
-                                                </td>
                                                 <td data-label="Reason">
                                                     @if($request->admin_notes)
                                                         <small>{{ Str::limit($request->admin_notes, 50) }}</small>
                                                     @else
                                                         <span class="text-muted">No reason provided</span>
                                                     @endif
+                                                </td>
+                                                <td data-label="Date" class="text-center">
+                                                    {{ $request->declined_at ? $request->declined_at->format('M d, Y') : 'N/A' }}
+                                                </td>
+                                                <td data-label="Time" class="text-center">
+                                                    {{ $request->declined_at ? $request->declined_at->format('g:i A') : 'N/A' }}
                                                 </td>
                                                 <td class="text-center" data-label="Action">
                                                     <button class="admin-review-btn btn-sm" data-bs-toggle="modal"
@@ -697,6 +701,14 @@
         </div>
 
         <!-- Dispensing Modals for Pending Requests -->
+        @php
+            // Ensure $pendingOrdered is available for modal generation regardless of tab rendering order
+            $pendingOrdered = isset($pendingOrdered)
+                ? $pendingOrdered
+                : (($pendingRequests instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                    ? $pendingRequests->getCollection()->sortByDesc('created_at')
+                    : collect($pendingRequests)->sortByDesc('created_at'));
+        @endphp
     @foreach($pendingOrdered as $request)
             <!-- Dispensing Modal -->
             <div class="modal fade" id="dispensingModal{{ $request->breastmilk_request_id }}" tabindex="-1"
@@ -1083,9 +1095,192 @@
             </div>
         </div>
 
+    <!-- Assisted Walk-in Request Modal -->
+    <div class="modal fade" id="assistedRequestModal" tabindex="-1" aria-labelledby="assistedRequestModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="assistedRequestModalLabel">
+                        <i class="fas fa-user-plus"></i> Assist Walk-in Breastmilk Request
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="assistedRequestForm" action="{{ route('admin.breastmilk-request.store-assisted') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> Use this form to assist mothers/guardians who do not have a device. Interview them and fill in their details below.
+                        </div>
+
+                        <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-user"></i> Guardian Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="guardian_first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="guardian_first_name" name="guardian_first_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="guardian_last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="guardian_last_name" name="guardian_last_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="guardian_contact" class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="guardian_contact" name="guardian_contact" required placeholder="09XXXXXXXXX">
+                                <div id="guardian_contact_feedback" class="form-text text-danger" style="display:none;"></div>
+                            </div>
+                        </div>
+
+                        <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-baby"></i> Infant Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="infant_first_name" class="form-label">Infant First Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="infant_first_name" name="infant_first_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="infant_last_name" class="form-label">Infant Last Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="infant_last_name" name="infant_last_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="infant_date_of_birth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="infant_date_of_birth" name="infant_date_of_birth" required max="{{ date('Y-m-d') }}">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="infant_sex" class="form-label">Sex <span class="text-danger">*</span></label>
+                                <select class="form-select" id="infant_sex" name="infant_sex" required>
+                                    <option value="">Select Sex</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="infant_weight" class="form-label">Weight (kg) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control" id="infant_weight" name="infant_weight" required min="0.5" max="20" placeholder="e.g., 3.5">
+                            </div>
+                        </div>
+
+                        <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-heartbeat"></i> Medical Information</h6>
+                        <div class="mb-3">
+                            <label for="medical_condition" class="form-label">Medical Condition / Reason for Request <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="medical_condition" name="medical_condition" rows="3" required placeholder="Describe the infant's medical condition or reason for requesting breastmilk"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prescription_upload" class="form-label">Prescription (Optional)</label>
+                            <input type="file" class="form-control" id="prescription_upload" name="prescription" accept="image/*,.pdf">
+                            <small class="text-muted">Upload prescription if available. Images or PDF files only.</small>
+                        </div>
+
+                        <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-calendar-alt"></i> Request Details</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="request_date" class="form-label">Requested Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="request_date" name="request_date" required value="{{ date('Y-m-d') }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="volume_needed" class="form-label">Volume Needed (ml) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="volume_needed" name="volume_needed" required min="1" step="1" placeholder="e.g., 500">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="milk_type" class="form-label">Milk Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="milk_type" name="milk_type" required>
+                                    <option value="">Select milk type</option>
+                                    <option value="unpasteurized">Unpasteurized Breastmilk</option>
+                                    <option value="pasteurized">Pasteurized Breastmilk</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" value="1" id="dispense_now_checkbox" name="dispense_now">
+                            <label class="form-check-label" for="dispense_now_checkbox">
+                                Dispense now from available inventory (admin-assisted immediate dispensing)
+                            </label>
+                        </div>
+
+                        <div id="assistedInventorySection" style="display:none;" class="mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Select inventory sources</h6>
+                                    <div id="assistedInventoryLoading" style="display:none">Loading inventory...</div>
+                                    <div id="assistedInventoryList"></div>
+                                    <small class="text-muted d-block mt-2">Select one or more sources and specify the volume to use from each. Total selected volume must be greater or equal to requested volume.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden input to carry selected sources as JSON -->
+                        <input type="hidden" id="selected_sources_json" name="selected_sources_json" value="">
+
+                        <div class="mb-3">
+                            <label for="admin_notes" class="form-label">Staff Notes (Optional)</label>
+                            <textarea class="form-control" id="admin_notes" name="admin_notes" rows="2" placeholder="Additional notes or observations from the interview"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript for prescription viewing and inventory selection -->
     {{-- Real-time Search Functionality --}}
     <script>
+        // Assisted form: check for duplicate guardian contact numbers
+        document.addEventListener('DOMContentLoaded', function () {
+            const contactEl = document.getElementById('guardian_contact');
+            const feedbackEl = document.getElementById('guardian_contact_feedback');
+            const submitBtn = document.querySelector('#assistedRequestForm button[type="submit"]');
+
+            if (contactEl) {
+                let timeout = null;
+                contactEl.addEventListener('input', function () {
+                    // clear feedback while typing
+                    if (feedbackEl) {
+                        feedbackEl.style.display = 'none';
+                        feedbackEl.textContent = '';
+                    }
+                    if (submitBtn) submitBtn.disabled = false;
+                    // debounce
+                    if (timeout) clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        const val = (contactEl.value || '').trim();
+                        if (!val) return;
+                        // Simple format normalization (remove spaces)
+                        const normalized = val.replace(/\s+/g, '');
+                        fetch(`{{ route('admin.request.check-contact') }}?contact=${encodeURIComponent(normalized)}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }})
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data && data.exists) {
+                                    // Show warning and disable submit to prevent accidental duplicate
+                                    if (feedbackEl) {
+                                        feedbackEl.style.display = 'block';
+                                        feedbackEl.textContent = 'This contact number already exists for user: ' + (data.user.first_name || '') + ' ' + (data.user.last_name || '') + ' — leave as is to link to existing user, or change the number to create a new walk-in user.';
+                                    }
+                                    if (submitBtn) submitBtn.disabled = false; // still allow submit; admin may intend to link to existing user
+                                } else {
+                                    if (feedbackEl) {
+                                        feedbackEl.style.display = 'none';
+                                        feedbackEl.textContent = '';
+                                    }
+                                    if (submitBtn) submitBtn.disabled = false;
+                                }
+                            })
+                            .catch(err => {
+                                // ignore errors silently
+                            });
+                    }, 450);
+                });
+            }
+        });
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearch');
@@ -2450,6 +2645,274 @@
                     }
                 });
             }, 300); // Wait 300ms for modal to close
+        }
+        
+        // --- Assisted request inventory helpers ---
+        document.addEventListener('DOMContentLoaded', function () {
+            const dispenseNowCheckbox = document.getElementById('dispense_now_checkbox');
+            const milkTypeSelect = document.getElementById('milk_type');
+            if (dispenseNowCheckbox) {
+                dispenseNowCheckbox.addEventListener('change', function () {
+                    const section = document.getElementById('assistedInventorySection');
+                    if (this.checked) {
+                        section.style.display = 'block';
+                        // load inventory for currently selected milk type
+                        assistedLoadInventory();
+                    } else {
+                        section.style.display = 'none';
+                        document.getElementById('assistedInventoryList').innerHTML = '';
+                        document.getElementById('selected_sources_json').value = '';
+                    }
+                });
+            }
+
+            if (milkTypeSelect) {
+                milkTypeSelect.addEventListener('change', function () {
+                    if (dispenseNowCheckbox && dispenseNowCheckbox.checked) {
+                        assistedLoadInventory();
+                    }
+                    // If admin already entered a desired volume, auto-enable "Dispense now" and load inventory
+                    const volNeededEl = document.getElementById('volume_needed');
+                    if (volNeededEl && volNeededEl.value && volNeededEl.value.trim() !== '') {
+                        try {
+                            const v = parseFloat(volNeededEl.value);
+                            if (!isNaN(v) && v > 0) {
+                                if (dispenseNowCheckbox && !dispenseNowCheckbox.checked) {
+                                    dispenseNowCheckbox.checked = true;
+                                    const section = document.getElementById('assistedInventorySection');
+                                    if (section) section.style.display = 'block';
+                                    assistedLoadInventory();
+                                }
+                            }
+                        } catch (err) {
+                            // ignore parse errors
+                        }
+                    }
+                });
+            }
+
+            // Auto-toggle inventory when admin types a desired volume
+            const volNeededInput = document.getElementById('volume_needed');
+            if (volNeededInput) {
+                volNeededInput.addEventListener('input', function () {
+                    const milkType = (document.getElementById('milk_type') || {}).value;
+                    const v = parseFloat(this.value || 0);
+                    if (!isNaN(v) && v > 0 && milkType) {
+                        if (dispenseNowCheckbox && !dispenseNowCheckbox.checked) {
+                            dispenseNowCheckbox.checked = true;
+                        }
+                        const section = document.getElementById('assistedInventorySection');
+                        if (section) section.style.display = 'block';
+                        assistedLoadInventory();
+                    } else {
+                        // hide when invalid
+                        if (dispenseNowCheckbox && !dispenseNowCheckbox.checked) {
+                            const section = document.getElementById('assistedInventorySection');
+                            if (section) section.style.display = 'none';
+                        }
+                    }
+                });
+            }
+
+            // Prepare selected_sources_json before form submit
+            const assistedForm = document.getElementById('assistedRequestForm');
+            if (assistedForm) {
+                assistedForm.addEventListener('submit', function (e) {
+                    const dispenseNow = document.getElementById('dispense_now_checkbox').checked;
+                    if (!dispenseNow) return; // nothing to do
+
+                    // collect selected sources
+                    const list = document.querySelectorAll('#assistedInventoryList .inventory-item');
+                    const selected = [];
+                    let total = 0;
+                    list.forEach(item => {
+                        const cb = item.querySelector('input[type="checkbox"]');
+                        if (cb && cb.checked) {
+                            const type = cb.dataset.type;
+                            const id = cb.dataset.id;
+                            const bagIndex = cb.dataset.bagIndex !== undefined ? cb.dataset.bagIndex : null;
+                            // Get planned use from visible label (auto-selection) or fall back to numeric input if present
+                            let vol = 0;
+                            const plannedSpan = item.querySelector('span[id^="planned_use_"]');
+                            if (plannedSpan) {
+                                vol = parseFloat(plannedSpan.textContent || 0) || 0;
+                            } else {
+                                const volInput = item.querySelector('input[type="number"]');
+                                vol = volInput ? parseFloat(volInput.value) : 0;
+                            }
+                            if (vol > 0) {
+                                const src = { type: type, id: id, volume: vol };
+                                if (bagIndex !== null) src.bag_index = parseInt(bagIndex, 10);
+                                selected.push(src);
+                                total += vol;
+                            }
+                        }
+                    });
+
+                    const requested = parseFloat(document.getElementById('volume_needed').value || 0);
+                    if (selected.length === 0) {
+                        e.preventDefault();
+                        alert('You selected "Dispense now" but no inventory sources were selected. Please select at least one source or uncheck Dispense now.');
+                        return false;
+                    }
+                    if (total < requested) {
+                        e.preventDefault();
+                        alert('Selected total volume (' + total + 'ml) is less than requested volume (' + requested + 'ml). Please adjust selected sources.');
+                        return false;
+                    }
+
+                    document.getElementById('selected_sources_json').value = JSON.stringify(selected);
+                    // allow submit to continue
+                });
+            }
+        });
+
+        function assistedLoadInventory() {
+            const milkType = document.getElementById('milk_type').value;
+            const loading = document.getElementById('assistedInventoryLoading');
+            const list = document.getElementById('assistedInventoryList');
+            list.innerHTML = '';
+            if (!milkType) return;
+            loading.style.display = 'block';
+            fetch(`{{ route('admin.request.inventory') }}?type=${milkType}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }})
+                .then(r => r.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.error) {
+                        list.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                        return;
+                    }
+
+                    const requested = parseFloat(document.getElementById('volume_needed').value || 0) || 0;
+                    let html = '';
+
+                    if (milkType === 'unpasteurized') {
+                        const donations = data.donations || [];
+                        if (donations.length === 0) {
+                            list.innerHTML = '<div class="alert alert-warning">No unpasteurized donations available.</div>';
+                            return;
+                        }
+
+                        // Build bag-level list (read-only volumes). We'll auto-select bags to meet the requested volume.
+                        donations.forEach(d => {
+                            const bagVolumes = d.individual_bag_volumes || [];
+                            html += `<div class="card mb-2 p-2"><div><strong>Donation #${d.breastmilk_donation_id}</strong> — ${d.donor_name} — Total Available: ${d.available_volume}ml</div>`;
+
+                            if (Array.isArray(bagVolumes) && bagVolumes.length > 0) {
+                                bagVolumes.forEach((bv, idx) => {
+                                    const displayVol = bv % 1 === 0 ? Math.round(bv) : bv;
+                                    // checkbox has data-volume placeholder; actual chosen volume will be set by auto-selection logic
+                                    html += `<div class="inventory-item mt-2 card p-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="assisted_item_${d.breastmilk_donation_id}_bag_${idx}" data-type="unpasteurized" data-id="${d.breastmilk_donation_id}" data-bag-index="${idx}" data-available="${bv}" disabled>
+                                            <label class="form-check-label" for="assisted_item_${d.breastmilk_donation_id}_bag_${idx}">Bag ${idx + 1} — ${displayVol}ml</label>
+                                        </div>
+                                        <div class="mt-2"><small class="text-muted">Planned use: <span id="planned_use_${d.breastmilk_donation_id}_bag_${idx}">0</span> ml</small></div>
+                                    </div>`;
+                                });
+                            } else {
+                                // donation-level single item
+                                html += `<div class="inventory-item mb-2 card p-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="assisted_item_${d.breastmilk_donation_id}" data-type="unpasteurized" data-id="${d.breastmilk_donation_id}" data-available="${d.available_volume}" disabled>
+                                        <label class="form-check-label" for="assisted_item_${d.breastmilk_donation_id}"><strong>Donation #${d.breastmilk_donation_id}</strong> — ${d.donor_name} — Available: ${d.available_volume}ml</label>
+                                    </div>
+                                    <div class="mt-2"><small class="text-muted">Planned use: <span id="planned_use_${d.breastmilk_donation_id}">0</span> ml</small></div>
+                                </div>`;
+                            }
+
+                            html += `</div>`;
+                        });
+
+                        list.innerHTML = html;
+
+                        // Auto-select bags/batches to meet requested volume (FIFO across donations and bags)
+                        autoSelectSourcesForAssisted(donations, 'unpasteurized', requested);
+
+                    } else {
+                        const batches = data.batches || [];
+                        if (batches.length === 0) {
+                            list.innerHTML = '<div class="alert alert-warning">No pasteurized batches available.</div>';
+                            return;
+                        }
+
+                        batches.forEach(b => {
+                            html += `<div class="inventory-item mb-2 card p-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" data-type="pasteurized" data-id="${b.batch_id}" data-available="${b.available_volume}" disabled>
+                                    <label class="form-check-label" for="assisted_batch_${b.batch_id}"><strong>Batch #${b.batch_number}</strong> — Available: ${b.available_volume}ml</label>
+                                </div>
+                                <div class="mt-2"><small class="text-muted">Planned use: <span id="planned_use_batch_${b.batch_id}">0</span> ml</small></div>
+                            </div>`;
+                        });
+
+                        list.innerHTML = html;
+
+                        autoSelectSourcesForAssisted(batches, 'pasteurized', requested);
+                    }
+                })
+                .catch(err => {
+                    loading.style.display = 'none';
+                    list.innerHTML = '<div class="alert alert-danger">Failed to load inventory.</div>';
+                });
+        }
+
+        // Auto-selection algorithm: choose full bags/batches FIFO until requested met; last selected item may be partial
+        function autoSelectSourcesForAssisted(items, milkType, requested) {
+            const selected = [];
+            let remaining = Math.max(0, requested || 0);
+
+            if (milkType === 'unpasteurized') {
+                for (const d of items) {
+                    const bags = d.individual_bag_volumes || [];
+                    if (Array.isArray(bags) && bags.length > 0) {
+                        for (let i = 0; i < bags.length; i++) {
+                            if (remaining <= 0) break;
+                            const avail = parseFloat(bags[i]) || 0;
+                            if (avail <= 0) continue;
+                            const take = Math.min(avail, remaining);
+                            // mark checkbox and planned use
+                            const cbId = `assisted_item_${d.breastmilk_donation_id}_bag_${i}`;
+                            const cb = document.getElementById(cbId);
+                            if (cb) cb.checked = true;
+                            const plannedEl = document.getElementById(`planned_use_${d.breastmilk_donation_id}_bag_${i}`);
+                            if (plannedEl) plannedEl.textContent = (take % 1 === 0 ? Math.round(take) : parseFloat(take).toFixed(2));
+                            selected.push({ type: 'unpasteurized', id: d.breastmilk_donation_id, bag_index: i, volume: take });
+                            remaining -= take;
+                        }
+                    } else {
+                        if (remaining <= 0) break;
+                        const avail = parseFloat(d.available_volume) || 0;
+                        if (avail <= 0) continue;
+                        const take = Math.min(avail, remaining);
+                        const cbId = `assisted_item_${d.breastmilk_donation_id}`;
+                        const cb = document.getElementById(cbId);
+                        if (cb) cb.checked = true;
+                        const plannedEl = document.getElementById(`planned_use_${d.breastmilk_donation_id}`);
+                        if (plannedEl) plannedEl.textContent = (take % 1 === 0 ? Math.round(take) : parseFloat(take).toFixed(2));
+                        selected.push({ type: 'unpasteurized', id: d.breastmilk_donation_id, volume: take });
+                        remaining -= take;
+                    }
+                    if (remaining <= 0) break;
+                }
+            } else {
+                for (const b of items) {
+                    if (remaining <= 0) break;
+                    const avail = parseFloat(b.available_volume) || 0;
+                    if (avail <= 0) continue;
+                    const take = Math.min(avail, remaining);
+                    const cbId = `assisted_batch_${b.batch_id}`;
+                    const cb = document.getElementById(cbId);
+                    if (cb) cb.checked = true;
+                    const plannedEl = document.getElementById(`planned_use_batch_${b.batch_id}`);
+                    if (plannedEl) plannedEl.textContent = (take % 1 === 0 ? Math.round(take) : parseFloat(take).toFixed(2));
+                    selected.push({ type: 'pasteurized', id: b.batch_id, volume: take });
+                    remaining -= take;
+                }
+            }
+
+            // Store selected_sources_json with the computed volumes and bag_index where applicable
+            document.getElementById('selected_sources_json').value = JSON.stringify(selected);
         }
     </script>
 @endsection

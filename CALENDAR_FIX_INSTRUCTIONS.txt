@@ -1,0 +1,87 @@
+CALENDAR FIX - COMPLETE INSTRUCTIONS
+=====================================
+
+Date: October 31, 2025
+Issue: User walk-in calendar showing dates off by one day (Nov 2-15 instead of Nov 1-14)
+
+ROOT CAUSES FIXED:
+1. JavaScript date mutation bug (using wrong variable in setDate)
+2. Carbon timezone conversion in AvailabilityService
+
+CHANGES MADE:
+-------------
+
+1. FILE: app/Services/AvailabilityService.php
+   - Changed: Carbon::parse($date)->format('Y-m-d')
+   - To: $date->toDateString()
+   - Reason: Prevents timezone shift when converting dates
+
+2. FILE: resources/views/user/donate.blade.php
+   - Changed: const date = new Date(startDate); date.setDate(startDate.getDate() + i);
+   - To: const date = new Date(startDate.getTime()); date.setDate(date.getDate() + i);
+   - Reason: Fixes date calculation to avoid off-by-one errors
+
+VERIFICATION:
+-------------
+Backend test shows correct dates:
+  ✓ Database has: 2025-11-01, 2025-11-02, ..., 2025-11-14, 2025-11-23, 2025-11-30
+  ✓ Service returns: Same dates (no timezone shift)
+  ✓ JSON to frontend: ["2025-11-01", "2025-11-02", ...]
+
+STEPS TO TEST IN BROWSER:
+--------------------------
+
+1. **IMPORTANT:** Clear your browser cache completely!
+   - Chrome: Ctrl+Shift+Delete → "Cached images and files" → Clear
+   - Or: Hard refresh with Ctrl+F5
+
+2. Log in as a USER
+
+3. Go to: /user/donate
+
+4. Click "Walk-in Donation" button
+
+5. Open DevTools (F12) → Console tab
+
+6. You should see:
+   User Walk-in Calendar v2.0 - Fixed date calculation
+   Available Dates Array: ["2025-11-01", "2025-11-02", ...]
+   
+7. Calendar should show NOVEMBER 2025 with:
+   - Nov 1 (Sat) = HIGHLIGHTED GREEN ✓
+   - Nov 2-14 = HIGHLIGHTED GREEN ✓
+   - Nov 23 (Sun) = HIGHLIGHTED GREEN ✓
+   - Nov 30 (Sun) = HIGHLIGHTED GREEN ✓
+
+IF STILL SHOWING WRONG DATES:
+------------------------------
+
+The browser is using CACHED JavaScript. Try:
+
+Option A: Hard Refresh
+  - Press Ctrl+Shift+R (or Cmd+Shift+R on Mac)
+  - Or Ctrl+F5
+
+Option B: Clear Browser Cache
+  - Chrome: Settings → Privacy → Clear browsing data
+  - Select "Cached images and files"
+  - Time range: "All time"
+  - Click "Clear data"
+
+Option C: Incognito/Private Window
+  - Open a new incognito window (Ctrl+Shift+N)
+  - Log in fresh and test
+
+Option D: Different Browser
+  - Try Edge, Firefox, or another browser
+
+EXPECTED RESULT:
+----------------
+After clearing cache, November 1-14, 23, and 30 should be highlighted in green,
+matching exactly what the admin dashboard calendar shows.
+
+If you STILL see Nov 2-15 highlighted instead of Nov 1-14 after clearing cache,
+please share:
+1. Screenshot of browser DevTools Console (F12 → Console tab)
+2. The "Available Dates Array" output from console
+3. Which browser and version you're using

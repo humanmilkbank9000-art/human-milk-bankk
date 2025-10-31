@@ -59,8 +59,10 @@ Route::get('/user/health-screening', [HealthScreeningController::class, 'user_he
 Route::post('/user/health-screening/store', [HealthScreeningController::class, 'store'])->name('health_screening.store');
 
 Route::get('/admin/breastmilk-donation', [DonationController::class, 'admin_breastmilk_donation'])->name('admin.donation');
+Route::get('/admin/donations/{id}', [DonationController::class, 'show'])->name('admin.donation.show');
 Route::post('/admin/donations/{id}/validate-walkin', [DonationController::class, 'validateWalkIn'])->name('admin.donation.validate-walkin');
 Route::post('/admin/donations/{id}/schedule-pickup', [DonationController::class, 'schedulePickup'])->name('admin.donation.schedule-pickup');
+Route::post('/admin/donations/{id}/reschedule-pickup', [DonationController::class, 'reschedulePickup'])->name('admin.donation.reschedule-pickup');
 Route::post('/admin/donations/{id}/validate-pickup', [DonationController::class, 'validatePickup'])->name('admin.donation.validate-pickup');
 // Archive donation
 Route::post('/admin/donations/{id}/archive', [DonationController::class, 'archive'])->name('admin.donation.archive');
@@ -77,6 +79,7 @@ Route::get('/user/breastmilk-request/{id}/prescription', [BreastmilkRequestContr
 // JSON endpoint returning base64 image for authenticated user (AJAX fallback)
 Route::get('/user/breastmilk-request/{id}/prescription-json', [BreastmilkRequestController::class, 'prescriptionJson'])->name('user.request.prescription.json');
 Route::get('/admin/breastmilk-request/inventory', [BreastmilkRequestController::class, 'getAvailableInventory'])->name('admin.request.inventory');
+Route::get('/admin/breastmilk-request/check-contact', [BreastmilkRequestController::class, 'checkContact'])->name('admin.request.check-contact');
 Route::post('/admin/breastmilk-request/{id}/approve', [BreastmilkRequestController::class, 'approve'])->name('admin.request.approve');
 Route::post('/admin/breastmilk-request/{id}/decline', [BreastmilkRequestController::class, 'decline'])->name('admin.request.decline');
 Route::post('/admin/breastmilk-request/{id}/dispense', [BreastmilkRequestController::class, 'dispense'])->name('admin.request.dispense');
@@ -84,6 +87,7 @@ Route::post('/admin/breastmilk-request/{id}/reject', [BreastmilkRequestControlle
 // Archive request
 Route::post('/admin/breastmilk-request/{id}/archive', [BreastmilkRequestController::class, 'archive'])->name('admin.request.archive');
 Route::post('/admin/breastmilk-request/{id}/restore', [BreastmilkRequestController::class, 'restore'])->name('admin.request.restore');
+Route::post('/admin/breastmilk-request/store-assisted', [BreastmilkRequestController::class, 'storeAssisted'])->name('admin.breastmilk-request.store-assisted');
 Route::get('/user/breastmilk-request', [BreastmilkRequestController::class, 'index'])->name('user.breastmilk-request');
 Route::post('/user/breastmilk-request/store', [BreastmilkRequestController::class, 'store'])->name('user.breastmilk-request.store');
 Route::get('/user/breastmilk-request/infant/{infantId}', [BreastmilkRequestController::class, 'getInfantInfo'])->name('user.breastmilk-request.infant');

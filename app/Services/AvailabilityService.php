@@ -3,52 +3,33 @@
 namespace App\Services;
 
 use App\Models\Availability;
+use App\Models\Donation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class AvailabilityService
 {
     /**
-     * Create availability slots for a given date and array of start times.
-     * Returns array with savedSlots and duplicateSlots.
-     *
-     * @param string $date
-     * @param array $times
-     * @return array
+     * Unified provider for available date strings (YYYY-MM-DD) used by both
+     * admin and user calendars to ensure perfect parity.
      */
-    public function createSlots(string $date, array $times): array
+    public function listAvailableDates(): array
     {
-        $savedSlots = [];
-        $duplicateSlots = [];
-
-        foreach ($times as $startTime) {
-            $endTime = Carbon::createFromFormat('H:i', $startTime)->addHour()->format('H:i');
-
-            $existing = Availability::where('available_date', $date)
-                ->where('start_time', $startTime)
-                ->first();
-
-            if ($existing) {
-                $duplicateSlots[] = $startTime . ' - ' . $endTime;
-                continue;
-            }
-
-            Availability::create([
-                'available_date' => $date,
-                'start_time' => $startTime,
-                'end_time' => $endTime,
-                'status' => 'available'
-            ]);
-
-            $savedSlots[] = $startTime . ' - ' . $endTime;
-        }
-
-        return [
-            'savedSlots' => $savedSlots,
-            'duplicateSlots' => $duplicateSlots,
-        ];
+        return Availability::available()
+            ->future()
+            ->orderBy('available_date')
+            ->pluck('available_date')
+            ->map(function ($date) {
+                // Use toDateString() to get date without timezone shift
+                // This ensures "2025-11-01" stays "2025-11-01" regardless of timezone
+                if ($date instanceof \Carbon\Carbon) {
+                    return $date->toDateString();
+                }
+                return $date;
+            })
+            ->values()
+            ->all();
     }
-
     /**
      * Retrieve available slots for a date formatted for JSON response.
      */
@@ -63,31 +44,34 @@ class AvailabilityService
         return $slots->map(function ($slot) {
             return [
                 'id' => $slot->id,
-                'start_time' => $slot->start_time,
-                'end_time' => $slot->end_time,
-                'time_slot' => $slot->time_slot,
-                'formatted_time' => $slot->formatted_time,
+                'formatted_date' => $slot->formatted_date,
             ];
         });
     }
 
     /**
-     * Create a date-only availability entry (no times).
+     * Create a date-only availability entry.
      * Returns array with savedIds and duplicates.
      */
     public function createDateAvailability(string $date): array
     {
         $saved = [];
         $duplicate = [];
+        $reopened = [];
 
         $existing = Availability::where('available_date', $date)->first();
         if ($existing) {
-            $duplicate[] = $date;
+            // If a record exists but isn't currently available, reopen it
+            if ($existing->status !== 'available') {
+                $existing->status = 'available';
+                $existing->save();
+                $reopened[] = $date;
+            } else {
+                $duplicate[] = $date;
+            }
         } else {
             $a = Availability::create([
                 'available_date' => $date,
-                'start_time' => null,
-                'end_time' => null,
                 'status' => 'available'
             ]);
             $saved[] = $a->id;
@@ -96,19 +80,22 @@ class AvailabilityService
         return [
             'saved' => $saved,
             'duplicates' => $duplicate,
+            'reopened' => $reopened,
         ];
     }
 
     /**
-     * Delete an availability slot if not booked.
+     * Delete an availability date if not booked.
      * Throws exception if cannot delete.
      */
     public function deleteSlot(int $id): void
     {
         $availability = Availability::findOrFail($id);
 
-        if ($availability->status === 'booked') {
-            throw new \RuntimeException('Cannot delete a booked time slot');
+        // Prevent deletion if any donations reference this availability (protect booked dates)
+        $hasDonations = Donation::where('availability_id', $id)->exists();
+        if ($hasDonations) {
+            throw new \RuntimeException('Cannot delete an availability date that has existing donations');
         }
 
         $availability->delete();

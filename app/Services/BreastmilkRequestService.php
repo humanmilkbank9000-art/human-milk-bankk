@@ -39,12 +39,15 @@ class BreastmilkRequestService
                 throw new \RuntimeException('You already have a pending breastmilk request for this infant.');
             }
 
+            // Since availability is date-only in this system, use a default time for request_time
+            $defaultTime = '09:00:00';
+
             $request = new BreastmilkRequest([
                 'user_id' => $userId,
                 'infant_id' => $data['infant_id'],
                 'availability_id' => $data['availability_id'],
                 'request_date' => $availability->available_date,
-                'request_time' => $availability->start_time,
+                'request_time' => $availability->start_time ?? $defaultTime,
                 'status' => 'pending'
             ]);
 
@@ -95,8 +98,18 @@ class BreastmilkRequestService
             foreach ($selectedItems as $item) {
                 if ($milkType === 'unpasteurized') {
                     $donation = Donation::findOrFail($item['id']);
-                    if ($item['volume'] > $donation->available_volume) {
-                        throw new \RuntimeException('Donation #' . $donation->breastmilk_donation_id . ' does not have sufficient volume.');
+                    // If selection targets a specific bag, validate that bag's available volume
+                    if (isset($item['bag_index'])) {
+                        $bagIndex = (int)$item['bag_index'];
+                        $bagVolumes = $donation->individual_bag_volumes ?? [];
+                        $bagAvailable = isset($bagVolumes[$bagIndex]) ? (float)$bagVolumes[$bagIndex] : 0.0;
+                        if ($item['volume'] > $bagAvailable) {
+                            throw new \RuntimeException('Donation #' . $donation->breastmilk_donation_id . " bag " . $bagIndex . ' does not have sufficient volume.');
+                        }
+                    } else {
+                        if ($item['volume'] > $donation->available_volume) {
+                            throw new \RuntimeException('Donation #' . $donation->breastmilk_donation_id . ' does not have sufficient volume.');
+                        }
                     }
                 } else {
                     $batch = PasteurizationBatch::findOrFail($item['id']);
@@ -206,7 +219,15 @@ class BreastmilkRequestService
                     if ($donation->available_volume < $source['volume']) {
                         throw new \RuntimeException("Donation #{$donation->breastmilk_donation_id} does not have sufficient volume");
                     }
-                    $donation->reduceVolume($source['volume']);
+                    // If frontend provided a specific bag_index, consume from that bag when possible
+                    if (isset($source['bag_index']) && is_numeric($source['bag_index'])) {
+                        $ok = $donation->consumeFromBag((int)$source['bag_index'], $source['volume']);
+                        if (!$ok) {
+                            throw new \RuntimeException("Donation #{$donation->breastmilk_donation_id} cannot provide the requested amount from bag index {$source['bag_index']}");
+                        }
+                    } else {
+                        $donation->reduceVolume($source['volume']);
+                    }
                     DB::table('dispensed_milk_sources')->insert([
                         'dispensed_id' => $dispensedMilk->dispensed_id,
                         'source_type' => 'unpasteurized',
@@ -256,10 +277,36 @@ class BreastmilkRequestService
             if ($remainingToDeduct <= 0) break;
             
             $donation = Donation::findOrFail($item['id']);
-            
-            $proportionalAmount = ($item['volume'] / $totalSelectedVolume) * $volumeRequested;
+            // If the selected item references a specific bag, consume from that bag directly
+            if (isset($item['bag_index'])) {
+                $bagIndex = (int)$item['bag_index'];
+                // available volume in that bag
+                $bagVolumes = $donation->individual_bag_volumes ?? [];
+                $bagAvailable = isset($bagVolumes[$bagIndex]) ? (float)$bagVolumes[$bagIndex] : 0.0;
+                $volumeRequestedFromThis = min($item['volume'], $remainingToDeduct, $bagAvailable);
+                if ($volumeRequestedFromThis <= 0) continue;
+
+                if (!$donation->isInInventory() || $bagAvailable < $volumeRequestedFromThis) {
+                    throw new \RuntimeException("Donation #{$donation->breastmilk_donation_id} does not have sufficient volume in bag index {$bagIndex}.");
+                }
+
+                if (!$donation->consumeFromBag($bagIndex, $volumeRequestedFromThis)) {
+                    throw new \RuntimeException("Failed to reduce volume for donation #{$donation->breastmilk_donation_id} from bag {$bagIndex}");
+                }
+
+                $donation->dispensedMilk()->attach($dispensedId, [
+                    'source_type' => 'unpasteurized',
+                    'volume_used' => $volumeRequestedFromThis
+                ]);
+
+                $remainingToDeduct -= $volumeRequestedFromThis;
+                continue;
+            }
+
+            // Fallback: proportional deduction across selected donations
+            $proportionalAmount = ($item['volume'] / max(1, $totalSelectedVolume)) * $volumeRequested;
             $volumeToTake = min($proportionalAmount, $remainingToDeduct, $donation->available_volume);
-            
+
             if ($volumeToTake <= 0) continue;
 
             if (!$donation->isInInventory() || $donation->available_volume < $volumeToTake) {
@@ -274,7 +321,7 @@ class BreastmilkRequestService
                 'source_type' => 'unpasteurized',
                 'volume_used' => $volumeToTake
             ]);
-            
+
             $remainingToDeduct -= $volumeToTake;
         }
     }

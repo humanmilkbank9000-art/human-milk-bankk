@@ -1,28 +1,24 @@
 <form action="{{ route('donation.store') }}" method="POST" id="walkInForm">
     @csrf
     <input type="hidden" name="donation_method" value="walk_in">
+    <input type="hidden" name="availability_id" id="availability_id">
+    <input type="hidden" name="appointment_date" id="selected_date">
+
     <div id="walkin-fields">
         <div class="alert alert-info">
-            <strong>Walk-in Process:</strong> Click on a highlighted date in the calendar to see available appointment
-            times.
+            <strong>Walk-in Process:</strong> Select an available date (highlighted in green) in the calendar below.
         </div>
-        <div class="mb-3">
+
+        <div class="mb-3 d-flex flex-column align-items-center">
             <label class="form-label">Select Appointment Date:</label>
             <div id="appointment-calendar" class="calendar-container">
                 <!-- Calendar will be generated here -->
             </div>
-            <input type="hidden" name="appointment_date" id="selected_date">
-        </div>
-        <div class="mb-3" id="time-slots-container" style="display: none;">
-            <label class="form-label">Available Time Slots:</label>
-            <div id="available-slots">
-                <!-- Time slots will be loaded here -->
-            </div>
+            <small id="slot-status" class="mt-2 d-block text-muted">Select a highlighted date to check availability.</small>
         </div>
 
         <div class="mt-3 text-end">
-            <!-- Submit button expected by page JS: id walk-in-submit-btn -->
-            <button type="submit" id="walk-in-submit-btn" class="btn btn-primary" disabled>
+            <button type="button" id="walk-in-submit-btn" class="btn btn-primary" onclick="submitWalkInDonation()" disabled>
                 Confirm
             </button>
         </div>

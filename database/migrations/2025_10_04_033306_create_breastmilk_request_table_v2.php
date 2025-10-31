@@ -42,6 +42,13 @@ return new class extends Migration
                 ->on('admin')
                 ->onDelete('set null');
 
+            // Admin who assisted with the request (walk-in assistance)
+            $table->unsignedBigInteger('assisted_by_admin')->nullable();
+            $table->foreign('assisted_by_admin')
+                ->references('admin_id')
+                ->on('admin')
+                ->onDelete('set null');
+
             // Prescription file storage (File path based storage)
             $table->string('prescription_path')->nullable()->comment('Storage path to prescription file');
             $table->string('prescription_filename')->nullable()->comment('Original filename of prescription');
@@ -49,6 +56,10 @@ return new class extends Migration
 
             // Volume requested (admin will set this when approving)
             $table->decimal('volume_requested', 10, 2)->nullable();
+            
+            // Preferred milk type
+            $table->enum('milk_type', ['unpasteurized', 'pasteurized'])->nullable()
+                ->comment('Preferred milk type for the request');
 
             $table->date('request_date');
             $table->time('request_time');
@@ -68,6 +79,7 @@ return new class extends Migration
                 ->comment('Reference to dispensed_milk table - no foreign key constraint');
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

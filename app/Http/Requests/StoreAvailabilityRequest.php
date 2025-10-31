@@ -16,8 +16,6 @@ class StoreAvailabilityRequest extends FormRequest
     {
         return [
             'date' => 'required|date|after_or_equal:today',
-            'time' => 'required|array|min:1',
-            'time.*' => 'required|date_format:H:i',
         ];
     }
 }

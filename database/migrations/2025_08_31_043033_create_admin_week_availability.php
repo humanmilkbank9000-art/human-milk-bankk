@@ -14,9 +14,7 @@ return new class extends Migration
             $table->id(); // Standard primary key for easier referencing in appointments
             
             // Core availability fields
-            $table->date('available_date')->comment('The specific date this availability is for');
-            $table->time('start_time')->comment('Start time of availability slot');
-            $table->time('end_time')->comment('End time of availability slot');
+            $table->date('available_date')->unique()->comment('The specific date this availability is for');
             
             // Status management for appointment system
             $table->enum('status', ['available', 'booked', 'blocked'])->default('available')
@@ -32,11 +30,7 @@ return new class extends Migration
             
             // Optimized indexes for appointment queries
             $table->index(['available_date', 'status'], 'date_status_idx'); // Find available slots by date
-            $table->index(['available_date', 'start_time'], 'date_time_idx'); // Order slots by time
             $table->index('status', 'status_idx'); // Quick status filtering
-            
-            // Prevent duplicate time slots on same date
-            $table->unique(['available_date', 'start_time'], 'unique_date_time_slot');
         });
         
         // Add foreign key constraint to donations table now that availability table exists

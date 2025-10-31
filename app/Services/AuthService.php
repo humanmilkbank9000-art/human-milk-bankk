@@ -114,12 +114,7 @@ class AuthService
 
     public function gatherAdminDashboardStats(int $year)
     {
-        $availableDates = \App\Models\Availability::select('available_date')
-            ->distinct()
-            ->where('available_date', '>=', now()->toDateString())
-            ->pluck('available_date')
-            ->map(function($date) { return \Carbon\Carbon::parse($date)->format('Y-m-d'); })
-            ->toArray();
+        $availableDates = app(\App\Services\AvailabilityService::class)->listAvailableDates();
 
         $totalDonations = \App\Models\Donation::whereIn('status', ['success_walk_in', 'success_home_collection'])->count();
         $approvedRequests = \App\Models\BreastmilkRequest::whereIn('status', ['approved', 'dispensed'])->count();

@@ -9,7 +9,7 @@
             <th style="width: 50px;">No</th>
             <th>Donor</th>
             <th>Type</th>
-            <th style="width: 60px;">Bags</th>
+            <th style="width: 60px;">Count of Bag</th>
             <th>Volume/Bag</th>
             <th style="width: 100px;">Total (ml)</th>
             <th style="width: 100px;">Available (ml)</th>

@@ -71,6 +71,15 @@
       z-index: 9998 !important;
     }
 
+    /* Custom high z-index class for SweetAlert */
+    .swal-high-zindex {
+      z-index: 10000 !important;
+    }
+
+    .swal-high-zindex .swal2-popup {
+      z-index: 10001 !important;
+    }
+
     @media (max-width: 600px) {
       .modal-dialog {
         max-width: 98vw;
@@ -841,7 +850,13 @@
             <div id="calendarContainer">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <button type="button" id="prevMonth" class="btn btn-outline-secondary btn-sm">&lt;</button>
-                <h5 id="currentMonth" class="mb-0"></h5>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h5 id="currentMonth" class="mb-0"></h5>
+                  <div class="form-check form-switch ms-3">
+                    <input class="form-check-input" type="checkbox" id="multiSelectToggle">
+                    <label class="form-check-label" for="multiSelectToggle" style="font-size:0.9rem;">Multi-select</label>
+                  </div>
+                </div>
                 <button type="button" id="nextMonth" class="btn btn-outline-secondary btn-sm">&gt;</button>
               </div>
               <div class="calendar-grid">
@@ -864,7 +879,7 @@
             <strong>Selected Date:</strong> <span id="selectedDateText"></span>
           </div>
 
-          <!-- Form to save availability -->
+            <!-- Form to save availability -->
           <form id="availabilityForm" action="{{ route('admin.availability.store') }}" method="POST">
             @csrf
 
@@ -873,8 +888,9 @@
 
             <!-- No time slots: admin sets date-only availability -->
             <div id="timeSlotsSection">
-              <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end">
                 <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="deleteBtn" class="btn btn-danger me-2" style="display:none;">Delete Availability</button>
                 <button type="submit" id="saveBtn" class="btn btn-primary" disabled>Save Availability</button>
               </div>
             </div>
@@ -1160,11 +1176,18 @@
       const formDate = document.getElementById('formDate');
       const saveBtn = document.getElementById('saveBtn');
 
-      let currentDate = new Date();
-      let selectedDate = null;
+    let currentDate = new Date();
+    // Multi-select support
+    let selectedDates = []; // array of 'YYYY-MM-DD' strings
+    let selectedAvailabilityIds = {}; // map dateString -> availabilityId (if exists)
+    let multiSelectEnabled = false;
 
+      // Format date in local timezone to avoid UTC offset issues
       function formatDate(date) {
-        return date.toISOString().split('T')[0];
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       }
 
       function formatDisplayDate(date) {
@@ -1211,7 +1234,10 @@
 
           const today = new Date();
           const isCurrentMonth = date.getMonth() === month;
-          const isPastDate = date < today.setHours(0, 0, 0, 0);
+          // Compare at local start-of-day to prevent timezone-related off-by-one
+          const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+          const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+          const isPastDate = dayStart < todayStart;
           const dateString = formatDate(date);
           const hasAvailability = availableDates.includes(dateString);
 
@@ -1234,8 +1260,8 @@
             console.log('✅ HIGHLIGHTED:', dateString);
           }
 
-          // Mark selected date
-          if (selectedDate && formatDate(date) === formatDate(selectedDate)) {
+          // Mark selected date(s)
+          if (selectedDates.includes(dateString)) {
             dayElement.classList.add('selected');
           }
 
@@ -1245,9 +1271,49 @@
       }
 
       function selectDate(date) {
-        selectedDate = new Date(date);
-        formDate.value = formatDate(selectedDate);
-        selectedDateText.textContent = formatDisplayDate(selectedDate);
+        const dateStr = formatDate(new Date(date));
+
+        // Multi-select mode: toggle the date in selectedDates
+        if (multiSelectEnabled) {
+          const idx = selectedDates.indexOf(dateStr);
+          if (idx !== -1) {
+            // Deselect
+            selectedDates.splice(idx, 1);
+            delete selectedAvailabilityIds[dateStr];
+          } else {
+            // Select
+            selectedDates.push(dateStr);
+            // fetch availability id for this date if exists
+            fetch(`{{ route('admin.availability.slots') }}?date=${encodeURIComponent(dateStr)}`)
+              .then(r => r.json())
+              .then(data => {
+                if (data && Array.isArray(data.available_slots) && data.available_slots.length > 0) {
+                  selectedAvailabilityIds[dateStr] = data.available_slots[0].id;
+                }
+              })
+              .catch(err => console.error('Error checking availability slots:', err));
+          }
+
+          // Update display
+          selectedDateText.textContent = selectedDates.length ? selectedDates.join(', ') : '';
+          selectedDateDisplay.style.display = selectedDates.length ? 'block' : 'none';
+          renderCalendar();
+          if (saveBtn) saveBtn.disabled = selectedDates.length === 0;
+          // Show delete button if any selected date has an availability id
+          const deleteBtnEl = document.getElementById('deleteBtn');
+          const hasAnyId = Object.keys(selectedAvailabilityIds).length > 0;
+          if (deleteBtnEl) {
+            deleteBtnEl.style.display = hasAnyId ? 'inline-block' : 'none';
+            deleteBtnEl.disabled = !hasAnyId;
+          }
+          return;
+        }
+
+        // Single-select behavior (legacy)
+        selectedDates = [dateStr];
+        selectedAvailabilityIds = {};
+        formDate.value = dateStr;
+        selectedDateText.textContent = formatDisplayDate(new Date(date));
         selectedDateDisplay.style.display = 'block';
 
         renderCalendar(); // Re-render to update selected state
@@ -1255,7 +1321,36 @@
         // Enable save button (date-only availability)
         if (saveBtn) saveBtn.disabled = false;
 
-        console.log('Date selected:', formatDate(selectedDate));
+        // Reset delete button state while we check for availability
+        const deleteBtnEl = document.getElementById('deleteBtn');
+        if (deleteBtnEl) {
+          deleteBtnEl.style.display = 'none';
+          deleteBtnEl.disabled = true;
+        }
+
+        // Ask server if there's an availability record for this date and get its id(s)
+        fetch(`{{ route('admin.availability.slots') }}?date=${encodeURIComponent(formDate.value)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data && Array.isArray(data.available_slots) && data.available_slots.length > 0) {
+              // Use the first availability record id for delete action (date-only entries should be one)
+              selectedAvailabilityIds[dateStr] = data.available_slots[0].id;
+              if (deleteBtnEl) {
+                deleteBtnEl.style.display = 'inline-block';
+                deleteBtnEl.disabled = false;
+              }
+            } else {
+              if (deleteBtnEl) {
+                deleteBtnEl.style.display = 'none';
+                deleteBtnEl.disabled = true;
+              }
+            }
+          })
+          .catch(err => {
+            console.error('Error checking availability slots:', err);
+          });
+
+        console.log('Date selected:', dateStr);
       }
 
       // No time slots to render - admin selects date only
@@ -1271,21 +1366,36 @@
         renderCalendar();
       });
 
+      // Multi-select toggle
+      const multiSelectToggle = document.getElementById('multiSelectToggle');
+      if (multiSelectToggle) {
+        multiSelectToggle.addEventListener('change', function () {
+          multiSelectEnabled = this.checked;
+          // Reset selections when switching modes
+          selectedDates = [];
+          selectedAvailabilityIds = {};
+          formDate.value = '';
+          selectedDateText.textContent = '';
+          selectedDateDisplay.style.display = 'none';
+          const deleteBtnEl = document.getElementById('deleteBtn');
+          if (deleteBtnEl) {
+            deleteBtnEl.style.display = 'none';
+            deleteBtnEl.disabled = true;
+          }
+          if (saveBtn) saveBtn.disabled = true;
+          renderCalendar();
+        });
+      }
+
       // Form submission (date-only availability)
       document.getElementById('availabilityForm').addEventListener('submit', function (e) {
         e.preventDefault();
-
-        if (!formDate.value) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'No Date Selected',
-            text: 'Please select a date.',
-            confirmButtonColor: '#ff6fa8'
-          });
+        // Determine which dates to save
+        const datesToSave = multiSelectEnabled ? selectedDates.slice() : (formDate.value ? [formDate.value] : []);
+        if (!datesToSave.length) {
+          Swal.fire({ icon: 'warning', title: 'No Date Selected', text: 'Please select at least one date.', confirmButtonColor: '#ff6fa8' });
           return;
         }
-
-        console.log('Submitting availability (date-only):', { date: formDate.value });
 
         // Show loading SweetAlert
         Swal.fire({
@@ -1293,70 +1403,115 @@
           text: 'Please wait while we save your availability settings.',
           allowOutsideClick: false,
           allowEscapeKey: false,
-          didOpen: () => {
-            Swal.showLoading();
-          }
+          didOpen: () => { Swal.showLoading(); }
         });
 
-        // Submit form via AJAX (only date is required)
-        const formData = new FormData(this);
+        // Post each date sequentially and collect results
+        const csrf = document.querySelector('input[name="_token"]').value;
+        const savePromises = datesToSave.map(d => {
+          // Skip if already present
+          if (availableDates.includes(d)) return Promise.resolve({ success: true, skipped: true, date: d });
+          const fd = new FormData(); fd.append('date', d);
+          return fetch(this.action, { method: 'POST', body: fd, headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(resp => resp.ok ? resp.json() : resp.text().then(t => { let j=null; try{j=JSON.parse(t)}catch(e){}; throw new Error((j && j.message) ? j.message : t || 'Save failed'); }))
+            .then(data => ({ success: true, data, date: d }))
+            .catch(err => ({ success: false, error: err.message || String(err), date: d }));
+        });
 
-        fetch(this.action, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+        Promise.all(savePromises).then(results => {
+          const saved = results.filter(r => r.success && !r.skipped).map(r => r.date);
+          const skipped = results.filter(r => r.skipped).map(r => r.date);
+          const failed = results.filter(r => !r.success).map(r => ({ date: r.date, error: r.error }));
+
+          // Update availableDates array
+          saved.forEach(d => { if (!availableDates.includes(d)) availableDates.push(d); });
+
+          // Close modal reliably
+          const modalEl = document.getElementById('availabilityModal');
+          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+          try { modal.hide(); } catch (e) { /* ignore */ }
+
+          // Build message
+          let msg = '';
+          if (saved.length) msg += `${saved.length} date(s) saved successfully.`;
+          if (skipped.length) msg += (msg ? ' ' : '') + `${skipped.length} date(s) were already set.`;
+          if (failed.length) msg += (msg ? ' ' : '') + `${failed.length} date(s) failed to save.`;
+
+          Swal.fire({ icon: failed.length ? 'warning' : 'success', title: failed.length ? 'Partial Success' : 'Success', text: msg || 'No changes made.', confirmButtonColor: '#e83e8c', customClass: { container: 'swal-high-zindex' } })
+            .then(() => { window.location.reload(); });
+        }).catch(err => {
+          console.error('Save error:', err);
+          Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred while saving availability.', confirmButtonColor: '#b21f66', customClass: { container: 'swal-high-zindex' } });
+        });
+      });
+
+      // Delete availability button handler (supports multiple delete)
+      const deleteBtn = document.getElementById('deleteBtn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', function () {
+          // Collect availability ids for selected dates
+          const ids = Object.values(selectedAvailabilityIds).filter(Boolean);
+          if (!ids.length) {
+            Swal.fire({ icon: 'warning', title: 'Nothing to delete', text: 'There is no availability record for the selected date(s).', confirmButtonColor: '#e83e8c' });
+            return;
           }
-        })
-          .then(response => {
-            if (!response.ok) {
-              return response.text().then(text => { throw new Error(text || 'Server error'); });
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('Response data:', data);
-            if (data.success) {
-              // Add the saved date to availableDates array if not already present
-              const savedDate = formDate.value;
-              if (!availableDates.includes(savedDate)) {
-                availableDates.push(savedDate);
-              }
 
-              // Close modal first before showing success message
-              const modal = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
-              if (modal) modal.hide();
+          Swal.fire({
+            title: 'Delete availability?',
+            text: `This will remove the availability for ${ids.length} selected date(s). This action cannot be undone.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete them',
+          }).then((result) => {
+            if (!result.isConfirmed) return;
 
-              // Show success message after modal is closed
-              Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: data.message || 'Availability saved successfully!',
-                confirmButtonColor: '#e83e8c'
-              }).then(() => {
-                window.location.reload();
+            const csrf = document.querySelector('input[name="_token"]').value;
+            // Send DELETE requests sequentially
+            const deletePromises = ids.map(id => fetch(`{{ url('/admin/availability') }}/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+              .then(resp => resp.text().then(text => { let data=null; try{data= text ? JSON.parse(text) : null;}catch(e){data=null;} if (resp.ok) return data||{success:true}; const msg=(data&&data.message)?data.message:(text||'Delete failed'); throw new Error(msg);}))
+            );
+
+            Promise.allSettled(deletePromises).then(results => {
+              const succeeded = [];
+              const failed = [];
+              results.forEach((r, idx) => {
+                if (r.status === 'fulfilled') succeeded.push(ids[idx]);
+                else failed.push({ id: ids[idx], reason: r.reason && r.reason.message ? r.reason.message : String(r.reason) });
               });
-            } else {
-              Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message || 'Failed to save availability. Please try again.',
-                confirmButtonColor: '#b21f66'
+
+              // Remove succeeded dates from availableDates and selected arrays
+              succeeded.forEach(id => {
+                // find date(s) that matched this id and remove
+                for (const [dateStr, availId] of Object.entries(selectedAvailabilityIds)) {
+                  if (String(availId) === String(id)) {
+                    const idx = availableDates.indexOf(dateStr);
+                    if (idx !== -1) availableDates.splice(idx, 1);
+                    // remove from selectedDates
+                    const sdIdx = selectedDates.indexOf(dateStr);
+                    if (sdIdx !== -1) selectedDates.splice(sdIdx, 1);
+                    delete selectedAvailabilityIds[dateStr];
+                  }
+                }
               });
-            }
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'An error occurred while saving availability. Please try again.',
-              confirmButtonColor: '#b21f66'
+
+              // Close modal reliably
+              const modalEl = document.getElementById('availabilityModal');
+              const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+              try { modal.hide(); } catch (e) { /* ignore */ }
+
+              // Show result
+              let msg = `${succeeded.length} date(s) deleted.`;
+              if (failed.length) msg += ` ${failed.length} failed.`;
+              Swal.fire({ icon: failed.length ? 'warning' : 'success', title: failed.length ? 'Partial Result' : 'Deleted', text: msg, confirmButtonColor: '#e83e8c', customClass: { container: 'swal-high-zindex' } }).then(() => { window.location.reload(); });
+            }).catch(err => {
+              console.error('Delete batch error:', err);
+              Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred while deleting availability.', confirmButtonColor: '#b21f66', customClass: { container: 'swal-high-zindex' } });
             });
           });
-      });
+        });
+      }
 
       // Initialize calendar
       renderCalendar();
