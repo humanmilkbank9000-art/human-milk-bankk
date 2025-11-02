@@ -524,77 +524,58 @@
                                 qaEl.setAttribute('tabindex', '-1');
                                 qaEl.setAttribute('aria-hidden', 'true');
                                 qaEl.innerHTML = `
+                                <style>
+                                    /* Scoped HS-like theme for Q&A modal */
+                                    #hcQAModal .modal-header {
+                                        background: linear-gradient(180deg, #ffd9e8 0%, #ff93c1 100%) !important;
+                                        color: #222 !important;
+                                    }
+                                    #hcQAModal .qa-intro { color:#444; }
+                                    #hcQAModal .question-item { background:#fff9fb; border:1px solid rgba(255,111,166,0.12); border-radius:8px; padding:12px; margin-bottom:12px; }
+                                    #hcQAModal .question-label { font-weight:600; color:#212529; margin-bottom:8px; }
+                                    #hcQAModal .translation { font-style: italic; color:#555; font-size:0.9rem; }
+                                    #hcQAModal .radio-group { display:flex; gap:10px; }
+                                    #hcQAModal .radio-option { position:relative; flex:1; }
+                                    #hcQAModal .radio-option input[type="radio"]{ position:absolute; opacity:0; width:0; height:0; }
+                                    #hcQAModal .radio-option label{ display:flex; align-items:center; justify-content:center; padding:10px 16px; background:#fff6fb; border:2px solid rgba(255,111,166,0.2); border-radius:8px; cursor:pointer; transition:all .2s; font-weight:500; min-height:44px; }
+                                    #hcQAModal .radio-option label:hover{ border-color:#ff93c1; background:#fff0f6; }
+                                    #hcQAModal .radio-option input[type="radio"]:checked + label{ background:#ff93c1; border-color:#ff93c1; color:#fff; box-shadow:0 2px 8px rgba(255,83,140,0.18); }
+                                </style>
                                 <div class="modal-dialog modal-lg modal-dialog-centered">
                                     <div class="modal-content">
-                                        <div class="modal-header bg-primary text-white">
+                                        <div class="modal-header">
                                             <h5 class="modal-title">Lifestyle Checklist</h5>
-                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <p class="mb-2">Please answer all questions. You must answer "Yes" to proceed.</p>
-                                            <div class="table-responsive">
-                                                <table class="table align-middle">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Question</th>
-                                                            <th class="text-center" style="width:90px;">Yes</th>
-                                                            <th class="text-center" style="width:90px;">No</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>I am in good health <em>(Maayo akong paminaw sa akong kalawasan)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q1]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q1]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I do not smoke <em>(Dili ako gapangarilyo)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q2]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q2]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I am not taking medication or herbal supplements <em>(Dili ako gatumar ug mga tambal o supplements)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q3]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q3]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I am not consuming alcohol <em>(Dili ako gainom ug alkohol)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q4]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q4]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I have not had a fever <em>(Wala ako naghilanat)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q5]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q5]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I have not had cough or colds <em>(Wala ako nag-ubo o sip-on)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q6]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q6]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I have no breast infections <em>(Wala ako impeksyon sa akong totoy)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q7]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q7]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I have followed all hygiene instructions <em>(Gisunod nako ang tanan mga instruksyon tumong sa kalimpyo)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q8]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q8]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I have followed all labeling instructions <em>(Gisunod nako ang tanan mga instruksyon tumong sa pagmarka)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q9]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q9]" value="no"></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>I have followed all storage instructions <em>(Gisunod nako ang tanan mga instruksyon tumong sa pagtipig sa gatas)</em></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q10]" value="yes"></td>
-                                                            <td class="text-center"><input type="radio" name="hcqa[q10]" value="no"></td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            <p class="qa-intro mb-3">Please answer all questions below. You can proceed regardless of Yes/No answers.</p>
+                                            ${[
+                                                ['q1','I am in good health','Maayo akong paminaw sa akong kalawasan'],
+                                                ['q2','I do not smoke','Dili ako gapangarilyo'],
+                                                ['q3','I am not taking medication or herbal supplements','Dili ako gatumar ug mga tambal o supplements'],
+                                                ['q4','I am not consuming alcohol','Dili ako gainom ug alkohol'],
+                                                ['q5','I have not had a fever','Wala ako naghilanat'],
+                                                ['q6','I have not had cough or colds','Wala ako nag-ubo o sip-on'],
+                                                ['q7','I have no breast infections','Wala ako impeksyon sa akong totoy'],
+                                                ['q8','I have followed all hygiene instructions','Gisunod nako ang tanan mga instruksyon tumong sa kalimpyo'],
+                                                ['q9','I have followed all labeling instructions','Gisunod nako ang tanan mga instruksyon tumong sa pagmarka'],
+                                                ['q10','I have followed all storage instructions','Gisunod nako ang tanan mga instruksyon tumong sa pagtipig sa gatas']
+                                            ].map(([code,en,cebu]) => `
+                                                <div class="question-item">
+                                                    <div class="question-label">${en}</div>
+                                                    <div class="translation">(${cebu})</div>
+                                                    <div class="radio-group mt-2">
+                                                        <div class="radio-option yes">
+                                                            <input type="radio" id="${code}_yes" name="hcqa[${code}]" value="yes">
+                                                            <label for="${code}_yes">Yes</label>
+                                                        </div>
+                                                        <div class="radio-option no">
+                                                            <input type="radio" id="${code}_no" name="hcqa[${code}]" value="no">
+                                                            <label for="${code}_no">No</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Back</button>
