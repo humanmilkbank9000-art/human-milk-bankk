@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Donation;
+use App\Models\User;
 use App\Models\HealthScreening;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
@@ -245,6 +246,102 @@ class DonationController extends Controller
             return response()->json(['success' => true, 'message' => 'Pickup validated successfully']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Assist Walk-in Donation: Admin creates a completed walk-in donation and adds it to inventory.
+     */
+    public function assistWalkIn(Request $request)
+    {
+        if (!Session::has('account_id') || Session::get('account_role') !== 'admin') {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+            return redirect()->route('login')->with('error', 'Please login as admin first.');
+        }
+
+        $validated = $request->validate([
+            'donor_first_name' => 'required|string|max:255',
+            'donor_last_name' => 'required|string|max:255',
+            'donor_contact' => ['required','string','max:20','regex:/^09\d{9}$/'],
+            'donor_address' => 'nullable|string|max:1000',
+            'number_of_bags' => 'required|integer|min:1|max:50',
+            'bag_volumes' => 'required|array|min:1',
+            'bag_volumes.*' => 'required|numeric|min:0.01',
+            'donation_date' => 'nullable|date',
+            'donation_time' => 'nullable|string|max:10',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Find existing user by contact; ensure name consistency to avoid mis-linking
+            $user = User::where('contact_number', $validated['donor_contact'])->first();
+            if ($user) {
+                $fnameMatch = trim(strtolower($user->first_name)) === trim(strtolower($validated['donor_first_name']));
+                $lnameMatch = trim(strtolower($user->last_name)) === trim(strtolower($validated['donor_last_name']));
+                if (!$fnameMatch || !$lnameMatch) {
+                    DB::rollBack();
+                    $msg = 'This contact number is registered to ' . trim(($user->first_name ?? '').' '.($user->last_name ?? '')) . '. Please use that exact name or a different contact.';
+                    if ($request->ajax() || $request->wantsJson()) return response()->json(['success'=>false,'message'=>$msg],422);
+                    return back()->withInput()->with('error', $msg);
+                }
+            } else {
+                // Create a minimal donor profile
+                $user = User::create([
+                    'contact_number' => $validated['donor_contact'],
+                    'password' => bcrypt('temporary_password_' . time()),
+                    'first_name' => $validated['donor_first_name'],
+                    'middle_name' => null,
+                    'last_name' => $validated['donor_last_name'],
+                    'address' => $validated['donor_address'] ?? 'Walk-in (not provided)',
+                    'latitude' => null,
+                    'longitude' => null,
+                    'date_of_birth' => now()->toDateString(),
+                    'age' => 0,
+                    'sex' => 'female',
+                    'user_type' => 'donor',
+                ]);
+            }
+
+            // Create donation as completed walk-in and add to inventory
+            $adminId = Session::get('account_id');
+            $donation = new Donation();
+            $donation->admin_id = $adminId;
+            $donation->user_id = $user->user_id;
+            $donation->donation_method = 'walk_in';
+            $donation->status = 'success_walk_in';
+            $donation->donation_date = $validated['donation_date'] ?? now()->toDateString();
+            $donation->donation_time = $validated['donation_time'] ?? now()->format('H:i');
+
+            // Volumes
+            $donation->setBagVolumes($validated['bag_volumes']);
+            // available_volume is initialized in addToInventory if needed; set explicitly for clarity
+            $donation->available_volume = array_sum($validated['bag_volumes']);
+
+            // Mark as unpasteurized inventory now
+            $donation->pasteurization_status = 'unpasteurized';
+            $donation->added_to_inventory_at = now();
+
+            $donation->save();
+            $donation->addToInventory();
+
+            DB::commit();
+
+            $message = 'Walk-in donation recorded and added to inventory.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $message]);
+            }
+
+            // Redirect to Inventory Unpasteurized or to Walk-in Success tab; choose donations page success tab for continuity
+            return redirect()->route('admin.donation', ['status' => 'success_walk_in'])->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Assist walk-in donation error: ' . $e->getMessage());
+            $msg = 'Failed to record walk-in donation: ' . $e->getMessage();
+            if ($request->ajax() || $request->wantsJson()) return response()->json(['success'=>false,'message'=>$msg],500);
+            return back()->withInput()->with('error', $msg);
         }
     }
     

@@ -63,6 +63,8 @@ Route::get('/admin/donations/{id}', [DonationController::class, 'show'])->name('
 Route::post('/admin/donations/{id}/validate-walkin', [DonationController::class, 'validateWalkIn'])->name('admin.donation.validate-walkin');
 Route::post('/admin/donations/{id}/schedule-pickup', [DonationController::class, 'schedulePickup'])->name('admin.donation.schedule-pickup');
 Route::post('/admin/donations/{id}/reschedule-pickup', [DonationController::class, 'reschedulePickup'])->name('admin.donation.reschedule-pickup');
+// Assist Walk-in Donation (admin creates a walk-in donation and adds to inventory immediately)
+Route::post('/admin/donations/assist-walkin', [DonationController::class, 'assistWalkIn'])->name('admin.donation.assist-walkin');
 Route::post('/admin/donations/{id}/validate-pickup', [DonationController::class, 'validatePickup'])->name('admin.donation.validate-pickup');
 // Decline donation (pending only)
 Route::post('/admin/donations/{id}/decline', [DonationController::class, 'decline'])->name('admin.donation.decline');

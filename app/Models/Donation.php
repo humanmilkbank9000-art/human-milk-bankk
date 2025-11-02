@@ -327,10 +327,10 @@ class Donation extends Model
     public function scopeUnpasteurizedInventory($query)
     {
         // Show ALL success donations that are unpasteurized
-        // This includes donations with available_volume = 0 (fully dispensed)
-        // The "Available" column will show the remaining volume
+        // Now we only show donations that still have milk available (> 0)
         return $query->whereIn('status', ['success_walk_in', 'success_home_collection'])
                     ->where('pasteurization_status', 'unpasteurized')
+                    ->where('available_volume', '>', 0)
                     ->orderBy('added_to_inventory_at', 'asc');
     }
 

@@ -662,7 +662,6 @@ class BreastmilkRequestController extends Controller
             'medical_condition' => 'required|string',
             'prescription' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             'request_date' => 'required|date',
-            'volume_needed' => 'required|numeric|min:1',
             'milk_type' => 'required|in:unpasteurized,pasteurized',
             'admin_notes' => 'nullable|string'
             // optional fields for immediate dispensing when assisting
@@ -682,29 +681,38 @@ class BreastmilkRequestController extends Controller
                 return redirect()->back()->withInput()->with('error', 'The contact number you entered is already registered to another user (Name: ' . ($user->first_name ?? '') . ' ' . ($user->last_name ?? '') . '). If you intend to link to that user, enter their exact name; otherwise use a different contact number.');
             }
 
-            // If user doesn't exist, create a new one
+            // If user doesn't exist, create a new minimal requester profile per current schema
             if (!$user) {
                 $user = \App\Models\User::create([
-                    'first_name' => $validated['guardian_first_name'],
-                    'last_name' => $validated['guardian_last_name'],
                     'contact_number' => $validated['guardian_contact'],
-                    'email' => null, // Walk-in users may not have email
                     'password' => bcrypt('temporary_password_' . time()), // Temporary password
-                    'role' => 'user',
-                    'status' => 'walk_in', // Mark as walk-in user
-                    'email_verified_at' => null
+                    'first_name' => $validated['guardian_first_name'],
+                    'middle_name' => null,
+                    'last_name' => $validated['guardian_last_name'],
+                    'address' => 'Walk-in (not provided)',
+                    'latitude' => null,
+                    'longitude' => null,
+                    'date_of_birth' => now()->toDateString(),
+                    'age' => 0,
+                    'sex' => 'female', // default for guardians when not specified
+                    'user_type' => 'requester',
                 ]);
             }
 
-            // Create infant record
+            // Create infant record (schema requires lowercase sex and non-null age)
+            $dob = \Carbon\Carbon::parse($validated['infant_date_of_birth'])->startOfDay();
+            $now = \Carbon\Carbon::now()->startOfDay();
+            $months = max(0, ($dob->diff($now)->y * 12) + $dob->diff($now)->m);
+            $sexLower = strtolower($validated['infant_sex']); // map 'Male'/'Female' -> 'male'/'female'
+
             $infant = Infant::create([
                 'user_id' => $user->user_id,
                 'first_name' => $validated['infant_first_name'],
                 'last_name' => $validated['infant_last_name'],
                 'date_of_birth' => $validated['infant_date_of_birth'],
-                'sex' => $validated['infant_sex'],
+                'sex' => $sexLower,
+                'age' => $months,
                 'birth_weight' => $validated['infant_weight'],
-                'current_weight' => $validated['infant_weight']
             ]);
 
             // Handle prescription upload
@@ -714,13 +722,13 @@ class BreastmilkRequestController extends Controller
                 $prescriptionPath = $file->store('prescriptions', 'public');
             }
 
-            // Create breastmilk request
+            // Create breastmilk request (volume_requested left null; if dispensing now, it will be set during approve+dispense)
             $breastmilkRequest = BreastmilkRequest::create([
                 'user_id' => $user->user_id,
                 'infant_id' => $infant->infant_id,
                 'request_date' => $validated['request_date'],
                 'request_time' => now()->format('H:i:s'),
-                'volume_requested' => $validated['volume_needed'],
+                'volume_requested' => null,
                 'milk_type' => $validated['milk_type'],
                 'prescription_path' => $prescriptionPath,
                 'status' => 'pending',
@@ -759,6 +767,16 @@ class BreastmilkRequestController extends Controller
                         ->with('warning', 'Assisted request created but no inventory sources were selected for immediate dispensing.');
                 }
 
+                // Compute total volume from selected sources
+                $totalSelectedVolume = 0.0;
+                foreach ($sources as $s) {
+                    $totalSelectedVolume += (float) ($s['volume'] ?? 0);
+                }
+                if ($totalSelectedVolume <= 0) {
+                    return redirect()->route('admin.request')
+                        ->with('warning', 'Assisted request created but selected volumes total is zero. No dispensing performed.');
+                }
+
                 try {
                     // Use the same approval+dispense flow used by admins when approving user requests
                     $adminId = Session::get('account_id');
@@ -771,7 +789,7 @@ class BreastmilkRequestController extends Controller
                     }
 
                     $payload = [
-                        'volume_requested' => $validated['volume_needed'],
+                        'volume_requested' => $totalSelectedVolume,
                         'milk_type' => $validated['milk_type'],
                         'selected_items' => $selectedItems,
                         'admin_notes' => $validated['admin_notes'] ?? null
@@ -779,7 +797,7 @@ class BreastmilkRequestController extends Controller
 
                     $this->service->approveAndDispense($breastmilkRequest, $payload, $adminId);
 
-                    return redirect()->route('admin.request')
+                    return redirect()->route('admin.request', ['status' => 'dispensed'])
                         ->with('success', 'Assisted request submitted and dispensed successfully for ' . $validated['guardian_first_name'] . ' ' . $validated['guardian_last_name']);
                 } catch (\Exception $e) {
                     Log::error('Error dispensing during assisted request: ' . $e->getMessage());

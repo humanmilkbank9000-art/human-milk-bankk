@@ -397,9 +397,16 @@
             </div>
         @endif
 
+        @if(session('warning'))
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ session('warning') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <!-- Page Header with Action Button -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0"><i class="fas fa-heart"></i> Breastmilk Request Management</h4>
+       
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assistedRequestModal">
                 <i class="fas fa-user-plus"></i> Assist Walk-in Request
             </button>
@@ -910,6 +917,18 @@
                         </div>
                     </div>
 
+                    @if($request->hasPrescription())
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <button type="button" class="admin-review-btn btn-sm force-blue" data-bs-toggle="modal"
+                                    data-bs-target="#prescriptionModal{{ $request->breastmilk_request_id }}"
+                                    onclick="viewPrescriptionModal({{ $request->breastmilk_request_id }})">
+                                    Review Prescription
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+
                     @if($request->status === 'pending')
                         <!-- Admin Notes Field for Accept/Decline -->
                         <div class="row mt-3">
@@ -1105,7 +1124,7 @@
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="assistedRequestForm" action="{{ route('admin.breastmilk-request.store-assisted') }}" method="POST">
+                <form id="assistedRequestForm" action="{{ route('admin.breastmilk-request.store-assisted') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="alert alert-info">
@@ -1116,15 +1135,15 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="guardian_first_name" class="form-label">First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="guardian_first_name" name="guardian_first_name" required>
+                                <input type="text" class="form-control" id="guardian_first_name" name="guardian_first_name" value="{{ old('guardian_first_name') }}" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="guardian_last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="guardian_last_name" name="guardian_last_name" required>
+                                <input type="text" class="form-control" id="guardian_last_name" name="guardian_last_name" value="{{ old('guardian_last_name') }}" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="guardian_contact" class="form-label">Contact Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="guardian_contact" name="guardian_contact" required placeholder="09XXXXXXXXX">
+                                <input type="text" class="form-control" id="guardian_contact" name="guardian_contact" value="{{ old('guardian_contact') }}" required placeholder="09XXXXXXXXX">
                                 <div id="guardian_contact_feedback" class="form-text text-danger" style="display:none;"></div>
                             </div>
                         </div>
@@ -1133,15 +1152,15 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="infant_first_name" class="form-label">Infant First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="infant_first_name" name="infant_first_name" required>
+                                <input type="text" class="form-control" id="infant_first_name" name="infant_first_name" value="{{ old('infant_first_name') }}" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="infant_last_name" class="form-label">Infant Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="infant_last_name" name="infant_last_name" required>
+                                <input type="text" class="form-control" id="infant_last_name" name="infant_last_name" value="{{ old('infant_last_name') }}" required>
                             </div>
                             <div class="col-md-4">
                                 <label for="infant_date_of_birth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="infant_date_of_birth" name="infant_date_of_birth" required max="{{ date('Y-m-d') }}">
+                                <input type="date" class="form-control" id="infant_date_of_birth" name="infant_date_of_birth" value="{{ old('infant_date_of_birth') }}" required max="{{ date('Y-m-d') }}">
                             </div>
                         </div>
 
@@ -1150,20 +1169,20 @@
                                 <label for="infant_sex" class="form-label">Sex <span class="text-danger">*</span></label>
                                 <select class="form-select" id="infant_sex" name="infant_sex" required>
                                     <option value="">Select Sex</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
+                                    <option value="Male" {{ old('infant_sex')==='Male' ? 'selected' : '' }}>Male</option>
+                                    <option value="Female" {{ old('infant_sex')==='Female' ? 'selected' : '' }}>Female</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="infant_weight" class="form-label">Weight (kg) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="infant_weight" name="infant_weight" required min="0.5" max="20" placeholder="e.g., 3.5">
+                                <input type="number" step="0.01" class="form-control" id="infant_weight" name="infant_weight" value="{{ old('infant_weight') }}" required min="0.5" max="20" placeholder="e.g., 3.5">
                             </div>
                         </div>
 
                         <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-heartbeat"></i> Medical Information</h6>
                         <div class="mb-3">
                             <label for="medical_condition" class="form-label">Medical Condition / Reason for Request <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="medical_condition" name="medical_condition" rows="3" required placeholder="Describe the infant's medical condition or reason for requesting breastmilk"></textarea>
+                            <textarea class="form-control" id="medical_condition" name="medical_condition" rows="3" required placeholder="Describe the infant's medical condition or reason for requesting breastmilk">{{ old('medical_condition') }}</textarea>
                         </div>
 
                         <div class="mb-3">
@@ -1174,26 +1193,22 @@
 
                         <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-calendar-alt"></i> Request Details</h6>
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="request_date" class="form-label">Requested Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="request_date" name="request_date" required value="{{ date('Y-m-d') }}">
+                                <input type="date" class="form-control" id="request_date" name="request_date" required value="{{ old('request_date', date('Y-m-d')) }}">
                             </div>
-                            <div class="col-md-4">
-                                <label for="volume_needed" class="form-label">Volume Needed (ml) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="volume_needed" name="volume_needed" required min="1" step="1" placeholder="e.g., 500">
-                            </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="milk_type" class="form-label">Milk Type <span class="text-danger">*</span></label>
                                 <select class="form-select" id="milk_type" name="milk_type" required>
                                     <option value="">Select milk type</option>
-                                    <option value="unpasteurized">Unpasteurized Breastmilk</option>
-                                    <option value="pasteurized">Pasteurized Breastmilk</option>
+                                    <option value="unpasteurized" {{ old('milk_type')==='unpasteurized' ? 'selected' : '' }}>Unpasteurized Breastmilk</option>
+                                    <option value="pasteurized" {{ old('milk_type')==='pasteurized' ? 'selected' : '' }}>Pasteurized Breastmilk</option>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" value="1" id="dispense_now_checkbox" name="dispense_now">
+                            <input class="form-check-input" type="checkbox" value="1" id="dispense_now_checkbox" name="dispense_now" {{ old('dispense_now', '1')=='1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="dispense_now_checkbox">
                                 Dispense now from available inventory (admin-assisted immediate dispensing)
                             </label>
@@ -1202,10 +1217,31 @@
                         <div id="assistedInventorySection" style="display:none;" class="mb-3">
                             <div class="card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Select inventory sources</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="assistedVolumeToDispense" class="form-label">
+                                                    <i class="fas fa-flask"></i> Volume to Dispense (ml) <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" inputmode="numeric" pattern="[0-9]*([.][0-9]+)?" class="form-control" id="assistedVolumeToDispense" value="{{ old('assisted_volume') }}" oninput="assistedUpdateSelectedVolume()">
+                                                <div class="form-text">Enter the amount of milk to dispense.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-2" id="assistedVolumeTracker" style="display:none;">
+                                                <div class="alert alert-info mb-0 py-2">
+                                                    <small>
+                                                        <strong>Selected:</strong> <span id="assistedTotalSelected">0.00</span> ml /
+                                                        <strong>Required:</strong> <span id="assistedVolumeRequired">0.00</span> ml
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h6 class="card-title mt-2"><i class="fas fa-warehouse"></i> Available Inventory</h6>
                                     <div id="assistedInventoryLoading" style="display:none">Loading inventory...</div>
-                                    <div id="assistedInventoryList"></div>
-                                    <small class="text-muted d-block mt-2">Select one or more sources and specify the volume to use from each. Total selected volume must be greater or equal to requested volume.</small>
+                                    <div id="assistedInventoryList" style="max-height:300px; overflow-y:auto;"></div>
+                                    <small class="text-muted d-block mt-2">Select one source (donation or batch). The entered volume will be deducted from the selected source.</small>
                                 </div>
                             </div>
                         </div>
@@ -1215,7 +1251,7 @@
 
                         <div class="mb-3">
                             <label for="admin_notes" class="form-label">Staff Notes (Optional)</label>
-                            <textarea class="form-control" id="admin_notes" name="admin_notes" rows="2" placeholder="Additional notes or observations from the interview"></textarea>
+                            <textarea class="form-control" id="admin_notes" name="admin_notes" rows="2" placeholder="Additional notes or observations from the interview">{{ old('admin_notes') }}</textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1383,6 +1419,67 @@
 
             // Initial state
             performSearch();
+        });
+    </script>
+
+    <script>
+        // Display SweetAlert for flash messages after redirects (success/warning/error)
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                const hasSwal = (typeof Swal !== 'undefined');
+                @if ($errors->any())
+                    if (hasSwal) {
+                        let html = '';
+                        @foreach ($errors->all() as $err)
+                            html += `<div>• {{ addslashes($err) }}</div>`;
+                        @endforeach
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Please fix the following:',
+                            html: html,
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                    // Reopen the Assisted modal so the admin can correct inputs
+                    try {
+                        const modalEl = document.getElementById('assistedRequestModal');
+                        if (modalEl && window.bootstrap && bootstrap.Modal) {
+                            const m = new bootstrap.Modal(modalEl);
+                            m.show();
+                        }
+                    } catch(_) {}
+                @endif
+                @if(session('success'))
+                    if (hasSwal) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: @json(session('success')),
+                            confirmButtonColor: '#28a745'
+                        });
+                    }
+                @endif
+                @if(session('warning'))
+                    if (hasSwal) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Notice',
+                            text: @json(session('warning')),
+                            confirmButtonColor: '#f59e0b'
+                        });
+                    }
+                @endif
+                @if(session('error'))
+                    if (hasSwal) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: @json(session('error')),
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                @endif
+            } catch (_) {}
         });
     </script>
 
@@ -1584,7 +1681,7 @@
             }
         }
 
-        // New minimal modal view: fetch prescription and display image only
+        // New minimal modal view: fetch prescription and display image or PDF
         function viewPrescriptionModal(requestId) {
             const containerId = 'prescriptionModalContent' + requestId;
             const container = document.getElementById(containerId);
@@ -1614,16 +1711,37 @@
                         `;
                     }
 
+                    const isPdf = typeof data.image === 'string' && /^data:application\/pdf/i.test(data.image);
+                    const filenameSafe = escapeHtml(data.filename || 'Prescription');
+                    let viewerHtml = '';
+                    if (isPdf) {
+                        viewerHtml = `
+                            <div class="ratio ratio-16x9 w-100">
+                                <iframe src="${data.image}" title="${filenameSafe}" style="border:1px solid #dee2e6; border-radius: .25rem;"></iframe>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download PDF</a>
+                            </div>
+                        `;
+                    } else {
+                        viewerHtml = `
+                            <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
+                                <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                            </div>
+                            <div class="mt-2 text-center">
+                                <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download</a>
+                            </div>
+                        `;
+                    }
+
                     container.innerHTML = `
                         <div class="row">
                             <div class="col-md-4 d-flex justify-content-center align-items-start">
                                 ${userHtml}
                             </div>
                             <div class="col-md-8 d-flex flex-column align-items-center">
-                                <h6 class="mb-3">Prescription: ${escapeHtml(data.filename || 'Prescription')}</h6>
-                                <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
-                                    <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
-                                </div>
+                                <h6 class="mb-3">Prescription: ${filenameSafe}</h6>
+                                ${viewerHtml}
                             </div>
                         </div>
                     `;
@@ -2671,48 +2789,22 @@
                     if (dispenseNowCheckbox && dispenseNowCheckbox.checked) {
                         assistedLoadInventory();
                     }
-                    // If admin already entered a desired volume, auto-enable "Dispense now" and load inventory
-                    const volNeededEl = document.getElementById('volume_needed');
-                    if (volNeededEl && volNeededEl.value && volNeededEl.value.trim() !== '') {
-                        try {
-                            const v = parseFloat(volNeededEl.value);
-                            if (!isNaN(v) && v > 0) {
-                                if (dispenseNowCheckbox && !dispenseNowCheckbox.checked) {
-                                    dispenseNowCheckbox.checked = true;
-                                    const section = document.getElementById('assistedInventorySection');
-                                    if (section) section.style.display = 'block';
-                                    assistedLoadInventory();
-                                }
-                            }
-                        } catch (err) {
-                            // ignore parse errors
-                        }
-                    }
                 });
             }
 
-            // Auto-toggle inventory when admin types a desired volume
-            const volNeededInput = document.getElementById('volume_needed');
-            if (volNeededInput) {
-                volNeededInput.addEventListener('input', function () {
-                    const milkType = (document.getElementById('milk_type') || {}).value;
-                    const v = parseFloat(this.value || 0);
-                    if (!isNaN(v) && v > 0 && milkType) {
-                        if (dispenseNowCheckbox && !dispenseNowCheckbox.checked) {
-                            dispenseNowCheckbox.checked = true;
-                        }
-                        const section = document.getElementById('assistedInventorySection');
-                        if (section) section.style.display = 'block';
+            // On initial load, if checkbox is checked, show inventory section when milk type is selected
+            (function initAssistedInventory() {
+                const section = document.getElementById('assistedInventorySection');
+                if (!section) return;
+                if (dispenseNowCheckbox && dispenseNowCheckbox.checked) {
+                    section.style.display = 'block';
+                    if (milkTypeSelect && milkTypeSelect.value) {
                         assistedLoadInventory();
-                    } else {
-                        // hide when invalid
-                        if (dispenseNowCheckbox && !dispenseNowCheckbox.checked) {
-                            const section = document.getElementById('assistedInventorySection');
-                            if (section) section.style.display = 'none';
-                        }
                     }
-                });
-            }
+                } else {
+                    section.style.display = 'none';
+                }
+            })();
 
             // Prepare selected_sources_json before form submit
             const assistedForm = document.getElementById('assistedRequestForm');
@@ -2720,60 +2812,52 @@
                 assistedForm.addEventListener('submit', function (e) {
                     const dispenseNow = document.getElementById('dispense_now_checkbox').checked;
                     if (!dispenseNow) return; // nothing to do
-
-                    // collect selected sources
-                    const list = document.querySelectorAll('#assistedInventoryList .inventory-item');
-                    const selected = [];
-                    let total = 0;
-                    list.forEach(item => {
-                        const cb = item.querySelector('input[type="checkbox"]');
-                        if (cb && cb.checked) {
-                            const type = cb.dataset.type;
-                            const id = cb.dataset.id;
-                            const bagIndex = cb.dataset.bagIndex !== undefined ? cb.dataset.bagIndex : null;
-                            // Get planned use from visible label (auto-selection) or fall back to numeric input if present
-                            let vol = 0;
-                            const plannedSpan = item.querySelector('span[id^="planned_use_"]');
-                            if (plannedSpan) {
-                                vol = parseFloat(plannedSpan.textContent || 0) || 0;
-                            } else {
-                                const volInput = item.querySelector('input[type="number"]');
-                                vol = volInput ? parseFloat(volInput.value) : 0;
-                            }
-                            if (vol > 0) {
-                                const src = { type: type, id: id, volume: vol };
-                                if (bagIndex !== null) src.bag_index = parseInt(bagIndex, 10);
-                                selected.push(src);
-                                total += vol;
-                            }
-                        }
-                    });
-
-                    const requested = parseFloat(document.getElementById('volume_needed').value || 0);
-                    if (selected.length === 0) {
+                    // read milk type, selected radio, and overall volume
+                    const milkType = (document.getElementById('milk_type') || {}).value;
+                    const volumeStr = (document.getElementById('assistedVolumeToDispense') || {}).value || '';
+                    const volume = parseFloat(volumeStr);
+                    if (!milkType) {
                         e.preventDefault();
-                        alert('You selected "Dispense now" but no inventory sources were selected. Please select at least one source or uncheck Dispense now.');
+                        alert('Please select a milk type.');
                         return false;
                     }
-                    if (total < requested) {
+                    if (!volume || volume <= 0) {
                         e.preventDefault();
-                        alert('Selected total volume (' + total + 'ml) is less than requested volume (' + requested + 'ml). Please adjust selected sources.');
+                        alert('Please enter a valid volume to dispense.');
                         return false;
                     }
-
-                    document.getElementById('selected_sources_json').value = JSON.stringify(selected);
+                    let selectedRadio = null;
+                    if (milkType === 'unpasteurized') {
+                        selectedRadio = document.querySelector('input[name="assisted_donation_radio"]:checked');
+                    } else {
+                        selectedRadio = document.querySelector('input[name="assisted_batch_radio"]:checked');
+                    }
+                    if (!selectedRadio) {
+                        e.preventDefault();
+                        alert('Please select a source from inventory.');
+                        return false;
+                    }
+                    const available = parseFloat(selectedRadio.dataset.volume || '0');
+                    if (volume > available + 1e-6) {
+                        e.preventDefault();
+                        alert('Entered volume exceeds the available volume of the selected source.');
+                        return false;
+                    }
+                    const src = { type: milkType, id: selectedRadio.value, volume: volume };
+                    document.getElementById('selected_sources_json').value = JSON.stringify([src]);
                     // allow submit to continue
                 });
             }
         });
-
         function assistedLoadInventory() {
             const milkType = document.getElementById('milk_type').value;
             const loading = document.getElementById('assistedInventoryLoading');
             const list = document.getElementById('assistedInventoryList');
+            const tracker = document.getElementById('assistedVolumeTracker');
             list.innerHTML = '';
             if (!milkType) return;
             loading.style.display = 'block';
+            tracker.style.display = 'block';
             fetch(`{{ route('admin.request.inventory') }}?type=${milkType}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }})
                 .then(r => r.json())
                 .then(data => {
@@ -2783,73 +2867,63 @@
                         return;
                     }
 
-                    const requested = parseFloat(document.getElementById('volume_needed').value || 0) || 0;
-                    let html = '';
-
                     if (milkType === 'unpasteurized') {
                         const donations = data.donations || [];
                         if (donations.length === 0) {
                             list.innerHTML = '<div class="alert alert-warning">No unpasteurized donations available.</div>';
                             return;
                         }
-
-                        // Build bag-level list (read-only volumes). We'll auto-select bags to meet the requested volume.
+                        let html = '<div class="list-group">';
                         donations.forEach(d => {
-                            const bagVolumes = d.individual_bag_volumes || [];
-                            html += `<div class="card mb-2 p-2"><div><strong>Donation #${d.breastmilk_donation_id}</strong> — ${d.donor_name} — Total Available: ${d.available_volume}ml</div>`;
-
-                            if (Array.isArray(bagVolumes) && bagVolumes.length > 0) {
-                                bagVolumes.forEach((bv, idx) => {
-                                    const displayVol = bv % 1 === 0 ? Math.round(bv) : bv;
-                                    // checkbox has data-volume placeholder; actual chosen volume will be set by auto-selection logic
-                                    html += `<div class="inventory-item mt-2 card p-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="assisted_item_${d.breastmilk_donation_id}_bag_${idx}" data-type="unpasteurized" data-id="${d.breastmilk_donation_id}" data-bag-index="${idx}" data-available="${bv}" disabled>
-                                            <label class="form-check-label" for="assisted_item_${d.breastmilk_donation_id}_bag_${idx}">Bag ${idx + 1} — ${displayVol}ml</label>
-                                        </div>
-                                        <div class="mt-2"><small class="text-muted">Planned use: <span id="planned_use_${d.breastmilk_donation_id}_bag_${idx}">0</span> ml</small></div>
-                                    </div>`;
-                                });
-                            } else {
-                                // donation-level single item
-                                html += `<div class="inventory-item mb-2 card p-2">
+                            const avail = d.available_volume || 0;
+                            html += `
+                                <div class="list-group-item">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="assisted_item_${d.breastmilk_donation_id}" data-type="unpasteurized" data-id="${d.breastmilk_donation_id}" data-available="${d.available_volume}" disabled>
-                                        <label class="form-check-label" for="assisted_item_${d.breastmilk_donation_id}"><strong>Donation #${d.breastmilk_donation_id}</strong> — ${d.donor_name} — Available: ${d.available_volume}ml</label>
+                                        <input class="form-check-input" type="radio" name="assisted_donation_radio" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                        <label class="form-check-label w-100" for="assisted_donation_${d.breastmilk_donation_id}">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>Donation #${d.breastmilk_donation_id}</strong><br>
+                                                    <small class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</small><br>
+                                                    <small class="text-muted">Available: ${avail} ml</small>
+                                                </div>
+                                            </div>
+                                        </label>
                                     </div>
-                                    <div class="mt-2"><small class="text-muted">Planned use: <span id="planned_use_${d.breastmilk_donation_id}">0</span> ml</small></div>
                                 </div>`;
-                            }
-
-                            html += `</div>`;
                         });
-
+                        html += '</div>';
                         list.innerHTML = html;
-
-                        // Auto-select bags/batches to meet requested volume (FIFO across donations and bags)
-                        autoSelectSourcesForAssisted(donations, 'unpasteurized', requested);
-
                     } else {
                         const batches = data.batches || [];
                         if (batches.length === 0) {
                             list.innerHTML = '<div class="alert alert-warning">No pasteurized batches available.</div>';
                             return;
                         }
-
+                        let html = '<div class="list-group">';
                         batches.forEach(b => {
-                            html += `<div class="inventory-item mb-2 card p-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" data-type="pasteurized" data-id="${b.batch_id}" data-available="${b.available_volume}" disabled>
-                                    <label class="form-check-label" for="assisted_batch_${b.batch_id}"><strong>Batch #${b.batch_number}</strong> — Available: ${b.available_volume}ml</label>
-                                </div>
-                                <div class="mt-2"><small class="text-muted">Planned use: <span id="planned_use_batch_${b.batch_id}">0</span> ml</small></div>
-                            </div>`;
+                            const avail = b.available_volume || 0;
+                            html += `
+                                <div class="list-group-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="assisted_batch_radio" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                        <label class="form-check-label w-100" for="assisted_batch_${b.batch_id}">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>Batch #${b.batch_number}</strong><br>
+                                                    <small class="text-muted">Available: ${avail} ml</small><br>
+                                                    <small class="text-muted">Date: ${b.date_pasteurized}</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>`;
                         });
-
+                        html += '</div>';
                         list.innerHTML = html;
-
-                        autoSelectSourcesForAssisted(batches, 'pasteurized', requested);
                     }
+
+                    assistedUpdateSelectedVolume();
                 })
                 .catch(err => {
                     loading.style.display = 'none';
@@ -2857,62 +2931,37 @@
                 });
         }
 
-        // Auto-selection algorithm: choose full bags/batches FIFO until requested met; last selected item may be partial
-        function autoSelectSourcesForAssisted(items, milkType, requested) {
-            const selected = [];
-            let remaining = Math.max(0, requested || 0);
-
+        function assistedUpdateSelectedVolume() {
+            const milkType = (document.getElementById('milk_type') || {}).value;
+            const volumeRequired = parseFloat((document.getElementById('assistedVolumeToDispense') || {}).value || '0') || 0;
+            let selectedVol = 0;
             if (milkType === 'unpasteurized') {
-                for (const d of items) {
-                    const bags = d.individual_bag_volumes || [];
-                    if (Array.isArray(bags) && bags.length > 0) {
-                        for (let i = 0; i < bags.length; i++) {
-                            if (remaining <= 0) break;
-                            const avail = parseFloat(bags[i]) || 0;
-                            if (avail <= 0) continue;
-                            const take = Math.min(avail, remaining);
-                            // mark checkbox and planned use
-                            const cbId = `assisted_item_${d.breastmilk_donation_id}_bag_${i}`;
-                            const cb = document.getElementById(cbId);
-                            if (cb) cb.checked = true;
-                            const plannedEl = document.getElementById(`planned_use_${d.breastmilk_donation_id}_bag_${i}`);
-                            if (plannedEl) plannedEl.textContent = (take % 1 === 0 ? Math.round(take) : parseFloat(take).toFixed(2));
-                            selected.push({ type: 'unpasteurized', id: d.breastmilk_donation_id, bag_index: i, volume: take });
-                            remaining -= take;
-                        }
-                    } else {
-                        if (remaining <= 0) break;
-                        const avail = parseFloat(d.available_volume) || 0;
-                        if (avail <= 0) continue;
-                        const take = Math.min(avail, remaining);
-                        const cbId = `assisted_item_${d.breastmilk_donation_id}`;
-                        const cb = document.getElementById(cbId);
-                        if (cb) cb.checked = true;
-                        const plannedEl = document.getElementById(`planned_use_${d.breastmilk_donation_id}`);
-                        if (plannedEl) plannedEl.textContent = (take % 1 === 0 ? Math.round(take) : parseFloat(take).toFixed(2));
-                        selected.push({ type: 'unpasteurized', id: d.breastmilk_donation_id, volume: take });
-                        remaining -= take;
-                    }
-                    if (remaining <= 0) break;
-                }
-            } else {
-                for (const b of items) {
-                    if (remaining <= 0) break;
-                    const avail = parseFloat(b.available_volume) || 0;
-                    if (avail <= 0) continue;
-                    const take = Math.min(avail, remaining);
-                    const cbId = `assisted_batch_${b.batch_id}`;
-                    const cb = document.getElementById(cbId);
-                    if (cb) cb.checked = true;
-                    const plannedEl = document.getElementById(`planned_use_batch_${b.batch_id}`);
-                    if (plannedEl) plannedEl.textContent = (take % 1 === 0 ? Math.round(take) : parseFloat(take).toFixed(2));
-                    selected.push({ type: 'pasteurized', id: b.batch_id, volume: take });
-                    remaining -= take;
-                }
+                const r = document.querySelector('input[name="assisted_donation_radio"]:checked');
+                if (r) selectedVol = parseFloat(r.dataset.volume || '0') || 0;
+            } else if (milkType === 'pasteurized') {
+                const r = document.querySelector('input[name="assisted_batch_radio"]:checked');
+                if (r) selectedVol = parseFloat(r.dataset.volume || '0') || 0;
             }
+            const selEl = document.getElementById('assistedTotalSelected');
+            const reqEl = document.getElementById('assistedVolumeRequired');
+            if (selEl && reqEl) {
+                const displaySel = selectedVol % 1 === 0 ? Math.round(selectedVol) : selectedVol.toFixed(2).replace(/\.?0+$/, '');
+                const displayReq = volumeRequired % 1 === 0 ? Math.round(volumeRequired) : volumeRequired.toFixed(2).replace(/\.?0+$/, '');
+                selEl.textContent = displaySel;
+                reqEl.textContent = displayReq;
+            }
+            const tracker = document.getElementById('assistedVolumeTracker');
+            if (tracker) tracker.style.display = (milkType ? 'block' : 'none');
+        }
 
-            // Store selected_sources_json with the computed volumes and bag_index where applicable
-            document.getElementById('selected_sources_json').value = JSON.stringify(selected);
+        // Safe HTML escape helper (guarded define)
+        if (typeof window.escapeHtml !== 'function') {
+            window.escapeHtml = function (text) {
+                if (text === null || text === undefined) return '';
+                const div = document.createElement('div');
+                div.textContent = String(text);
+                return div.innerHTML;
+            };
         }
     </script>
 @endsection

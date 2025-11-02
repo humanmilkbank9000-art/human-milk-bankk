@@ -461,6 +461,12 @@
     @endif
 
     <div class="container-fluid page-container-standard">
+        <!-- Assist Walk-in Donation button placed above tabs (consistent with Breastmilk Request UI) -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assistWalkInDonationModal">
+                <i class="fas fa-user-plus"></i> Assist Walk-in Donation
+            </button>
+        </div>
         <!-- Navigation Tabs with status query for persistence -->
         @php
             $tabStatus = request('status', 'pending');
@@ -526,14 +532,16 @@
                     <div
                         class="card-header bg-warning text-dark py-3 d-flex flex-row justify-content-between align-items-center gap-2">
                         <h5 class="mb-0">Pending Donations</h5>
-                        <select id="donation-type-filter" class="form-select form-select-sm"
-                            style="width: auto; min-width: 150px;">
-                            <option value="all" {{ request('donation_type', 'all') == 'all' ? 'selected' : '' }}>All Donations
-                            </option>
-                            <option value="walk_in" {{ request('donation_type') == 'walk_in' ? 'selected' : '' }}>Walk-in Only
-                            </option>
-                            <option value="home_collection" {{ request('donation_type') == 'home_collection' ? 'selected' : '' }}>Home Collection Only</option>
-                        </select>
+                        <div class="ms-auto d-flex align-items-center gap-2">
+                            <select id="donation-type-filter" class="form-select form-select-sm"
+                                style="width: auto; min-width: 150px;">
+                                <option value="all" {{ request('donation_type', 'all') == 'all' ? 'selected' : '' }}>All Donations
+                                </option>
+                                <option value="walk_in" {{ request('donation_type') == 'walk_in' ? 'selected' : '' }}>Walk-in Only
+                                </option>
+                                <option value="home_collection" {{ request('donation_type') == 'home_collection' ? 'selected' : '' }}>Home Collection Only</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="card-body">
                         @if($pendingDonations->count() > 0)
@@ -1485,6 +1493,64 @@
 @endsection
 
 @section('scripts')
+    <!-- Assist Walk-in Donation Modal -->
+    <div class="modal fade" id="assistWalkInDonationModal" tabindex="-1" aria-labelledby="assistWalkInDonationLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="assistWalkInDonationLabel"><i class="fas fa-user-plus me-2"></i>Assist Walk-in Donation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="assistWalkInDonationForm" method="POST" action="{{ route('admin.donation.assist-walkin') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <div id="assist-walkin-error" class="alert alert-danger" style="display:none;"></div>
+                        <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-user"></i> Donor Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="donor_first_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="donor_last_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="donor_contact" placeholder="09XXXXXXXXX" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address (optional)</label>
+                            <input type="text" class="form-control" name="donor_address">
+                        </div>
+
+                        <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-flask"></i> Bags & Volumes</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Number of Bags <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="assist_bags" name="number_of_bags" min="1" max="50" required>
+                            </div>
+                        </div>
+                        <div id="assist-volumes-container" style="display:none;">
+                            <label class="form-label">Volume per bag (ml)</label>
+                            <div id="assist-volume-fields"></div>
+                        </div>
+                        <div class="mt-3" id="assist-total-display" style="display:none;">
+                            <div class="alert alert-info mb-0"><strong>Total:</strong> <span id="assist-total">0</span> ml</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="display:none;" id="assist-spinner"></span>
+                            <span id="assist-submit-text">Record Donation</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     {{-- Real-time Search Functionality (improved) --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -1635,6 +1701,71 @@
     </script>
 
     <script>
+        // Assist Walk-in dynamic fields and submit
+        (function(){
+            const bagsEl = document.getElementById('assist_bags');
+            const container = document.getElementById('assist-volume-fields');
+            const wrap = document.getElementById('assist-volumes-container');
+            const totalBox = document.getElementById('assist-total-display');
+            const totalEl = document.getElementById('assist-total');
+            function renderFields(){
+                const n = parseInt(bagsEl.value || '0', 10);
+                if(!n || n < 1){ wrap.style.display='none'; totalBox.style.display='none'; container.innerHTML=''; return; }
+                wrap.style.display='block'; totalBox.style.display='block';
+                let html = '<div class="row">';
+                for(let i=1;i<=n;i++){
+                    html += `
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Bag ${i} (ml)</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
+                        </div>`;
+                }
+                html += '</div>';
+                container.innerHTML = html;
+                updateTotal();
+            }
+            function updateTotal(){
+                const inputs = container.querySelectorAll('.assist-bag-volume');
+                let t = 0; inputs.forEach(inp=>{ const v=parseFloat(inp.value||'0'); if(!isNaN(v)) t += v; });
+                totalEl.textContent = (t%1===0? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, ''));
+            }
+            if (bagsEl){ bagsEl.addEventListener('input', renderFields); }
+            container?.addEventListener('input', function(e){ if(e.target && e.target.classList.contains('assist-bag-volume')) updateTotal(); });
+
+            // Submit via AJAX
+            const form = document.getElementById('assistWalkInDonationForm');
+            if (form){
+                form.addEventListener('submit', function(e){
+                    e.preventDefault();
+                    const spinner = document.getElementById('assist-spinner');
+                    const text = document.getElementById('assist-submit-text');
+                    const err = document.getElementById('assist-walkin-error');
+                    err.style.display='none'; err.textContent='';
+                    spinner.style.display='inline-block'; text.textContent='Recording...';
+                    const formData = new FormData(form);
+                    fetch(form.action, { method:'POST', headers:{ 'X-CSRF-TOKEN':'{{ csrf_token() }}', 'Accept':'application/json' }, body: formData })
+                        .then(r=> r.json())
+                        .then(data=>{
+                            if(data && data.success){
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('assistWalkInDonationModal'));
+                                if (modal) modal.hide();
+                                setTimeout(()=>{
+                                    Swal.fire({ icon:'success', title:'Recorded', text: data.message || 'Walk-in donation recorded.', timer: 1400, showConfirmButton:false })
+                                        .then(()=>{
+                                            const url = new URL(window.location.href); url.searchParams.set('status','success_walk_in'); window.location.href = url.toString();
+                                        });
+                                }, 200);
+                            } else {
+                                err.textContent = (data && data.message) ? data.message : 'Failed to record walk-in donation.';
+                                err.style.display='block';
+                            }
+                        })
+                        .catch(()=>{ err.textContent='Failed to record walk-in donation.'; err.style.display='block'; })
+                        .finally(()=>{ spinner.style.display='none'; text.textContent='Record Donation'; });
+                });
+            }
+        })();
+    </script>
         let currentDonationId = null;
         let currentOriginalVolumes = []; // Store original volumes globally
 
@@ -1985,6 +2116,10 @@
 
                 // Basic front-end validation: ensure at least one bag volume entered when bags > 0
                 const bagCount = parseInt($('#walkin-bags').val()) || 0;
+                if (bagCount <= 0) {
+                    $('#walkin-form-error').text('Please enter the number of bags.').show();
+                    return;
+                }
                 if (bagCount > 0) {
                     let hasValue = false;
                     for (let i = 1; i <= bagCount; i++) {
@@ -2017,7 +2152,10 @@
                                     timer: 1500,
                                     showConfirmButton: false
                                 }).then(() => {
-                                    location.reload();
+                                    // Navigate directly to Walk-in Success tab for clarity
+                                    const url = new URL(window.location.href);
+                                    url.searchParams.set('status', 'success_walk_in');
+                                    window.location.href = url.toString();
                                 });
                             }, 300);
                         } else {

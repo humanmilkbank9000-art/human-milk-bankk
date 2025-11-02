@@ -480,7 +480,6 @@
                                                 <th class="text-center px-2 py-2" style="color: #000;">Type</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Bags</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Volume/Bag</th>
-                                                <th class="text-center px-2 py-2" style="color: #000;">Total</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Available</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Date</th>
                                                 <th class="text-center px-2 py-2" style="color: #000;">Time</th>
@@ -552,10 +551,6 @@
                                                                 </div>
                                                             @endfor
                                                         </div>
-                                                    </td>
-                                                    <td class="text-center" data-label="Total">
-                                                        <span
-                                                            class="badge badge-info volume-badge">{{ $donation->formatted_total_volume }}ml</span>
                                                     </td>
                                                     <td class="text-center" data-label="Available">
                                                         <span
