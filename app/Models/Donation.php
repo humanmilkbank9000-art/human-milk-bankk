@@ -50,6 +50,9 @@ class Donation extends Model
         'followed_hygiene',
         'followed_labeling',
         'followed_storage',
+        // Decline tracking
+        'decline_reason',
+        'declined_at',
     ];
 
     protected $casts = [
@@ -66,6 +69,7 @@ class Donation extends Model
         'expiration_date' => 'date',
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
+        'declined_at' => 'datetime',
     ];
 
     // Relationships

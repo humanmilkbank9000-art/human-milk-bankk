@@ -64,6 +64,8 @@ Route::post('/admin/donations/{id}/validate-walkin', [DonationController::class,
 Route::post('/admin/donations/{id}/schedule-pickup', [DonationController::class, 'schedulePickup'])->name('admin.donation.schedule-pickup');
 Route::post('/admin/donations/{id}/reschedule-pickup', [DonationController::class, 'reschedulePickup'])->name('admin.donation.reschedule-pickup');
 Route::post('/admin/donations/{id}/validate-pickup', [DonationController::class, 'validatePickup'])->name('admin.donation.validate-pickup');
+// Decline donation (pending only)
+Route::post('/admin/donations/{id}/decline', [DonationController::class, 'decline'])->name('admin.donation.decline');
 // Archive donation
 Route::post('/admin/donations/{id}/archive', [DonationController::class, 'archive'])->name('admin.donation.archive');
 Route::post('/admin/donations/{id}/restore', [DonationController::class, 'restore'])->name('admin.donation.restore');

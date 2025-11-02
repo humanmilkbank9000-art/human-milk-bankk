@@ -106,7 +106,7 @@ class BreastmilkRequestController extends Controller
             $timePart = !empty($availability->formatted_time) ? ' at ' . $availability->formatted_time : '';
             return redirect()->route('user.my-requests')
                 ->with('success', 'Breastmilk request submitted successfully! Your appointment is scheduled for ' . 
-                    $availability->formatted_date . $timePart . '. Please bring the original prescription.');
+                    $availability->formatted_date . '. Please bring the original prescription.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

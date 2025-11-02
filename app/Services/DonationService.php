@@ -114,7 +114,9 @@ class DonationService
         $donation->last_expression_date = $data['last_expression_date'] ?? null;
         $donation->latitude = $data['latitude'] ?? null;
         $donation->longitude = $data['longitude'] ?? null;
-        $donation->bag_details = $bagDetails;
+    $donation->bag_details = $bagDetails;
+
+    // Consent captured client-side; no questionnaire fields persisted here
         
         $donation->save();
 

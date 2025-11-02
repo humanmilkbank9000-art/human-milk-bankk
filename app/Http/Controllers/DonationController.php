@@ -71,6 +71,13 @@ class DonationController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
+        // Declined donations for the Declined tab
+        $declinedDonations = Donation::where('status', 'declined')
+            ->with(['user'])
+            ->orderByDesc('declined_at')
+            ->get();
+        $declinedCount = $declinedDonations->count();
+
         $archivedCount = Donation::onlyTrashed()->count();
 
         if ($status === 'archived') {
@@ -87,7 +94,9 @@ class DonationController extends Controller
                 'status',
                 'archivedCount',
                 'donationType',
-                'archived'
+                'archived',
+                'declinedDonations',
+                'declinedCount'
             ));
         }
 
@@ -99,7 +108,9 @@ class DonationController extends Controller
             'scheduledHomeCollection',
             'successHomeCollection',
             'status',
-            'archivedCount'
+            'archivedCount',
+            'declinedDonations',
+            'declinedCount'
         ));
     }
 
@@ -234,6 +245,39 @@ class DonationController extends Controller
             return response()->json(['success' => true, 'message' => 'Pickup validated successfully']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+    
+    /**
+     * Decline a pending donation (walk-in or home collection)
+     */
+    public function decline($id)
+    {
+        try {
+            $donation = Donation::findOrFail($id);
+            if (!in_array($donation->status, ['pending_walk_in', 'pending_home_collection'])) {
+                throw new \RuntimeException('Only pending donations can be declined.');
+            }
+
+            $reason = trim(request('reason', ''));
+            if ($reason === '') {
+                throw new \RuntimeException('Please provide a reason for declining this donation.');
+            }
+
+            $donation->status = 'declined';
+            $donation->decline_reason = $reason;
+            $donation->declined_at = now();
+            $donation->save();
+
+            // Optional: notify user
+            $user = \App\Models\User::find($donation->user_id);
+            if ($user) {
+                $user->notify(new \App\Notifications\SystemAlert('Donation Declined', 'Your donation has been declined by the admin.'));
+            }
+
+            return response()->json(['success' => true, 'message' => 'Donation declined successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
         }
     }
     

@@ -493,6 +493,9 @@
             <li class="nav-item">
                 <a class="nav-link {{ $tabStatus == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}" href="?status=archived">Archived <span class="badge bg-secondary text-white">{{ $archivedCount ?? 0 }}</span></a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ $tabStatus == 'declined' ? 'active bg-danger text-white' : 'text-danger' }}" href="?status=declined">Declined <span class="badge bg-danger text-white">{{ $declinedCount ?? 0 }}</span></a>
+            </li>
         </ul>
 
         {{-- Search Input Below Tabs --}}
@@ -579,14 +582,23 @@
                                                     </small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
-                                                    @if($donation->donation_method === 'home_collection' && $donation->user->latitude !== null && $donation->user->latitude !== '' && $donation->user->longitude !== null && $donation->user->longitude !== '')
-                                                        <button class="btn btn-info btn-sm view-location" title="View on Map"
-                                                            data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                            data-donor-address="{{ $donation->user->address }}"
-                                                            data-latitude="{{ $donation->user->latitude }}"
-                                                            data-longitude="{{ $donation->user->longitude }}">
-                                                            <i class="fas fa-map-marked-alt"></i>
-                                                        </button>
+                                                    @if($donation->donation_method === 'home_collection')
+                                                        @php
+                                                            // Prefer donation-specific coordinates if available; fallback to user's profile
+                                                            $lat = $donation->latitude ?? $donation->user->latitude ?? null;
+                                                            $lng = $donation->longitude ?? $donation->user->longitude ?? null;
+                                                        @endphp
+                                                        @if(!is_null($lat) && $lat !== '' && !is_null($lng) && $lng !== '')
+                                                            <button class="btn btn-info btn-sm view-location" title="View on Map"
+                                                                data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
+                                                                data-donor-address="{{ $donation->user->address }}"
+                                                                data-latitude="{{ $lat }}"
+                                                                data-longitude="{{ $lng }}">
+                                                                <i class="fas fa-map-marked-alt"></i>
+                                                            </button>
+                                                        @else
+                                                            <span class="text-muted">-</span>
+                                                        @endif
                                                     @else
                                                         <span class="text-muted">-</span>
                                                     @endif
@@ -617,6 +629,12 @@
                                                                 <i class="fas fa-check"></i>
                                                                 <span class="d-none d-md-inline"> Validate</span>
                                                             </button>
+                                                            <button class="btn btn-outline-danger btn-sm px-2"
+                                                                title="Decline Donation"
+                                                                onclick="declineDonation({{ $donation->breastmilk_donation_id }})">
+                                                                <i class="fas fa-times"></i>
+                                                                <span class="d-none d-md-inline"> Decline</span>
+                                                            </button>
                                                         @else
                                                             <button class="btn btn-primary btn-sm px-2 schedule-pickup"
                                                                 title="Schedule Pickup" data-id="{{ $donation->breastmilk_donation_id }}"
@@ -628,6 +646,12 @@
                                                                 data-total="{{ $donation->total_volume }}">
                                                                 <i class="fas fa-calendar-alt"></i>
                                                                 <span class="d-none d-md-inline"> Schedule</span>
+                                                            </button>
+                                                            <button class="btn btn-outline-danger btn-sm px-2"
+                                                                title="Decline Donation"
+                                                                onclick="declineDonation({{ $donation->breastmilk_donation_id }})">
+                                                                <i class="fas fa-times"></i>
+                                                                <span class="d-none d-md-inline"> Decline</span>
                                                             </button>
                                                         @endif
                                                     </div>
@@ -664,15 +688,19 @@
                                             <span class="card-label">Address:</span>
                                             <span class="card-value">{{ $donation->user->address ?? 'Not provided' }}</span>
                                         </div>
-                                        @if($donation->user->latitude && $donation->user->longitude)
+                                        @php
+                                            $latCard = $donation->latitude ?? $donation->user->latitude ?? null;
+                                            $lngCard = $donation->longitude ?? $donation->user->longitude ?? null;
+                                        @endphp
+                                        @if(!is_null($latCard) && $latCard !== '' && !is_null($lngCard) && $lngCard !== '')
                                             <div class="card-row">
                                                 <span class="card-label">Location:</span>
                                                 <span class="card-value">
                                                     <button class="btn btn-info btn-sm view-location"
                                                         data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                         data-donor-address="{{ $donation->user->address }}"
-                                                        data-latitude="{{ $donation->user->latitude }}"
-                                                        data-longitude="{{ $donation->user->longitude }}">
+                                                        data-latitude="{{ $latCard }}"
+                                                        data-longitude="{{ $lngCard }}">
                                                         <i class="fas fa-map-marked-alt"></i> View Map
                                                     </button>
                                                 </span>
@@ -708,12 +736,20 @@
                                                 data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}">
                                                 <i class="fas fa-check"></i> Validate Walk-in
                                             </button>
+                                            <button class="btn btn-outline-danger"
+                                                onclick="declineDonation({{ $donation->breastmilk_donation_id }})">
+                                                <i class="fas fa-times"></i> Decline
+                                            </button>
                                         @else
                                             <button class="btn btn-primary schedule-pickup"
                                                 data-id="{{ $donation->breastmilk_donation_id }}"
                                                 data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                 data-address="{{ $donation->user->address ?? 'Not provided' }}">
                                                 <i class="fas fa-calendar-alt"></i> Schedule Pickup
+                                            </button>
+                                            <button class="btn btn-outline-danger"
+                                                onclick="declineDonation({{ $donation->breastmilk_donation_id }})">
+                                                <i class="fas fa-times"></i> Decline
                                             </button>
                                         @endif
                                     </div>
@@ -1042,6 +1078,69 @@
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-archive fa-3x mb-3"></i>
                                 <p>No archived donations</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Declined Tab -->
+            <div class="tab-pane fade show {{ $tabStatus == 'declined' ? 'active' : '' }}" id="declined-donations" role="tabpanel">
+                <div class="card card-standard">
+                    <div class="card-header bg-danger text-white py-3">
+                        <h5 class="mb-0">Declined Donations</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($declinedDonations) && $declinedDonations->count() > 0)
+                            <div class="table-container table-wide">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Name</th>
+                                            <th class="text-center">Type</th>
+                                            <th class="text-center">Address</th>
+                                            <th class="text-center">Reason</th>
+                                            <th class="text-center">Declined At</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($declinedDonations as $donation)
+                                            <tr>
+                                                <td data-label="Name" class="text-center">
+                                                    <strong>{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</strong>
+                                                </td>
+                                                <td data-label="Type" class="text-center">
+                                                    @if($donation->donation_method === 'walk_in')
+                                                        <span class="badge bg-info">Walk-in</span>
+                                                    @else
+                                                        <span class="badge bg-primary">Home Collection</span>
+                                                    @endif
+                                                </td>
+                                                <td data-label="Address" class="text-center">
+                                                    <small>{{ $donation->user->address ?? 'Not provided' }}</small>
+                                                </td>
+                                                <td data-label="Reason" class="text-center">
+                                                    <small>{{ $donation->decline_reason ?? '-' }}</small>
+                                                </td>
+                                                <td data-label="Declined At" class="text-center">
+                                                    <small>{{ $donation->declined_at ? \Carbon\Carbon::parse($donation->declined_at)->format('M d, Y g:i A') : '-' }}</small>
+                                                </td>
+                                                <td data-label="Action" class="text-center">
+                                                    <button class="btn btn-sm btn-danger" onclick="archiveDonation({{ $donation->breastmilk_donation_id }})" title="Archive donation">
+                                                        <i class="fas fa-archive"></i>
+                                                        <span class="d-none d-md-inline"> Archive</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-times-circle fa-3x mb-3"></i>
+                                <p>No declined donations</p>
                             </div>
                         @endif
                     </div>
@@ -2472,6 +2571,64 @@
                 fetch(`/admin/donations/${id}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
                     .then(()=> location.reload())
                     .catch(()=> alert('Failed to restore'));
+            }
+        }
+    </script>
+    <script>
+        function declineDonation(id) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Decline donation',
+                    input: 'textarea',
+                    inputLabel: 'Reason for decline',
+                    inputPlaceholder: 'Enter reason/notes...',
+                    inputAttributes: { 'aria-label': 'Reason for decline' },
+                    inputValidator: (value) => {
+                        if (!value || value.trim() === '') {
+                            return 'Please enter a reason.';
+                        }
+                        return undefined;
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: 'Decline'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const reason = result.value.trim();
+                        fetch(`/admin/donations/${id}/decline`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({ reason })
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.success) {
+                                Swal.fire('Declined', data.message || 'Donation declined successfully.', 'success')
+                                    .then(()=> location.reload());
+                            } else {
+                                Swal.fire('Error', (data && data.message) || 'Failed to decline donation', 'error');
+                            }
+                        })
+                        .catch(()=> Swal.fire('Error', 'Failed to decline donation', 'error'));
+                    }
+                });
+            } else {
+                const reason = prompt('Enter reason for declining:');
+                if (!reason || reason.trim() === '') return;
+                fetch(`/admin/donations/${id}/decline`, { 
+                    method: 'POST', 
+                    headers: { 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason: reason.trim() })
+                })
+                .then(()=> location.reload())
+                .catch(()=> alert('Failed to decline donation'));
             }
         }
     </script>

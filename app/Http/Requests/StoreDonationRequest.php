@@ -56,6 +56,8 @@ class StoreDonationRequest extends FormRequest
             $rules['bag_temp.*'] = 'required|numeric';
             $rules['bag_method'] = 'required|array|min:1';
             $rules['bag_method.*'] = 'required|string';
+
+            // Consent handled client-side; no additional boolean fields required here
         }
 
         return $rules;
@@ -74,6 +76,7 @@ class StoreDonationRequest extends FormRequest
             'bag_storage.required' => 'Please select storage location for all bags.',
             'bag_temp.required' => 'Please provide temperature for all bags.',
             'bag_method.required' => 'Please select collection method for all bags.',
+            // No extra messages required for client-side consent
         ];
     }
 }

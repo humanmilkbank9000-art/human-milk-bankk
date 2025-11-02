@@ -118,6 +118,16 @@
         padding-top: 1rem;
         border-top: 1px solid #e9ecef;
     }
+    /* Responsive Leaflet map container */
+    #hcMap { 
+        height: 60vh; 
+        min-height: 320px; 
+        width: 100%; 
+        border-radius: 8px; 
+    }
+    @media (max-width: 576px) {
+        #hcMap { height: 55vh; min-height: 280px; }
+    }
 </style>
 
 <form action="{{ route('donation.store') }}" method="POST" id="homeCollectionForm">
@@ -125,6 +135,7 @@
     <input type="hidden" name="donation_method" value="home_collection">
     <input type="hidden" name="latitude" id="latitude">
     <input type="hidden" name="longitude" id="longitude">
+    <!-- Consent handled via modal; no questionnaire hidden fields needed -->
 
     <!-- Date of expression fields -->
     <div class="row g-3 hc-date-row">
@@ -413,7 +424,7 @@
             requestLocation();
         }
 
-        // Simple submit function - uses AJAX and SweetAlert
+    // Submit flow: validation -> lifestyle Yes/No Q&A -> confirm -> AJAX
         window.submitHomeCollection = function() {
             console.log('=== submitHomeCollection called ===');
             const form = document.getElementById('homeCollectionForm');
@@ -500,76 +511,420 @@
                 return;
             }
 
-            console.log('✓ All validation passed, submitting form...');
-            console.log('Submitting to:', form.action);
-            
-            // Show confirmation dialog
-            Swal.fire({
-                title: 'Confirm Home Collection Request?',
-                html: `Are you sure you want to submit this home collection request with <strong>${rows.length}</strong> bag(s)?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Yes, Submit',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Show loading state
-                    Swal.fire({
-                        title: 'Submitting...',
-                        text: 'Please wait while we process your donation request.',
-                        icon: 'info',
-                        allowOutsideClick: false,
-                        showConfirmButton: false,
-                        willOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Submit via AJAX
-                    const formData = new FormData(form);
-                    
-                    fetch(form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                title: 'Success!',
-                                html: data.message || 'Your home collection request has been submitted successfully!',
-                                icon: 'success',
-                                confirmButtonColor: '#28a745',
-                                confirmButtonText: 'View Pending Donations'
-                            }).then(() => {
-                                window.location.href = '/user/pending-donation';
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error',
-                                text: data.message || 'Failed to submit donation request.',
-                                icon: 'error',
-                                confirmButtonColor: '#d33'
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'An unexpected error occurred. Please try again.',
-                            icon: 'error',
-                            confirmButtonColor: '#d33'
-                        });
-                    });
-                }
-            });
+                        console.log('✓ All validation passed, opening lifestyle Q&A modal...');
+                        showQAModal(rows.length, form);
         };
+
+                function showQAModal(rowsCount, form) {
+                        let qaEl = document.getElementById('hcQAModal');
+                        if (!qaEl) {
+                                qaEl = document.createElement('div');
+                                qaEl.className = 'modal fade';
+                                qaEl.id = 'hcQAModal';
+                                qaEl.setAttribute('tabindex', '-1');
+                                qaEl.setAttribute('aria-hidden', 'true');
+                                qaEl.innerHTML = `
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title">Lifestyle Checklist</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="mb-2">Please answer all questions. You must answer "Yes" to proceed.</p>
+                                            <div class="table-responsive">
+                                                <table class="table align-middle">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Question</th>
+                                                            <th class="text-center" style="width:90px;">Yes</th>
+                                                            <th class="text-center" style="width:90px;">No</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>I am in good health <em>(Maayo akong paminaw sa akong kalawasan)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q1]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q1]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I do not smoke <em>(Dili ako gapangarilyo)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q2]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q2]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I am not taking medication or herbal supplements <em>(Dili ako gatumar ug mga tambal o supplements)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q3]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q3]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I am not consuming alcohol <em>(Dili ako gainom ug alkohol)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q4]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q4]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I have not had a fever <em>(Wala ako naghilanat)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q5]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q5]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I have not had cough or colds <em>(Wala ako nag-ubo o sip-on)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q6]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q6]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I have no breast infections <em>(Wala ako impeksyon sa akong totoy)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q7]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q7]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I have followed all hygiene instructions <em>(Gisunod nako ang tanan mga instruksyon tumong sa kalimpyo)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q8]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q8]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I have followed all labeling instructions <em>(Gisunod nako ang tanan mga instruksyon tumong sa pagmarka)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q9]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q9]" value="no"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>I have followed all storage instructions <em>(Gisunod nako ang tanan mga instruksyon tumong sa pagtipig sa gatas)</em></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q10]" value="yes"></td>
+                                                            <td class="text-center"><input type="radio" name="hcqa[q10]" value="no"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Back</button>
+                                            <button type="button" class="btn btn-primary" id="hcQAContinueBtn" disabled>Continue</button>
+                                        </div>
+                                    </div>
+                                </div>`;
+                                document.body.appendChild(qaEl);
+                        }
+
+                        const qaModal = new bootstrap.Modal(qaEl);
+                        qaModal.show();
+
+                        const continueBtn = qaEl.querySelector('#hcQAContinueBtn');
+                        // Fix selector for radios (must match names starting with hcqa[)
+                        const radios = Array.from(qaEl.querySelectorAll('input[type="radio"][name^="hcqa["]'));
+
+                        function updateContinueState() {
+                                const names = [...new Set(radios.map(r => r.name))];
+                                const allAnswered = names.every(n => qaEl.querySelector(`input[name="${n}"]:checked`));
+                                if (continueBtn) continueBtn.disabled = !allAnswered;
+                        }
+                        radios.forEach(r => r.addEventListener('change', updateContinueState));
+                        updateContinueState();
+
+                                                if (continueBtn) {
+                                                                continueBtn.onclick = function(){
+                                                                                // After Q&A -> show location review step
+                                                                                const names = [...new Set(radios.map(r => r.name))];
+                                                                                const anyNo = names.some(n => qaEl.querySelector(`input[name="${n}"]:checked`)?.value === 'no');
+                                                                                qaModal.hide();
+                                                                                showLocationReviewModal(rowsCount, form, anyNo);
+                                                                };
+                                                }
+                }
+
+                // Location Review Modal with 'View/Edit Map' step
+                function showLocationReviewModal(rowsCount, form, anyNo){
+                        let locEl = document.getElementById('hcLocationModal');
+                        const latInput = document.getElementById('latitude');
+                        const lngInput = document.getElementById('longitude');
+                        const lat = parseFloat(latInput?.value || '');
+                        const lng = parseFloat(lngInput?.value || '');
+
+                        const hasLocation = !isNaN(lat) && !isNaN(lng);
+
+                        if (!locEl) {
+                                locEl = document.createElement('div');
+                                locEl.className = 'modal fade';
+                                locEl.id = 'hcLocationModal';
+                                locEl.setAttribute('tabindex', '-1');
+                                locEl.setAttribute('aria-hidden', 'true');
+                                locEl.innerHTML = `
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title">Home Collection</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div id="hc-location-banner"></div>
+                                            <div class="form-check mt-3">
+                                                <input class="form-check-input" type="checkbox" value="1" id="hcAllowLocation">
+                                                <label class="form-check-label" for="hcAllowLocation">I allow this application to access my location.</label>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer d-flex justify-content-between flex-wrap">
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-primary" id="hcViewMapBtn"><i class="bi bi-geo-alt"></i> View / Edit Map</button>
+                                                <button type="button" class="btn btn-outline-success" id="hcRecaptureBtn"><i class="bi bi-crosshair"></i> Re-capture Location</button>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+                                                <button type="button" class="btn btn-success" id="hcLocationContinueBtn" disabled>Continue</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                                document.body.appendChild(locEl);
+                        }
+
+                        const banner = locEl.querySelector('#hc-location-banner');
+                        if (banner) {
+                                if (hasLocation) {
+                                        banner.innerHTML = `
+                                            <div class="alert alert-success d-flex align-items-start" role="alert">
+                                                <span class="me-2">✅</span>
+                                                <div>
+                                                    <div class="fw-semibold">Location Captured Successfully!</div>
+                                                    <small>Your location has been recorded for home collection service.</small>
+                                                </div>
+                                            </div>`;
+                                } else {
+                                        banner.innerHTML = `
+                                            <div class="alert alert-warning d-flex align-items-start" role="alert">
+                                                <span class="me-2">⚠️</span>
+                                                <div>
+                                                    <div class="fw-semibold">Location Not Captured</div>
+                                                    <small>We could not read your current location. Click "View / Edit Map" to set it, or re-allow location access.</small>
+                                                </div>
+                                            </div>`;
+                                }
+                        }
+
+                        const allowCb = locEl.querySelector('#hcAllowLocation');
+                        const contBtn = locEl.querySelector('#hcLocationContinueBtn');
+                        const viewBtn = locEl.querySelector('#hcViewMapBtn');
+                        const recaptureBtn = locEl.querySelector('#hcRecaptureBtn');
+
+                        // Initialize checkbox state based on whether we have a location
+                        if (allowCb) {
+                                allowCb.checked = hasLocation;
+                                contBtn.disabled = !allowCb.checked;
+                                allowCb.onchange = function(){
+                                        contBtn.disabled = !allowCb.checked;
+                                        if (allowCb.checked && (!latInput.value || !lngInput.value)) {
+                                                // Try to capture location if nothing set yet
+                                                requestLocation();
+                                                setTimeout(() => {
+                                                        // Refresh banner after a short delay
+                                                        const newLat = parseFloat(latInput?.value || '');
+                                                        const newLng = parseFloat(lngInput?.value || '');
+                                                        const ok = !isNaN(newLat) && !isNaN(newLng);
+                                                        if (ok && banner) {
+                                                                banner.innerHTML = `
+                                                                    <div class="alert alert-success d-flex align-items-start" role="alert">
+                                                                        <span class="me-2">✅</span>
+                                                                        <div>
+                                                                            <div class="fw-semibold">Location Captured Successfully!</div>
+                                                                            <small>Your location has been recorded for home collection service.</small>
+                                                                        </div>
+                                                                    </div>`;
+                                                        }
+                                                }, 1200);
+                                        }
+                                };
+                        }
+
+                        if (viewBtn) {
+                            viewBtn.onclick = function(){ showMapModal(); };
+                        }
+
+                        if (recaptureBtn) {
+                            recaptureBtn.onclick = function(){
+                                if (!navigator.geolocation) {
+                                    Swal.fire({ icon: 'warning', title: 'Geolocation Unavailable', text: 'Your browser does not support location access. Use the map to set your location.', confirmButtonColor: '#6c757d' });
+                                    return;
+                                }
+                                recaptureBtn.disabled = true;
+                                recaptureBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Capturing...';
+                                navigator.geolocation.getCurrentPosition((pos) => {
+                                    const latV = pos.coords.latitude;
+                                    const lngV = pos.coords.longitude;
+                                    if (latInput) latInput.value = latV.toFixed(6);
+                                    if (lngInput) lngInput.value = lngV.toFixed(6);
+                                    if (allowCb) allowCb.checked = true;
+                                    if (contBtn) contBtn.disabled = false;
+                                    if (banner) {
+                                        banner.innerHTML = `
+                                            <div class="alert alert-success d-flex align-items-start" role="alert">
+                                            <span class="me-2">✅</span>
+                                            <div>
+                                                <div class="fw-semibold">Location Captured Successfully!</div>
+                                                <small>Your location has been recorded for home collection service.</small>
+                                            </div>
+                                            </div>`;
+                                    }
+                                    // If map modal open, update marker + view
+                                    if (window.hcMapCtx && window.hcMapCtx.marker && window.hcMapCtx.map) {
+                                        try {
+                                            window.hcMapCtx.marker.setLatLng([latV, lngV]);
+                                            window.hcMapCtx.map.setView([latV, lngV], 14);
+                                        } catch(e) {}
+                                    }
+                                }, (err) => {
+                                    console.warn('Geolocation error:', err);
+                                    Swal.fire({ icon: 'warning', title: 'Unable to Capture Location', text: 'Please allow location access or set your location on the map.', confirmButtonColor: '#6c757d' });
+                                }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
+                                setTimeout(() => { recaptureBtn.disabled = false; recaptureBtn.innerHTML = '<i class="bi bi-crosshair"></i> Re-capture Location'; }, 1400);
+                            };
+                        }
+
+                        if (contBtn) {
+                                contBtn.onclick = async function(){
+                                        const confirm = await Swal.fire({
+                                                title: 'Confirm Home Collection Request?',
+                                                html: `Submit this request with <strong>${rowsCount}</strong> bag(s)?`,
+                                                icon: 'question',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#28a745',
+                                                cancelButtonColor: '#6c757d',
+                                                confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Yes, Submit',
+                                                cancelButtonText: 'Cancel'
+                                        });
+                                        if (!confirm.isConfirmed) return;
+
+                                        Swal.fire({
+                                                title: 'Submitting...',
+                                                text: 'Please wait while we process your donation request.',
+                                                icon: 'info',
+                                                allowOutsideClick: false,
+                                                showConfirmButton: false,
+                                                willOpen: () => { Swal.showLoading(); }
+                                        });
+
+                                        const formData = new FormData(form);
+                                        fetch(form.action, {
+                                                method: 'POST',
+                                                body: formData,
+                                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                        })
+                                        .then(r => r.json())
+                                        .then(data => {
+                                                if (data.success) {
+                                                        Swal.fire({
+                                                                title: 'Success!',
+                                                                html: data.message || 'Your home collection request has been submitted successfully!',
+                                                                icon: 'success',
+                                                                confirmButtonColor: '#28a745',
+                                                                confirmButtonText: 'View Pending Donations'
+                                                        }).then(() => { window.location.href = '/user/pending-donation'; });
+                                                } else {
+                                                        Swal.fire({ title: 'Error', text: data.message || 'Failed to submit donation request.', icon: 'error', confirmButtonColor: '#d33' });
+                                                }
+                                        })
+                                        .catch(err => {
+                                                console.error(err);
+                                                Swal.fire({ title: 'Error', text: 'An unexpected error occurred. Please try again.', icon: 'error', confirmButtonColor: '#d33' });
+                                        });
+                                };
+                        }
+
+                        const locModal = new bootstrap.Modal(locEl);
+                        locModal.show();
+                }
+
+                // Leaflet loader and Map Modal
+                function ensureLeafletLoaded(cb){
+                        if (window.L && typeof window.L.map === 'function') { cb(); return; }
+                        const cssId = 'leaflet-css';
+                        const jsId = 'leaflet-js';
+                        if (!document.getElementById(cssId)) {
+                                const link = document.createElement('link');
+                                link.id = cssId; link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                                document.head.appendChild(link);
+                        }
+                        const done = () => cb();
+                        if (!document.getElementById(jsId)) {
+                                const script = document.createElement('script');
+                                script.id = jsId; script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                                script.onload = done; document.body.appendChild(script);
+                        } else { done(); }
+                }
+
+                function showMapModal(){
+                        let mapEl = document.getElementById('hcMapModal');
+                        if (!mapEl) {
+                                mapEl = document.createElement('div');
+                                mapEl.className = 'modal fade';
+                                mapEl.id = 'hcMapModal';
+                                mapEl.setAttribute('tabindex', '-1');
+                                mapEl.setAttribute('aria-hidden', 'true');
+                                mapEl.innerHTML = `
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">View / Edit Location</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div id="hcMap"></div>
+                                            <div class="mt-2 text-muted small">Drag the pin to adjust your location.</div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+                                        </div>
+                                    </div>
+                                </div>`;
+                                document.body.appendChild(mapEl);
+                        }
+
+                        const mapModal = new bootstrap.Modal(mapEl);
+                        mapModal.show();
+
+                        const initMap = () => {
+                            const latInput = document.getElementById('latitude');
+                            const lngInput = document.getElementById('longitude');
+                            let lat = parseFloat(latInput?.value || '');
+                            let lng = parseFloat(lngInput?.value || '');
+                            if (isNaN(lat) || isNaN(lng)) { lat = 12.8797; lng = 121.7740; }
+
+                            // Recreate map fresh each time to avoid stale instances
+                            const mapContainer = mapEl.querySelector('#hcMap');
+                            mapContainer.innerHTML = '';
+
+                            const map = L.map(mapContainer).setView([lat, lng], 13);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                maxZoom: 19,
+                                attribution: '&copy; OpenStreetMap'
+                            }).addTo(map);
+
+                            const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                            marker.on('dragend', function(){
+                                const p = marker.getLatLng();
+                                latInput.value = p.lat.toFixed(6);
+                                lngInput.value = p.lng.toFixed(6);
+                            });
+
+                            // Give Leaflet a moment to compute sizes inside the shown modal
+                            setTimeout(() => { try { map.invalidateSize(); } catch (e) {} }, 50);
+                            window.addEventListener('resize', () => { try { map.invalidateSize(); } catch (e) {} }, { passive: true });
+
+                            // If browser provides current location, optionally recenter
+                            if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition((pos) => {
+                                    const p = [pos.coords.latitude, pos.coords.longitude];
+                                    map.setView(p, 14);
+                                    marker.setLatLng(p);
+                                    latInput.value = pos.coords.latitude.toFixed(6);
+                                    lngInput.value = pos.coords.longitude.toFixed(6);
+                                }, () => {}, { maximumAge: 60000 });
+                            }
+
+                            // Expose context so other actions (recapture) can update live
+                            window.hcMapCtx = { map, marker };
+                        };
+
+                        // Initialize after modal is shown to ensure correct sizing
+                        setTimeout(() => ensureLeafletLoaded(initMap), 150);
+                }
 
         function reset(){
             const tbody = document.getElementById(rowsTbodyId);
