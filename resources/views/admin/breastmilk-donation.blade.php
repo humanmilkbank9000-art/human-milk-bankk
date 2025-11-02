@@ -449,6 +449,74 @@
                     width: 100%;
                 }
             }
+
+            /* ---- Volume column sizing and inputs (Schedule/Validate modals) ---- */
+            #schedule-bag-details-table th:nth-child(4),
+            #schedule-bag-details-table td:nth-child(4) {
+                min-width: 150px !important;
+                width: 150px !important;
+                white-space: nowrap;
+            }
+            #home-bag-details-table th:nth-child(4),
+            #home-bag-details-table td:nth-child(4) {
+                min-width: 160px !important;
+                width: 160px !important;
+                white-space: nowrap;
+            }
+            #schedule-bag-details-table .input-group,
+            #home-bag-details-table .input-group {
+                max-width: 160px;
+                width: 100%;
+            }
+            #schedule-bag-details-table .form-control.schedule-bag-volume,
+            #home-bag-details-table .form-control.home-bag-volume-input {
+                text-align: right;
+            }
+            @media (max-width: 576px) {
+                #schedule-bag-details-table th:nth-child(4),
+                #schedule-bag-details-table td:nth-child(4),
+                #home-bag-details-table th:nth-child(4),
+                #home-bag-details-table td:nth-child(4) {
+                    min-width: 130px !important;
+                    width: 130px !important;
+                }
+                #schedule-bag-details-table .input-group,
+                #home-bag-details-table .input-group {
+                    max-width: none; /* allow full cell width */
+                    width: 100%;
+                }
+
+                /* Compact table paddings for mobile inside modals */
+                #schedule-bag-details-table.table > :not(caption) > * > *,
+                #home-bag-details-table.table > :not(caption) > * > * {
+                    padding: 0.35rem 0.4rem !important;
+                }
+
+                /* Improve input tap targets but keep compact visuals */
+                .modal .form-control.home-bag-volume-input,
+                .modal .form-control.schedule-bag-volume {
+                    height: 36px;
+                    font-size: 16px; /* prevent iOS zoom on focus */
+                    line-height: 1.2;
+                }
+                .modal .input-group-text { padding: 0 8px; }
+                .modal .input-group { gap: 0; }
+                .modal .input-group .form-control { padding-right: 6px; }
+                /* Ensure volume group uses the available cell width */
+                #schedule-bag-details-table .input-group,
+                #home-bag-details-table .input-group { width: 100%; }
+
+                /* Hide trailing "ml" addon on mobile to free space; keep placeholder */
+                #schedule-bag-details-table td:nth-child(4) .input-group-text,
+                #home-bag-details-table td:nth-child(4) .input-group-text {
+                    display: none !important;
+                }
+                #schedule-bag-details-table .form-control.schedule-bag-volume,
+                #home-bag-details-table .form-control.home-bag-volume-input {
+                    width: 100%;
+                    min-width: 80px; /* ensure at least 3-4 digits visible */
+                }
+            }
         </style>
     @endsection
 
@@ -650,7 +718,8 @@
                                                                 data-address="{{ $donation->user->address ?? 'Not provided' }}"
                                                                 data-first-expression="{{ $donation->first_expression_date ? $donation->first_expression_date->format('M d, Y') : '' }}"
                                                                 data-last-expression="{{ $donation->last_expression_date ? $donation->last_expression_date->format('M d, Y') : '' }}"
-                                                                data-bag-details="{{ json_encode($donation->bag_details) }}"
+                                                                data-bag-details='@json($donation->bag_details)'
+                                                                data-bags="{{ $donation->number_of_bags }}"
                                                                 data-total="{{ $donation->total_volume }}">
                                                                 <i class="fas fa-calendar-alt"></i>
                                                                 <span class="d-none d-md-inline"> Schedule</span>
@@ -752,7 +821,10 @@
                                             <button class="btn btn-primary schedule-pickup"
                                                 data-id="{{ $donation->breastmilk_donation_id }}"
                                                 data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                data-address="{{ $donation->user->address ?? 'Not provided' }}">
+                                                data-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                data-bag-details='@json($donation->bag_details)'
+                                                data-bags="{{ $donation->number_of_bags }}"
+                                                data-total="{{ $donation->total_volume }}">
                                                 <i class="fas fa-calendar-alt"></i> Schedule Pickup
                                             </button>
                                             <button class="btn btn-outline-danger"
@@ -1258,7 +1330,7 @@
                                                 <th>Bag #</th>
                                                 <th>Time</th>
                                                 <th>Date</th>
-                                                <th>Volume (ml)</th>
+                                                <th style="width: 150px;">Volume (ml)</th>
                                                 <th>Storage</th>
                                                 <th>Temp (°C)</th>
                                                 <th>Collection Method</th>
@@ -1269,6 +1341,7 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <small class="text-muted">You can correct the volume values before scheduling pickup.</small>
                             </div>
 
                             <!-- Total Volume -->
@@ -1766,6 +1839,7 @@
             }
         })();
     </script>
+    <script>
         let currentDonationId = null;
         let currentOriginalVolumes = []; // Store original volumes globally
 
@@ -1828,7 +1902,7 @@
 
                 console.log('Parsed bag details:', bagDetails);
 
-                // Populate bag details table
+                // Populate bag details table (with editable Volume inputs)
                 const tbody = $('#schedule-bag-details-body');
                 tbody.empty();
                 
@@ -1846,38 +1920,78 @@
                 }
                 
                 let total = 0;
+                const numberOfBags = parseInt($(this).data('bags')) || (Array.isArray(bagDetails) ? bagDetails.length : 0) || 0;
                 if (bagDetails && bagDetails.length > 0) {
                     bagDetails.forEach((bag, index) => {
                         const bagNum = bag.bag_number || (index + 1);
                         const time = formatTime12(bag.time) || '--';
                         const date = bag.date || '--';
-                        const volume = bag.volume || 0;
+                        const volume = bag.volume || '';
                         const storage = bag.storage_location || '--';
                         const temp = bag.temperature || '--';
                         const method = bag.collection_method || '--';
-                        
-                        total += parseFloat(volume) || 0;
-                        
+
                         const row = `
                             <tr>
                                 <td class="text-center fw-bold">Bag ${bagNum}</td>
                                 <td>${time}</td>
                                 <td>${date}</td>
-                                <td class="text-end">${volume}</td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="bag_volumes[]" class="form-control form-control-sm schedule-bag-volume" step="0.01" min="0.01" value="${volume}" placeholder="ml">
+                                        <span class="input-group-text">ml</span>
+                                    </div>
+                                </td>
                                 <td>${storage}</td>
                                 <td class="text-end">${temp}</td>
                                 <td><small>${method}</small></td>
                             </tr>
                         `;
                         tbody.append(row);
+                        const v = parseFloat(volume); if (!isNaN(v)) total += v;
                     });
+                } else if (numberOfBags > 0) {
+                    for (let i = 0; i < numberOfBags; i++) {
+                        const row = `
+                            <tr>
+                                <td class="text-center fw-bold">Bag ${i+1}</td>
+                                <td>--</td>
+                                <td>--</td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="bag_volumes[]" class="form-control form-control-sm schedule-bag-volume" step="0.01" min="0.01" placeholder="ml">
+                                        <span class="input-group-text">ml</span>
+                                    </div>
+                                </td>
+                                <td>--</td>
+                                <td class="text-end">--</td>
+                                <td><small>--</small></td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    }
                 } else {
-                    tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available (donation created before system update)</td></tr>');
+                    tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
                 }
-                
-                // Update total volume - use passed total if bag details not available
-                const displayTotal = total > 0 ? total : totalVolume;
-                $('#schedule-total-volume').text(parseFloat(displayTotal).toFixed(2));
+
+                function updateScheduleTotal() {
+                    let sum = 0;
+                    $('#schedule-bag-details-body .schedule-bag-volume').each(function(){
+                        const v = parseFloat($(this).val());
+                        if (!isNaN(v)) sum += v;
+                    });
+                    $('#schedule-total-volume').text(sum.toFixed(2));
+                }
+                // Initial total
+                if (total > 0) {
+                    $('#schedule-total-volume').text(total.toFixed(2));
+                } else {
+                    // fallback to server-provided total
+                    const displayTotal = (parseFloat(totalVolume) || 0);
+                    $('#schedule-total-volume').text(displayTotal.toFixed(2));
+                }
+                // Live updating
+                $('#schedule-bag-details-body').off('input.scheduleVol').on('input.scheduleVol', '.schedule-bag-volume', updateScheduleTotal);
 
                 $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/schedule-pickup`);
                 $('#schedulePickupModal').modal('show');
@@ -1985,12 +2099,12 @@
                 // Set form action
                 $('#validateHomeCollectionForm').attr('action', `/admin/donations/${currentDonationId}/validate-pickup`);
 
-                // Populate bag details table
+                // Populate bag details table (make volumes editable before validation)
                 const tbody = $('#home-bag-details-body');
                 tbody.empty();
                 
                 let totalVol = 0;
-                const volumeFieldsContainer = $('#home-volume-fields');
+                const volumeFieldsContainer = $('#home-volume-fields'); // legacy container, keep empty
                 volumeFieldsContainer.empty();
 
                 if (bagDetails && bagDetails.length > 0) {
@@ -2004,32 +2118,78 @@
                         const method = bag.collection_method || '--';
                         
                         totalVol += parseFloat(volume) || 0;
-                        
-                        // Add row to table
+
+                        // Add row to table with editable volume input
                         const row = `
                             <tr>
                                 <td class="text-center fw-bold">Bag ${bagNum}</td>
                                 <td>${time}</td>
                                 <td>${date}</td>
-                                <td class="text-end">${volume}</td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" 
+                                               id="home_bag_volume_${index+1}"
+                                               name="bag_volumes[]" 
+                                               class="form-control home-bag-volume-input" 
+                                               step="0.01" 
+                                               min="0.01" 
+                                               value="${volume}" 
+                                               placeholder="ml" required>
+                                        <span class="input-group-text">ml</span>
+                                    </div>
+                                </td>
                                 <td>${storage}</td>
                                 <td class="text-end">${temp}</td>
                                 <td><small>${method}</small></td>
                             </tr>
                         `;
                         tbody.append(row);
-                        
-                        // Add hidden input for volume (for form submission)
-                        volumeFieldsContainer.append(`<input type="hidden" name="bag_volumes[]" value="${volume}">`);
                     });
                 } else {
-                    tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available (donation created before system update)</td></tr>');
-                    // If no bag details, use total volume from data attribute
-                    totalVol = totalVolume || 0;
+                    // No original details; render inputs based on numberOfBags if provided
+                    const n = parseInt(numberOfBags) || 0;
+                    if (n > 0) {
+                        for (let i = 1; i <= n; i++) {
+                            const row = `
+                                <tr>
+                                    <td class="text-center fw-bold">Bag ${i}</td>
+                                    <td>--</td>
+                                    <td>--</td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" 
+                                                   id="home_bag_volume_${i}"
+                                                   name="bag_volumes[]" 
+                                                   class="form-control home-bag-volume-input" 
+                                                   step="0.01" min="0.01" placeholder="ml" required>
+                                            <span class="input-group-text">ml</span>
+                                        </div>
+                                    </td>
+                                    <td>--</td>
+                                    <td class="text-end">--</td>
+                                    <td><small>--</small></td>
+                                </tr>`;
+                            tbody.append(row);
+                        }
+                        totalVol = 0;
+                    } else {
+                        tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
+                        totalVol = parseFloat(totalVolume) || 0;
+                    }
                 }
                 
                 // Update total display
                 $('#home-total').text(totalVol.toFixed(2) + ' ml');
+
+                // Live update total when editing volumes
+                $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function(){
+                    let sum = 0;
+                    $('#home-bag-details-body .home-bag-volume-input').each(function(){
+                        const v = parseFloat($(this).val());
+                        if (!isNaN(v)) sum += v;
+                    });
+                    $('#home-total').text(sum.toFixed(2) + ' ml');
+                });
 
                 $('#home-form-error').hide().text('');
                 $('#validateHomeCollectionModal').modal('show');
@@ -2188,6 +2348,20 @@
                 const idleText = isReschedule ? 'Reschedule Pickup' : 'Schedule Pickup';
                 const successTitle = isReschedule ? 'Pickup rescheduled' : 'Pickup scheduled';
                 const successDefault = isReschedule ? 'Pickup rescheduled successfully.' : 'Pickup scheduled successfully.';
+
+                // If volume inputs are present (i.e., in schedule mode), ensure they are valid
+                const volumeInputs = $('#schedule-bag-details-body .schedule-bag-volume:visible');
+                if (volumeInputs.length > 0) {
+                    let allValid = true;
+                    volumeInputs.each(function(){
+                        const v = parseFloat($(this).val());
+                        if (isNaN(v) || v <= 0) { allValid = false; return false; }
+                    });
+                    if (!allValid) {
+                        Swal.fire({ icon:'error', title:'Invalid volumes', text:'Please enter a valid volume (> 0) for each bag.' });
+                        return;
+                    }
+                }
 
                 submitBtn.prop('disabled', true).text(busyText);
 

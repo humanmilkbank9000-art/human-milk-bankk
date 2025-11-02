@@ -250,7 +250,8 @@ class DonationController extends Controller
     }
 
     /**
-     * Assist Walk-in Donation: Admin creates a completed walk-in donation and adds it to inventory.
+     * Assist Walk-in Donation: Admin creates a walk-in donation and validates it using
+     * the same service method as normal walk-in validation to ensure consistent behavior.
      */
     public function assistWalkIn(Request $request)
     {
@@ -305,27 +306,70 @@ class DonationController extends Controller
                 ]);
             }
 
-            // Create donation as completed walk-in and add to inventory
+            // Do NOT block on health screening; auto-create a minimal accepted screening if missing
+            // IMPORTANT: Our schema requires many non-null enum fields. Provide safe defaults.
+            $health = HealthScreening::where('user_id', $user->user_id)->latest()->first();
+            if (!$health || $health->status !== 'accepted') {
+                $defaults = [
+                    'user_id' => $user->user_id,
+                    'status' => 'accepted',
+                    'date_accepted' => now(),
+                    'admin_notes' => 'Paper-based health screening; auto-created via Assist Walk-in Donation.',
+                    // Basic info required by schema
+                    'civil_status' => 'single',
+                    'occupation' => 'Not specified (paper screening)',
+                    'type_of_donor' => 'community',
+                    // Medical history defaults (all NO)
+                    'medical_history_01' => 'no',
+                    'medical_history_02' => 'no',
+                    'medical_history_03' => 'no',
+                    'medical_history_04' => 'no',
+                    'medical_history_05' => 'no',
+                    'medical_history_06' => 'no',
+                    'medical_history_07' => 'no',
+                    'medical_history_08' => 'no',
+                    'medical_history_09' => 'no',
+                    'medical_history_10' => 'no',
+                    'medical_history_11' => 'no',
+                    'medical_history_12' => 'no',
+                    'medical_history_13' => 'no',
+                    'medical_history_14' => 'no',
+                    'medical_history_15' => 'no',
+                    // Sexual history defaults (all NO)
+                    'sexual_history_01' => 'no',
+                    'sexual_history_02' => 'no',
+                    'sexual_history_03' => 'no',
+                    'sexual_history_04' => 'no',
+                    // Donor infant history defaults (all NO)
+                    'donor_infant_01' => 'no',
+                    'donor_infant_02' => 'no',
+                    'donor_infant_03' => 'no',
+                    'donor_infant_04' => 'no',
+                    'donor_infant_05' => 'no',
+                ];
+
+                // Create with defaults; nullable *_details fields are omitted
+                $health = HealthScreening::create($defaults);
+            }
+
+            // Create donation first as pending walk-in (reuse the same validation flow)
             $adminId = Session::get('account_id');
             $donation = new Donation();
+            $donation->health_screening_id = $health->health_screening_id;
             $donation->admin_id = $adminId;
             $donation->user_id = $user->user_id;
             $donation->donation_method = 'walk_in';
-            $donation->status = 'success_walk_in';
+            $donation->status = 'pending_walk_in';
             $donation->donation_date = $validated['donation_date'] ?? now()->toDateString();
             $donation->donation_time = $validated['donation_time'] ?? now()->format('H:i');
 
-            // Volumes
-            $donation->setBagVolumes($validated['bag_volumes']);
-            // available_volume is initialized in addToInventory if needed; set explicitly for clarity
-            $donation->available_volume = array_sum($validated['bag_volumes']);
-
-            // Mark as unpasteurized inventory now
-            $donation->pasteurization_status = 'unpasteurized';
-            $donation->added_to_inventory_at = now();
-
             $donation->save();
-            $donation->addToInventory();
+
+            // Reuse the same validation logic as standard walk-in validation
+            $this->service->validateWalkIn($donation, [
+                'number_of_bags' => (int)$validated['number_of_bags'],
+                'bag_volumes' => $validated['bag_volumes'],
+            ]);
 
             DB::commit();
 
