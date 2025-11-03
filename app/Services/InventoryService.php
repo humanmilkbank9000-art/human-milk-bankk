@@ -6,6 +6,7 @@ use App\Models\Donation;
 use App\Models\PasteurizationBatch;
 use App\Models\DispensedMilk;
 use App\Models\DisposedMilk;
+use App\Models\PasteurizationBatch as Batch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -228,6 +229,68 @@ class InventoryService
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Disposal error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Dispose entire pasteurized batches by IDs. Fully removes their available_volume and records a DisposedMilk row.
+     * @param int[] $batchIds
+     * @param string|null $notes
+     * @param int $adminId
+     * @return array{count:int,total_volume:float,warnings:array}
+     */
+    public function disposeBatches(array $batchIds, ?string $notes, int $adminId): array
+    {
+        DB::beginTransaction();
+        try {
+            $warnings = [];
+            $totalDisposedVolume = 0.0;
+            $count = 0;
+
+            $batches = Batch::whereIn('batch_id', $batchIds)
+                ->where('status', 'active')
+                ->where('available_volume', '>', 0)
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($batches as $batch) {
+                $avail = (float)$batch->available_volume;
+                if ($avail <= 0) {
+                    $warnings[] = "Batch {$batch->batch_number} has no available volume.";
+                    continue;
+                }
+
+                // Record disposal
+                DisposedMilk::create([
+                    'source_donation_id' => null,
+                    'source_batch_id' => $batch->batch_id,
+                    'volume_disposed' => $avail,
+                    'date_disposed' => now()->toDateString(),
+                    'time_disposed' => now()->toTimeString(),
+                    'admin_id' => $adminId,
+                    'notes' => $notes,
+                    'bag_indices' => null,
+                ]);
+
+                // Zero the available volume for the batch
+                $batch->available_volume = 0.0;
+                $batch->save();
+
+                $totalDisposedVolume += $avail;
+                $count++;
+            }
+
+            DB::commit();
+
+            return [
+                'count' => $count,
+                'total_volume' => $totalDisposedVolume,
+                'warnings' => $warnings,
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Disposal (batches) error: ' . $e->getMessage());
             throw $e;
         }
     }

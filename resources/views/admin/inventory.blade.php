@@ -180,6 +180,14 @@
             padding: 4px 8px;
         }
 
+        /* Ensure disposed tables show readable black text in Volume badges */
+        #disposed_unpasteurized .volume-badge,
+        #disposed_pasteurized .volume-badge {
+            color: #000 !important;           /* black text for visibility */
+            background-color: #f8d7da !important; /* light red background to indicate disposed */
+            border: 1px solid #f1aeb5;        /* subtle border for contrast */
+        }
+
         /* Per-bag vertical stack helper to ensure Date/Time/Volume lines align */
         .per-bag-list {
             display: flex;
@@ -480,10 +488,17 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link{{ request()->get('status') == 'disposed' ? ' active' : '' }}" href="?status=disposed"
-                    id="disposed-tab" role="tab">
-                    <i class="fas fa-trash-alt"></i> Disposed Breastmilk
-                    <span class="badge bg-danger">{{ isset($disposedMilk) ? $disposedMilk->count() : 0 }}</span>
+                <a class="nav-link{{ request()->get('status') == 'disposed_unpasteurized' ? ' active' : '' }}" href="?status=disposed_unpasteurized"
+                    id="disposed-unpasteurized-tab" role="tab">
+                    <i class="fas fa-trash-alt"></i> Disposed Unpasteurized
+                    <span class="badge bg-danger">{{ isset($disposedUnpasteurized) ? $disposedUnpasteurized->count() : 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link{{ request()->get('status') == 'disposed_pasteurized' ? ' active' : '' }}" href="?status=disposed_pasteurized"
+                    id="disposed-pasteurized-tab" role="tab">
+                    <i class="fas fa-trash-alt"></i> Disposed Pasteurized
+                    <span class="badge bg-danger">{{ isset($disposedPasteurized) ? $disposedPasteurized->count() : 0 }}</span>
                 </a>
             </li>
         </ul>
@@ -703,10 +718,19 @@
                     </div>
                     <div class="card-body">
                         @if($pasteurizationBatches->count() > 0)
+                            <div class="d-flex justify-content-between align-items-center mb-3 pasteurized-actions flex-wrap" style="gap: .5rem;">
+                                <div class="text-muted small">Select batch(es) to dispose</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" class="btn btn-dispose btn-sm" id="disposeBatchesBtn" disabled onclick="disposeSelectedBatches()">
+                                        <i class="fas fa-trash-alt"></i> Dispose Selected Batches
+                                    </button>
+                                </div>
+                            </div>
                             <div class="table-container-standard">
                                 <table class="table table-standard table-bordered table-striped align-middle">
                                     <thead class="table-success">
                                         <tr>
+                                            <th class="text-center px-2 py-2" style="width:36px;">&nbsp;</th>
                                             <th class="text-center px-2 py-2">Batch</th>
                                             <th class="text-center px-2 py-2">No. of Donation</th>
                                             <th class="text-center px-2 py-2">Total Volume</th>
@@ -724,6 +748,12 @@
                                         @endphp
                                         @foreach($batchesOrdered as $batch)
                                             <tr class="batch-row">
+                                                <td class="text-center align-middle">
+                                                    <input type="checkbox" class="form-check-input batch-checkbox"
+                                                           data-batch-id="{{ $batch->batch_id }}"
+                                                           data-available-volume="{{ (float)$batch->available_volume }}"
+                                                           onchange="updateDisposeBatchesButton()">
+                                                </td>
                                                 <td style="white-space: normal;" data-label="Batch">
                                                     <strong>{{ $batch->batch_number }}</strong>
                                                 </td>
@@ -861,23 +891,22 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+            
 
-            <!-- Section 4: Disposed Breastmilk -->
-            <div class="tab-pane fade{{ request()->get('status') == 'disposed' ? ' show active' : '' }}" id="disposed"
+            <!-- Section 4: Disposed Unpasteurized -->
+            <div class="tab-pane fade{{ request()->get('status') == 'disposed_unpasteurized' ? ' show active' : '' }}" id="disposed_unpasteurized"
                 role="tabpanel">
                 <div class="card card-standard">
                     <div class="card-header bg-danger text-white">
-                        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Disposed Breastmilk</h5>
+                        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Disposed Unpasteurized</h5>
                     </div>
                     <div class="card-body">
-                        @if(isset($disposedMilk) && $disposedMilk->count() > 0)
+                        @if(isset($disposedUnpasteurized) && $disposedUnpasteurized->count() > 0)
                             <div class="table-container-standard">
                                 <table class="table table-standard table-bordered table-striped align-middle">
                                     <thead class="table-success">
                                         <tr>
-                                            <th class="text-center px-2 py-2">Source (Donor/Batch)</th>
+                                            <th class="text-center px-2 py-2">Source (Donor)</th>
                                             <th class="text-center px-2 py-2">Volume</th>
                                             <th class="text-center px-2 py-2">Date</th>
                                             <th class="text-center px-2 py-2">Time</th>
@@ -886,9 +915,9 @@
                                     </thead>
                                     <tbody>
                                         @php
-                                            $disposedOrdered = $disposedMilk instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $disposedMilk->getCollection()->sortByDesc('date_disposed')
-                                                : collect($disposedMilk)->sortByDesc('date_disposed');
+                                            $disposedOrdered = $disposedUnpasteurized instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $disposedUnpasteurized->getCollection()->sortByDesc('date_disposed')
+                                                : collect($disposedUnpasteurized)->sortByDesc('date_disposed');
                                         @endphp
                                         @foreach($disposedOrdered as $record)
                                             <tr>
@@ -909,8 +938,6 @@
                                                             if ($label === '-') {
                                                                 $label = 'Donation #'.($record->sourceDonation->breastmilk_donation_id ?? '-');
                                                             }
-                                                        } elseif ($record->sourceBatch) {
-                                                            $label = 'Batch '.($record->sourceBatch->batch_number ?? '-');
                                                         }
                                                     @endphp
                                                     <strong>{{ $label }}</strong>
@@ -935,13 +962,74 @@
                         @else
                             <div class="text-center py-4">
                                 <i class="fas fa-trash-alt fa-3x text-muted mb-3"></i>
-                                <h5 class="text-muted">No disposed records</h5>
-                                <p class="text-muted">Disposed breastmilk records will appear here</p>
+                                <h5 class="text-muted">No disposed unpasteurized records</h5>
+                                <p class="text-muted">Disposed unpasteurized records will appear here</p>
                             </div>
                         @endif
                     </div>
                 </div>
             </div>
+
+            <!-- Section 5: Disposed Pasteurized -->
+            <div class="tab-pane fade{{ request()->get('status') == 'disposed_pasteurized' ? ' show active' : '' }}" id="disposed_pasteurized"
+                role="tabpanel">
+                <div class="card card-standard">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Disposed Pasteurized</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($disposedPasteurized) && $disposedPasteurized->count() > 0)
+                            <div class="table-container-standard">
+                                <table class="table table-standard table-bordered table-striped align-middle">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th class="text-center px-2 py-2">Batch</th>
+                                            <th class="text-center px-2 py-2">Volume</th>
+                                            <th class="text-center px-2 py-2">Date</th>
+                                            <th class="text-center px-2 py-2">Time</th>
+                                            <th class="text-center px-2 py-2">Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $disposedBatchesOrdered = $disposedPasteurized instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $disposedPasteurized->getCollection()->sortByDesc('date_disposed')
+                                                : collect($disposedPasteurized)->sortByDesc('date_disposed');
+                                        @endphp
+                                        @foreach($disposedBatchesOrdered as $record)
+                                            <tr>
+                                                <td style="white-space: normal;" data-label="Batch">
+                                                    <strong>{{ $record->sourceBatch ? $record->sourceBatch->batch_number : '-' }}</strong>
+                                                </td>
+                                                <td class="text-center" data-label="Volume">
+                                                    <span class="badge badge-danger volume-badge">{{ $record->formatted_volume_disposed }}ml</span>
+                                                </td>
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Date">
+                                                    <small>{{ $record->formatted_date }}</small>
+                                                </td>
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Time">
+                                                    <small>{{ $record->formatted_time }}</small>
+                                                </td>
+                                                <td style="white-space: normal;" data-label="Notes">
+                                                    <small class="text-muted">{{ $record->notes ?? '-' }}</small>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-trash-alt fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No disposed pasteurized records</h5>
+                                <p class="text-muted">Disposed pasteurized batch records will appear here</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Pasteurization Modal -->
     <div class="modal fade" id="pasteurizationModal" tabindex="-1">
@@ -1011,6 +1099,40 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-dispose" onclick="confirmDisposal()">
+                        <i class="fas fa-trash-alt"></i> Confirm Disposal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pasteurized Disposal Modal -->
+    <div class="modal fade" id="disposalBatchesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-trash-alt"></i> Dispose Selected Batches
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> Disposing a batch will permanently remove its available volume.
+                    </div>
+
+                    <div id="selectedBatchesDisposalList"></div>
+
+                    <div class="mb-3">
+                        <label for="disposalBatchesNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="disposalBatchesNotes" rows="3"
+                            placeholder="Reason for disposal (e.g. contaminated, expired)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-dispose" onclick="confirmBatchDisposal()">
                         <i class="fas fa-trash-alt"></i> Confirm Disposal
                     </button>
                 </div>
@@ -1210,6 +1332,101 @@
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('pasteurizationModal'));
             modal.show();
+        }
+
+        // ==== Pasteurized disposal helpers ====
+        function updateDisposeBatchesButton() {
+            const boxes = document.querySelectorAll('.batch-checkbox:checked');
+            const btn = document.getElementById('disposeBatchesBtn');
+            if (!btn) return;
+            btn.disabled = boxes.length === 0;
+            if (boxes.length > 0) {
+                btn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected Batches (${boxes.length})`;
+            } else {
+                btn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected Batches`;
+            }
+        }
+
+        function disposeSelectedBatches() {
+            const boxes = document.querySelectorAll('.batch-checkbox:checked');
+            if (boxes.length === 0) return;
+
+            let total = 0;
+            let list = '<h6>Selected Batches for Disposal:</h6><ul>';
+            boxes.forEach(cb => {
+                const row = cb.closest('tr');
+                const batchId = cb.getAttribute('data-batch-id');
+                const vol = parseFloat(cb.getAttribute('data-available-volume')) || 0;
+                total += vol;
+                let batchLabel = 'Batch';
+                if (row && row.querySelector('[data-label="Batch"], td:nth-child(2)')) {
+                    const cell = row.cells[1];
+                    batchLabel = cell ? cell.textContent.trim() : `Batch #${batchId}`;
+                }
+                list += `<li>${batchLabel} - ${vol}ml</li>`;
+            });
+            list += `</ul><p><strong>Total Volume: ${total}ml</strong></p>`;
+
+            const container = document.getElementById('selectedBatchesDisposalList');
+            container.innerHTML = list;
+
+            const modal = new bootstrap.Modal(document.getElementById('disposalBatchesModal'));
+            modal.show();
+        }
+
+        function confirmBatchDisposal() {
+            const boxes = Array.from(document.querySelectorAll('.batch-checkbox:checked'));
+            if (boxes.length === 0) return;
+            const notes = document.getElementById('disposalBatchesNotes').value;
+            const batchIds = boxes.map(cb => parseInt(cb.getAttribute('data-batch-id'))).filter(id => id > 0);
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('disposalBatchesModal'));
+            modal.hide();
+
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Disposing selected batches',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => Swal.showLoading()
+            });
+
+            fetch('{{ route("admin.inventory.dispose-batches") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ batch_ids: batchIds, notes })
+            })
+            .then(async response => {
+                const contentType = response.headers.get('content-type') || '';
+                const text = await response.text();
+                if (contentType.includes('application/json')) {
+                    try { return { ok: response.ok, data: JSON.parse(text) }; } catch (e) { return { ok: response.ok, data: null, text }; }
+                }
+                return { ok: response.ok, data: null, text };
+            })
+            .then(res => {
+                if (res.data && res.data.errors) {
+                    const errs = [];
+                    Object.keys(res.data.errors).forEach(k => (res.data.errors[k] || []).forEach(m => errs.push(m)));
+                    Swal.fire({ title: 'Validation Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(errs.join('\n'))}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                    return;
+                }
+                if (res.data && res.data.success) {
+                    Swal.fire({ title: 'Disposed', text: res.data.message || 'Selected batches have been disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#b91c1c' }).then(() => location.reload());
+                    return;
+                }
+                const serverText = (res.text || '').toString();
+                const short = serverText.length > 1000 ? serverText.substring(0, 1000) + '... (truncated)' : serverText;
+                Swal.fire({ title: 'Server Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(short)}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+            })
+            .catch(error => {
+                Swal.fire({ title: 'Error', text: error.message || 'An error occurred while disposing batches.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+            });
         }
 
         function disposeSelected() {

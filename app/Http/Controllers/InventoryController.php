@@ -51,8 +51,14 @@ class InventoryController extends Controller
             ->orderBy('date_dispensed', 'desc')
             ->get();
 
-        // Section 4: Disposed Breastmilk (All disposal records)
-        $disposedMilk = DisposedMilk::with(['sourceDonation.user', 'admin'])
+        // Section 4: Disposed records split by type
+        $disposedUnpasteurized = DisposedMilk::with(['sourceDonation.user', 'admin'])
+            ->whereNotNull('source_donation_id')
+            ->orderBy('date_disposed', 'desc')
+            ->get();
+
+        $disposedPasteurized = DisposedMilk::with(['sourceBatch', 'admin'])
+            ->whereNotNull('source_batch_id')
             ->orderBy('date_disposed', 'desc')
             ->get();
 
@@ -61,7 +67,8 @@ class InventoryController extends Controller
             'unpasteurizedDonations',
             'pasteurizationBatches', 
             'dispensedMilk',
-            'disposedMilk'
+            'disposedUnpasteurized',
+            'disposedPasteurized'
         ));
     }
 
@@ -449,6 +456,41 @@ class InventoryController extends Controller
             return response()->json(['success' => true, 'message' => "Disposed {$result['total_disposed_bags']} bag(s) totaling {$result['total_disposed_volume']}ml", 'total_disposed_bags' => $result['total_disposed_bags'], 'total_disposed_volume' => $result['total_disposed_volume']]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to dispose selected bags. ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Dispose entire pasteurized batches (by batch ids).
+     * Expects { batch_ids: [id, ...], notes?: string }
+     */
+    public function disposeBatches(Request $request)
+    {
+        if (!Session::has('account_id') || Session::get('account_role') !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'batch_ids' => 'required|array|min:1',
+            'batch_ids.*' => 'integer|min:1',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $adminId = Session::get('account_id');
+        $batchIds = $request->input('batch_ids', []);
+        $notes = $request->input('notes');
+
+        try {
+            $result = $this->service->disposeBatches($batchIds, $notes, $adminId);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Disposed {$result['count']} batch(es) totaling {$result['total_volume']}ml",
+                'count' => $result['count'],
+                'total_volume' => $result['total_volume'],
+                'warnings' => $result['warnings'] ?? [],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to dispose selected batches. ' . $e->getMessage()], 500);
         }
     }
 }

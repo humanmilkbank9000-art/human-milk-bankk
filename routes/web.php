@@ -100,6 +100,7 @@ Route::get('/user/my-breastmilk-requests', [BreastmilkRequestController::class, 
 Route::get('/admin/inventory', [InventoryController::class, 'index'])->name('admin.inventory');
 Route::post('/admin/inventory/pasteurize', [InventoryController::class, 'pasteurize'])->name('admin.inventory.pasteurize');
 Route::post('/admin/inventory/dispose', [InventoryController::class, 'dispose'])->name('admin.inventory.dispose');
+Route::post('/admin/inventory/dispose-batches', [InventoryController::class, 'disposeBatches'])->name('admin.inventory.dispose-batches');
 Route::get('/admin/inventory/batch/{id}', [InventoryController::class, 'getBatchDetails'])->name('admin.inventory.batch.details');
 Route::get('/admin/inventory/stats', [InventoryController::class, 'getInventoryStats'])->name('admin.inventory.stats');
 
