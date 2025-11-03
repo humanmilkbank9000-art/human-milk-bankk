@@ -433,6 +433,13 @@
                     <span class="badge bg-success">{{ $dispensedMilk->count() }}</span>
                 </a>
             </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link{{ request()->get('status') == 'disposed' ? ' active' : '' }}" href="?status=disposed"
+                    id="disposed-tab" role="tab">
+                    <i class="fas fa-trash-alt"></i> Disposed Breastmilk
+                    <span class="badge bg-danger">{{ isset($disposedMilk) ? $disposedMilk->count() : 0 }}</span>
+                </a>
+            </li>
         </ul>
 
         <div class="tab-content" id="inventoryTabContent" aria-live="polite">
@@ -790,6 +797,85 @@
             </div>
         </div>
     </div>
+
+            <!-- Section 4: Disposed Breastmilk -->
+            <div class="tab-pane fade{{ request()->get('status') == 'disposed' ? ' show active' : '' }}" id="disposed"
+                role="tabpanel">
+                <div class="card card-standard">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Disposed Breastmilk</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($disposedMilk) && $disposedMilk->count() > 0)
+                            <div class="table-container-standard">
+                                <table class="table table-standard table-bordered table-striped align-middle">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th class="text-center px-2 py-2">Source (Donor/Batch)</th>
+                                            <th class="text-center px-2 py-2">Volume</th>
+                                            <th class="text-center px-2 py-2">Date</th>
+                                            <th class="text-center px-2 py-2">Time</th>
+                                            <th class="text-center px-2 py-2">Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $disposedOrdered = $disposedMilk instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $disposedMilk->getCollection()->sortByDesc('date_disposed')
+                                                : collect($disposedMilk)->sortByDesc('date_disposed');
+                                        @endphp
+                                        @foreach($disposedOrdered as $record)
+                                            <tr>
+                                                <td style="white-space: normal;" data-label="Source">
+                                                    @php
+                                                        $label = '-';
+                                                        if ($record->sourceDonation) {
+                                                            $u = $record->sourceDonation->user;
+                                                            if ($u) {
+                                                                $first = $u->first_name ?? '';
+                                                                $last = $u->last_name ?? '';
+                                                                $name = trim(($first.' '.$last));
+                                                                if ($name !== '') $label = $name;
+                                                            }
+                                                            if ($label === '-' && !empty($record->sourceDonation->donor_name)) {
+                                                                $label = $record->sourceDonation->donor_name;
+                                                            }
+                                                            if ($label === '-') {
+                                                                $label = 'Donation #'.($record->sourceDonation->breastmilk_donation_id ?? '-');
+                                                            }
+                                                        } elseif ($record->sourceBatch) {
+                                                            $label = 'Batch '.($record->sourceBatch->batch_number ?? '-');
+                                                        }
+                                                    @endphp
+                                                    <strong>{{ $label }}</strong>
+                                                </td>
+                                                <td class="text-center" data-label="Volume">
+                                                    <span class="badge badge-danger volume-badge">{{ $record->formatted_volume_disposed }}ml</span>
+                                                </td>
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Date">
+                                                    <small>{{ $record->formatted_date }}</small>
+                                                </td>
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Time">
+                                                    <small>{{ $record->formatted_time }}</small>
+                                                </td>
+                                                <td style="white-space: normal;" data-label="Notes">
+                                                    <small class="text-muted">{{ $record->notes ?? '-' }}</small>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-trash-alt fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No disposed records</h5>
+                                <p class="text-muted">Disposed breastmilk records will appear here</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
 
     <!-- Pasteurization Modal -->
     <div class="modal fade" id="pasteurizationModal" tabindex="-1">
