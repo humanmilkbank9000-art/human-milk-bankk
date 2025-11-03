@@ -255,6 +255,43 @@
 
         /* Mobile Modal Fixes - Ensure buttons are visible and accessible */
         @media (max-width: 768px) {
+            /* Action bar (Select/Clear + Dispose/Pasteurize) responsive layout */
+            .inventory-action-bar {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 0.5rem;
+            }
+
+            .inventory-action-buttons {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                align-items: center;
+                justify-content: stretch;
+            }
+
+            .inventory-action-buttons .btn {
+                flex: 1 1 48%;
+                min-width: 0;
+            }
+
+            /* Make Select/Clear more compact on tablet widths */
+            .inventory-select-controls .btn {
+                font-size: 0.85rem;
+                padding: 0.35rem 0.5rem;
+                margin-right: 0.25rem;
+            }
+
+            /* Selected volume info should not push buttons off-screen on mobile */
+            .selected-volume-info {
+                min-width: 0 !important;
+                text-align: left;
+                margin: 0;
+                font-size: 0.88rem;
+                order: 3; /* show below buttons */
+            }
+
             .modal-dialog {
                 margin: 0.5rem;
                 max-height: calc(100vh - 1rem);
@@ -301,6 +338,15 @@
 
         /* Extra small devices - stack buttons vertically */
         @media (max-width: 576px) {
+            .inventory-action-buttons .btn {
+                flex: 1 1 100%;
+            }
+
+            /* Hide Select All / Clear All on small phones to save space */
+            .inventory-select-controls {
+                display: none !important;
+            }
+
             .modal-dialog {
                 margin: 0.25rem;
                 max-width: calc(100vw - 0.5rem);
@@ -453,8 +499,8 @@
                     <div class="card-body">
                         @if($unpasteurizedDonations->count() > 0)
                             <form id="pasteurizationForm">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
+                                <div class="inventory-action-bar d-flex justify-content-between align-items-center mb-3">
+                                    <div class="inventory-select-controls">
                                         <button type="button" class="btn btn-sm btn-outline-secondary"
                                             onclick="selectAllDonations()">
                                             <i class="fas fa-check-square"></i> Select All
@@ -464,7 +510,27 @@
                                             <i class="fas fa-square"></i> Clear All
                                         </button>
                                     </div>
-                                    <div class="d-flex align-items-center">
+                                    <div class="inventory-action-buttons d-flex align-items-center">
+                                        <!-- Mobile: compact Select/Clear menu -->
+                                        <div class="dropdown d-sm-none me-2">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" id="inventoryMoreMenu"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-h"></i> More
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="inventoryMoreMenu">
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="event.preventDefault(); selectAllDonations();">
+                                                        <i class="fas fa-check-square me-2"></i> Select All
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="event.preventDefault(); clearAllSelections();">
+                                                        <i class="fas fa-square me-2"></i> Clear All
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+
                                         <div id="selectedVolumeInfo" class="me-3 selected-volume-info">
                                             Selected: <span id="selectedVolumeValue">0</span> / 9000 ml
                                         </div>
