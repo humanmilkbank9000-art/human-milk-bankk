@@ -2643,7 +2643,7 @@
                 let fieldsHTML = '<div class="row">';
                 for (let i = 1; i <= bagCount; i++) {
                     fieldsHTML += `
-                                                                            < div class="col-md-6 mb-2" >
+                                                                            <div class="col-md-6 mb-2">
                                                                                                                                                                                                                                     <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
                                                                                                                                                                                                                                     <input type="number" 
                                                                                                                                                                                                                                            id="walkin_bag_volume_${i}" 
@@ -2669,7 +2669,7 @@
                 let total = 0;
 
                 for (let i = 1; i <= bagCount; i++) {
-                    const volumeInput = $(`#walkin_bag_volume_${i} `);
+                    const volumeInput = $(`#walkin_bag_volume_${i}`);
                     if (volumeInput.length && volumeInput.val()) {
                         // use parseFloat but guard against commas and spaces
                         const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
@@ -2699,7 +2699,7 @@
                 if (bagCount > 0) {
                     let hasValue = false;
                     for (let i = 1; i <= bagCount; i++) {
-                        const v = $(`#walkin_bag_volume_${i} `).val();
+                        const v = $(`#walkin_bag_volume_${i}`).val();
                         if (v && parseFloat(v) > 0) { hasValue = true; break; }
                     }
                     if (!hasValue) {
@@ -2837,7 +2837,7 @@
                 // Validate that all bag volumes are entered
                 let hasAllVolumes = true;
                 for (let i = 1; i <= bagCount; i++) {
-                    const volumeInput = $(`#home_bag_volume_${i} `);
+                    const volumeInput = $(`#home_bag_volume_${i}`);
                     if (!volumeInput.val() || parseFloat(volumeInput.val()) <= 0) {
                         hasAllVolumes = false;
                         break;
@@ -2961,7 +2961,7 @@
             // Store existing values before regenerating
             const existingValues = {};
             for (let i = 1; i <= 100; i++) { // Check up to 100 to capture any existing values
-                const input = $(`#walkin_bag_volume_${i} `);
+                const input = $(`#walkin_bag_volume_${i}`);
                 if (input.length && input.val()) {
                     existingValues[i] = input.val();
                 }
@@ -2975,7 +2975,7 @@
                 // Restore existing value if it exists
                 const existingValue = existingValues[i] || '';
                 fieldsHTML += `
-                                                                            < div class="col-md-6 mb-2" >
+                                                                            <div class="col-md-6 mb-2">
                                                                                                                                                                                                                                     <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
                                                                                                                                                                                                                                     <input type="number" 
                                                                                                                                                                                                                                            id="walkin_bag_volume_${i}" 
@@ -3002,7 +3002,7 @@
             let total = 0;
 
             for (let i = 1; i <= bagCount; i++) {
-                const volumeInput = $(`#walkin_bag_volume_${i} `);
+                const volumeInput = $(`#walkin_bag_volume_${i}`);
                 if (volumeInput.length && volumeInput.val()) {
                     const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
                     total += isNaN(parsed) ? 0 : parsed;
@@ -3033,7 +3033,7 @@
             // Store existing values before regenerating
             const existingValues = {};
             for (let i = 1; i <= 100; i++) { // Check up to 100 to capture any existing values
-                const input = $(`#home_bag_volume_${i} `);
+                const input = $(`#home_bag_volume_${i}`);
                 if (input.length && input.val()) {
                     existingValues[i] = input.val();
                 }
@@ -3048,7 +3048,7 @@
                 }
 
                 fieldsHTML += `
-                                                                            < div class="col-md-6" >
+                                                                            <div class="col-md-6">
                                                                                 <div class="input-group input-group-lg">
                                                                                     <span class="input-group-text bg-primary text-white fw-bold">
                                                                                         <i class="fas fa-flask me-2"></i>Bag ${i}
@@ -3064,7 +3064,7 @@
                                                                                         required>
                                                                                         <span class="input-group-text">ml</span>
                                                                                 </div>
-                                                                                                                                                                                                    </div >
+                                                                                                                                                                                                    </div>
                                                                             `;
             }
             fieldsHTML += '</div>';
