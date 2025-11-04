@@ -63,13 +63,13 @@
             font-size: 0.95rem;
             border-radius: 6px;
         }
-        
+
         /* Card-based responsive layout for smaller screens */
         @media (max-width: 1400px) {
             .table-responsive table {
                 display: none !important;
             }
-            
+
             .responsive-card {
                 display: block !important;
                 border: 1px solid #dee2e6;
@@ -77,32 +77,32 @@
                 padding: 1rem;
                 margin-bottom: 1rem;
                 background: white;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             }
-            
+
             .responsive-card .card-row {
                 display: flex;
                 justify-content: space-between;
                 padding: 0.5rem 0;
                 border-bottom: 1px solid #f0f0f0;
             }
-            
+
             .responsive-card .card-row:last-child {
                 border-bottom: none;
             }
-            
+
             .responsive-card .card-label {
                 font-weight: 600;
                 color: #495057;
                 font-size: 0.9rem;
             }
-            
+
             .responsive-card .card-value {
                 text-align: right;
                 color: #212529;
                 font-size: 0.9rem;
             }
-            
+
             .responsive-card .card-actions {
                 margin-top: 0.75rem;
                 padding-top: 0.75rem;
@@ -110,7 +110,7 @@
                 text-align: center;
             }
         }
-        
+
         @media (min-width: 1401px) {
             .responsive-card {
                 display: none !important;
@@ -373,50 +373,53 @@
             }
         }
 
-            /* Health Screening Action Buttons - match provided screenshot */
-            .admin-review-btn {
-                background: var(--primary-color);
-                color: #fff;
-                border: none;
-                display: inline-flex;
-                align-items: center;
-                padding: 0.45rem 0.7rem;
-                border-radius: 8px;
-                box-shadow: 0 1px 0 rgba(0,0,0,0.06);
-            }
+        /* Health Screening Action Buttons - match provided screenshot */
+        .admin-review-btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.45rem 0.7rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+        }
 
-            .admin-review-btn:hover {
-                filter: brightness(0.95);
-                color: #fff;
-            }
+        .admin-review-btn:hover {
+            filter: brightness(0.95);
+            color: #fff;
+        }
 
-            .admin-review-icon {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 28px;
-                height: 28px;
-                background: #fff; /* white circle */
-                color: #000; /* black icon */
-                border-radius: 50%;
-                margin-right: 0.55rem;
-                font-size: 0.95rem;
-            }
+        .admin-review-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: #fff;
+            /* white circle */
+            color: #000;
+            /* black icon */
+            border-radius: 50%;
+            margin-right: 0.55rem;
+            font-size: 0.95rem;
+        }
 
-            .hs-archive-btn {
-                background: #d73b4b; /* red */
-                color: #fff;
-                border: none;
-                padding: 0.45rem 0.8rem;
-                border-radius: 8px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-            }
+        .hs-archive-btn {
+            background: #d73b4b;
+            /* red */
+            color: #fff;
+            border: none;
+            padding: 0.45rem 0.8rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-            .hs-archive-btn i {
-                margin-right: 0.45rem;
-            }
+        .hs-archive-btn i {
+            margin-right: 0.45rem;
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
 @endsection
@@ -432,7 +435,7 @@
             const searchResults = document.getElementById('searchResults');
             const tableBody = document.querySelector('.table tbody');
             const noDataAlert = document.querySelector('.alert-info');
-            
+
             if (!searchInput || !tableBody) return;
 
             const allRows = Array.from(tableBody.querySelectorAll('tr'));
@@ -454,7 +457,7 @@
                 // Separate matched and non-matched rows
                 const matchedRows = [];
                 const unmatchedRows = [];
-                
+
                 allRows.forEach(row => {
                     // Get all cell content for comprehensive search
                     let rowText = '';
@@ -462,7 +465,7 @@
                         rowText += (row.cells[i].textContent || '') + ' ';
                     }
                     rowText = rowText.toLowerCase();
-                    
+
                     // Check if search term matches anywhere in the row
                     if (rowText.indexOf(searchTerm) !== -1) {
                         row.style.display = '';
@@ -473,7 +476,7 @@
                         unmatchedRows.push(row);
                     }
                 });
-                
+
                 // Reorder DOM: matched rows first, then unmatched (hidden)
                 matchedRows.forEach(row => tableBody.appendChild(row));
                 unmatchedRows.forEach(row => tableBody.appendChild(row));
@@ -481,7 +484,7 @@
                 // Update UI
                 clearBtn.style.display = 'inline-block';
                 searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                
+
                 if (visibleCount === 0) {
                     searchResults.textContent = 'No results found';
                     searchResults.classList.add('text-danger');
@@ -492,8 +495,8 @@
 
             // Event listeners
             searchInput.addEventListener('input', performSearch);
-            
-            clearBtn.addEventListener('click', function() {
+
+            clearBtn.addEventListener('click', function () {
                 searchInput.value = '';
                 performSearch();
                 searchInput.focus();
@@ -524,14 +527,14 @@
                     }
                 }).then(result => {
                     if (result.isConfirmed) {
-                        Swal.fire('Restored', 'Record restored successfully.', 'success').then(()=> location.reload());
+                        Swal.fire('Restored', 'Record restored successfully.', 'success').then(() => location.reload());
                     }
-                }).catch(()=> Swal.fire('Error', 'Failed to restore record', 'error'));
+                }).catch(() => Swal.fire('Error', 'Failed to restore record', 'error'));
             } else {
                 if (!confirm('Restore record?')) return;
                 fetch(`/admin/health-screening/${id}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(()=> location.reload())
-                    .catch(()=> alert('Failed to restore'));
+                    .then(() => location.reload())
+                    .catch(() => alert('Failed to restore'));
             }
         }
     </script>
@@ -845,7 +848,8 @@
                 <a class="nav-link {{ $status == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}"
                     href="{{ route('admin.health-screening', ['status' => 'archived']) }}">
                     Archived
-                    <span class="badge {{ $status == 'archived' ? 'bg-light text-secondary' : 'bg-secondary text-white' }} ms-1">{{ $archivedCount ?? 0 }}</span>
+                    <span
+                        class="badge {{ $status == 'archived' ? 'bg-light text-secondary' : 'bg-secondary text-white' }} ms-1">{{ $archivedCount ?? 0 }}</span>
                 </a>
             </li>
         </ul>
@@ -856,11 +860,8 @@
                 <span class="input-group-text bg-white border-end-0">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" 
-                       class="form-control border-start-0 ps-0" 
-                       id="searchInput" 
-                       placeholder="Search by name, contact number..."
-                       aria-label="Search health screenings">
+                <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
+                    placeholder="Search by name, contact number..." aria-label="Search health screenings">
                 <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -873,159 +874,167 @@
         @if($healthScreenings->isEmpty())
             <div class="alert alert-info">No health screenings found for status <strong>{{ ucfirst($status) }}</strong>.</div>
         @else
-            <div class="card mt-3 shadow-sm rounded-lg border-0">
-                <div class="card-header bg-primary text-white rounded-top">
-                    <h5 class="mb-0">{{ ucfirst($status) }} Health Screenings</h5>
-                </div>
-                <div class="card-body py-3">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped align-middle shadow-sm rounded"
-                            style="min-width: 900px;">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="text-center px-4 py-3" style="width: 20%;">Name</th>
-                                    <th class="text-center px-4 py-3" style="width: 18%">Contact Number</th>
-                                    <th class="text-center px-4 py-3" style="width: 18%">Date and Time Submitted</th>
-                                    @if($status == 'accepted')
-                                        <th class="text-center px-4 py-3" style="width: 18%">Date and Time Accepted</th>
-                                    @elseif($status == 'declined')
-                                        <th class="text-center px-4 py-3" style="width: 18%">Date and Time Declined</th>
-                                    @endif
-                                    {{-- When showing archived items, provide a dedicated Restore column so actions are not duplicated inside modals --}}
-                                    @if($status == 'archived')
-                                        <th class="text-center px-4 py-3" style="width: 12%">View</th>
-                                        <th class="text-center px-4 py-3" style="width: 12%">Restore</th>
-                                    @else
-                                        <th class="text-center px-4 py-3" style="width: 12%">Actions</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $screeningsOrdered = $healthScreenings instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                        ? $healthScreenings->getCollection()->sortByDesc('created_at')
-                                        : collect($healthScreenings)->sortByDesc('created_at');
-                                @endphp
-                                @foreach($screeningsOrdered as $index => $screening)
+                <div class="card mt-3 shadow-sm rounded-lg border-0">
+                    <div class="card-header bg-primary text-white rounded-top">
+                        <h5 class="mb-0">{{ ucfirst($status) }} Health Screenings</h5>
+                    </div>
+                    <div class="card-body py-3">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped align-middle shadow-sm rounded"
+                                style="min-width: 900px;">
+                                <thead class="table-light">
                                     <tr>
-                                        <td>{{ $screening->user->first_name ?? '-' }} {{ $screening->user->last_name ?? '' }}</td>
-                                        <td>{{ $screening->user->contact_number ?? '-' }}</td>
-                                        <td>
-                                            <span
-                                                title="{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
-                                                <strong>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
-                                                <span class="text-muted"
-                                                    style="font-size:0.97em;">&nbsp;{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
-                                            </span>
-                                        </td>
+                                        <th class="text-center px-4 py-3" style="width: 20%;">Name</th>
+                                        <th class="text-center px-4 py-3" style="width: 18%">Contact Number</th>
+                                        <th class="text-center px-4 py-3" style="width: 18%">Date and Time Submitted</th>
                                         @if($status == 'accepted')
-                                            <td>
-                                                @if(!empty($screening->date_accepted))
-                                                    <span
-                                                        title="{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
-                                                        <strong>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
-                                                        <span class="text-muted"
-                                                            style="font-size:0.97em;">&nbsp;{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
-                                                    </span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
+                                            <th class="text-center px-4 py-3" style="width: 18%">Date and Time Accepted</th>
                                         @elseif($status == 'declined')
-                                            <td>
-                                                @if(!empty($screening->date_declined))
-                                                    <span
-                                                        title="{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
-                                                        <strong>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
-                                                        <span class="text-muted"
-                                                            style="font-size:0.97em;">&nbsp;{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
-                                                    </span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
+                                            <th class="text-center px-4 py-3" style="width: 18%">Date and Time Declined</th>
                                         @endif
+                                        {{-- When showing archived items, provide a dedicated Restore column so actions are not
+                                        duplicated inside modals --}}
                                         @if($status == 'archived')
+                                            <th class="text-center px-4 py-3" style="width: 12%">View</th>
+                                            <th class="text-center px-4 py-3" style="width: 12%">Restore</th>
+                                        @else
+                                            <th class="text-center px-4 py-3" style="width: 12%">Actions</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $screeningsOrdered = $healthScreenings instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                            ? $healthScreenings->getCollection()->sortByDesc('created_at')
+                                            : collect($healthScreenings)->sortByDesc('created_at');
+                                    @endphp
+                                    @foreach($screeningsOrdered as $index => $screening)
+                                        <tr>
+                                            <td>{{ $screening->user->first_name ?? '-' }} {{ $screening->user->last_name ?? '' }}</td>
+                                            <td>{{ $screening->user->contact_number ?? '-' }}</td>
+                                            <td>
+                                                <span
+                                                    title="{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
+                                                    <strong>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
+                                                    <span class="text-muted"
+                                                        style="font-size:0.97em;">&nbsp;{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
+                                                </span>
+                                            </td>
+                                            @if($status == 'accepted')
+                                                <td>
+                                                    @if(!empty($screening->date_accepted))
+                                                        <span
+                                                            title="{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
+                                                            <strong>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
+                                                            <span class="text-muted"
+                                                                style="font-size:0.97em;">&nbsp;{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                            @elseif($status == 'declined')
+                                                <td>
+                                                    @if(!empty($screening->date_declined))
+                                                        <span
+                                                            title="{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}">
+                                                            <strong>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong>
+                                                            <span class="text-muted"
+                                                                style="font-size:0.97em;">&nbsp;{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('h:i A') }}</span>
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                            @endif
+                                            @if($status == 'archived')
                                                 <td class="text-center align-middle">
                                                     <button class="admin-review-btn" data-bs-toggle="modal"
                                                         data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
                                                         Review
                                                     </button>
                                                 </td>
-                                            <td class="text-center align-middle">
-                                                <button class="btn btn-sm btn-outline-success" onclick="restoreHealthScreening({{ $screening->health_screening_id }})">Restore</button>
-                                            </td>
-                                        @else
-                                            <td class="text-center align-middle">
-                                                <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
-                                                    <button class="admin-review-btn" data-bs-toggle="modal"
-                                                        data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
-                                                        Review
-                                                    </button>
-                                                    @if($screening->status !== 'pending')
-                                                        <button class="hs-archive-btn" onclick="archiveHealthScreening({{ $screening->health_screening_id }})">
-                                                            <i class="bi bi-archive"></i> Archive
+                                                <td class="text-center align-middle">
+                                                    <button class="btn btn-sm btn-outline-success"
+                                                        onclick="restoreHealthScreening({{ $screening->health_screening_id }})">Restore</button>
+                                                </td>
+                                            @else
+                                                <td class="text-center align-middle">
+                                                    <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
+                                                        <button class="admin-review-btn" data-bs-toggle="modal"
+                                                            data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                                            Review
                                                         </button>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                        @endif
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    {{-- Card Layout for Smaller Screens --}}
-                    @foreach($screeningsOrdered as $index => $screening)
-                        <div class="responsive-card" style="display: none;">
-                            <div class="card-row">
-                                <span class="card-label">Name:</span>
-                                <span class="card-value"><strong>{{ $screening->user->first_name ?? '-' }} {{ $screening->user->last_name ?? '' }}</strong></span>
-                            </div>
-                            <div class="card-row">
-                                <span class="card-label">Contact Number:</span>
-                                <span class="card-value">{{ $screening->user->contact_number ?? '-' }}</span>
-                            </div>
-                            <div class="card-row">
-                                <span class="card-label">Date Submitted:</span>
-                                <span class="card-value">
-                                    <strong>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
-                                    <small class="text-muted">{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
-                                </span>
-                            </div>
-                            @if($status == 'accepted' && !empty($screening->date_accepted))
-                                <div class="card-row">
-                                    <span class="card-label">Date Accepted:</span>
-                                    <span class="card-value">
-                                        <strong>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
-                                        <small class="text-muted">{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
-                                    </span>
-                                </div>
-                            @elseif($status == 'declined' && !empty($screening->date_declined))
-                                <div class="card-row">
-                                    <span class="card-label">Date Declined:</span>
-                                    <span class="card-value">
-                                        <strong>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
-                                        <small class="text-muted">{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
-                                    </span>
-                                </div>
-                            @endif
-                            <div class="card-actions">
-                                <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
-                                    <button class="admin-review-btn" data-bs-toggle="modal"
-                                        data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
-                                        Review
-                                    </button>
-                                    @if($screening->status !== 'pending')
-                                        <button class="hs-archive-btn" onclick="archiveHealthScreening({{ $screening->health_screening_id }})">
-                                            <i class="bi bi-archive"></i> Archive
-                                        </button>
-                                    @endif
-                                </div>
-                            </div>
+                                                        @if($screening->status !== 'pending')
+                                                            <button class="hs-archive-btn"
+                                                                onclick="archiveHealthScreening({{ $screening->health_screening_id }})">
+                                                                <i class="bi bi-archive"></i> Archive
+                                                            </button>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                    @endforeach
+
+                        {{-- Card Layout for Smaller Screens --}}
+                        @foreach($screeningsOrdered as $index => $screening)
+                            <div class="responsive-card" style="display: none;">
+                                <div class="card-row">
+                                    <span class="card-label">Name:</span>
+                                    <span class="card-value"><strong>{{ $screening->user->first_name ?? '-' }}
+                                            {{ $screening->user->last_name ?? '' }}</strong></span>
+                                </div>
+                                <div class="card-row">
+                                    <span class="card-label">Contact Number:</span>
+                                    <span class="card-value">{{ $screening->user->contact_number ?? '-' }}</span>
+                                </div>
+                                <div class="card-row">
+                                    <span class="card-label">Date Submitted:</span>
+                                    <span class="card-value">
+                                        <strong>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                        <small
+                                            class="text-muted">{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                    </span>
+                                </div>
+                                @if($status == 'accepted' && !empty($screening->date_accepted))
+                                    <div class="card-row">
+                                        <span class="card-label">Date Accepted:</span>
+                                        <span class="card-value">
+                                            <strong>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                            <small
+                                                class="text-muted">{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                        </span>
+                                    </div>
+                                @elseif($status == 'declined' && !empty($screening->date_declined))
+                                    <div class="card-row">
+                                        <span class="card-label">Date Declined:</span>
+                                        <span class="card-value">
+                                            <strong>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y') }}</strong><br>
+                                            <small
+                                                class="text-muted">{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('h:i A') }}</small>
+                                        </span>
+                                    </div>
+                                @endif
+                                <div class="card-actions">
+                                    <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
+                                        <button class="admin-review-btn" data-bs-toggle="modal"
+                                            data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                            Review
+                                        </button>
+                                        @if($screening->status !== 'pending')
+                                            <button class="hs-archive-btn"
+                                                onclick="archiveHealthScreening({{ $screening->health_screening_id }})">
+                                                <i class="bi bi-archive"></i> Archive
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                         </table>
                     </div>
                 </div>
@@ -1170,112 +1179,108 @@
                                     <h6 class="text-primary border-bottom pb-2 mb-3"><i
                                             class="bi bi-info-circle-fill me-2"></i>Submission Status</h6>
                                     <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <strong>Status:</strong>
+                                        <div class="col-md-6 mb-2 d-flex align-items-center">
+                                            <strong class="me-2 mb-0">Status:</strong>
                                             <span
-                                                class="badge bg-{{ $screening->status == 'accepted' ? 'success' : ($screening->status == 'declined' ? 'danger' : 'warning text-dark') }} ms-2">
+                                                class="badge bg-{{ $screening->status == 'accepted' ? 'success' : ($screening->status == 'declined' ? 'danger' : 'warning text-dark') }}">
                                                 {{ ucfirst($screening->status) }}
-                                            </span>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <strong>Submitted:</strong>
-                                            {{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}
-                                        </div>
-                                        @if($screening->status == 'accepted' && $screening->date_accepted)
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Accepted At:</strong>
-                                                {{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}
-                                            </div>
-                                        @endif
-                                        @if($screening->status == 'declined' && $screening->date_declined)
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Declined At:</strong>
-                                                {{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}
-                                            </div>
-                                        @endif
-                                        @if(!empty($screening->admin_notes))
-                                            <div class="col-12 mb-2 mt-2">
-                                                <strong>Admin Comments:</strong>
-                                                <div class="mt-2 p-3 bg-light border rounded">
-                                                    {{ $screening->admin_notes }}
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
+                                                </span> </div>
+                                                <div class="col-md-6 mb-2 d-flex align-items-center">
+                                                    <strong class="me-2 mb-0">Submitted:</strong>
+                                                    <span>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                                    </div> @if($screening->status == 'accepted' && $screening->date_accepted)
+                                                            <div class="col-md-6 mb-2 d-flex align-items-center">
+                                                        <strong class="me-2 mb-0">Accepted At:</strong>
+                                                        <span>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                                    </div> @endif @if($screening->status == 'declined' && $screening->date_declined)
+                                                            <div class="col-md-6 mb-2 d-flex align-items-center">
+                                                        <strong class="me-2 mb-0">Declined At:</strong>
+                                                        <span>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                                    </div> @endif @if(!empty($screening->admin_notes))
+                                                            <div class="col-12 mb-2 mt-2">
+                                                        <strong>Admin Comments:</strong>
+                                                        <div class="mt-2 p-3 bg-light border rounded">
+                                                            {{ $screening->admin_notes }}
+                                                            </div> </div>
+                                                    @endif
+                                                        </div> </div>
 
-                                {{-- Admin Comments/Notes Section --}}
-                                @if($screening->status == 'pending')
-                                    <div class="mb-4">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3"><i
-                                                class="bi bi-chat-left-text-fill me-2"></i>Admin Action</h6>
-                                        <div class="row">
-                                            <div class="col-12 mb-2">
-                                                <textarea class="form-control admin-comments-textarea rounded mt-2"
-                                                    id="adminComments{{ $screening->health_screening_id }}" 
-                                                    name="comments" 
-                                                    rows="3"
-                                                    placeholder="Enter comments or notes (required for declining, optional for accepting)"></textarea>
-                                            </div>
+                                                        {{-- Admin Comments/Notes Section --}}
+                                                        @if($screening->status == 'pending')
+                                                                    <div class="mb-4">
+                                                                <h6 class="text-primary border-bottom pb-2 mb-3"><i
+                                                                        class="bi bi-chat-left-text-fill me-2"></i>Admin Action</h6>
+                                                                <div class="row">
+                                                                    <div class="col-12 mb-2">
+                                                                        <textarea class="form-control admin-comments-textarea rounded mt-2"
+                                                                            id="adminComments{{ $screening->health_screening_id }}"
+                                                                            name="comments" rows="3"
+                                                                            placeholder="Enter comments or notes (required for declining, optional for accepting)"></textarea>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    </div> <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    @if($screening->status == 'pending')
+                                                            {{-- Keep accept/decline actions for pending items only; archive/restore handled
+                                                        in archived tab --}}
+                                                        <button type="button" class="btn btn-danger"
+                                                            onclick="declineScreening({{ $screening->health_screening_id }})">
+                                                            <i class="bi bi-x-circle me-1"></i> Decline
+                                                        </button>
+                                                        <button type="button" class="btn btn-success"
+                                                            onclick="acceptScreening({{ $screening->health_screening_id }})">
+                                                            <i class="bi bi-check-circle me-1"></i> Accept
+                                                        </button>
+                                                    @elseif($screening->status == 'declined')
+                                                            {{-- Allow undo/accept when declined, but do not show archive here --}}
+                                                        <button type="button" class="btn btn-success"
+                                                            onclick="undoDeclineScreening({{ $screening->health_screening_id }})">
+                                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Undo & Accept
+                                                        </button>
+                                                    @endif
+                                                    </div> </div>
+                                                </div>
                                         </div>
-                                    </div>
-                                @endif
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                @if($screening->status == 'pending')
-                                    {{-- Keep accept/decline actions for pending items only; archive/restore handled in archived tab --}}
-                                    <button type="button" class="btn btn-danger" onclick="declineScreening({{ $screening->health_screening_id }})">
-                                        <i class="bi bi-x-circle me-1"></i> Decline
-                                    </button>
-                                    <button type="button" class="btn btn-success" onclick="acceptScreening({{ $screening->health_screening_id }})">
-                                        <i class="bi bi-check-circle me-1"></i> Accept
-                                    </button>
-                                @elseif($screening->status == 'declined')
-                                    {{-- Allow undo/accept when declined, but do not show archive here --}}
-                                    <button type="button" class="btn btn-success" onclick="undoDeclineScreening({{ $screening->health_screening_id }})">
-                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Undo & Accept
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
             @endforeach
         @endif
-    </div>
-    <script>
-        function archiveHealthScreening(id) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Archive record?',
-                    text: 'This will archive (soft-delete) the record. You can restore it from the database if needed.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, archive',
-                    preConfirm: () => {
-                        return fetch(`/admin/health-screening/${id}/archive`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }).then(resp => resp.json());
-                    }
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        Swal.fire('Archived', 'Record archived successfully.', 'success').then(()=> location.reload());
-                    }
-                }).catch(err => {
-                    Swal.fire('Error', 'Failed to archive record', 'error');
-                });
-            } else {
-                if (!confirm('Archive record?')) return;
-                fetch(`/admin/health-screening/${id}/archive`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(()=> location.reload())
-                    .catch(()=> alert('Failed to archive'));
-            }
-        }
-    </script>
+                            </div> <script>
+                                function archiveHealthScreening(id) {
+                                    if (typeof Swal !== 'undefined') {
+                                        Swal.fire({
+                                            title: 'Archive record?',
+                                            text: 'This will archive (soft-delete) the record. You can restore it from the database if
+                            needed.',
+                            icon: 'warning',
+                                            showCancelButton: true,
+                                            confirmButtonText: 'Yes, archive',
+                                            preConfirm: () => {
+                                                return fetch(`/admin/health-screening/${id}/archive`, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                        'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                                                    }
+                                                }).then(resp => resp.json());
+                                            }
+                                        }).then(result => {
+                                            if (result.isConfirmed) {
+                                                Swal.fire('Archived', 'Record archived successfully.', 'success').then(() => location.reload());
+                                            }
+                                        }).catch(err => {
+                                            Swal.fire('Error', 'Failed to archive record', 'error');
+                                        });
+                                    } else {
+                                        if (!confirm('Archive record?')) return;
+                                        fetch(`/admin/health-screening/${id}/archive`, {
+                                            method: 'POST', headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                                            .then(() => location.reload())
+                                            .catch(() => alert('Failed to archive'));
+                                    }
+                                }
+                            </script>
 @endsection

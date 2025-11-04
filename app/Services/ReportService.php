@@ -68,7 +68,8 @@ class ReportService
     public function buildRequestData(int $year, int $month): array
     {
         // Get all breastmilk requests for the given month/year
-        $requests = \App\Models\BreastmilkRequest::with(['user', 'infant', 'dispensedMilk'])
+        // Eager-load nested dispensedMilk relations to avoid N+1 when accessing sources
+        $requests = \App\Models\BreastmilkRequest::with(['user', 'infant', 'dispensedMilk.sourceDonations.user', 'dispensedMilk.sourceBatches'])
             ->whereYear('request_date', $year)
             ->whereMonth('request_date', $month)
             ->orderBy('request_date', 'desc')

@@ -439,6 +439,23 @@ class DonationController extends Controller
                     : $donation->bag_details;
             }
 
+            // Determine the display date and time (prefer donation_date/time, fallback to scheduled)
+            $displayDate = 'N/A';
+            if ($donation->donation_date) {
+                $displayDate = $donation->donation_date->format('M d, Y');
+            } elseif ($donation->scheduled_pickup_date) {
+                $displayDate = $donation->scheduled_pickup_date->format('M d, Y');
+            }
+
+            $displayTime = 'N/A';
+            if ($donation->donation_time) {
+                $displayTime = \Carbon\Carbon::parse($donation->donation_time)->format('g:i A');
+            } elseif ($donation->scheduled_pickup_time) {
+                $displayTime = \Carbon\Carbon::parse($donation->scheduled_pickup_time)->format('g:i A');
+            } elseif ($donation->availability) {
+                $displayTime = $donation->availability->formatted_time ?? 'N/A';
+            }
+
             return response()->json([
                 'success' => true,
                 'donation' => [
@@ -449,8 +466,10 @@ class DonationController extends Controller
                     'latitude' => $donation->user->latitude ?? null,
                     'longitude' => $donation->user->longitude ?? null,
                     'donation_method' => $donation->donation_method,
-                    'donation_date' => $donation->donation_date ? $donation->donation_date->format('m/d/Y') : 'N/A',
-                    'donation_time' => $donation->donation_time ? \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') : ($donation->availability ? $donation->availability->formatted_time : 'N/A'),
+                    'donation_date' => $displayDate,
+                    'donation_time' => $displayTime,
+                    'first_expression_date' => $donation->first_expression_date ? \Carbon\Carbon::parse($donation->first_expression_date)->format('M d, Y') : null,
+                    'last_expression_date' => $donation->last_expression_date ? \Carbon\Carbon::parse($donation->last_expression_date)->format('M d, Y') : null,
                     'number_of_bags' => $donation->number_of_bags ?? 0,
                     'total_volume' => $donation->formatted_total_volume ?? 'N/A',
                     'bag_details' => $bagDetails,
@@ -518,7 +537,7 @@ class DonationController extends Controller
 
         $user_id = Session::get('account_id');
         $requests = \App\Models\BreastmilkRequest::where('user_id', $user_id)
-            ->with(['infant', 'availability', 'dispensedMilk'])
+            ->with(['infant', 'availability', 'dispensedMilk.sourceDonations.user', 'dispensedMilk.sourceBatches'])
             ->orderBy('created_at', 'desc')
             ->get();
 
