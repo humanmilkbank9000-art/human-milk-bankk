@@ -6,7 +6,7 @@ return [
     | SMS Driver
     |--------------------------------------------------------------------------
     |
-    | Supported: "log", "infobip", "qproxy"
+    | Supported: "log", "infobip", "qproxy", "iprogtech_otp"
     | 
     | - log: Logs SMS to laravel.log (for development/testing)
     | - infobip: Sends real SMS via Infobip API
@@ -56,5 +56,25 @@ return [
     'qproxy' => [
         'token' => env('QPROXY_SMS_TOKEN'),
         'url' => env('QPROXY_SMS_URL', 'https://app.qproxy.xyz/api/sms/v1/send'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | IPROGTECH OTP Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for IPROGTECH OTP driver. This driver delegates OTP
+    | generation and verification to the external API and should be used
+    | for the forgot-password flow.
+    |
+    */
+
+    'iprogtech_otp' => [
+        // e.g. 91d56803aa4a36ef3e7b3b350297ce3b35dee465
+        'api_token' => env('IPROGTECH_API_TOKEN'),
+        // Base API URL (without trailing slash). Default per docs
+        'base_url' => env('IPROGTECH_API_BASE_URL', 'https://sms.iprogtech.com/api/v1'),
+        // Optional custom message; include :otp placeholder to be replaced by backend
+        'message' => env('IPROGTECH_OTP_MESSAGE', ''),
     ],
 ];

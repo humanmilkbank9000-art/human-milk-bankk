@@ -11,6 +11,12 @@ use Illuminate\Support\Carbon;
 class PasswordResetService
 {
     protected int $codeExpiryMinutes = 10;
+    protected OtpService $otpService;
+
+    public function __construct(OtpService $otpService)
+    {
+        $this->otpService = $otpService;
+    }
 
     public function generateAndSendCode(string $contactNumber): string
     {
@@ -19,6 +25,25 @@ class PasswordResetService
             throw new \RuntimeException('We could not find an account with that mobile number.');
         }
 
+        $driver = strtolower((string) config('sms.driver', 'log'));
+
+        // If using IPROGTECH OTP driver, send via external API (no local token storage)
+        if ($driver === 'iprogtech_otp') {
+            $this->codeExpiryMinutes = 5; // per provider default
+            if (!$this->otpService) {
+                throw new \RuntimeException('OTP service unavailable.');
+            }
+
+            $result = $this->otpService->sendOtp($contactNumber);
+            if (!($result['success'] ?? false)) {
+                throw new \RuntimeException($result['message'] ?? 'Failed to send recovery code.');
+            }
+
+            // Do not expose OTP; return empty string to keep debug UI off for real drivers
+            return '';
+        }
+
+        // Fallback to existing local code generation + SMS notification
         $code = (string) random_int(100000, 999999);
 
         DB::table('password_reset_tokens')->updateOrInsert(
@@ -26,7 +51,7 @@ class PasswordResetService
             ['token' => Hash::make($code), 'created_at' => now()]
         );
 
-        $usingLogDriver = strtolower((string) config('sms.driver', 'log')) === 'log';
+        $usingLogDriver = $driver === 'log';
 
         if ($usingLogDriver) {
             $this->logRecoveryCode($contactNumber, $code);
@@ -44,6 +69,20 @@ class PasswordResetService
 
     public function verifyCode(string $contactNumber, string $code): void
     {
+        $driver = strtolower((string) config('sms.driver', 'log'));
+
+        if ($driver === 'iprogtech_otp') {
+            if (!$this->otpService) {
+                throw new \RuntimeException('OTP service unavailable.');
+            }
+            $result = $this->otpService->verifyOtp($contactNumber, $code);
+            if (!($result['success'] ?? false)) {
+                throw new \RuntimeException($result['message'] ?? 'Invalid or expired code.');
+            }
+            // External service handles expiry; nothing to store locally
+            return;
+        }
+
         $record = DB::table('password_reset_tokens')->where('contact_number', $contactNumber)->first();
         if (!$record) {
             throw new \RuntimeException('The recovery code is invalid or has expired.');
@@ -69,7 +108,12 @@ class PasswordResetService
 
         $sanitizedPassword = trim(strip_tags($password));
         $user->forceFill(['password' => Hash::make($sanitizedPassword)])->save();
-        DB::table('password_reset_tokens')->where('contact_number', $contactNumber)->delete();
+        // Clean up local token if present (legacy path)
+        try {
+            DB::table('password_reset_tokens')->where('contact_number', $contactNumber)->delete();
+        } catch (\Throwable $e) {
+            // table may not exist in some deployments; ignore
+        }
         
         // Send SMS notification about password change
         try {
