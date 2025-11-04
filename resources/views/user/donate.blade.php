@@ -127,6 +127,38 @@
             transform: scale(1.1);
         }
 
+        /* Make specific donation modals use pink header */
+        #walkInModal .modal-header,
+        #homeCollectionModal .modal-header {
+            background: linear-gradient(180deg, #ff93c1 0%, #ff7fb3 100%) !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+        }
+
+        #walkInModal .modal-header .modal-title,
+        #walkInModal .modal-header h5,
+        #homeCollectionModal .modal-header .modal-title,
+        #homeCollectionModal .modal-header h5 {
+            color: #ffffff !important;
+        }
+
+        /* Close icon: enforce white SVG with transparent background to avoid black box */
+        #homeCollectionModal .modal-header .btn-close,
+        #walkInModal .modal-header .btn-close {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            opacity: 1 !important;
+            width: 1.5rem; height: 1.5rem; padding: 0.25rem;
+            text-indent: -9999px; /* hide any stray text */
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            background-size: 1rem 1rem !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23ffffff' d='M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 1 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E") !important;
+        }
+        #homeCollectionModal .modal-header .btn-close:focus,
+        #walkInModal .modal-header .btn-close:focus { outline: none !important; box-shadow: none !important; }
+
     /* Button Title - Segoe UI for emphasis */
         .donation-button h3 {
             margin: 0 0 0.5rem 0;
