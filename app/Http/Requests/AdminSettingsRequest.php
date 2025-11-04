@@ -38,7 +38,8 @@ class AdminSettingsRequest extends FormRequest
                         }
                     },
                 ],
-                'current_password' => 'required|string'
+                // Only require current password when changing password
+                'current_password' => 'sometimes|required_with:password|string'
             ];
     }
 }

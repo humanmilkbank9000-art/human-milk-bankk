@@ -76,8 +76,14 @@ class AuthService
         $admin = DB::table('admin')->where('admin_id', $adminId)->first();
         if (!$admin) throw new \RuntimeException('Admin not found');
 
-        if (!Hash::check($data['current_password'], $admin->password)) {
-            throw new \RuntimeException('Current password is incorrect');
+        // Only enforce current password check when changing password
+        if (!empty($data['password'])) {
+            if (empty($data['current_password'])) {
+                throw new \RuntimeException('Current password is required to change password.');
+            }
+            if (!Hash::check($data['current_password'], $admin->password)) {
+                throw new \RuntimeException('Current password is incorrect');
+            }
         }
 
         $update = [];
