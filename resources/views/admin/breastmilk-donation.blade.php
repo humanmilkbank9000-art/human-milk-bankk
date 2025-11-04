@@ -15,365 +15,404 @@
             .card-header.bg-warning {
                 padding: 0.75rem 1.25rem !important;
                 min-height: 52px;
-                display: flex;
-                align-items: center;
             }
 
-            /* Compact header on mobile */
-            @media (max-width: 767.98px) {
-
-                .card-header.bg-primary,
-                .card-header.bg-success {
-                    padding: 0.5rem 0.75rem !important;
-                    min-height: 45px;
-                }
+            /* Clean, leveled header style for the Bag Details editable table (validation modal) */
+            #home-bag-details-table {
+                border-collapse: separate;
+                border-spacing: 0;
+                --header-bg: #f6f7f8;
             }
-
-            .card-header h5 {
-                font-size: 1.1rem;
-                margin-bottom: 0 !important;
-            }
-
-            /* Dropdown filter alignment - always horizontal and compact */
-            .card-header .form-select-sm {
-                font-size: 0.8rem;
-                padding: 0.25rem 0.5rem;
-                margin-left: auto;
-                height: auto;
-                line-height: 1.2;
-                flex-shrink: 0;
-            }
-
-            /* Keep header horizontal on all screen sizes - compact */
-            .card-header.bg-warning.d-flex {
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: space-between;
-                gap: 0.5rem !important;
-                flex-wrap: nowrap !important;
-            }
-
-            .card-header h5 {
-                flex-shrink: 1;
-                overflow: hidden;
-                text-overflow: ellipsis;
+            #home-bag-details-table thead th {
+                background: var(--header-bg) !important;
+                font-weight: 700;
+                color: #222;
+                padding: 0.7rem 0.9rem;
+                text-align: left;
+                vertical-align: middle;
+                border-right: 1px solid #e9ecef;
+                border-bottom: 1px solid #e9ecef;
                 white-space: nowrap;
             }
+            #home-bag-details-table thead th:first-child {
+                border-top-left-radius: 6px;
+            }
+            #home-bag-details-table thead th:last-child {
+                border-top-right-radius: 6px;
+                border-right: none;
+            }
+            #home-bag-details-table tbody td {
+                vertical-align: middle;
+                padding: 0.55rem 0.9rem;
+            }
+            /* small muted placeholder for empty cells to keep layout neat */
+            #home-bag-details-table tbody td:empty::after {
+                content: "-";
+                color: #6c757d;
+            }
 
-            /* Mobile optimization - extra compact */
-            @media (max-width: 767.98px) {
-                .card-header.bg-warning.d-flex {
-                    padding: 0.5rem 0.75rem !important;
-                    min-height: 45px !important;
+            else {
+
+                // Fallback: use parsed data-bag-details already available
+                if (bagDetails && bagDetails.length > 0) {
+                    bagDetails.forEach((bag, index)=> {
+                            const bagNum=bag.bag_number || (index + 1);
+                            const time=formatTime12(bag.time) || '--';
+                            const date=bag.date || '--';
+                            const volume=bag.volume || 0;
+                            const storageLabel=mapStorage(bag.storage_location || '--');
+                            const temp=bag.temperature || '--';
+                            const method=bag.collection_method || '--';
+
+                            const row=`\n <tr>\n <td class="text-center fw-bold" >Bag $ {
+                                bagNum
+                            }
+
+                            </td>\n <td>$ {
+                                time
+                            }
+
+                            </td>\n <td>$ {
+                                date
+                            }
+
+                            </td>\n <td>\n <div class="input-group input-group-sm" >\n <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]" class="form-control home-bag-volume-input" step="0.01" min="0.01" value="${volume}" placeholder="ml" required>\n <span class="input-group-text" >ml</span>\n </div>\n </td>\n <td>$ {
+                                storageLabel
+                            }
+
+                            </td>\n <td class="text-end" >$ {
+                                temp
+                            }
+
+                            </td>\n <td><small>$ {
+                                method
+                            }
+
+                            </small></td>\n </tr>`;
+                            tbody.append(row);
+                            tbody.closest('.table-responsive').show();
+                            totalVol +=parseFloat(volume) || 0;
+                        });
+                    $('#home-total').text(totalVol.toFixed(2) + ' ml');
+
+                    // Live update total when editing volumes
+                    $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function () {
+                            let sum=0;
+
+                            $('#home-bag-details-body .home-bag-volume-input').each(function () {
+                                    const v=parseFloat($(this).val());
+                                    if ( !isNaN(v)) sum +=v;
+                                });
+                            $('#home-total').text(sum.toFixed(2) + ' ml');
+                        });
+
+                    $('#home-form-error').hide().text('');
                 }
 
-                .card-header h5 {
-                    font-size: 0.95rem;
-                }
-
-                .card-header .form-select-sm {
-                    font-size: 0.7rem;
-                    padding: 0.2rem 0.3rem;
-                    min-width: 100px !important;
-                    max-width: 130px;
+                else {
+                    $('#home-bag-details-body').append('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
+                    $('#home-total').text(parseFloat(totalVolume || 0).toFixed(2) + ' ml');
+                    $('#home-form-error').hide().text('');
                 }
             }
+            }
 
-            @media (max-width: 575.98px) {
-                .card-header.bg-warning.d-flex {
-                    padding: 0.4rem 0.6rem !important;
-                    min-height: 42px !important;
+            // Update total display
+            $('#home-total').text(runningTotal.toFixed(2) + ' ml');
+
+            // Live update total when editing volumes
+            $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function () {
+                    let sum=0;
+
+                    $('#home-bag-details-body .home-bag-volume-input').each(function () {
+                            const v=parseFloat($(this).val());
+                            if ( !isNaN(v)) sum +=v;
+                        });
+                    $('#home-total').text(sum.toFixed(2) + ' ml');
+                });
+            }
+
+            // If parsed bagDetails exist from data- attribute, render them immediately for snappy UI
+            // Helper to render bag details into the editable table
+            function renderBagTables(bags) {
+                console.log('renderBagTables called with', bags);
+                const tbody=$('#home-bag-details-body');
+                tbody.empty();
+
+                if ( !bags || !Array.isArray(bags) || bags.length===0) {
+                    return;
                 }
 
-                .card-header h5 {
-                    font-size: 0.85rem;
+                function fmtTime(t) {
+                    if ( !t) return '--';
+                    if (/\b(am|pm)\b/i.test(t)) return t;
+
+                    const m=t.toString().match(/^(\d {
+                                1, 2
+
+                            }):(\d {
+                                2
+
+                            })(?::(\d {
+                                    2
+                                }))?$/);
+                    if ( !m) return t;
+                    let hh=parseInt(m[1], 10);
+                    const mm=m[2];
+                    const ampm=hh>=12 ? 'PM' : 'AM';
+                    hh=hh % 12;
+                    if (hh===0) hh=12;
+                    return hh+':'+mm+' '+ampm;
                 }
 
-                .card-header .form-select-sm {
-                    font-size: 0.65rem;
-                    padding: 0.15rem 0.25rem;
-                    min-width: 90px !important;
-                    max-width: 110px;
-                }
-            }
-
-            /* Search Input Styling */
-            .input-group-text {
-                background-color: white;
-                border-right: 0;
-            }
-
-            #searchInput {
-                border-left: 0;
-                padding-left: 0;
-            }
-
-            #searchInput:focus {
-                box-shadow: none;
-                border-color: #ced4da;
-            }
-
-            .input-group:focus-within .input-group-text {
-                border-color: #86b7fe;
-            }
-
-            .input-group:focus-within #searchInput {
-                border-color: #86b7fe;
-            }
-
-            #clearSearch {
-                display: none;
-            }
-
-            @media (max-width: 768px) {
-                #searchInput {
-                    font-size: 0.9rem;
-                }
-            }
-
-            @media (max-width: 400px) {
-                .card-header h5 {
-                    font-size: 0.8rem;
+                function mapStorageLabel(s) {
+                    if ( !s) return '--';
+                    const key=String(s).toLowerCase();
+                    if (key.indexOf('refrig') !==-1 || key.indexOf('ref') !==-1) return 'Refrigerator';
+                    if (key.indexOf('freez') !==-1) return 'Freezer';
+                    if (key.indexOf('room') !==-1 || key.indexOf('ambient') !==-1) return 'Room temperature';
+                    return String(s).replace(/_/g, ' ').replace(/\b\w/g, c=> c.toUpperCase());
                 }
 
-                .card-header .form-select-sm {
-                    font-size: 0.6rem;
-                    padding: 0.1rem 0.2rem;
-                    min-width: 85px !important;
-                    max-width: 100px;
+                let total=0;
+
+                bags.forEach((bag, index)=> {
+                        const bagNum=bag.bag_number || (index + 1);
+                        const time=fmtTime(bag.time) || '--';
+                        const date=bag.date || '--';
+                        const volume=(typeof bag.volume !=='undefined' && bag.volume !==null) ? bag.volume : '';
+                        const storageLabel=mapStorageLabel(bag.storage_location || bag.storage || '--');
+                        const temp=bag.temperature || '--';
+                        const method=bag.collection_method || bag.method || '--';
+
+                        const row=` <tr> <td class="text-center fw-bold" >Bag $ {
+                            bagNum
+                        }
+
+                        </td> <td>$ {
+                            time
+                        }
+
+                        </td> <td>$ {
+                            date
+                        }
+
+                        </td> <td> <div class="input-group input-group-sm" > <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]" class="form-control home-bag-volume-input" step="0.01" min="0.01" value="${volume}" placeholder="ml" required> <span class="input-group-text" >ml</span> </div> </td> <td>$ {
+                            storageLabel
+                        }
+
+                        </td> <td class="text-end" >$ {
+                            temp
+                        }
+
+                        </td> <td><small>$ {
+                            method
+                        }
+
+                        </small></td> </tr>`;
+
+                        tbody.append(row);
+                        total +=parseFloat(volume) || 0;
+                    });
+
+                $('#home-total').text(total.toFixed(2) + ' ml');
+
+                // Live update total when editing volumes
+                $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function () {
+                        let sum=0;
+
+                        $('#home-bag-details-body .home-bag-volume-input').each(function () {
+                                const v=parseFloat($(this).val());
+                                if ( !isNaN(v)) sum +=v;
+                            });
+                        $('#home-total').text(sum.toFixed(2) + ' ml');
+                    });
+            }
+
+            if (bagDetails && bagDetails.length > 0) {
+                renderBagTables(bagDetails);
+            }
+
+            // Request donation details from server to populate both original (readonly) and editable tables
+            $.ajax({
+                url: `/admin/donations/$ {
+                    currentDonationId
                 }
+
+                `,
+                method: 'GET',
+                success: function (response) {
+                    console.log('AJAX Response:', response);
+                    const donationData=(response && response.donation) ? response.donation : null;
+                    console.log('Donation Data:', donationData);
+
+                    // Populate donor info - prioritize server data, fallback to button data
+                    if (donationData) {
+                        $('#validate-home-donor-name').text(donationData.donor_name || donorName || 'N/A');
+                        $('#validate-home-donor-address').text(donationData.address || donorAddress || 'Not provided');
+                        $('#validate-home-date').text(donationData.donation_date || scheduledDate || 'N/A');
+                        $('#validate-home-time').text(donationData.donation_time || formatTime12(scheduledTimeRaw) || 'N/A');
+                    }
+
+                    const effectiveBags=donationData?.bag_details && donationData.bag_details.length > 0 ? donationData.bag_details : (bagDetails && bagDetails.length > 0 ? bagDetails : []);
+
+                    console.log('Effective Bags:', effectiveBags);
+                    renderBagTables(effectiveBags);
+                    $('#home-form-error').hide().text('');
+                }
+
+                ,
+                error: function (xhr, status, error) {
+                    console.error('Failed to fetch donation for validation:', error);
+                    // Keep any pre-rendered bagDetails (we already rendered them above)
+                    $('#home-form-error').hide().text('');
+                }
+            });
+
+            #pending-donations .table td[data-label="Address"] small,
+            #pending-donations .table td[data-label="Volume/Bag"] small,
+            #pending-donations .table td[data-label="Date & Time"] small {
+                font-size: 0.55rem !important;
+                line-height: 1.1 !important;
             }
 
-            /* Tab navigation consistency - more compact */
-            .nav-tabs-standard .nav-link {
-                padding: 0.65rem 1rem;
-                font-size: 0.95rem;
+            /* Make location button more compact */
+            #pending-donations .table .view-location {
+                padding: 0.15rem 0.25rem !important;
             }
 
-            .nav-tabs-standard .badge {
+            /* Ensure the donation type badge is not visually cut off in narrow columns */
+            #pending-donations .donation-type-badge {
+                display: inline-block;
+                white-space: normal;
+                /* allow wrapping instead of clipping */
+                line-height: 1.05;
+                padding: 0.25rem 0.45rem;
                 font-size: 0.75rem;
-                padding: 0.25em 0.5em;
+                vertical-align: middle;
             }
 
-            /* ============================================
-                       RESPONSIVE LAYOUT - NO HORIZONTAL SCROLL
-                       ============================================ */
-            
-            /* Card-based layout for smaller screens */
-            @media (max-width: 1400px) {
-                #pending-donations .table-responsive table {
-                    display: none !important;
-                }
-                
-                .donation-card {
-                    display: block !important;
-                    border: 1px solid #dee2e6;
-                    border-radius: 8px;
-                    padding: 1rem;
-                    margin-bottom: 1rem;
-                    background: white;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-                
-                .donation-card .card-header-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding-bottom: 0.75rem;
-                    margin-bottom: 0.75rem;
-                    border-bottom: 2px solid #f8f9fa;
-                }
-                
-                .donation-card .card-row {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 0.4rem 0;
-                    border-bottom: 1px solid #f0f0f0;
-                }
-                
-                .donation-card .card-row:last-of-type {
-                    border-bottom: none;
-                }
-                
-                .donation-card .card-label {
-                    font-weight: 600;
-                    color: #495057;
-                    font-size: 0.85rem;
-                }
-                
-                .donation-card .card-value {
-                    text-align: right;
-                    color: #212529;
-                    font-size: 0.85rem;
-                }
-                
-                .donation-card .card-actions {
-                    margin-top: 0.75rem;
-                    padding-top: 0.75rem;
-                    border-top: 2px solid #e9ecef;
-                    display: flex;
-                    gap: 0.5rem;
-                    flex-wrap: wrap;
-                }
-                
-                .donation-card .card-actions .btn {
-                    flex: 1;
-                    min-width: 120px;
-                }
+            /* Ensure the Type cell can expand vertically and show wrapped text */
+            #pending-donations .table td[data-label="Type"] {
+                white-space: normal;
+                vertical-align: middle;
+                overflow: visible;
             }
-            
-            @media (min-width: 1401px) {
-                .donation-card {
-                    display: none !important;
-                }
+
+            /* Specific column width optimization */
+            #pending-donations .table {
+                table-layout: fixed !important;
             }
-            
-            /* Extra compact for tablets */
-            @media (min-width: 600px) and (max-width: 1024px) {
 
-                /* Make pending donations table even more compact */
-                #pending-donations .table thead th,
-                #pending-donations .table tbody td {
-                    font-size: 0.6rem !important;
-                    padding: 0.35rem 0.15rem !important;
-                    line-height: 1.1 !important;
-                }
+            /* Keep table headers aligned on a single horizontal line
+               - prevent wrapping of header labels
+               - use ellipsis when a header is too long
+               - ensure consistent vertical alignment and padding */
+            #pending-donations .table thead th {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                vertical-align: middle;
+                padding: 0.5rem 0.6rem;
+                font-size: 0.85rem;
+                line-height: 1.1;
+                text-align: center;
+            }
 
-                /* Ultra-compact buttons for 9-column table */
-                #pending-donations .table .btn {
-                    font-size: 0.55rem !important;
-                    padding: 0.15rem 0.3rem !important;
-                    white-space: nowrap !important;
-                }
+            /* Allocate width percentages for better distribution */
+            #pending-donations .table thead th:nth-child(1) {
+                width: 11%;
+            }
 
-                #pending-donations .table .btn i {
-                    font-size: 0.65rem !important;
-                }
+            /* Name */
+            #pending-donations .table thead th:nth-child(2) {
+                width: 7%;
+            }
 
-                /* Ultra-compact badges */
-                #pending-donations .table .badge {
-                    font-size: 0.55rem !important;
-                    padding: 0.15rem 0.3rem !important;
-                }
+            /* Type */
+            #pending-donations .table thead th:nth-child(3) {
+                width: 13%;
+            }
 
-                /* Compact name display */
-                #pending-donations .table td[data-label="Name"] strong {
-                    font-size: 0.6rem !important;
-                    font-weight: 600;
-                }
+            /* Address */
+            #pending-donations .table thead th:nth-child(4) {
+                width: 6%;
+            }
 
-                /* Ensure text wraps in narrow columns */
-                #pending-donations .table td[data-label="Address"] small,
-                #pending-donations .table td[data-label="Volume/Bag"] small,
-                #pending-donations .table td[data-label="Date & Time"] small {
-                    font-size: 0.55rem !important;
-                    line-height: 1.1 !important;
-                }
+            /* Location */
+            #pending-donations .table thead th:nth-child(5) {
+                width: 6%;
+            }
 
-                /* Make location button more compact */
-                #pending-donations .table .view-location {
-                    padding: 0.15rem 0.25rem !important;
-                }
+            /* Bags */
+            #pending-donations .table thead th:nth-child(6) {
+                width: 11%;
+            }
 
-                /* Specific column width optimization */
-                #pending-donations .table {
-                    table-layout: fixed !important;
-                }
+            /* Volume/Bag */
+            #pending-donations .table thead th:nth-child(7) {
+                width: 8%;
+            }
 
-                /* Allocate width percentages for better distribution */
-                #pending-donations .table thead th:nth-child(1) {
-                    width: 11%;
-                }
+            /* Total */
+            #pending-donations .table thead th:nth-child(8) {
+                width: 12%;
+            }
 
-                /* Name */
-                #pending-donations .table thead th:nth-child(2) {
-                    width: 7%;
-                }
+            /* Date & Time */
+            #pending-donations .table thead th:nth-child(9) {
+                width: 18%;
+            }
 
-                /* Type */
-                #pending-donations .table thead th:nth-child(3) {
-                    width: 13%;
-                }
+            /* Actions - increased from 11% to 18% */
 
-                /* Address */
-                #pending-donations .table thead th:nth-child(4) {
-                    width: 6%;
-                }
+            /* Make table horizontally scrollable as fallback */
+            #pending-donations .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
 
-                /* Location */
-                #pending-donations .table thead th:nth-child(5) {
-                    width: 6%;
-                }
+            /* Ensure action buttons stay visible */
+            #pending-donations .table thead th:nth-child(9),
+            #pending-donations .table tbody td:nth-child(9) {
+                position: sticky;
+                right: 0;
+                background-color: white;
+                box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+                z-index: 2;
+                vertical-align: middle;
+                min-width: 140px;
+            }
 
-                /* Bags */
-                #pending-donations .table thead th:nth-child(6) {
-                    width: 11%;
-                }
+            #pending-donations .table thead th:nth-child(9) {
+                background-color: #f8f9fa;
+            }
 
-                /* Volume/Bag */
-                #pending-donations .table thead th:nth-child(7) {
-                    width: 8%;
-                }
+            /* Fallback sticky for last column at other sizes (helps with 90% zoom) */
+            #pending-donations .table thead th:last-child,
+            #pending-donations .table tbody td:last-child {
+                position: sticky;
+                right: 0;
+                background: white;
+                z-index: 3;
+                box-shadow: -2px 0 4px rgba(0, 0, 0, 0.04);
+            }
 
-                /* Total */
-                #pending-donations .table thead th:nth-child(8) {
-                    width: 12%;
-                }
+            /* Action buttons container: allow wrapping so buttons remain visible rather than overflow */
+            #pending-donations .table .table-actions {
+                display: inline-flex;
+                gap: 0.4rem;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+            }
 
-                /* Date & Time */
-                #pending-donations .table thead th:nth-child(9) {
-                    width: 18%;
-                }
-
-                /* Actions - increased from 11% to 18% */
-                
-                /* Make table horizontally scrollable as fallback */
-                #pending-donations .table-container {
-                    overflow-x: auto;
-                    -webkit-overflow-scrolling: touch;
-                }
-                
-                /* Ensure action buttons stay visible */
-                #pending-donations .table thead th:nth-child(9),
-                #pending-donations .table tbody td:nth-child(9) {
-                    position: sticky;
-                    right: 0;
-                    background-color: white;
-                    box-shadow: -2px 0 4px rgba(0,0,0,0.05);
-                    z-index: 2;
-                    vertical-align: middle;
-                    min-width: 140px;
-                }
-
-                #pending-donations .table thead th:nth-child(9) {
-                    background-color: #f8f9fa;
-                }
-
-                /* Fallback sticky for last column at other sizes (helps with 90% zoom) */
-                #pending-donations .table thead th:last-child,
-                #pending-donations .table tbody td:last-child {
-                    position: sticky;
-                    right: 0;
-                    background: white;
-                    z-index: 3;
-                    box-shadow: -2px 0 4px rgba(0,0,0,0.04);
-                }
-
-                /* Action buttons container: allow wrapping so buttons remain visible rather than overflow */
-                #pending-donations .table .table-actions {
-                    display: inline-flex;
-                    gap: 0.4rem;
-                    justify-content: center;
-                    align-items: center;
-                    flex-wrap: wrap;
-                }
-
-                /* Make buttons more compact when space is constrained */
-                #pending-donations .table .table-actions .btn {
-                    white-space: nowrap;
-                    padding-left: 0.45rem;
-                    padding-right: 0.45rem;
-                }
+            /* Make buttons more compact when space is constrained */
+            #pending-donations .table .table-actions .btn {
+                white-space: nowrap;
+                padding-left: 0.45rem;
+                padding-right: 0.45rem;
+            }
             }
 
             /* Mobile Modal Fixes - Ensure buttons are visible and accessible */
@@ -457,22 +496,27 @@
                 width: 150px !important;
                 white-space: nowrap;
             }
+
             #home-bag-details-table th:nth-child(4),
             #home-bag-details-table td:nth-child(4) {
                 min-width: 160px !important;
                 width: 160px !important;
                 white-space: nowrap;
             }
+
             #schedule-bag-details-table .input-group,
             #home-bag-details-table .input-group {
                 max-width: 160px;
                 width: 100%;
             }
+
             #schedule-bag-details-table .form-control.schedule-bag-volume,
             #home-bag-details-table .form-control.home-bag-volume-input {
                 text-align: right;
             }
+
             @media (max-width: 576px) {
+
                 #schedule-bag-details-table th:nth-child(4),
                 #schedule-bag-details-table td:nth-child(4),
                 #home-bag-details-table th:nth-child(4),
@@ -480,15 +524,17 @@
                     min-width: 130px !important;
                     width: 130px !important;
                 }
+
                 #schedule-bag-details-table .input-group,
                 #home-bag-details-table .input-group {
-                    max-width: none; /* allow full cell width */
+                    max-width: none;
+                    /* allow full cell width */
                     width: 100%;
                 }
 
                 /* Compact table paddings for mobile inside modals */
-                #schedule-bag-details-table.table > :not(caption) > * > *,
-                #home-bag-details-table.table > :not(caption) > * > * {
+                #schedule-bag-details-table.table> :not(caption)>*>*,
+                #home-bag-details-table.table> :not(caption)>*>* {
                     padding: 0.35rem 0.4rem !important;
                 }
 
@@ -496,29 +542,76 @@
                 .modal .form-control.home-bag-volume-input,
                 .modal .form-control.schedule-bag-volume {
                     height: 36px;
-                    font-size: 16px; /* prevent iOS zoom on focus */
+                    font-size: 16px;
+                    /* prevent iOS zoom on focus */
                     line-height: 1.2;
                 }
-                .modal .input-group-text { padding: 0 8px; }
-                .modal .input-group { gap: 0; }
-                .modal .input-group .form-control { padding-right: 6px; }
+
+                .modal .input-group-text {
+                    padding: 0 8px;
+                }
+
+                .modal .input-group {
+                    gap: 0;
+                }
+
+                .modal .input-group .form-control {
+                    padding-right: 6px;
+                }
+
                 /* Ensure volume group uses the available cell width */
                 #schedule-bag-details-table .input-group,
-                #home-bag-details-table .input-group { width: 100%; }
+                #home-bag-details-table .input-group {
+                    width: 100%;
+                }
 
                 /* Hide trailing "ml" addon on mobile to free space; keep placeholder */
                 #schedule-bag-details-table td:nth-child(4) .input-group-text,
                 #home-bag-details-table td:nth-child(4) .input-group-text {
                     display: none !important;
                 }
+
                 #schedule-bag-details-table .form-control.schedule-bag-volume,
                 #home-bag-details-table .form-control.home-bag-volume-input {
                     width: 100%;
-                    min-width: 80px; /* ensure at least 3-4 digits visible */
+                    min-width: 80px;
+                    /* ensure at least 3-4 digits visible */
+                }
+
+                /* Permanently style the Decline button in the Schedule Pickup modal to
+                                                                                                                                                                                           match the hovered look of the Cancel (.btn-secondary:hover) button */
+                #schedule-decline-btn {
+                    background-color: #5c636a !important;
+                    /* darkened secondary */
+                    border-color: #545b62 !important;
+                    color: #fff !important;
+                    box-shadow: none !important;
+                    transform: none !important;
+                }
+
+                /* Keep same appearance on hover/focus to avoid jump */
+                #schedule-decline-btn:hover,
+                #schedule-decline-btn:focus {
+                    background-color: #5c636a !important;
+                    border-color: #545b62 !important;
+                    color: #fff !important;
                 }
             }
         </style>
     @endsection
+
+    <style>
+        /* Uniform badge sizing for donation type labels */
+        .donation-type-badge {
+            display: inline-block;
+            min-width: 110px;
+            text-align: center;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 0.375rem;
+        }
+    </style>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -531,7 +624,8 @@
     <div class="container-fluid page-container-standard">
         <!-- Assist Walk-in Donation button placed above tabs (consistent with Breastmilk Request UI) -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assistWalkInDonationModal">
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                data-bs-target="#assistWalkInDonationModal">
                 <i class="fas fa-user-plus"></i> Assist Walk-in Donation
             </button>
         </div>
@@ -565,10 +659,14 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ $tabStatus == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}" href="?status=archived">Archived <span class="badge bg-secondary text-white">{{ $archivedCount ?? 0 }}</span></a>
+                <a class="nav-link {{ $tabStatus == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}"
+                    href="?status=archived">Archived <span
+                        class="badge bg-secondary text-white">{{ $archivedCount ?? 0 }}</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ $tabStatus == 'declined' ? 'active bg-danger text-white' : 'text-danger' }}" href="?status=declined">Declined <span class="badge bg-danger text-white">{{ $declinedCount ?? 0 }}</span></a>
+                <a class="nav-link {{ $tabStatus == 'declined' ? 'active bg-danger text-white' : 'text-danger' }}"
+                    href="?status=declined">Declined <span
+                        class="badge bg-danger text-white">{{ $declinedCount ?? 0 }}</span></a>
             </li>
         </ul>
 
@@ -578,11 +676,8 @@
                 <span class="input-group-text bg-white border-end-0">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" 
-                       class="form-control border-start-0 ps-0" 
-                       id="searchInput" 
-                       placeholder="Search by donor name, address, contact..."
-                       aria-label="Search donations">
+                <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
+                    placeholder="Search by donor name, address, contact..." aria-label="Search donations">
                 <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -603,9 +698,11 @@
                         <div class="ms-auto d-flex align-items-center gap-2">
                             <select id="donation-type-filter" class="form-select form-select-sm"
                                 style="width: auto; min-width: 150px;">
-                                <option value="all" {{ request('donation_type', 'all') == 'all' ? 'selected' : '' }}>All Donations
+                                <option value="all" {{ request('donation_type', 'all') == 'all' ? 'selected' : '' }}>All
+                                    Donations
                                 </option>
-                                <option value="walk_in" {{ request('donation_type') == 'walk_in' ? 'selected' : '' }}>Walk-in Only
+                                <option value="walk_in" {{ request('donation_type') == 'walk_in' ? 'selected' : '' }}>Walk-in
+                                    Only
                                 </option>
                                 <option value="home_collection" {{ request('donation_type') == 'home_collection' ? 'selected' : '' }}>Home Collection Only</option>
                             </select>
@@ -613,7 +710,7 @@
                     </div>
                     <div class="card-body">
                         @if($pendingDonations->count() > 0)
-                            <div class="table-responsive">
+                            <div class="table-responsive d-none d-md-block">
                                 <table class="table table-hover" style="min-width: 900px; width:100%;">
                                     <thead>
                                         <tr>
@@ -636,13 +733,14 @@
                                         @foreach($pendingOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ $donation->user->first_name ?? '' }}
+                                                        {{ $donation->user->last_name ?? '' }}</strong>
                                                 </td>
                                                 <td data-label="Type" class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
-                                                        <span class="badge bg-info">Walk-in</span>
+                                                        <span class="badge donation-type-badge bg-info">Walk-in</span>
                                                     @else
-                                                        <span class="badge bg-primary">Home Collection</span>
+                                                        <span class="badge donation-type-badge bg-primary">Home Collection</span>
                                                     @endif
                                                 </td>
                                                 <td data-label="Contact" class="text-center">
@@ -650,11 +748,7 @@
                                                 </td>
                                                 <td data-label="Address" class="text-center">
                                                     <small>
-                                                        @if($donation->donation_method === 'home_collection')
-                                                            {{ $donation->user->address ?? 'Not provided' }}
-                                                        @else
-                                                            <span class="text-muted">Walk-in</span>
-                                                        @endif
+                                                        {{ $donation->user->address ?? 'Not provided' }}
                                                     </small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
@@ -668,8 +762,7 @@
                                                             <button class="btn btn-info btn-sm view-location" title="View on Map"
                                                                 data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                                 data-donor-address="{{ $donation->user->address }}"
-                                                                data-latitude="{{ $lat }}"
-                                                                data-longitude="{{ $lng }}">
+                                                                data-latitude="{{ $lat }}" data-longitude="{{ $lng }}">
                                                                 <i class="fas fa-map-marked-alt"></i>
                                                             </button>
                                                         @else
@@ -697,38 +790,30 @@
                                                     <strong>{{ $donation->formatted_total_volume ?? '-' }}ml</strong>
                                                 </td>
                                                 <td data-label="Action" class="text-center">
-                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap" style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
+                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap"
+                                                        style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
                                                         @if($donation->donation_method === 'walk_in')
-                                                            <button class="btn btn-success btn-sm px-2 validate-walk-in"
-                                                                title="Validate Walk-in" data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            <button type="button" class="btn btn-success btn-sm px-2 validate-walk-in"
+                                                                title="Validate Walk-in"
+                                                                data-id="{{ $donation->breastmilk_donation_id }}" data-bs-toggle="modal"
+                                                                data-bs-target="#validateWalkInModal"
                                                                 data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}">
                                                                 <i class="fas fa-check"></i>
                                                                 <span class="d-none d-md-inline"> Validate</span>
                                                             </button>
-                                                            <button class="btn btn-outline-danger btn-sm px-2"
-                                                                title="Decline Donation"
-                                                                onclick="declineDonation({{ $donation->breastmilk_donation_id }})">
-                                                                <i class="fas fa-times"></i>
-                                                                <span class="d-none d-md-inline"> Decline</span>
-                                                            </button>
                                                         @else
                                                             <button class="btn btn-primary btn-sm px-2 schedule-pickup"
-                                                                title="Schedule Pickup" data-id="{{ $donation->breastmilk_donation_id }}"
+                                                                title="Schedule Pickup"
+                                                                data-id="{{ $donation->breastmilk_donation_id }}"
                                                                 data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                                 data-address="{{ $donation->user->address ?? 'Not provided' }}"
                                                                 data-first-expression="{{ $donation->first_expression_date ? $donation->first_expression_date->format('M d, Y') : '' }}"
                                                                 data-last-expression="{{ $donation->last_expression_date ? $donation->last_expression_date->format('M d, Y') : '' }}"
-                                                                data-bag-details='@json($donation->bag_details)'
+                                                                data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
                                                                 data-bags="{{ $donation->number_of_bags }}"
                                                                 data-total="{{ $donation->total_volume }}">
                                                                 <i class="fas fa-calendar-alt"></i>
                                                                 <span class="d-none d-md-inline"> Schedule</span>
-                                                            </button>
-                                                            <button class="btn btn-outline-danger btn-sm px-2"
-                                                                title="Decline Donation"
-                                                                onclick="declineDonation({{ $donation->breastmilk_donation_id }})">
-                                                                <i class="fas fa-times"></i>
-                                                                <span class="d-none d-md-inline"> Decline</span>
                                                             </button>
                                                         @endif
                                                     </div>
@@ -738,51 +823,50 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             {{-- Card Layout for Smaller Screens --}}
                             @foreach($pendingOrdered as $donation)
-                                <div class="donation-card" style="display: none;">
+                                <div class="donation-card d-block d-md-none">
                                     <div class="card-header-row">
                                         <div>
-                                            <strong style="font-size: 1rem;">{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</strong>
+                                            <strong style="font-size: 1rem;">{{ $donation->user->first_name ?? '' }}
+                                                {{ $donation->user->last_name ?? '' }}</strong>
                                         </div>
                                         <div>
                                             @if($donation->donation_method === 'walk_in')
-                                                <span class="badge bg-info">Walk-in</span>
+                                                <span class="badge donation-type-badge bg-info">Walk-in</span>
                                             @else
-                                                <span class="badge bg-primary">Home Collection</span>
+                                                <span class="badge donation-type-badge bg-primary">Home Collection</span>
                                             @endif
                                         </div>
                                     </div>
 
                                     <div class="card-row">
                                         <span class="card-label">Contact:</span>
-                                        <span class="card-value">{{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}</span>
+                                        <span
+                                            class="card-value">{{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}</span>
                                     </div>
 
-                                    @if($donation->donation_method === 'home_collection')
+                                    <div class="card-row">
+                                        <span class="card-label">Address:</span>
+                                        <span class="card-value">{{ $donation->user->address ?? 'Not provided' }}</span>
+                                    </div>
+                                    @php
+                                        $latCard = $donation->latitude ?? $donation->user->latitude ?? null;
+                                        $lngCard = $donation->longitude ?? $donation->user->longitude ?? null;
+                                    @endphp
+                                    @if(!is_null($latCard) && $latCard !== '' && !is_null($lngCard) && $lngCard !== '')
                                         <div class="card-row">
-                                            <span class="card-label">Address:</span>
-                                            <span class="card-value">{{ $donation->user->address ?? 'Not provided' }}</span>
+                                            <span class="card-label">Location:</span>
+                                            <span class="card-value">
+                                                <button class="btn btn-info btn-sm view-location"
+                                                    data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
+                                                    data-donor-address="{{ $donation->user->address }}" data-latitude="{{ $latCard }}"
+                                                    data-longitude="{{ $lngCard }}">
+                                                    <i class="fas fa-map-marked-alt"></i>
+                                                </button>
+                                            </span>
                                         </div>
-                                        @php
-                                            $latCard = $donation->latitude ?? $donation->user->latitude ?? null;
-                                            $lngCard = $donation->longitude ?? $donation->user->longitude ?? null;
-                                        @endphp
-                                        @if(!is_null($latCard) && $latCard !== '' && !is_null($lngCard) && $lngCard !== '')
-                                            <div class="card-row">
-                                                <span class="card-label">Location:</span>
-                                                <span class="card-value">
-                                                    <button class="btn btn-info btn-sm view-location"
-                                                        data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                        data-donor-address="{{ $donation->user->address }}"
-                                                        data-latitude="{{ $latCard }}"
-                                                        data-longitude="{{ $lngCard }}">
-                                                        <i class="fas fa-map-marked-alt"></i> View Map
-                                                    </button>
-                                                </span>
-                                            </div>
-                                        @endif
                                     @endif
 
                                     <div class="card-row">
@@ -803,33 +887,26 @@
 
                                     <div class="card-row">
                                         <span class="card-label">Total Volume:</span>
-                                        <span class="card-value"><strong>{{ $donation->formatted_total_volume ?? '-' }}ml</strong></span>
+                                        <span
+                                            class="card-value"><strong>{{ $donation->formatted_total_volume ?? '-' }}ml</strong></span>
                                     </div>
 
                                     <div class="card-actions">
                                         @if($donation->donation_method === 'walk_in')
-                                            <button class="btn btn-success validate-walk-in"
-                                                data-id="{{ $donation->breastmilk_donation_id }}"
+                                            <button type="button" class="btn btn-success validate-walk-in"
+                                                data-id="{{ $donation->breastmilk_donation_id }}" data-bs-toggle="modal"
+                                                data-bs-target="#validateWalkInModal"
                                                 data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}">
                                                 <i class="fas fa-check"></i> Validate Walk-in
-                                            </button>
-                                            <button class="btn btn-outline-danger"
-                                                onclick="declineDonation({{ $donation->breastmilk_donation_id }})">
-                                                <i class="fas fa-times"></i> Decline
                                             </button>
                                         @else
                                             <button class="btn btn-primary schedule-pickup"
                                                 data-id="{{ $donation->breastmilk_donation_id }}"
                                                 data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                 data-address="{{ $donation->user->address ?? 'Not provided' }}"
-                                                data-bag-details='@json($donation->bag_details)'
-                                                data-bags="{{ $donation->number_of_bags }}"
-                                                data-total="{{ $donation->total_volume }}">
+                                                data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
+                                                data-bags="{{ $donation->number_of_bags }}" data-total="{{ $donation->total_volume }}">
                                                 <i class="fas fa-calendar-alt"></i> Schedule Pickup
-                                            </button>
-                                            <button class="btn btn-outline-danger"
-                                                onclick="declineDonation({{ $donation->breastmilk_donation_id }})">
-                                                <i class="fas fa-times"></i> Decline
                                             </button>
                                         @endif
                                     </div>
@@ -853,7 +930,7 @@
                         <h5 class="mb-0">Scheduled Home Collection</h5>
                     </div>
                     <div class="card-body">
-                            @if($scheduledHomeCollection->count() > 0)
+                        @if($scheduledHomeCollection->count() > 0)
                             <div class="table-container table-wide">
                                 <table class="table table-hover">
                                     <thead>
@@ -877,7 +954,8 @@
                                         @foreach($scheduledOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ $donation->user->first_name ?? '' }}
+                                                        {{ $donation->user->last_name ?? '' }}</strong>
                                                 </td>
                                                 <td data-label="Contact" class="text-center">
                                                     {{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}
@@ -886,13 +964,17 @@
                                                     <small>{{ $donation->user->address ?? 'Not provided' }}</small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
-                                                    @if($donation->user->latitude !== null && $donation->user->latitude !== '' && $donation->user->longitude !== null && $donation->user->longitude !== '')
+                                                    @php
+                                                        // Prefer donation-specific coordinates if available; fallback to user's profile
+                                                        $latSched = $donation->latitude ?? $donation->user->latitude ?? null;
+                                                        $lngSched = $donation->longitude ?? $donation->user->longitude ?? null;
+                                                    @endphp
+                                                    @if(!is_null($latSched) && $latSched !== '' && !is_null($lngSched) && $lngSched !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
                                                             data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                             data-donor-address="{{ $donation->user->address }}"
-                                                            data-latitude="{{ $donation->user->latitude }}"
-                                                            data-longitude="{{ $donation->user->longitude }}">
-                                                            <i class="fas fa-map-marked-alt"></i> Map
+                                                            data-latitude="{{ $latSched }}" data-longitude="{{ $lngSched }}">
+                                                            <i class="fas fa-map-marked-alt"></i>
                                                         </button>
                                                     @else
                                                         <span class="text-muted">-</span>
@@ -908,29 +990,33 @@
                                                     <strong>{{ $donation->formatted_total_volume }}ml</strong>
                                                 </td>
                                                 <td data-label="Action" class="text-center">
-                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap" style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
-                                                        <button class="btn btn-success btn-sm px-2 validate-home-collection"
+                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap"
+                                                        style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
+                                                        <button type="button"
+                                                            class="btn btn-success btn-sm px-2 validate-home-collection"
                                                             title="Validate" data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            data-bs-toggle="modal" data-bs-target="#validateHomeCollectionModal"
                                                             data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                             data-address="{{ $donation->user->address ?? 'Not provided' }}"
                                                             data-date="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('M d, Y') : '' }}"
                                                             data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
-                                                            data-bag-details="{{ json_encode($donation->bag_details) }}"
+                                                            data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
                                                             data-total="{{ $donation->formatted_total_volume }}">
                                                             <i class="fas fa-check"></i>
                                                             <span class="d-none d-md-inline"> Validate</span>
                                                         </button>
-                                                        
+
                                                         {{-- Reschedule button for scheduled pickups --}}
                                                         <button class="btn btn-outline-primary btn-sm px-2 reschedule-pickup"
-                                                            title="Reschedule Pickup" data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            title="Reschedule Pickup"
+                                                            data-id="{{ $donation->breastmilk_donation_id }}"
                                                             data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                             data-address="{{ $donation->user->address ?? 'Not provided' }}"
                                                             data-date-iso="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('Y-m-d') : '' }}"
                                                             data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
-                                                            data-bag-details="{{ json_encode($donation->bag_details) }}"
+                                                            data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
                                                             data-total="{{ $donation->formatted_total_volume }}">
                                                             <i class="fas fa-calendar-alt"></i>
                                                             <span class="d-none d-md-inline"> Reschedule</span>
@@ -960,7 +1046,7 @@
                         <h5 class="mb-0">Completed Walk-in Donations</h5>
                     </div>
                     <div class="card-body">
-                            @if($successWalkIn->count() > 0)
+                        @if($successWalkIn->count() > 0)
                             <div class="table-container table-wide">
                                 <table class="table table-striped table-hover">
                                     <thead>
@@ -997,12 +1083,12 @@
                                                     <small>{{ $donation->updated_at ? $donation->updated_at->format('g:i A') : (isset($donation->donation_time) ? \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') : 'N/A') }}</small>
                                                 </td>
                                                 <td data-label="Action" class="text-center">
-                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap" style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
-                                                        <button class="btn btn-sm btn-primary me-1 view-donation" data-id="{{ $donation->breastmilk_donation_id }}" title="View donation">
-                                                            <i class="fas fa-eye"></i>
-                                                            <span class="d-none d-md-inline"> View</span>
-                                                        </button>
-                                                        <button class="btn btn-sm btn-danger" onclick="archiveDonation({{ $donation->breastmilk_donation_id }})" title="Archive donation" aria-label="Archive donation">
+                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap"
+                                                        style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
+                                                        {{-- View button removed for Home Collection Success temporarily --}}
+                                                        <button class="btn btn-sm btn-danger"
+                                                            onclick="archiveDonation({{ $donation->breastmilk_donation_id }})"
+                                                            title="Archive donation" aria-label="Archive donation">
                                                             <i class="fas fa-archive"></i>
                                                             <span class="d-none d-md-inline"> Archive</span>
                                                         </button>
@@ -1060,12 +1146,16 @@
                                                     <small>{{ $donation->user->address ?? 'Not provided' }}</small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
-                                                    @if($donation->user->latitude !== null && $donation->user->latitude !== '' && $donation->user->longitude !== null && $donation->user->longitude !== '')
+                                                    @php
+                                                        // Prefer donation-specific coordinates if available; fallback to user's profile
+                                                        $latHome = $donation->latitude ?? $donation->user->latitude ?? null;
+                                                        $lngHome = $donation->longitude ?? $donation->user->longitude ?? null;
+                                                    @endphp
+                                                    @if(!is_null($latHome) && $latHome !== '' && !is_null($lngHome) && $lngHome !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
                                                             data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
                                                             data-donor-address="{{ $donation->user->address }}"
-                                                            data-latitude="{{ $donation->user->latitude }}"
-                                                            data-longitude="{{ $donation->user->longitude }}">
+                                                            data-latitude="{{ $latHome }}" data-longitude="{{ $lngHome }}">
                                                             <i class="fas fa-map-marked-alt"></i>
                                                         </button>
                                                     @else
@@ -1082,12 +1172,25 @@
                                                     <small>{{ $donation->scheduled_pickup_time }}</small>
                                                 </td>
                                                 <td data-label="Action" class="text-center">
-                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap" style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
-                                                        <button class="btn btn-sm btn-primary me-1 view-donation" data-id="{{ $donation->breastmilk_donation_id }}" title="View donation">
+                                                    <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap"
+                                                        style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
+                                                        <button class="btn btn-sm btn-primary me-1 view-donation"
+                                                            data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            data-donor-name="{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}"
+                                                            data-donor-contact="{{ $donation->user->contact_number ?? $donation->user->phone ?? '' }}"
+                                                            data-donor-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                            data-latitude="{{ $donation->latitude ?? $donation->user->latitude ?? '' }}"
+                                                            data-longitude="{{ $donation->longitude ?? $donation->user->longitude ?? '' }}"
+                                                            data-bags="{{ $donation->number_of_bags ?? (is_array($donation->bag_details ?? null) ? count($donation->bag_details) : '') }}"
+                                                            data-total="{{ $donation->total_volume ?? $donation->formatted_total_volume ?? '' }}"
+                                                            data-bag-details='@json($donation->bag_details ?? [], JSON_HEX_APOS | JSON_HEX_QUOT)'
+                                                            title="View donation">
                                                             <i class="fas fa-eye"></i>
                                                             <span class="d-none d-md-inline"> View</span>
                                                         </button>
-                                                        <button class="btn btn-sm btn-danger" onclick="archiveDonation({{ $donation->breastmilk_donation_id }})" title="Archive donation" aria-label="Archive donation">
+                                                        <button class="btn btn-sm btn-danger"
+                                                            onclick="archiveDonation({{ $donation->breastmilk_donation_id }})"
+                                                            title="Archive donation" aria-label="Archive donation">
                                                             <i class="fas fa-archive"></i>
                                                             <span class="d-none d-md-inline"> Archive</span>
                                                         </button>
@@ -1136,18 +1239,23 @@
                                         @endphp
                                         @foreach($archivedOrdered as $donation)
                                             <tr>
-                                                <td class="text-center">{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</td>
+                                                <td class="text-center">{{ $donation->user->first_name ?? '' }}
+                                                    {{ $donation->user->last_name ?? '' }}
+                                                </td>
                                                 <td class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
-                                                        <span class="badge bg-info">Walk-in</span>
+                                                        <span class="badge donation-type-badge bg-info">Walk-in</span>
                                                     @else
-                                                        <span class="badge bg-primary">Home Collection</span>
+                                                        <span class="badge donation-type-badge bg-primary">Home Collection</span>
                                                     @endif
                                                 </td>
                                                 <td class="text-center">{{ $donation->formatted_total_volume ?? '-' }}ml</td>
-                                                <td class="text-center">{{ $donation->deleted_at ? $donation->deleted_at->format('M d, Y g:i A') : '-' }}</td>
                                                 <td class="text-center">
-                                                    <button class="btn btn-sm btn-outline-success" onclick="restoreDonation({{ $donation->breastmilk_donation_id }})">Restore</button>
+                                                    {{ $donation->deleted_at ? $donation->deleted_at->format('M d, Y g:i A') : '-' }}
+                                                </td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-sm btn-outline-success"
+                                                        onclick="restoreDonation({{ $donation->breastmilk_donation_id }})">Restore</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -1165,7 +1273,8 @@
             </div>
 
             <!-- Declined Tab -->
-            <div class="tab-pane fade show {{ $tabStatus == 'declined' ? 'active' : '' }}" id="declined-donations" role="tabpanel">
+            <div class="tab-pane fade show {{ $tabStatus == 'declined' ? 'active' : '' }}" id="declined-donations"
+                role="tabpanel">
                 <div class="card card-standard">
                     <div class="card-header bg-danger text-white py-3">
                         <h5 class="mb-0">Declined Donations</h5>
@@ -1188,13 +1297,14 @@
                                         @foreach($declinedDonations as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ $donation->user->first_name ?? '' }}
+                                                        {{ $donation->user->last_name ?? '' }}</strong>
                                                 </td>
                                                 <td data-label="Type" class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
-                                                        <span class="badge bg-info">Walk-in</span>
+                                                        <span class="badge donation-type-badge bg-info">Walk-in</span>
                                                     @else
-                                                        <span class="badge bg-primary">Home Collection</span>
+                                                        <span class="badge donation-type-badge bg-primary">Home Collection</span>
                                                     @endif
                                                 </td>
                                                 <td data-label="Address" class="text-center">
@@ -1207,7 +1317,9 @@
                                                     <small>{{ $donation->declined_at ? \Carbon\Carbon::parse($donation->declined_at)->format('M d, Y g:i A') : '-' }}</small>
                                                 </td>
                                                 <td data-label="Action" class="text-center">
-                                                    <button class="btn btn-sm btn-danger" onclick="archiveDonation({{ $donation->breastmilk_donation_id }})" title="Archive donation">
+                                                    <button class="btn btn-sm btn-danger"
+                                                        onclick="archiveDonation({{ $donation->breastmilk_donation_id }})"
+                                                        title="Archive donation">
                                                         <i class="fas fa-archive"></i>
                                                         <span class="d-none d-md-inline"> Archive</span>
                                                     </button>
@@ -1240,8 +1352,8 @@
                     <form id="validateWalkInForm" method="POST" novalidate>
                         @csrf
                         <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label"><strong>Donor:</strong></label>
+                            <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+                                <label class="form-label fw-bold mb-0 me-1">Donor:</label>
                                 <div id="walkin-donor-name" class="form-control-plaintext"></div>
                             </div>
 
@@ -1275,6 +1387,10 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="walkin-decline-btn"
+                                onclick="declineDonation(currentDonationId)">
+                                <i class="fas fa-times me-1"></i> Decline
+                            </button>
                             <button type="submit" class="btn btn-success" id="walkin-validate-submit">
                                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"
                                     style="display:none;" id="walkin-validate-spinner"></span>
@@ -1298,25 +1414,43 @@
                     <form id="schedulePickupForm" method="POST">
                         @csrf
                         <div class="modal-body">
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label"><strong>Donor:</strong></label>
-                                    <div id="schedule-donor-name" class="form-control-plaintext"></div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label"><strong>Address:</strong></label>
-                                    <div id="schedule-donor-address" class="form-control-plaintext"></div>
-                                </div>
-                            </div>
+                            <!-- Compact donor/schedule info: place labels and values side-by-side to save vertical space -->
+                            <style>
+                                /* Compact inline label:value look for schedule info */
+                                .schedule-info .info-item {
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                }
 
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label"><strong>First Expression Date:</strong></label>
-                                    <div id="schedule-first-expression" class="form-control-plaintext"></div>
+                                .schedule-info .info-item strong {
+                                    font-weight: 600;
+                                    margin-right: 0.35rem;
+                                }
+
+                                @media (max-width: 575.98px) {
+                                    .schedule-info .info-item {
+                                        white-space: normal;
+                                    }
+                                }
+                            </style>
+
+                            <div class="row gx-2 gy-2 align-items-center mb-3 schedule-info">
+                                <div class="col-6 col-md-3 info-item">
+                                    <strong>Donor:</strong>
+                                    <span id="schedule-donor-name">&nbsp;</span>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label"><strong>Last Expression Date:</strong></label>
-                                    <div id="schedule-last-expression" class="form-control-plaintext"></div>
+                                <div class="col-6 col-md-3 info-item">
+                                    <strong>Address:</strong>
+                                    <span id="schedule-donor-address">&nbsp;</span>
+                                </div>
+                                <div class="col-6 col-md-3 info-item">
+                                    <strong>First Expression Date:</strong>
+                                    <span id="schedule-first-expression">&nbsp;</span>
+                                </div>
+                                <div class="col-6 col-md-3 info-item">
+                                    <strong>Last Expression Date:</strong>
+                                    <span id="schedule-last-expression">&nbsp;</span>
                                 </div>
                             </div>
 
@@ -1341,7 +1475,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <small class="text-muted">You can correct the volume values before scheduling pickup.</small>
+
                             </div>
 
                             <!-- Total Volume -->
@@ -1368,6 +1502,10 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="schedule-decline-btn"
+                                onclick="declineDonation(currentDonationId)">
+                                <i class="fas fa-times me-1"></i> Decline
+                            </button>
                             <button type="submit" class="btn btn-primary">Schedule Pickup</button>
                         </div>
                     </form>
@@ -1375,85 +1513,62 @@
             </div>
         </div>
 
-        <!-- View Donation Details Modal -->
-        <div class="modal fade" id="viewDonationModal" tabindex="-1" aria-labelledby="viewDonationModalLabel"
+        <!-- View Donation Details Modal for Home Collection Success -->
+        <div class="modal fade" id="viewHomeDonationModal" tabindex="-1" aria-labelledby="viewHomeDonationModalLabel"
             aria-hidden="true">
-            <div class="modal-dialog modal-xl">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
-                    <div class="modal-header" style="background: linear-gradient(135deg, #f8a5c2 0%, #f48fb1 100%); color: #000;">
-                        <h5 class="modal-title fw-bold" id="viewDonationModalLabel">
-                            Home Collection Success
-                        </h5>
+                    <div class="modal-header bg-pink text-white"
+                        style="background: linear-gradient(90deg,#ff7eb6,#ff65a3);">
+                        <h5 class="modal-title" id="viewHomeDonationModalLabel">Home Collection Success</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body p-4">
-                        <!-- Loading State -->
-                        <div id="donation-loading" class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-3">Loading donation details...</p>
-                        </div>
-
-                        <!-- Donation Details Content -->
-                        <div id="donation-details" style="display: none;">
-                            <!-- Donor Information Box -->
-                            <div class="border rounded p-3 mb-3" style="background-color: #f0f0f0;">
-                                <div class="mb-2">
-                                    <strong>Name:</strong> <span id="view-donor-name"></span>
+                    <div class="modal-body">
+                        <div class="mb-3 p-3" style="background:#f5f5f5;border-radius:6px;">
+                            <div class="row">
+                                <div class="col-12 mb-2">
+                                    <strong class="me-2">Name:</strong>
+                                    <span id="view-donor-name" class="text-dark">&nbsp;</span>
                                 </div>
-                                <div class="mb-2">
-                                    <strong>Contact:</strong> <span id="view-donor-contact"></span>
+                                <div class="col-12 mb-2">
+                                    <strong class="me-2">Contact:</strong>
+                                    <span id="view-donor-contact" class="text-dark">&nbsp;</span>
                                 </div>
-                                <div class="mb-2">
-                                    <strong>Address:</strong> <span id="view-donor-address"></span>
+                                <div class="col-12 mb-2">
+                                    <strong class="me-2">Address:</strong>
+                                    <span id="view-donor-address" class="text-dark">&nbsp;</span>
                                 </div>
-                                <div>
-                                    <strong>Location:</strong> 
-                                    <button class="btn btn-info btn-sm ms-2" id="view-location-btn" style="display: none;">
-                                        <i class="fas fa-map-marked-alt"></i> Map
-                                    </button>
-                                    <span id="view-location-none" class="text-muted" style="display: none;">-</span>
-                                </div>
-                            </div>
-
-                            <!-- Total Bag and Volume Summary -->
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <strong>Total Bag:</strong> <span id="view-total-bags"></span>
-                                </div>
-                                <div class="col-6">
-                                    <strong>Total Vol:</strong> <span id="view-total-volume"></span>
-                                </div>
-                            </div>
-
-                            <!-- Bag Details Table -->
-                            <div class="border rounded p-3" style="background-color: #ffffff;">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered mb-0">
-                                        <thead class="table-light">
-                                            <tr class="text-center">
-                                                <th>Bag</th>
-                                                <th>Volume</th>
-                                                <th>Date</th>
-                                                <th>Time</th>
-                                                <th>Storage Location</th>
-                                                <th>Temp(°C)</th>
-                                                <th>Milk Collection Method</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="view-bag-details-body">
-                                            <!-- Bag details will be inserted here -->
-                                        </tbody>
-                                    </table>
+                                <div class="col-12 mb-0">
+                                    <strong class="me-2">Location:</strong>
+                                    <span id="view-donor-location" class="text-dark">-</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Error State -->
-                        <div id="donation-error" class="alert alert-danger" style="display: none;" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <span id="error-message">Failed to load donation details.</span>
+                        <div class="mb-3">
+                            <strong>Total Bag:</strong> <span id="view-total-bags">-</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Total Vol:</strong> <span id="view-total-vol">-</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="view-bag-details-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">Bag</th>
+                                        <th class="text-center">Volume</th>
+                                        <th class="text-center">Date</th>
+                                        <th class="text-center">Time</th>
+                                        <th class="text-center">Storage Location</th>
+                                        <th class="text-center">Temp(°C)</th>
+                                        <th class="text-center">Milk Collection Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="view-bag-details-body">
+                                    <!-- rows inserted dynamically -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1466,95 +1581,95 @@
         <!-- Home Collection Validation Modal -->
         <div class="modal fade" id="validateHomeCollectionModal" tabindex="-1"
             aria-labelledby="validateHomeCollectionModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title" id="validateHomeCollectionModalLabel">
-                            <i class="fas fa-check-circle me-2"></i>Validate Collected Milk
-                        </h5>
+                        <h5 class="modal-title" id="validateHomeCollectionModalLabel">Validate Home Collection</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
                     <form id="validateHomeCollectionForm" method="POST" novalidate>
                         @csrf
                         <div class="modal-body">
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label"><strong>Donor:</strong></label>
-                                    <input type="text" id="validate-home-donor-name" class="form-control" readonly>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label"><strong>Address:</strong></label>
-                                    <input type="text" id="validate-home-donor-address" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label"><strong>Date:</strong></label>
-                                    <input type="text" id="validate-home-date" class="form-control" readonly>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label"><strong>Time:</strong></label>
-                                    <input type="text" id="validate-home-time" class="form-control" readonly>
-                                </div>
-                            </div>
-                            {{-- Hidden donation id --}}
-                            <input type="hidden" id="home-donation-id" name="donation_id" value="">
+                            <div id="validate-home-debug"
+                                style="display:none; white-space:pre-wrap; font-size:0.85rem; max-height:180px; overflow:auto;"
+                                class="mb-2"></div>
 
-                            {{-- Inline error area --}}
+                            <div class="row gx-2 gy-2 mb-3 validate-info">
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <strong class="me-1 mb-0 text-nowrap">Donor:</strong>
+                                        <div id="validate-home-donor-name" class="form-control-plaintext mb-0">&nbsp;</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <strong class="me-1 mb-0 text-nowrap">Address:</strong>
+                                        <div id="validate-home-donor-address" class="form-control-plaintext mb-0">&nbsp;
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <strong class="me-1 mb-0 text-nowrap">First Expression Date:</strong>
+                                        <div id="validate-home-first-expression" class="form-control-plaintext mb-0">&nbsp;
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <strong class="me-1 mb-0 text-nowrap">Last Expression Date:</strong>
+                                        <div id="validate-home-last-expression" class="form-control-plaintext mb-0">&nbsp;
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="home-donation-id" name="donation_id" value="">
+                            <input type="hidden" id="home-bags" name="number_of_bags" value="">
+
                             <div id="home-form-error" class="alert alert-danger" role="alert" style="display:none;"
                                 aria-live="polite"></div>
 
-                            <!-- Info Message -->
-                            <div class="alert alert-info mb-4">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>Review Home Collection Details</strong> - Verify all bag information collected during pickup.
-                            </div>
+                            <!-- NOTE: Original read-only bag table removed; editable bag details only -->
 
-                            <!-- Bag Details Table -->
-                            <div class="table-responsive mb-3">
-                                <table class="table table-bordered table-hover" id="home-bag-details-table">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width:8%">Bag #</th>
-                                            <th style="width:12%">Time</th>
-                                            <th style="width:15%">Date</th>
-                                            <th style="width:12%">Volume (ml)</th>
-                                            <th style="width:12%">Storage</th>
-                                            <th style="width:12%">Temp (°C)</th>
-                                            <th style="width:29%">Collection Method</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="home-bag-details-body">
-                                        <!-- Rows will be generated here -->
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Total Volume Display -->
-                            <div class="card border-info">
-                                <div class="card-body text-center py-4 bg-info bg-opacity-10">
-                                    <label class="form-label fw-bold text-info mb-2">
-                                        <i class="fas fa-tint me-2"></i>Total Volume
-                                    </label>
-                                    <h2 class="mb-0 text-info fw-bold" id="home-total">0 ml</h2>
+                            <div class="mb-3">
+                                <label class="form-label"><strong>Bag Details (editable for validation)</strong></label>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm" id="home-bag-details-table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Bag #</th>
+                                                <th>Time</th>
+                                                <th>Date</th>
+                                                <th style="width:150px;">Volume (ml)</th>
+                                                <th>Storage</th>
+                                                <th>Temp (°C)</th>
+                                                <th>Method</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="home-bag-details-body">
+                                            <!-- populated by JS -->
+                                        </tbody>
+                                    </table>
                                 </div>
+                                <small class="text-muted">Enter the confirmed volume for each bag before completing
+                                    validation.</small>
                             </div>
-                            
-                            <!-- Hidden inputs for form submission -->
-                            <input type="hidden" id="home-bags" name="number_of_bags" value="">
-                            <div id="home-volume-fields" style="display:none;">
-                                <!-- Hidden volume inputs for form submission -->
+
+                            <div class="alert alert-info mb-3">
+                                <strong>Total Volume:</strong> <span id="home-total">0 ml</span>
                             </div>
                         </div>
-                        <div class="modal-footer bg-light">
-                            <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">
-                                <i class="fas fa-times me-1"></i>Cancel
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="home-decline-btn"
+                                onclick="declineDonation(currentDonationId)">
+                                <i class="fas fa-times me-1"></i> Decline
                             </button>
-                            <button type="submit" class="btn btn-success btn-sm px-3" id="home-validate-submit">
+                            <button type="submit" class="btn btn-success">
                                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"
                                     style="display:none;" id="home-validate-spinner"></span>
-                                <i class="fas fa-check-double me-2"></i>
                                 <span id="home-validate-text">Validate Collection</span>
                             </button>
                         </div>
@@ -1567,12 +1682,15 @@
 
 @section('scripts')
     <!-- Assist Walk-in Donation Modal -->
-    <div class="modal fade" id="assistWalkInDonationModal" tabindex="-1" aria-labelledby="assistWalkInDonationLabel" aria-hidden="true">
+    <div class="modal fade" id="assistWalkInDonationModal" tabindex="-1" aria-labelledby="assistWalkInDonationLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="assistWalkInDonationLabel"><i class="fas fa-user-plus me-2"></i>Assist Walk-in Donation</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="assistWalkInDonationLabel"><i class="fas fa-user-plus me-2"></i>Assist
+                        Walk-in Donation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <form id="assistWalkInDonationForm" method="POST" action="{{ route('admin.donation.assist-walkin') }}">
                     @csrf
@@ -1590,7 +1708,8 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Contact Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="donor_contact" placeholder="09XXXXXXXXX" required>
+                                <input type="text" class="form-control" name="donor_contact" placeholder="09XXXXXXXXX"
+                                    required>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -1602,7 +1721,8 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label">Number of Bags <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="assist_bags" name="number_of_bags" min="1" max="50" required>
+                                <input type="number" class="form-control" id="assist_bags" name="number_of_bags" min="1"
+                                    max="50" required>
                             </div>
                         </div>
                         <div id="assist-volumes-container" style="display:none;">
@@ -1610,13 +1730,15 @@
                             <div id="assist-volume-fields"></div>
                         </div>
                         <div class="mt-3" id="assist-total-display" style="display:none;">
-                            <div class="alert alert-info mb-0"><strong>Total:</strong> <span id="assist-total">0</span> ml</div>
+                            <div class="alert alert-info mb-0"><strong>Total:</strong> <span id="assist-total">0</span> ml
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="display:none;" id="assist-spinner"></span>
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"
+                                style="display:none;" id="assist-spinner"></span>
                             <span id="assist-submit-text">Record Donation</span>
                         </button>
                     </div>
@@ -1762,7 +1884,7 @@
             }
 
             searchInput.addEventListener('input', performSearch);
-            clearBtn.addEventListener('click', function() {
+            clearBtn.addEventListener('click', function () {
                 searchInput.value = '';
                 performSearch();
                 searchInput.focus();
@@ -1775,66 +1897,66 @@
 
     <script>
         // Assist Walk-in dynamic fields and submit
-        (function(){
+        (function () {
             const bagsEl = document.getElementById('assist_bags');
             const container = document.getElementById('assist-volume-fields');
             const wrap = document.getElementById('assist-volumes-container');
             const totalBox = document.getElementById('assist-total-display');
             const totalEl = document.getElementById('assist-total');
-            function renderFields(){
+            function renderFields() {
                 const n = parseInt(bagsEl.value || '0', 10);
-                if(!n || n < 1){ wrap.style.display='none'; totalBox.style.display='none'; container.innerHTML=''; return; }
-                wrap.style.display='block'; totalBox.style.display='block';
+                if (!n || n < 1) { wrap.style.display = 'none'; totalBox.style.display = 'none'; container.innerHTML = ''; return; }
+                wrap.style.display = 'block'; totalBox.style.display = 'block';
                 let html = '<div class="row">';
-                for(let i=1;i<=n;i++){
+                for (let i = 1; i <= n; i++) {
                     html += `
-                        <div class="col-md-6 mb-2">
-                            <label class="form-label">Bag ${i} (ml)</label>
-                            <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
-                        </div>`;
+                                                                                                            <div class="col-md-6 mb-2">
+                                                                                                                <label class="form-label">Bag ${i} (ml)</label>
+                                                                                                                <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
+                                                                                                            </div>`;
                 }
                 html += '</div>';
                 container.innerHTML = html;
                 updateTotal();
             }
-            function updateTotal(){
+            function updateTotal() {
                 const inputs = container.querySelectorAll('.assist-bag-volume');
-                let t = 0; inputs.forEach(inp=>{ const v=parseFloat(inp.value||'0'); if(!isNaN(v)) t += v; });
-                totalEl.textContent = (t%1===0? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, ''));
+                let t = 0; inputs.forEach(inp => { const v = parseFloat(inp.value || '0'); if (!isNaN(v)) t += v; });
+                totalEl.textContent = (t % 1 === 0 ? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, ''));
             }
-            if (bagsEl){ bagsEl.addEventListener('input', renderFields); }
-            container?.addEventListener('input', function(e){ if(e.target && e.target.classList.contains('assist-bag-volume')) updateTotal(); });
+            if (bagsEl) { bagsEl.addEventListener('input', renderFields); }
+            container?.addEventListener('input', function (e) { if (e.target && e.target.classList.contains('assist-bag-volume')) updateTotal(); });
 
             // Submit via AJAX
             const form = document.getElementById('assistWalkInDonationForm');
-            if (form){
-                form.addEventListener('submit', function(e){
+            if (form) {
+                form.addEventListener('submit', function (e) {
                     e.preventDefault();
                     const spinner = document.getElementById('assist-spinner');
                     const text = document.getElementById('assist-submit-text');
                     const err = document.getElementById('assist-walkin-error');
-                    err.style.display='none'; err.textContent='';
-                    spinner.style.display='inline-block'; text.textContent='Recording...';
+                    err.style.display = 'none'; err.textContent = '';
+                    spinner.style.display = 'inline-block'; text.textContent = 'Recording...';
                     const formData = new FormData(form);
-                    fetch(form.action, { method:'POST', headers:{ 'X-CSRF-TOKEN':'{{ csrf_token() }}', 'Accept':'application/json' }, body: formData })
-                        .then(r=> r.json())
-                        .then(data=>{
-                            if(data && data.success){
+                    fetch(form.action, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }, body: formData })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.success) {
                                 const modal = bootstrap.Modal.getInstance(document.getElementById('assistWalkInDonationModal'));
                                 if (modal) modal.hide();
-                                setTimeout(()=>{
-                                    Swal.fire({ icon:'success', title:'Recorded', text: data.message || 'Walk-in donation recorded.', timer: 1400, showConfirmButton:false })
-                                        .then(()=>{
-                                            const url = new URL(window.location.href); url.searchParams.set('status','success_walk_in'); window.location.href = url.toString();
+                                setTimeout(() => {
+                                    Swal.fire({ icon: 'success', title: 'Recorded', text: data.message || 'Walk-in donation recorded.', timer: 1400, showConfirmButton: false })
+                                        .then(() => {
+                                            const url = new URL(window.location.href); url.searchParams.set('status', 'success_walk_in'); window.location.href = url.toString();
                                         });
                                 }, 200);
                             } else {
                                 err.textContent = (data && data.message) ? data.message : 'Failed to record walk-in donation.';
-                                err.style.display='block';
+                                err.style.display = 'block';
                             }
                         })
-                        .catch(()=>{ err.textContent='Failed to record walk-in donation.'; err.style.display='block'; })
-                        .finally(()=>{ spinner.style.display='none'; text.textContent='Record Donation'; });
+                        .catch(() => { err.textContent = 'Failed to record walk-in donation.'; err.style.display = 'block'; })
+                        .finally(() => { spinner.style.display = 'none'; text.textContent = 'Record Donation'; });
                 });
             }
         })();
@@ -1886,26 +2008,41 @@
                 $('#schedule-first-expression').text(firstExpression);
                 $('#schedule-last-expression').text(lastExpression);
 
-                // Parse bag details
-                let bagDetails = [];
-                try {
-                    if (typeof bagDetailsRaw === 'string' && bagDetailsRaw.trim() !== '' && bagDetailsRaw !== 'null') {
-                        bagDetails = JSON.parse(bagDetailsRaw);
-                    } else if (Array.isArray(bagDetailsRaw)) {
-                        bagDetails = bagDetailsRaw;
-                    }
-                } catch (err) {
-                    console.warn('Failed to parse bag details for donation', currentDonationId, err);
-                    console.log('Raw bag details:', bagDetailsRaw);
-                    bagDetails = [];
+                // Robust bag details parser (local copy) to handle HTML-encoded attributes
+                function safeParseBagDetails_local(raw) {
+                    if (!raw) return [];
+                    if (Array.isArray(raw)) return raw;
+                    if (typeof raw !== 'string') return [];
+                    const s = raw.trim();
+                    if (s === '' || s === 'null') return [];
+                    try { return JSON.parse(s); } catch (e) { }
+                    try {
+                        const txt = document.createElement('textarea');
+                        txt.innerHTML = s;
+                        const decoded = txt.value;
+                        if (decoded && decoded !== s) {
+                            try { return JSON.parse(decoded); } catch (e) { }
+                        }
+                    } catch (e) { }
+                    try {
+                        const replaced = s.replace(/&quot;/g, '"').replace(/&apos;|&#039;/g, "'").replace(/&amp;/g, '&');
+                        return JSON.parse(replaced);
+                    } catch (e) { }
+                    try {
+                        const unescaped = s.replace(/\\\"/g, '"').replace(/\\'/g, "'");
+                        return JSON.parse(unescaped);
+                    } catch (e) { }
+                    return [];
                 }
+
+                const bagDetails = safeParseBagDetails_local(bagDetailsRaw);
 
                 console.log('Parsed bag details:', bagDetails);
 
                 // Populate bag details table (with editable Volume inputs)
                 const tbody = $('#schedule-bag-details-body');
                 tbody.empty();
-                
+
                 // Helper function to format time
                 function formatTime12(t) {
                     if (!t) return '--';
@@ -1918,7 +2055,22 @@
                     hh = hh % 12; if (hh === 0) hh = 12;
                     return hh + ':' + mm + ' ' + ampm;
                 }
-                
+
+                // Map storage keys to readable labels
+                function mapStorage(s) {
+                    if (!s || s === '--' || s === '-') return s || '--';
+                    const key = String(s).toLowerCase().trim();
+
+                    // common short codes used in home collection form
+                    if (key === 'ref' || key === 'refr' || key === 'fridge' || key === 'refrigerator' || key.indexOf('refrig') !== -1) return 'Refrigerator';
+                    if (key === 'frz' || key === 'fridge_freeze' || key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1) return 'Freezer';
+
+                    if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1 || key.indexOf('room_temp') !== -1 || key === 'roomtemp') return 'Room temperature';
+
+                    // fallback: title case the token and replace underscores
+                    return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                }
+
                 let total = 0;
                 const numberOfBags = parseInt($(this).data('bags')) || (Array.isArray(bagDetails) ? bagDetails.length : 0) || 0;
                 if (bagDetails && bagDetails.length > 0) {
@@ -1928,46 +2080,49 @@
                         const date = bag.date || '--';
                         const volume = bag.volume || '';
                         const storage = bag.storage_location || '--';
+                        const storageLabel = mapStorage(storage);
                         const temp = bag.temperature || '--';
                         const method = bag.collection_method || '--';
 
                         const row = `
-                            <tr>
-                                <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                <td>${time}</td>
-                                <td>${date}</td>
-                                <td>
-                                    <div class="input-group input-group-sm">
-                                        <input type="number" name="bag_volumes[]" class="form-control form-control-sm schedule-bag-volume" step="0.01" min="0.01" value="${volume}" placeholder="ml">
-                                        <span class="input-group-text">ml</span>
-                                    </div>
-                                </td>
-                                <td>${storage}</td>
-                                <td class="text-end">${temp}</td>
-                                <td><small>${method}</small></td>
-                            </tr>
-                        `;
+                                                                                                                <tr>
+                                                                                                                    <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                                                                    <td>${time}</td>
+                                                                                                                    <td>${date}</td>
+                                                                                                                    <td>
+                                                                                                                        <div class="input-group input-group-sm">
+                                                                                                                            <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
+                                                                                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
+                                                                                                                            <span class="input-group-text">ml</span>
+                                                                                                                        </div>
+                                                                                                                    </td>
+                                                                                                                    <td>${storageLabel}</td>
+                                                                                                                    <td class="text-end">${temp}</td>
+                                                                                                                    <td><small>${method}</small></td>
+                                                                                                                </tr>
+                                                                                                            `;
                         tbody.append(row);
                         const v = parseFloat(volume); if (!isNaN(v)) total += v;
                     });
                 } else if (numberOfBags > 0) {
                     for (let i = 0; i < numberOfBags; i++) {
                         const row = `
-                            <tr>
-                                <td class="text-center fw-bold">Bag ${i+1}</td>
-                                <td>--</td>
-                                <td>--</td>
-                                <td>
-                                    <div class="input-group input-group-sm">
-                                        <input type="number" name="bag_volumes[]" class="form-control form-control-sm schedule-bag-volume" step="0.01" min="0.01" placeholder="ml">
-                                        <span class="input-group-text">ml</span>
-                                    </div>
-                                </td>
-                                <td>--</td>
-                                <td class="text-end">--</td>
-                                <td><small>--</small></td>
-                            </tr>
-                        `;
+                                                                                                                <tr>
+                                                                                                                    <td class="text-center fw-bold">Bag ${i + 1}</td>
+                                                                                                                    <td>--</td>
+                                                                                                                    <td>--</td>
+                                                                                                                    <td>
+                                                                                                                        <div class="input-group input-group-sm">
+                                                                                                                            <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
+                                                                                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
+                                                                                                                            <span class="input-group-text">ml</span>
+                                                                                                                        </div>
+                                                                                                                    </td>
+                                                                                                                    <td>--</td>
+                                                                                                                    <td class="text-end">--</td>
+                                                                                                                    <td><small>--</small></td>
+                                                                                                                </tr>
+                                                                                                            `;
                         tbody.append(row);
                     }
                 } else {
@@ -1976,7 +2131,7 @@
 
                 function updateScheduleTotal() {
                     let sum = 0;
-                    $('#schedule-bag-details-body .schedule-bag-volume').each(function(){
+                    $('#schedule-bag-details-body .schedule-bag-volume').each(function () {
                         const v = parseFloat($(this).val());
                         if (!isNaN(v)) sum += v;
                     });
@@ -1990,7 +2145,8 @@
                     const displayTotal = (parseFloat(totalVolume) || 0);
                     $('#schedule-total-volume').text(displayTotal.toFixed(2));
                 }
-                // Live updating
+                // Live updating: keep function available but volumes are rendered as hidden inputs
+                // so updates won't be triggered by user input here.
                 $('#schedule-bag-details-body').off('input.scheduleVol').on('input.scheduleVol', '.schedule-bag-volume', updateScheduleTotal);
 
                 $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/schedule-pickup`);
@@ -2040,44 +2196,117 @@
                 $('#schedulePickupModal').modal('show');
             });
 
-            // Home collection validation modal
-            $('.validate-home-collection').click(function () {
-                currentDonationId = $(this).data('id');
-                const donorName = $(this).data('donor');
-                const numberOfBags = $(this).data('bags');
-                const bagDetailsRaw = $(this).attr('data-bag-details');
-                const totalVolume = $(this).data('total');
+            // Home collection validation modal - Use Bootstrap's modal show event
+            $('#validateHomeCollectionModal').on('show.bs.modal', function (event) {
+                // Button that triggered the modal
+                const button = $(event.relatedTarget);
+
+                currentDonationId = button.data('id');
+                const donorName = button.data('donor');
+                const numberOfBags = button.data('bags');
+                const bagDetailsRaw = button.attr('data-bag-details');
+                const totalVolume = button.data('total');
 
                 // Optional fields sent via data-attributes
-                const donorAddress = $(this).data('address') || '';
-                const scheduledDate = $(this).data('date') || '';
-                const scheduledTimeRaw = $(this).data('time') || '';
+                const donorAddress = button.data('address') || '';
+                const scheduledDate = button.data('date') || '';
+                const scheduledTimeRaw = button.data('time') || '';
+                // first/last expression may be present on some buttons (from earlier flows)
+                const firstExpression = button.data('first-expression') || button.data('first_expression') || '';
+                const lastExpression = button.data('last-expression') || button.data('last_expression') || '';
 
-                // Try to parse bag details safely (data-bag-details may be JSON string)
-                let bagDetails = [];
-                try {
-                    if (typeof bagDetailsRaw === 'string' && bagDetailsRaw.trim() !== '' && bagDetailsRaw !== 'null') {
-                        bagDetails = JSON.parse(bagDetailsRaw);
-                    } else if (Array.isArray(bagDetailsRaw)) {
-                        bagDetails = bagDetailsRaw;
+                console.log('Button Data:', {
+                    id: currentDonationId,
+                    donorName: donorName,
+                    donorAddress: donorAddress,
+                    scheduledDate: scheduledDate,
+                    scheduledTimeRaw: scheduledTimeRaw,
+                    numberOfBags: numberOfBags,
+                    totalVolume: totalVolume
+                });
+
+                // Robust bag details parser: handles JSON, HTML-encoded attributes, and hex-escaped JSON
+                function safeParseBagDetails(raw) {
+                    if (!raw) return [];
+                    if (Array.isArray(raw)) return raw;
+                    if (typeof raw !== 'string') return [];
+
+                    const s = raw.trim();
+                    if (s === '' || s === 'null') return [];
+
+                    // 1) Try direct JSON.parse
+                    try {
+                        return JSON.parse(s);
+                    } catch (e) {
+                        // continue to fallbacks
                     }
-                } catch (err) {
-                    console.warn('Failed to parse bag details for donation', currentDonationId, err);
-                    console.log('Raw bag details:', bagDetailsRaw);
-                    bagDetails = [];
+
+                    // 2) Try decoding HTML entities (e.g. &quot;) using a textarea
+                    try {
+                        const txt = document.createElement('textarea');
+                        txt.innerHTML = s;
+                        const decoded = txt.value;
+                        if (decoded && decoded !== s) {
+                            try { return JSON.parse(decoded); } catch (e) { }
+                        }
+                    } catch (e) { }
+
+                    // 3) Replace common HTML entities and attempt parse
+                    try {
+                        const replaced = s.replace(/&quot;/g, '"').replace(/&apos;|&#039;/g, "'")
+                            .replace(/&amp;/g, '&');
+                        return JSON.parse(replaced);
+                    } catch (e) { }
+
+                    // 4) If the string looks like a PHP-encoded JSON with escaped quotes (\"), unescape and parse
+                    try {
+                        const unescaped = s.replace(/\\\"/g, '"').replace(/\\'/g, "'");
+                        return JSON.parse(unescaped);
+                    } catch (e) { }
+
+                    // Give up
+                    return [];
                 }
 
+                const bagDetails = safeParseBagDetails(bagDetailsRaw);
+
                 console.log('Validate modal - Parsed bag details:', bagDetails);
+                // Pre-render parsed bag details (button data) immediately for snappy UI
+                try {
+                    if (bagDetails && bagDetails.length > 0) {
+                        renderBagTables(bagDetails);
+                    }
+                } catch (e) {
+                    console.warn('renderBagTables failed during pre-render:', e);
+                }
+                // Debug panel suppressed in production. To enable, set window.VALIDATE_HOME_DEBUG = true
+                if (window.VALIDATE_HOME_DEBUG) {
+                    try {
+                        const dbg = $('#validate-home-debug');
+                        const dump = {
+                            buttonData: {
+                                id: currentDonationId,
+                                donorName: donorName,
+                                donorAddress: donorAddress,
+                                scheduledDate: scheduledDate,
+                                scheduledTimeRaw: scheduledTimeRaw,
+                                numberOfBags: numberOfBags,
+                                totalVolume: totalVolume,
+                                rawBagDetailsAttr: bagDetailsRaw
+                            },
+                            parsedBagDetails: bagDetails
+                        };
+                        dbg.text(JSON.stringify(dump, null, 2));
+                        dbg.show();
+                    } catch (e) {
+                        console.warn('Failed to populate validate debug panel', e);
+                    }
+                }
 
                 // Set donation id and number of bags
                 $('#home-donation-id').val(currentDonationId);
                 $('#home-bags').val(numberOfBags || '');
 
-                // Populate donor info and schedule details in the modal (readonly inputs)
-                $('#validate-home-donor-name').val(donorName || '');
-                $('#validate-home-donor-address').val(donorAddress || '');
-                $('#validate-home-date').val(scheduledDate || '');
-                
                 // Format time to 12-hour with AM/PM if possible
                 function formatTime12(t) {
                     if (!t) return '';
@@ -2093,106 +2322,298 @@
                     return hh + ':' + mm + ' ' + ampm;
                 }
 
-                const scheduledTime = formatTime12(scheduledTimeRaw);
-                $('#validate-home-time').val(scheduledTime || '');
+                // Populate donor info immediately with data attributes (will be updated by AJAX if available)
+                $('#validate-home-donor-name').text(donorName || '');
+                $('#validate-home-donor-address').text(donorAddress || 'Not provided');
+                $('#validate-home-date').text(scheduledDate || '');
+                $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || '');
+                // populate first/last expression if available from button data (AJAX will override if server provides)
+                function formatDateShort(d) {
+                    if (!d) return '';
+                    try {
+                        const dt = new Date(d);
+                        if (isNaN(dt)) return d;
+                        return dt.toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' });
+                    } catch (e) { return d; }
+                }
+                $('#validate-home-first-expression').text(formatDateShort(firstExpression) || '--');
+                $('#validate-home-last-expression').text(formatDateShort(lastExpression) || '--');
+
+                // Map storage keys to readable labels
+                function mapStorage(s) {
+                    if (!s || s === '--' || s === '-') return s || '--';
+                    const key = String(s).toLowerCase().trim();
+
+                    // common short codes used in home collection form
+                    if (key === 'ref' || key === 'refr' || key === 'fridge' || key === 'refrigerator' || key.indexOf('refrig') !== -1) return 'Refrigerator';
+                    if (key === 'frz' || key === 'fridge_freeze' || key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1) return 'Freezer';
+
+                    if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1 || key.indexOf('room_temp') !== -1 || key === 'roomtemp') return 'Room temperature';
+
+                    // fallback: title case the token and replace underscores
+                    return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                }
 
                 // Set form action
                 $('#validateHomeCollectionForm').attr('action', `/admin/donations/${currentDonationId}/validate-pickup`);
 
-                // Populate bag details table (make volumes editable before validation)
+                // Fetch full donation details from server (prefer fresh source)
                 const tbody = $('#home-bag-details-body');
                 tbody.empty();
-                
+
                 let totalVol = 0;
                 const volumeFieldsContainer = $('#home-volume-fields'); // legacy container, keep empty
                 volumeFieldsContainer.empty();
 
-                if (bagDetails && bagDetails.length > 0) {
-                    bagDetails.forEach((bag, index) => {
-                        const bagNum = bag.bag_number || (index + 1);
-                        const time = formatTime12(bag.time) || '--';
-                        const date = bag.date || '--';
-                        const volume = bag.volume || 0;
-                        const storage = bag.storage_location || '--';
-                        const temp = bag.temperature || '--';
-                        const method = bag.collection_method || '--';
-                        
-                        totalVol += parseFloat(volume) || 0;
+                // Request donation details from server to populate both original (readonly) and editable tables
+                $.ajax({
+                    url: `/admin/donations/${currentDonationId}`,
+                    method: 'GET',
+                    success: function (response) {
+                        console.log('AJAX Response:', response);
+                        console.log('Number of Bags from button:', numberOfBags);
+                        console.log('Bag Details from button:', bagDetails);
 
-                        // Add row to table with editable volume input
-                        const row = `
-                            <tr>
-                                <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                <td>${time}</td>
-                                <td>${date}</td>
-                                <td>
-                                    <div class="input-group input-group-sm">
-                                        <input type="number" 
-                                               id="home_bag_volume_${index+1}"
-                                               name="bag_volumes[]" 
-                                               class="form-control home-bag-volume-input" 
-                                               step="0.01" 
-                                               min="0.01" 
-                                               value="${volume}" 
-                                               placeholder="ml" required>
-                                        <span class="input-group-text">ml</span>
-                                    </div>
-                                </td>
-                                <td>${storage}</td>
-                                <td class="text-end">${temp}</td>
-                                <td><small>${method}</small></td>
-                            </tr>
-                        `;
-                        tbody.append(row);
-                    });
-                } else {
-                    // No original details; render inputs based on numberOfBags if provided
-                    const n = parseInt(numberOfBags) || 0;
-                    if (n > 0) {
-                        for (let i = 1; i <= n; i++) {
-                            const row = `
-                                <tr>
-                                    <td class="text-center fw-bold">Bag ${i}</td>
-                                    <td>--</td>
-                                    <td>--</td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" 
-                                                   id="home_bag_volume_${i}"
-                                                   name="bag_volumes[]" 
-                                                   class="form-control home-bag-volume-input" 
-                                                   step="0.01" min="0.01" placeholder="ml" required>
-                                            <span class="input-group-text">ml</span>
-                                        </div>
-                                    </td>
-                                    <td>--</td>
-                                    <td class="text-end">--</td>
-                                    <td><small>--</small></td>
-                                </tr>`;
-                            tbody.append(row);
+                        const donationData = (response && response.donation) ? response.donation : null;
+                        console.log('Donation Data:', donationData);
+
+                        // Populate donor info - prioritize server data, fallback to button data
+                        if (donationData) {
+                            $('#validate-home-donor-name').text(donationData.donor_name || donorName || 'N/A');
+                            $('#validate-home-donor-address').text(donationData.address || donorAddress || 'Not provided');
+                            $('#validate-home-date').text(donationData.donation_date || scheduledDate || 'N/A');
+                            $('#validate-home-time').text(donationData.donation_time || formatTime12(scheduledTimeRaw) || 'N/A');
+                            // Set first/last expression if present on the returned donation
+                            try {
+                                const f = donationData.first_expression_date || donationData.first_expression || null;
+                                const l = donationData.last_expression_date || donationData.last_expression || null;
+                                const fmt = function (d) {
+                                    if (!d) return '';
+                                    try { const dt = new Date(d); if (isNaN(dt)) return d; return dt.toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' }); } catch (e) { return d; }
+                                };
+                                $('#validate-home-first-expression').text(fmt(f) || '--');
+                                $('#validate-home-last-expression').text(fmt(l) || '--');
+                            } catch (e) { console.warn('Failed to set first/last expression dates', e); }
+                        } else {
+                            console.warn('No donation data from server, using button data');
+                            $('#validate-home-donor-name').text(donorName || 'N/A');
+                            $('#validate-home-donor-address').text(donorAddress || 'Not provided');
+                            $('#validate-home-date').text(scheduledDate || 'N/A');
+                            $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || 'N/A');
                         }
-                        totalVol = 0;
-                    } else {
-                        tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
-                        totalVol = parseFloat(totalVolume) || 0;
+
+                        const effectiveBags = donationData?.bag_details && donationData.bag_details.length > 0
+                            ? donationData.bag_details
+                            : (bagDetails && bagDetails.length > 0 ? bagDetails : []);
+
+                        console.log('Effective Bags:', effectiveBags);
+                        console.log('Effective Bags Length:', effectiveBags.length);
+
+                        // We no longer show a separate original (read-only) table.
+                        // The editable table below will be populated using effectiveBags (server-preferred) or button data fallback.
+
+                        // Build editable table (use effectiveBags or numberOfBags)
+                        if (effectiveBags && effectiveBags.length > 0) {
+                            currentOriginalVolumes = [];
+                            effectiveBags.forEach((bag, index) => {
+                                const bagNum = bag.bag_number || (index + 1);
+                                const time = formatTime12(bag.time) || '--';
+                                const date = bag.date || '--';
+                                const volume = bag.volume || '';
+                                const storage = bag.storage_location || '--';
+                                const storageLabel = mapStorage(storage);
+                                const temp = bag.temperature || '--';
+                                const method = bag.collection_method || '--';
+
+                                currentOriginalVolumes.push(volume || '');
+                                totalVol += parseFloat(volume) || 0;
+
+                                const row = `
+                                                                                        <tr>
+                                                                                            <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                                            <td>
+                                                                                                <input type="text" name="bag_time[]" class="form-control form-control-sm" value="${bag.time || ''}" placeholder="time">
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <input type="text" name="bag_date[]" class="form-control form-control-sm" value="${bag.date || ''}" placeholder="date">
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <div class="input-group input-group-sm">
+                                                                                                    <input type="number"
+                                                                                                           id="home_bag_volume_${index + 1}"
+                                                                                                           name="bag_volumes[]"
+                                                                                                           class="form-control home-bag-volume-input"
+                                                                                                           step="0.01"
+                                                                                                           min="0.01"
+                                                                                                           value="${volume}"
+                                                                                                           placeholder="ml" required>
+                                                                                                    <span class="input-group-text">ml</span>
+                                                                                                </div>
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <select name="bag_storage[]" class="form-select form-select-sm">
+                                                                                                    ${(() => {
+                                        const raw = bag.storage_location || '';
+                                        const key = String(raw).toLowerCase();
+                                        if (key.indexOf('ref') !== -1 || key.indexOf('refrig') !== -1 || key.indexOf('fridge') !== -1) return `
+                                                                                                            <option value="Refrigerator" selected>Refrigerator</option>
+                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                            <option value="Other">Other</option>
+                                                                                                        `;
+                                        if (key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1 || key.indexOf('frz') !== -1) return `
+                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                            <option value="Freezer" selected>Freezer</option>
+                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                            <option value="Other">Other</option>
+                                                                                                        `;
+                                        if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1) return `
+                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                            <option value="Room temperature" selected>Room temperature</option>
+                                                                                                            <option value="Other">Other</option>
+                                                                                                        `;
+                                        if (raw && raw !== '') return `
+                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                            <option value="Other" selected>Other</option>
+                                                                                                        `;
+                                        return `
+                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                            <option value="Other">Other</option>
+                                                                                                        `;
+                                    })()}
+                                                                                                </select>
+                                                                                            </td>
+                                                                                            <td class="text-end">
+                                                                                                <input type="text" name="bag_temp[]" class="form-control form-control-sm text-end" value="${bag.temperature || ''}" placeholder="temp">
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <input type="text" name="bag_method[]" class="form-control form-control-sm" value="${bag.collection_method || ''}" placeholder="method">
+                                                                                            </td>
+                                                                                        </tr>`;
+                                tbody.append(row);
+                                tbody.closest('.table-responsive').show();
+                            });
+                        } else {
+                            // No bag details array: generate editable rows based on numberOfBags
+                            const n = parseInt(numberOfBags) || 0;
+                            if (n > 0) {
+                                for (let i = 1; i <= n; i++) {
+                                    const row = `
+                                                                                                    <tr>
+                                                                                                        <td class="text-center fw-bold">Bag ${i}</td>
+                                                                                                        <td>
+                                                                                                            <input type="text" name="bag_time[]" class="form-control form-control-sm" value="" placeholder="time">
+                                                                                                        </td>
+                                                                                                        <td>
+                                                                                                            <input type="text" name="bag_date[]" class="form-control form-control-sm" value="" placeholder="date">
+                                                                                                        </td>
+                                                                                                        <td>
+                                                                                                            <div class="input-group input-group-sm">
+                                                                                                                <input type="number"
+                                                                                                                       id="home_bag_volume_${i}"
+                                                                                                                       name="bag_volumes[]"
+                                                                                                                       class="form-control home-bag-volume-input"
+                                                                                                                       step="0.01" min="0.01" placeholder="ml" required>
+                                                                                                                <span class="input-group-text">ml</span>
+                                                                                                            </div>
+                                                                                                        </td>
+                                                                                                        <td>
+                                                                                                            <select name="bag_storage[]" class="form-select form-select-sm">
+                                                                                                                <option value="Refrigerator">Refrigerator</option>
+                                                                                                                <option value="Freezer">Freezer</option>
+                                                                                                                <option value="Room temperature">Room temperature</option>
+                                                                                                                <option value="Other">Other</option>
+                                                                                                            </select>
+                                                                                                        </td>
+                                                                                                        <td class="text-end">
+                                                                                                            <input type="text" name="bag_temp[]" class="form-control form-control-sm text-end" value="" placeholder="temp">
+                                                                                                        </td>
+                                                                                                        <td>
+                                                                                                            <input type="text" name="bag_method[]" class="form-control form-control-sm" value="" placeholder="method">
+                                                                                                        </td>
+                                                                                                    </tr>`;
+                                    tbody.append(row);
+                                }
+                                totalVol = 0;
+                            } else {
+                                tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
+                                totalVol = parseFloat(totalVolume) || 0;
+                            }
+                        }
+
+                        // Update total display
+                        $('#home-total').text(totalVol.toFixed(2) + ' ml');
+
+                        // Live update total when editing volumes
+                        $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function () {
+                            let sum = 0;
+                            $('#home-bag-details-body .home-bag-volume-input').each(function () {
+                                const v = parseFloat($(this).val());
+                                if (!isNaN(v)) sum += v;
+                            });
+                            $('#home-total').text(sum.toFixed(2) + ' ml');
+                        });
+
+                        $('#home-form-error').hide().text('');
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Failed to fetch donation for validation:', error);
+
+                        // Populate donor info with fallback data attributes
+                        $('#validate-home-donor-name').text(donorName || '');
+                        $('#validate-home-donor-address').text(donorAddress || 'Not provided');
+                        $('#validate-home-date').text(scheduledDate || '');
+                        $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || '');
+                        // fallback for first/last expression (use pre-read values if available)
+                        try {
+                            $('#validate-home-first-expression').text(formatDateShort(firstExpression) || '--');
+                            $('#validate-home-last-expression').text(formatDateShort(lastExpression) || '--');
+                        } catch (e) { console.warn('No first/last expression available'); }
+
+                        // Fallback: use parsed data-bag-details already available
+                        if (bagDetails && bagDetails.length > 0) {
+                            bagDetails.forEach((bag, index) => {
+                                const bagNum = bag.bag_number || (index + 1);
+                                const time = formatTime12(bag.time) || '--';
+                                const date = bag.date || '--';
+                                const volume = bag.volume || 0;
+                                const storageLabel = mapStorage(bag.storage_location || '--');
+                                const temp = bag.temperature || '--';
+                                const method = bag.collection_method || '--';
+
+                                const originalRow = `\n                                    <tr class="text-center">\n                                        <td>Bag ${bagNum}</td>\n                                        <td>${time}</td>\n                                        <td>${date}</td>\n                                        <td>${volume}</td>\n                                        <td>${storageLabel}</td>\n                                        <td class="text-end">${temp}</td>\n                                        <td><small>${method}</small></td>\n                                    </tr>`;
+                                originalTbody.append(originalRow);
+
+                                const row = `\n                                    <tr>\n                                        <td class="text-center fw-bold">Bag ${bagNum}</td>\n                                        <td>${time}</td>\n                                        <td>${date}</td>\n                                        <td>\n                                            <div class="input-group input-group-sm">\n                                                <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]" class="form-control home-bag-volume-input" step="0.01" min="0.01" value="${volume}" placeholder="ml" required>\n                                                <span class="input-group-text">ml</span>\n                                            </div>\n                                        </td>\n                                        <td>${storageLabel}</td>\n                                        <td class="text-end">${temp}</td>\n                                        <td><small>${method}</small></td>\n                                    </tr>`;
+                                tbody.append(row);
+                                tbody.closest('.table-responsive').show();
+                                totalVol += parseFloat(volume) || 0;
+                            });
+                            $('#home-total').text(totalVol.toFixed(2) + ' ml');
+
+                            // Live update total when editing volumes
+                            $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function () {
+                                let sum = 0;
+                                $('#home-bag-details-body .home-bag-volume-input').each(function () {
+                                    const v = parseFloat($(this).val());
+                                    if (!isNaN(v)) sum += v;
+                                });
+                                $('#home-total').text(sum.toFixed(2) + ' ml');
+                            });
+
+                            $('#home-form-error').hide().text('');
+                        } else {
+                            $('#home-bag-details-body').append('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
+                            $('#home-total').text(parseFloat(totalVolume || 0).toFixed(2) + ' ml');
+                            $('#home-form-error').hide().text('');
+                        }
                     }
-                }
-                
-                // Update total display
-                $('#home-total').text(totalVol.toFixed(2) + ' ml');
-
-                // Live update total when editing volumes
-                $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function(){
-                    let sum = 0;
-                    $('#home-bag-details-body .home-bag-volume-input').each(function(){
-                        const v = parseFloat($(this).val());
-                        if (!isNaN(v)) sum += v;
-                    });
-                    $('#home-total').text(sum.toFixed(2) + ' ml');
                 });
-
-                $('#home-form-error').hide().text('');
-                $('#validateHomeCollectionModal').modal('show');
             });
 
             // Calculate total volume for walk-in (will be updated to use individual volumes)
@@ -2227,17 +2648,17 @@
                 let fieldsHTML = '<div class="row">';
                 for (let i = 1; i <= bagCount; i++) {
                     fieldsHTML += `
-                                                                                                                                    <div class="col-md-6 mb-2">
-                                                                                                                                        <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                        <input type="number" 
-                                                                                                                                               id="walkin_bag_volume_${i}" 
-                                                                                                                                               name="bag_volumes[]" 
-                                                                                                                                               class="form-control walkin-bag-volume-input" 
-                                                                                                                                               step="0.01" 
-                                                                                                                                               min="0.01" 
-                                                                                                                                               required>
-                                                                                                                                    </div>
-                                                                                                                                `;
+                                                                    < div class="col-md-6 mb-2" >
+                                                                                                                                                                                                                            <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                            <input type="number" 
+                                                                                                                                                                                                                                   id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                   name="bag_volumes[]" 
+                                                                                                                                                                                                                                   class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                   step="0.01" 
+                                                                                                                                                                                                                                   min="0.01" 
+                                                                                                                                                                                                                                   required>
+                                                                                                                                                                                                                        </div>
+                                                                `;
                 }
                 fieldsHTML += '</div>';
 
@@ -2253,7 +2674,7 @@
                 let total = 0;
 
                 for (let i = 1; i <= bagCount; i++) {
-                    const volumeInput = $(`#walkin_bag_volume_${i}`);
+                    const volumeInput = $(`#walkin_bag_volume_${i} `);
                     if (volumeInput.length && volumeInput.val()) {
                         // use parseFloat but guard against commas and spaces
                         const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
@@ -2283,7 +2704,7 @@
                 if (bagCount > 0) {
                     let hasValue = false;
                     for (let i = 1; i <= bagCount; i++) {
-                        const v = $(`#walkin_bag_volume_${i}`).val();
+                        const v = $(`#walkin_bag_volume_${i} `).val();
                         if (v && parseFloat(v) > 0) { hasValue = true; break; }
                     }
                     if (!hasValue) {
@@ -2349,16 +2770,16 @@
                 const successTitle = isReschedule ? 'Pickup rescheduled' : 'Pickup scheduled';
                 const successDefault = isReschedule ? 'Pickup rescheduled successfully.' : 'Pickup scheduled successfully.';
 
-                // If volume inputs are present (i.e., in schedule mode), ensure they are valid
-                const volumeInputs = $('#schedule-bag-details-body .schedule-bag-volume:visible');
+                // Validate bag volumes (hidden inputs are used for read-only display)
+                const volumeInputs = $('#schedule-bag-details-body .schedule-bag-volume');
                 if (volumeInputs.length > 0) {
                     let allValid = true;
-                    volumeInputs.each(function(){
+                    volumeInputs.each(function () {
                         const v = parseFloat($(this).val());
                         if (isNaN(v) || v <= 0) { allValid = false; return false; }
                     });
                     if (!allValid) {
-                        Swal.fire({ icon:'error', title:'Invalid volumes', text:'Please enter a valid volume (> 0) for each bag.' });
+                        Swal.fire({ icon: 'error', title: 'Invalid volumes', text: 'Please enter a valid volume (> 0) for each bag.' });
                         return;
                     }
                 }
@@ -2421,7 +2842,7 @@
                 // Validate that all bag volumes are entered
                 let hasAllVolumes = true;
                 for (let i = 1; i <= bagCount; i++) {
-                    const volumeInput = $(`#home_bag_volume_${i}`);
+                    const volumeInput = $(`#home_bag_volume_${i} `);
                     if (!volumeInput.val() || parseFloat(volumeInput.val()) <= 0) {
                         hasAllVolumes = false;
                         break;
@@ -2521,10 +2942,13 @@
             $(this).find('button[type="submit"]').prop('disabled', false);
             currentOriginalVolumes = [];
             // Clear donor and schedule details to avoid stale info
-            $('#validate-home-donor-name').val('');
-            $('#validate-home-donor-address').val('');
-            $('#validate-home-date').val('');
-            $('#validate-home-time').val('');
+            $('#validate-home-donor-name').text('');
+            $('#validate-home-donor-address').text('');
+            $('#validate-home-date').text('');
+            $('#validate-home-time').text('');
+            // Clear original and editable bag tables
+            $('#home-bag-details-body').empty();
+            $('#home-bag-original-body').empty();
         });            // Global functions for individual bag volume management
         window.generateWalkinBagFields = function () {
             const bagCount = parseInt($('#walkin-bags').val()) || 0;
@@ -2542,7 +2966,7 @@
             // Store existing values before regenerating
             const existingValues = {};
             for (let i = 1; i <= 100; i++) { // Check up to 100 to capture any existing values
-                const input = $(`#walkin_bag_volume_${i}`);
+                const input = $(`#walkin_bag_volume_${i} `);
                 if (input.length && input.val()) {
                     existingValues[i] = input.val();
                 }
@@ -2556,19 +2980,19 @@
                 // Restore existing value if it exists
                 const existingValue = existingValues[i] || '';
                 fieldsHTML += `
-                                                                                                                                    <div class="col-md-6 mb-2">
-                                                                                                                                        <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                        <input type="number" 
-                                                                                                                                               id="walkin_bag_volume_${i}" 
-                                                                                                                                               name="bag_volumes[]" 
-                                                                                                                                               class="form-control walkin-bag-volume-input" 
-                                                                                                                                               step="0.01" 
-                                                                                                                                               min="0.01" 
-                                                                                                                                               value="${existingValue}"
-                                                                                                                                               placeholder="Enter volume"
-                                                                                                                                               required>
-                                                                                                                                    </div>
-                                                                                                                                `;
+                                                                    < div class="col-md-6 mb-2" >
+                                                                                                                                                                                                                            <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                            <input type="number" 
+                                                                                                                                                                                                                                   id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                   name="bag_volumes[]" 
+                                                                                                                                                                                                                                   class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                   step="0.01" 
+                                                                                                                                                                                                                                   min="0.01" 
+                                                                                                                                                                                                                                   value="${existingValue}"
+                                                                                                                                                                                                                                   placeholder="Enter volume"
+                                                                                                                                                                                                                                   required>
+                                                                                                                                                                                                                        </div>
+                                                                `;
             }
             fieldsHTML += '</div>';
 
@@ -2583,7 +3007,7 @@
             let total = 0;
 
             for (let i = 1; i <= bagCount; i++) {
-                const volumeInput = $(`#walkin_bag_volume_${i}`);
+                const volumeInput = $(`#walkin_bag_volume_${i} `);
                 if (volumeInput.length && volumeInput.val()) {
                     const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
                     total += isNaN(parsed) ? 0 : parsed;
@@ -2614,7 +3038,7 @@
             // Store existing values before regenerating
             const existingValues = {};
             for (let i = 1; i <= 100; i++) { // Check up to 100 to capture any existing values
-                const input = $(`#home_bag_volume_${i}`);
+                const input = $(`#home_bag_volume_${i} `);
                 if (input.length && input.val()) {
                     existingValues[i] = input.val();
                 }
@@ -2629,24 +3053,24 @@
                 }
 
                 fieldsHTML += `
-                                                                                                        <div class="col-md-6">
-                                                                                                            <div class="input-group input-group-lg">
-                                                                                                                <span class="input-group-text bg-primary text-white fw-bold">
-                                                                                                                    <i class="fas fa-flask me-2"></i>Bag ${i}
-                                                                                                                </span>
-                                                                                                                <input type="number" 
-                                                                                                                       id="home_bag_volume_${i}" 
-                                                                                                                       name="bag_volumes[]" 
-                                                                                                                       class="form-control home-bag-volume-input" 
-                                                                                                                       step="0.01" 
-                                                                                                                       min="0.01" 
-                                                                                                                       value="${existingValue}"
-                                                                                                                       placeholder="Enter volume"
-                                                                                                                       required>
-                                                                                                                <span class="input-group-text">ml</span>
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                    `;
+                                                                    < div class="col-md-6" >
+                                                                        <div class="input-group input-group-lg">
+                                                                            <span class="input-group-text bg-primary text-white fw-bold">
+                                                                                <i class="fas fa-flask me-2"></i>Bag ${i}
+                                                                            </span>
+                                                                            <input type="number"
+                                                                                id="home_bag_volume_${i}"
+                                                                                name="bag_volumes[]"
+                                                                                class="form-control home-bag-volume-input"
+                                                                                step="0.01"
+                                                                                min="0.01"
+                                                                                value="${existingValue}"
+                                                                                placeholder="Enter volume"
+                                                                                required>
+                                                                                <span class="input-group-text">ml</span>
+                                                                        </div>
+                                                                                                                                                                                            </div >
+                                                                    `;
             }
             fieldsHTML += '</div>';
 
@@ -2696,132 +3120,134 @@
 
     <!-- Include Location Modal -->
     @include('partials.location-modal')
-    
+
     <script>
-        // View Donation Details Handler
-        $(document).on('click', '.view-donation', function() {
-            const donationId = $(this).data('id');
-            
-            // Show modal and reset states
-            $('#viewDonationModal').modal('show');
-            $('#donation-loading').show();
-            $('#donation-details').hide();
-            $('#donation-error').hide();
-            $('#view-location-btn').hide();
-            $('#view-location-none').hide();
-            
-            // Fetch donation details
+        // View donation modal script - fetch donation details and populate modal
+        $(document).on('click', '.view-donation', function (e) {
+            e.preventDefault();
+            const btn = $(this);
+            const id = btn.data('id');
+            if (!id) return;
+
+            // Use button-provided data attributes as immediate fallback/display
+            const bDonorName = btn.data('donorName') || btn.data('donor') || btn.attr('data-donor-name') || '';
+            const bContact = btn.data('donorContact') || btn.data('donorContact') || btn.attr('data-donor-contact') || '';
+            const bAddress = btn.data('donorAddress') || btn.attr('data-donor-address') || '';
+            const bLat = btn.attr('data-latitude') || '';
+            const bLng = btn.attr('data-longitude') || '';
+            const bBags = btn.attr('data-bags') || '';
+            const bTotal = btn.attr('data-total') || '';
+            const bBagDetailsRaw = btn.attr('data-bag-details') || '';
+
+            // Clear previous content then set immediate donor info fallbacks only (we'll render bag details from server)
+            $('#view-donor-name').text(bDonorName || 'Loading...');
+            $('#view-donor-contact').text(bContact || '-');
+            $('#view-donor-address').text(bAddress || 'Not provided');
+            $('#view-donor-location').text((bLat && bLng) ? `${bLat}, ${bLng}` : '-');
+            $('#view-total-bags').text('Loading...');
+            $('#view-total-vol').text('Loading...');
+            // show loading row for bag details until AJAX finishes
+            $('#view-bag-details-body').html('<tr><td colspan="7" class="text-center text-muted">Loading details&hellip;</td></tr>');
+
+            // Helper to map storage short codes to readable labels
+            function mapStorageLabel(s) {
+                if (!s && s !== 0) return '-';
+                const str = String(s).toLowerCase();
+                if (str.indexOf('ref') !== -1 || str.indexOf('refrig') !== -1) return 'Refrigerator';
+                if (str.indexOf('freez') !== -1 || str.indexOf('frz') !== -1) return 'Freezer';
+                if (str.indexOf('room') !== -1 || str.indexOf('ambient') !== -1) return 'Room temperature';
+                // Fallback: capitalize words and replace underscores
+                return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            }
+
+            // Do NOT pre-render the bag details from the button fallback; always use server response so validated values show
+
+            // Show modal immediately for snappy UI, we'll fill content after fetch
+            const modalEl = document.getElementById('viewHomeDonationModal');
+            const bsModal = new bootstrap.Modal(modalEl, { keyboard: true });
+            bsModal.show();
+
+            // Fetch fresh details and overwrite fallbacks when available
             $.ajax({
-                url: `/admin/donations/${donationId}`,
+                url: `/admin/donations/${id}`,
                 method: 'GET',
-                success: function(response) {
-                    if (response.success && response.donation) {
-                        const donation = response.donation;
-                        
-                        // Populate donor information
-                        $('#view-donor-name').text(donation.donor_name || 'N/A');
-                        $('#view-donor-contact').text(donation.contact || 'N/A');
-                        $('#view-donor-address').text(donation.address || 'Not provided');
-                        
-                        // Handle location data
-                        if (donation.latitude && donation.longitude) {
-                            $('#view-location-btn').show().off('click').on('click', function() {
-                                showLocationModal(
-                                    donation.donor_name,
-                                    donation.address,
-                                    parseFloat(donation.latitude),
-                                    parseFloat(donation.longitude)
-                                );
-                            });
-                        } else {
-                            $('#view-location-none').show();
-                        }
-                        
-                        // Populate totals
-                        $('#view-total-bags').text(donation.number_of_bags || 0);
-                        $('#view-total-volume').text(donation.total_volume || 'N/A');
-                        
-                        // Populate bag details table
-                        const bagDetailsBody = $('#view-bag-details-body');
-                        bagDetailsBody.empty();
-                        
-                        if (donation.bag_details && donation.bag_details.length > 0) {
-                            donation.bag_details.forEach((bag, index) => {
-                                const bagNum = bag.bag_number || (index + 1);
-                                const volume = bag.volume || 0;
-                                const date = bag.date || donation.donation_date || 'N/A';
-                                const time = bag.time || donation.donation_time || 'N/A';
-                                const storage = bag.storage_location || '-';
-                                const temp = bag.temperature || '-';
-                                const method = bag.collection_method || '-';
-                                
-                                const row = `
-                                    <tr class="text-center">
-                                        <td>${bagNum}</td>
-                                        <td>${volume}</td>
-                                        <td>${date}</td>
-                                        <td>${time}</td>
-                                        <td>${storage}</td>
-                                        <td>${temp}</td>
-                                        <td>${method}</td>
+                dataType: 'json',
+                success: function (resp) {
+                    const donation = resp && resp.donation ? resp.donation : null;
+                    if (!donation) {
+                        $('#view-donor-name').text(bDonorName || 'N/A');
+                        return;
+                    }
+
+                    // Donor info
+                    const donorName = (donation.user && donation.user.first_name && donation.user.last_name) ? `${donation.user.first_name} ${donation.user.last_name}` : (donation.donor_name || bDonorName || 'N/A');
+                    const donorContact = donation.user?.contact_number || donation.user?.phone || donation.contact_number || bContact || '-';
+                    const donorAddress = donation.user?.address || donation.address || bAddress || 'Not provided';
+                    $('#view-donor-name').text(donorName);
+                    $('#view-donor-contact').text(donorContact);
+                    $('#view-donor-address').text(donorAddress);
+
+                    // Location: render map icon button if coordinates available, otherwise dash
+                    const lat = donation.latitude ?? donation.user?.latitude ?? bLat ?? null;
+                    const lng = donation.longitude ?? donation.user?.longitude ?? bLng ?? null;
+                    if (lat !== null && lng !== null && lat !== '' && lng !== '') {
+                        // Use same .view-location handler already present in the page
+                        const safeName = (donation.user && (donation.user.first_name || donation.user.last_name)) ? `${donation.user.first_name || ''} ${donation.user.last_name || ''}`.trim() : (donation.donor_name || bDonorName || 'Donor');
+                        const safeAddress = donation.user?.address || donation.address || bAddress || '';
+                        $('#view-donor-location').html(`<button class="btn btn-info btn-sm view-location" title="View on Map" data-donor-name="${$('<div>').text(safeName).html()}" data-donor-address="${$('<div>').text(safeAddress).html()}" data-latitude="${lat}" data-longitude="${lng}"><i class="fas fa-map-marked-alt"></i></button>`);
+                    } else {
+                        $('#view-donor-location').text('-');
+                    }
+
+                    // Totals
+                    const bags = donation.number_of_bags ?? (Array.isArray(donation.bag_details) ? donation.bag_details.length : bBags || '-');
+                    const totalVol = donation.total_volume ?? donation.formatted_total_volume ?? bTotal ?? '-';
+                    $('#view-total-bags').text(bags);
+                    $('#view-total-vol').text((totalVol !== null && totalVol !== undefined && totalVol !== '') ? `${totalVol} ml` : '-');
+
+                    // Bag details (overwrite)
+                    const tbody = $('#view-bag-details-body');
+                    tbody.empty();
+                    const bagDetails = donation.bag_details ?? donation.bags ?? [];
+                    if (!Array.isArray(bagDetails) || bagDetails.length === 0) {
+                        tbody.append('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
+                        return;
+                    }
+
+                    bagDetails.forEach(function (bag, i) {
+                        const bagNum = bag.bag_number ?? (i + 1);
+                        const volume = (typeof bag.volume !== 'undefined' && bag.volume !== null) ? bag.volume : (bag.vol ? bag.vol : '-');
+                        const date = bag.date ?? bag.collection_date ?? '-';
+                        const time = bag.time ?? bag.collection_time ?? '-';
+                        const storageRaw = bag.storage_location ?? bag.storage ?? '-';
+                        const storage = mapStorageLabel(storageRaw);
+                        const temp = (bag.temperature !== undefined && bag.temperature !== null) ? bag.temperature : '-';
+                        const method = bag.collection_method ?? bag.method ?? '-';
+
+                        const row = `
+                                    <tr>
+                                        <td class="text-center">${bagNum}</td>
+                                        <td class="text-center">${volume}</td>
+                                        <td class="text-center">${date}</td>
+                                        <td class="text-center">${time}</td>
+                                        <td class="text-center">${storage}</td>
+                                        <td class="text-center">${temp}</td>
+                                        <td class="text-center"><small>${method}</small></td>
                                     </tr>
                                 `;
-                                bagDetailsBody.append(row);
-                            });
-                        } else {
-                            // If no bag details, create rows based on number of bags
-                            const numBags = donation.number_of_bags || 0;
-                            if (numBags > 0) {
-                                for (let i = 1; i <= numBags; i++) {
-                                    const row = `
-                                        <tr class="text-center">
-                                            <td>${i}</td>
-                                            <td>120</td>
-                                            <td>${donation.donation_date || 'N/A'}</td>
-                                            <td>${donation.donation_time || 'N/A'}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                        </tr>
-                                    `;
-                                    bagDetailsBody.append(row);
-                                }
-                            } else {
-                                bagDetailsBody.append(`
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted">No bag details available</td>
-                                    </tr>
-                                `);
-                            }
-                        }
-                        
-                        // Show details, hide loading
-                        $('#donation-loading').hide();
-                        $('#donation-details').show();
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
+                        tbody.append(row);
+                    });
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching donation details:', error);
-                    $('#donation-loading').hide();
-                    $('#error-message').text(xhr.responseJSON?.message || 'Failed to load donation details. Please try again.');
-                    $('#donation-error').show();
+                error: function () {
+                    // keep any fallback values already rendered from button data
+                    if ($('#view-bag-details-body').children().length === 0) {
+                        $('#view-bag-details-body').empty().append('<tr><td colspan="7" class="text-center text-danger">Failed to load details</td></tr>');
+                    }
                 }
             });
         });
-        
-        // Reset modal when closed
-        $('#viewDonationModal').on('hidden.bs.modal', function() {
-            $('#donation-loading').show();
-            $('#donation-details').hide();
-            $('#donation-error').hide();
-            $('#view-bag-details-body').empty();
-            $('#view-location-btn').hide().off('click');
-            $('#view-location-none').hide();
-        });
     </script>
-    
+
     <script>
         function archiveDonation(id) {
             if (typeof Swal !== 'undefined') {
@@ -2832,7 +3258,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Yes, archive',
                     preConfirm: () => {
-                        return fetch(`/admin/donations/${id}/archive`, {
+                        return fetch(`/ admin / donations / ${id}/archive`, {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -2843,14 +3269,14 @@
                     }
                 }).then(result => {
                     if (result.isConfirmed) {
-                        Swal.fire('Archived', 'Donation archived successfully.', 'success').then(()=> location.reload());
+                        Swal.fire('Archived', 'Donation archived successfully.', 'success').then(() => location.reload());
                     }
-                }).catch(()=> Swal.fire('Error', 'Failed to archive donation', 'error'));
+                }).catch(() => Swal.fire('Error', 'Failed to archive donation', 'error'));
             } else {
                 if (!confirm('Archive donation?')) return;
                 fetch(`/admin/donations/${id}/archive`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(()=> location.reload())
-                    .catch(()=> alert('Failed to archive'));
+                    .then(() => location.reload())
+                    .catch(() => alert('Failed to archive'));
             }
         }
     </script>
@@ -2875,14 +3301,14 @@
                     }
                 }).then(result => {
                     if (result.isConfirmed) {
-                        Swal.fire('Restored', 'Donation restored successfully.', 'success').then(()=> location.reload());
+                        Swal.fire('Restored', 'Donation restored successfully.', 'success').then(() => location.reload());
                     }
-                }).catch(()=> Swal.fire('Error', 'Failed to restore donation', 'error'));
+                }).catch(() => Swal.fire('Error', 'Failed to restore donation', 'error'));
             } else {
                 if (!confirm('Restore donation?')) return;
                 fetch(`/admin/donations/${id}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(()=> location.reload())
-                    .catch(()=> alert('Failed to restore'));
+                    .then(() => location.reload())
+                    .catch(() => alert('Failed to restore'));
             }
         }
     </script>
@@ -2916,31 +3342,31 @@
                             },
                             body: JSON.stringify({ reason })
                         })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data && data.success) {
-                                Swal.fire('Declined', data.message || 'Donation declined successfully.', 'success')
-                                    .then(()=> location.reload());
-                            } else {
-                                Swal.fire('Error', (data && data.message) || 'Failed to decline donation', 'error');
-                            }
-                        })
-                        .catch(()=> Swal.fire('Error', 'Failed to decline donation', 'error'));
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data && data.success) {
+                                    Swal.fire('Declined', data.message || 'Donation declined successfully.', 'success')
+                                        .then(() => location.reload());
+                                } else {
+                                    Swal.fire('Error', (data && data.message) || 'Failed to decline donation', 'error');
+                                }
+                            })
+                            .catch(() => Swal.fire('Error', 'Failed to decline donation', 'error'));
                     }
                 });
             } else {
                 const reason = prompt('Enter reason for declining:');
                 if (!reason || reason.trim() === '') return;
-                fetch(`/admin/donations/${id}/decline`, { 
-                    method: 'POST', 
-                    headers: { 
+                fetch(`/admin/donations/${id}/decline`, {
+                    method: 'POST',
+                    headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ reason: reason.trim() })
                 })
-                .then(()=> location.reload())
-                .catch(()=> alert('Failed to decline donation'));
+                    .then(() => location.reload())
+                    .catch(() => alert('Failed to decline donation'));
             }
         }
     </script>

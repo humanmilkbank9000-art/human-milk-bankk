@@ -147,7 +147,7 @@ class BreastmilkRequestController extends Controller
             ->get();
 
         $dispensedRequests = BreastmilkRequest::where('status', 'dispensed')
-            ->with(['user', 'infant', 'availability', 'dispensedMilk'])
+            ->with(['user', 'infant', 'availability', 'dispensedMilk.sourceDonations.user', 'dispensedMilk.sourceBatches'])
             ->orderBy('dispensed_at', 'desc')
             ->get();
 

@@ -6,6 +6,27 @@
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/table-layout-standard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
+    <style>
+        /* Ensure bag labels and corresponding volumes stack and align */
+        .bags-column,
+        .volumes-column {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+        .bag-item,
+        .volume-item {
+            padding: 2px 0;
+            min-width: 56px;
+            box-sizing: border-box;
+        }
+        /* Keep text compact on small screens */
+        @media (max-width: 576px) {
+            .bag-item, .volume-item { font-size: 0.85rem; }
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -29,7 +50,7 @@
                             <thead>
                                 <tr>
                                     <th class="text-center">Donation Type</th>
-                                    <th class="text-center">Number of Bags</th>
+                                    <th class="text-center">Bags</th>
                                     <th class="text-center">Volume per Bag</th>
                                     <th class="text-center">Total Volume</th>
                                     <th class="text-center">Date</th>
@@ -46,16 +67,44 @@
                                                 {{ $donation->donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection' }}
                                             </span>
                                         </td>
-                                        <td data-label="Number of Bags" class="text-center">
-                                            @if($donation->number_of_bags)
-                                                {{ $donation->number_of_bags }}
+
+                                        <td data-label="Bags" class="text-center align-top">
+                                            @php
+                                                // Prefer individual_bag_volumes (set when validated). If not present,
+                                                // fall back to bag_details volumes saved at submission time.
+                                                $bagVolumes = $donation->individual_bag_volumes ?? [];
+                                                if (empty($bagVolumes) && !empty($donation->bag_details) && is_array($donation->bag_details)) {
+                                                    $bagVolumes = array_map(function($d) { return isset($d['volume']) ? $d['volume'] : null; }, $donation->bag_details);
+                                                }
+                                                $bagCount = $donation->number_of_bags ?? count(array_filter($bagVolumes));
+                                            @endphp
+                                            @if($bagCount > 0)
+                                                <div class="bags-column">
+                                                    @for($i = 1; $i <= $bagCount; $i++)
+                                                        <div class="bag-item">Bag {{ $i }}</div>
+                                                    @endfor
+                                                </div>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td data-label="Volume per Bag" class="text-center">
-                                            @if($donation->individual_bag_volumes && count($donation->individual_bag_volumes) > 0)
-                                                <small>{{ $donation->formatted_bag_volumes }}</small>
+                                        <td data-label="Volume per Bag" class="text-center align-top">
+                                            @if(!empty($bagVolumes) && count($bagVolumes) > 0)
+                                                <div class="volumes-column">
+                                                    @foreach($bagVolumes as $vol)
+                                                        @if(is_null($vol) || $vol === '')
+                                                            <div class="volume-item text-muted">-</div>
+                                                        @else
+                                                            <div class="volume-item">{{ (float)$vol == (int)$vol ? (int)$vol : rtrim(rtrim(number_format((float)$vol, 2, '.', ''), '0'), '.') }} ml</div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                            @elseif($bagCount > 0)
+                                                <div class="volumes-column">
+                                                    @for($i = 1; $i <= $bagCount; $i++)
+                                                        <div class="volume-item text-muted">-</div>
+                                                    @endfor
+                                                </div>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif

@@ -174,14 +174,25 @@ class DonationService
                 $newDetails = [];
                 for ($i = 0; $i < count($vols); $i++) {
                     $existing = $bagDetails[$i] ?? [];
+
+                    // Prefer admin-edited values from the request payload when present,
+                    // otherwise fall back to existing bag details or sensible defaults.
+                    $bagNumber = $data['bag_number'][$i] ?? $existing['bag_number'] ?? ($i + 1);
+                    $bagTime = $data['bag_time'][$i] ?? $existing['time'] ?? null;
+                    $bagDate = $data['bag_date'][$i] ?? $existing['date'] ?? null;
+                    $bagVolume = (float)$vols[$i];
+                    $bagStorage = $data['bag_storage'][$i] ?? $existing['storage_location'] ?? null;
+                    $bagTemp = $data['bag_temp'][$i] ?? $existing['temperature'] ?? null;
+                    $bagMethod = $data['bag_method'][$i] ?? $existing['collection_method'] ?? null;
+
                     $newDetails[$i] = [
-                        'bag_number' => $existing['bag_number'] ?? ($i + 1),
-                        'time' => $existing['time'] ?? null,
-                        'date' => $existing['date'] ?? null,
-                        'volume' => (float)$vols[$i],
-                        'storage_location' => $existing['storage_location'] ?? null,
-                        'temperature' => $existing['temperature'] ?? null,
-                        'collection_method' => $existing['collection_method'] ?? null,
+                        'bag_number' => $bagNumber,
+                        'time' => $bagTime,
+                        'date' => $bagDate,
+                        'volume' => $bagVolume,
+                        'storage_location' => $bagStorage,
+                        'temperature' => $bagTemp,
+                        'collection_method' => $bagMethod,
                     ];
                 }
 
@@ -244,6 +255,39 @@ class DonationService
             throw new \RuntimeException('Number of bag volumes must match the number of bags');
         }
 
+        // If admin provided corrected volumes, update bag_details to reflect finalized volumes
+        if (!empty($data['bag_volumes']) && is_array($data['bag_volumes'])) {
+            $vols = array_values(array_filter($data['bag_volumes'], function ($v) {
+                return $v !== null && $v !== '' && is_numeric($v) && (float)$v >= 0;
+            }));
+
+            if (count($vols) > 0) {
+                $bagDetails = $donation->bag_details ?? [];
+                $newDetails = [];
+                for ($i = 0; $i < count($vols); $i++) {
+                    $existing = $bagDetails[$i] ?? [];
+                    $newDetails[$i] = [
+                        'bag_number' => $existing['bag_number'] ?? ($i + 1),
+                        'time' => $existing['time'] ?? null,
+                        'date' => $existing['date'] ?? null,
+                        'volume' => (float)$vols[$i],
+                        'storage_location' => $existing['storage_location'] ?? null,
+                        'temperature' => $existing['temperature'] ?? null,
+                        'collection_method' => $existing['collection_method'] ?? null,
+                    ];
+                }
+
+                $donation->bag_details = $newDetails;
+                $donation->number_of_bags = count($vols);
+
+                // Recompute totals so bag_details and individual_bag_volumes stay in sync
+                $total = array_sum($vols);
+                $donation->total_volume = $total;
+                $donation->available_volume = $total;
+            }
+        }
+
+        // Keep individual_bag_volumes in sync as well
         $donation->setBagVolumes($data['bag_volumes']);
         $donation->status = 'success_home_collection';
         $donation->save();

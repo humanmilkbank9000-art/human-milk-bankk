@@ -89,20 +89,48 @@ class DispensedMilk extends Model
 
     public function isFromUnpasteurized(): bool
     {
-        // If any related sourceDonations exist, consider it unpasteurized
+        // If the relation is already loaded, avoid an extra DB query by checking the collection
+        if ($this->relationLoaded('sourceDonations')) {
+            return ($this->sourceDonations instanceof \Illuminate\Database\Eloquent\Collection)
+                ? $this->sourceDonations->isNotEmpty()
+                : !empty($this->sourceDonations);
+        }
+
+        // Otherwise fall back to the efficient exists() check
         return $this->sourceDonations()->exists();
     }
 
     public function isFromPasteurized(): bool
     {
+        if ($this->relationLoaded('sourceBatches')) {
+            return ($this->sourceBatches instanceof \Illuminate\Database\Eloquent\Collection)
+                ? $this->sourceBatches->isNotEmpty()
+                : !empty($this->sourceBatches);
+        }
+
         return $this->sourceBatches()->exists();
     }
 
     // Derive milk_type based on attached sources
     public function getMilkTypeAttribute(): ?string
     {
-        if ($this->sourceDonations()->exists()) return 'unpasteurized';
-        if ($this->sourceBatches()->exists()) return 'pasteurized';
+        // Prefer using loaded relations to avoid extra exists() queries
+        if ($this->relationLoaded('sourceDonations')) {
+            if (($this->sourceDonations instanceof \Illuminate\Database\Eloquent\Collection) ? $this->sourceDonations->isNotEmpty() : !empty($this->sourceDonations)) {
+                return 'unpasteurized';
+            }
+        } else {
+            if ($this->sourceDonations()->exists()) return 'unpasteurized';
+        }
+
+        if ($this->relationLoaded('sourceBatches')) {
+            if (($this->sourceBatches instanceof \Illuminate\Database\Eloquent\Collection) ? $this->sourceBatches->isNotEmpty() : !empty($this->sourceBatches)) {
+                return 'pasteurized';
+            }
+        } else {
+            if ($this->sourceBatches()->exists()) return 'pasteurized';
+        }
+
         return null;
     }
 
