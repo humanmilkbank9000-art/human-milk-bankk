@@ -144,6 +144,18 @@ class DonationService
         }
 
         $donation->setBagVolumes($data['bag_volumes']);
+
+        // Stamp actual collection time/date at validation for walk-in donations
+        // Keep existing donation_date if already set (usually the scheduled walk-in date)
+        // Always set the collection time to now so inventory shows the true collection time
+        try {
+            $nowManila = now()->timezone('Asia/Manila');
+            $donation->donation_time = $nowManila->format('H:i:s');
+        } catch (\Exception $e) {
+            // Fallback to app timezone if timezone conversion fails
+            $donation->donation_time = now()->format('H:i:s');
+        }
+
         $donation->status = 'success_walk_in';
         $donation->save();
         $donation->addToInventory();

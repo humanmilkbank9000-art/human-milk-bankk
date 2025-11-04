@@ -646,33 +646,61 @@
                                                     </td>
                                                     <td class="text-center align-top" style="white-space: nowrap;" data-label="Date">
                                                         <div class="per-bag-list text-start">
+                                                            @php
+                                                                $bagDetails = is_array($donation->bag_details ?? null) ? $donation->bag_details : [];
+                                                                $isWalkIn = ($donation->donation_method ?? '') === 'walk_in';
+                                                            @endphp
                                                             @for ($i = 0; $i < $bagsCount; $i++)
-                                                                <div><small>
-                                                                    @if($donation->donation_date)
-                                                                        {{ $donation->donation_date->format('M d, Y') }}
-                                                                    @elseif($donation->scheduled_pickup_date)
-                                                                        {{ $donation->scheduled_pickup_date->format('M d, Y') }}
-                                                                    @else
-                                                                        -
-                                                                    @endif
-                                                                </small></div>
+                                                                @php
+                                                                    $displayDate = null;
+                                                                    if ($isWalkIn && !empty($donation->added_to_inventory_at)) {
+                                                                        // For walk-in, prefer the time it was added to inventory (validation time)
+                                                                        try { $displayDate = \Carbon\Carbon::parse($donation->added_to_inventory_at)->timezone('Asia/Manila')->format('M d, Y'); } catch (\Exception $e) { $displayDate = (string)$donation->added_to_inventory_at; }
+                                                                    } else {
+                                                                        $perBagDate = $bagDetails[$i]['date'] ?? null;
+                                                                        if ($perBagDate) {
+                                                                            try { $displayDate = \Carbon\Carbon::parse($perBagDate)->format('M d, Y'); } catch (\Exception $e) { $displayDate = $perBagDate; }
+                                                                        } elseif (!empty($donation->donation_date)) {
+                                                                            try { $displayDate = $donation->donation_date->format('M d, Y'); } catch (\Exception $e) { $displayDate = (string)$donation->donation_date; }
+                                                                        } elseif (!empty($donation->scheduled_pickup_date)) {
+                                                                            try { $displayDate = $donation->scheduled_pickup_date->format('M d, Y'); } catch (\Exception $e) { $displayDate = (string)$donation->scheduled_pickup_date; }
+                                                                        } elseif (!empty($donation->added_to_inventory_at)) {
+                                                                            try { $displayDate = \Carbon\Carbon::parse($donation->added_to_inventory_at)->timezone('Asia/Manila')->format('M d, Y'); } catch (\Exception $e) { $displayDate = (string)$donation->added_to_inventory_at; }
+                                                                        }
+                                                                    }
+                                                                @endphp
+                                                                <div><small>{{ $displayDate ?? '-' }}</small></div>
                                                             @endfor
                                                         </div>
                                                     </td>
                                                     <td class="text-center align-top" style="white-space: nowrap;" data-label="Time">
                                                         <div class="per-bag-list text-start">
+                                                            @php
+                                                                $bagDetails = $bagDetails ?? (is_array($donation->bag_details ?? null) ? $donation->bag_details : []);
+                                                                $isWalkIn = isset($isWalkIn) ? $isWalkIn : (($donation->donation_method ?? '') === 'walk_in');
+                                                            @endphp
                                                             @for ($i = 0; $i < $bagsCount; $i++)
-                                                                <div><small>
-                                                                    @if($donation->availability)
-                                                                        {{ $donation->availability->formatted_time }}
-                                                                    @elseif($donation->donation_time)
-                                                                        {{ \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
-                                                                    @elseif($donation->scheduled_pickup_time)
-                                                                        {{ $donation->scheduled_pickup_time }}
-                                                                    @else
-                                                                        -
-                                                                    @endif
-                                                                </small></div>
+                                                                @php
+                                                                    $displayTime = null;
+                                                                    if ($isWalkIn && !empty($donation->added_to_inventory_at)) {
+                                                                        // For walk-in, prefer the time it was added to inventory (validation time)
+                                                                        try { $displayTime = \Carbon\Carbon::parse($donation->added_to_inventory_at)->timezone('Asia/Manila')->format('g:i A'); } catch (\Exception $e) { $displayTime = (string)$donation->added_to_inventory_at; }
+                                                                    } else {
+                                                                        $perBagTime = $bagDetails[$i]['time'] ?? null;
+                                                                        if ($perBagTime) {
+                                                                            try { $displayTime = \Carbon\Carbon::parse($perBagTime)->format('g:i A'); } catch (\Exception $e) { $displayTime = $perBagTime; }
+                                                                        } elseif (!empty($donation->availability) && !empty($donation->availability->formatted_time)) {
+                                                                            $displayTime = $donation->availability->formatted_time;
+                                                                        } elseif (!empty($donation->donation_time)) {
+                                                                            try { $displayTime = \Carbon\Carbon::parse($donation->donation_time)->format('g:i A'); } catch (\Exception $e) { $displayTime = (string)$donation->donation_time; }
+                                                                        } elseif (!empty($donation->scheduled_pickup_time)) {
+                                                                            $displayTime = $donation->scheduled_pickup_time;
+                                                                        } elseif (!empty($donation->added_to_inventory_at)) {
+                                                                            try { $displayTime = \Carbon\Carbon::parse($donation->added_to_inventory_at)->timezone('Asia/Manila')->format('g:i A'); } catch (\Exception $e) { $displayTime = (string)$donation->added_to_inventory_at; }
+                                                                        }
+                                                                    }
+                                                                @endphp
+                                                                <div><small>{{ $displayTime ?? '-' }}</small></div>
                                                             @endfor
                                                         </div>
                                                     </td>
