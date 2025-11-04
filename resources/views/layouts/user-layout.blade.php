@@ -45,6 +45,13 @@
             --success-color: #198754;
             --warning-color: #ffc107;
             --danger-color: #dc3545;
+            /* Dashboard palette */
+            --blue-400: #3b82f6;
+            --blue-600: #2563eb;
+            --pink-400: #ff6fa8;
+            --pink-600: #e83e8c;
+            --green-400: #34d399;
+            --green-600: #16a34a;
         }
 
         body {
@@ -95,17 +102,36 @@
             background: #eef6ff;
         }
 
-        /* User-scoped pink theme for tables and card headers (applies to content area only) */
+        /* User-scoped admin-style pink theme for card headers and tables */
+        /* Card headers: gradient like admin */
+        .content .card-header {
+            background: linear-gradient(180deg, #ff93c1 0%, #ff7fb3 100%) !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+        }
+        /* Ensure titles inside card headers are white */
+        .content .card-header h1,
+        .content .card-header h2,
+        .content .card-header h3,
+        .content .card-header h4,
+        .content .card-header h5,
+        .content .card-header h6,
+        .content .card-header .card-title {
+            color: #ffffff !important;
+        }
+        /* Ensure utility bg classes don't override the gradient */
         .content .card-header.bg-primary,
-        .content .card-header.bg-info,
-        .content .card-header.bg-secondary {
-            background: #ff93c1 !important; /* flat pink */
-            border-bottom: 1px solid rgba(255,111,166,0.18) !important;
+        .content .card-header.bg-success,
+        .content .card-header.bg-warning,
+        .content .card-header.bg-secondary,
+        .content .card-header.bg-info {
+            background: linear-gradient(180deg, #ff93c1 0%, #ff7fb3 100%) !important;
             color: #ffffff !important;
         }
 
+        /* Table header: pink gradient with white titles (admin-like) */
         .content .table-standard thead th {
-            background: #ff93c1 !important; /* flat pink */
+            background: linear-gradient(180deg, #ff93c1 0%, #ff7fb3 100%) !important;
             color: #ffffff !important;
             font-weight: 700;
             border-bottom: 0 !important;
@@ -121,13 +147,22 @@
             padding: 0.7rem 0.8rem;
         }
 
+        /* Keep subtle pink zebra and hover inside user tables */
         .content .table-standard tbody tr:nth-child(even) {
-            background: rgba(255, 223, 234, 0.55) !important; /* subtle pink */
+            background: rgba(255, 223, 234, 0.40) !important; /* subtle pink */
         }
 
         .content .table-standard tbody tr:hover {
-            background: rgba(255, 207, 224, 0.95) !important;
+            background: rgba(255, 207, 224, 0.90) !important;
         }
+
+        /* Modals on user pages: match admin pink gradient header */
+        .modal .modal-header {
+            background: linear-gradient(180deg, #ff93c1 0%, #ff7fb3 100%) !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+        }
+        .modal .modal-header .btn-close { filter: invert(1) brightness(1.2) !important; }
 
         /* Optional: apply pink accent to small badges inside user tables */
         .content .badge-status.accepted { background: rgba(25,135,84,0.12); color: #198754; }
@@ -196,6 +231,14 @@
             padding: 1rem 1.5rem;
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
+        }
+
+        /* Accessible focus ring utility */
+        .focus-ring,
+        .focus-ring:focus,
+        .focus-ring:focus-visible {
+            outline: 3px solid var(--blue-400);
+            outline-offset: 2px;
         }
 
         /* Modal sizes - responsive */

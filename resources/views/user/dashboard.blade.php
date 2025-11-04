@@ -62,7 +62,7 @@
       }
     }
 
-    /* Dashboard Statistics Cards - Solid Colors (No Gradients) */
+  /* Dashboard Statistics Cards - Refreshed non-pink gradients to complement theme */
     .stats-container {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -71,8 +71,7 @@
     }
 
     .stat-card {
-      background: #667eea;
-      /* Solid purple */
+      background: linear-gradient(135deg, #6366f1, #4f46e5); /* indigo base */
       border-radius: 0.75rem;
       padding: 1rem;
       color: white;
@@ -89,23 +88,22 @@
 
     .stat-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 22px rgba(79, 70, 229, 0.18);
     }
 
-    .stat-card.donations {
-      background: #667eea;
-      /* Solid purple */
-    }
+    /* Per-card tinted hover + focus for accessibility */
+    .stat-card.donations:hover { box-shadow: 0 8px 22px rgba(37, 99, 235, 0.28); }
+    .stat-card.volume:hover    { box-shadow: 0 8px 22px rgba(232, 62, 140, 0.28); }
+    .stat-card.infants:hover   { box-shadow: 0 8px 22px rgba(22, 163, 74, 0.28); }
+    .stat-card:focus-visible   { outline: 3px solid var(--blue-400); outline-offset: 2px; }
+    .stat-card.donations:focus-visible { outline-color: var(--blue-400); }
+    .stat-card.volume:focus-visible    { outline-color: var(--pink-400); }
+    .stat-card.infants:focus-visible   { outline-color: var(--green-400); }
 
-    .stat-card.volume {
-      background: #f5576c;
-      /* Solid pink-red */
-    }
-
-    .stat-card.infants {
-      background: #00d4ff;
-      /* Solid cyan-blue */
-    }
+  /* Align with admin palette: blue, pink, green */
+  .stat-card.donations { background: var(--blue-600); } /* blue */
+  .stat-card.volume    { background: var(--pink-600); } /* pink */
+  .stat-card.infants   { background: var(--green-600); } /* green */
 
     .stat-card-icon {
       font-size: 1.8rem;
@@ -195,29 +193,42 @@
       }
     }
 
-    /* Motivational Message - Solid Color */
+    /* Motivational Message - polished, subtle gradient with accent and icon pill */
     .motivational-message {
-      background: rgba(102, 126, 234, 0.1);
-      /* Solid light purple */
-      border-left: 4px solid #667eea;
-      padding: 1rem 1.25rem;
-      border-radius: 0.5rem;
+      background: linear-gradient(135deg, #f0f9ff 0%, #eef2ff 100%);
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      border-left: 5px solid #2563eb;
+      padding: 0.9rem 1.1rem;
+      border-radius: 12px;
       margin-bottom: 1.25rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.06);
     }
 
     .motivational-icon {
-      font-size: 1.5rem;
-      color: #667eea;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(37, 99, 235, 0.15);
+      color: #2563eb;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.10);
+      flex-shrink: 0;
     }
 
+    .motivational-icon i { font-size: 1.05rem; line-height: 1; }
+
     .motivational-text {
-      font-size: 0.95rem;
+      font-size: 0.98rem;
       font-weight: 600;
-      color: #333;
+      color: #0f172a;
       margin: 0;
+      letter-spacing: 0.2px;
     }
 
     /* Responsive adjustments - maintain horizontal layout */

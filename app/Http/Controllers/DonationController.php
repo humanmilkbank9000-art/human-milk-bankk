@@ -182,8 +182,10 @@ class DonationController extends Controller
             ->with(['availability'])
             ->orderBy('created_at', 'desc')
             ->get();
-        
-        return view('user.pending-donation', compact('pendingDonations'));
+        // Also load available dates for rescheduling walk-in
+        $availableDates = app(\App\Services\AvailabilityService::class)->listAvailableDates();
+
+        return view('user.pending-donation', compact('pendingDonations', 'availableDates'));
     }
 
     public function user_my_donation_history() {
@@ -542,5 +544,126 @@ class DonationController extends Controller
             ->get();
 
         return view('user.my-requests', compact('requests'));
+    }
+
+    // ==================== USER ACTIONS ON PENDING DONATIONS ====================
+    /**
+     * Allow a user to reschedule their pending walk-in donation to another available date.
+     */
+    public function userRescheduleWalkIn(Request $request, $id)
+    {
+        if (!Session::has('account_id') || Session::get('account_role') !== 'user') {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Please login first.'], 401);
+            }
+            return redirect()->route('login')->with('error', 'Please login first.');
+        }
+
+        $userId = Session::get('account_id');
+
+        $validated = $request->validate([
+            'availability_id' => 'required|integer|exists:admin_availability,id',
+            'appointment_date' => 'required|date',
+        ]);
+
+        try {
+            $donation = Donation::where('breastmilk_donation_id', $id)
+                ->where('user_id', $userId)
+                ->firstOrFail();
+
+            if ($donation->status !== 'pending_walk_in' || $donation->donation_method !== 'walk_in') {
+                throw new \RuntimeException('Only pending walk-in donations can be rescheduled.');
+            }
+
+            // Ensure selected availability is still available and bookable for the chosen date
+            $availability = \App\Models\Availability::where('id', $validated['availability_id'])
+                ->where('available_date', $validated['appointment_date'])
+                ->available()
+                ->future()
+                ->first();
+
+            if (!$availability) {
+                throw new \RuntimeException('The selected date is no longer available. Please choose another.');
+            }
+
+            // Update the donation with the new date (we do not mark availability as booked per current design)
+            $donation->availability_id = $availability->id;
+            $donation->donation_date = $availability->available_date;
+            // Do NOT write human-friendly strings like "9:00 AM" into a TIME column.
+            // Leave donation_time unchanged; UI displays Availability::formatted_time when availability exists.
+            $donation->save();
+
+            // Optional: notify admins of reschedule
+            try {
+                $admins = \App\Models\Admin::all();
+                foreach ($admins as $admin) {
+                    $admin->notify(new \App\Notifications\SystemAlert('Donation Rescheduled (Walk-in)', 'A user rescheduled their walk-in donation.'));
+                }
+            } catch (\Throwable $e) {
+                // Non-fatal
+            }
+
+            $msg = 'Your walk-in appointment was rescheduled to ' . \Carbon\Carbon::parse($availability->available_date)->format('M d, Y') . '.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $msg]);
+            }
+            return redirect()->route('user.pending')->with('success', $msg);
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            }
+            return redirect()->route('user.pending')->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Allow a user to cancel their pending donation (walk-in or home collection).
+     */
+    public function userCancelDonation(Request $request, $id)
+    {
+        if (!Session::has('account_id') || Session::get('account_role') !== 'user') {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Please login first.'], 401);
+            }
+            return redirect()->route('login')->with('error', 'Please login first.');
+        }
+
+        $userId = Session::get('account_id');
+
+        try {
+            $donation = Donation::where('breastmilk_donation_id', $id)
+                ->where('user_id', $userId)
+                ->firstOrFail();
+
+            if (!in_array($donation->status, ['pending_walk_in', 'pending_home_collection', 'scheduled_home_collection'])) {
+                throw new \RuntimeException('Only pending or scheduled donations can be canceled.');
+            }
+
+            $donation->status = 'canceled';
+            $donation->decline_reason = 'Canceled by user';
+            $donation->declined_at = now();
+            $donation->save();
+
+            // Optional: notify admins
+            try {
+                $admins = \App\Models\Admin::all();
+                foreach ($admins as $admin) {
+                    $admin->notify(new \App\Notifications\SystemAlert('Donation Canceled', 'A user canceled their pending donation request.'));
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+
+            $msg = 'Your donation request has been canceled.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $msg]);
+            }
+            return redirect()->route('user.pending')->with('success', $msg);
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            }
+            return redirect()->route('user.pending')->with('error', $e->getMessage());
+        }
     }
 }

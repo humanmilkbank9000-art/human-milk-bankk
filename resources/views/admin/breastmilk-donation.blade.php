@@ -781,11 +781,6 @@
                                                     <small>
                                                         @if($donation->donation_method === 'walk_in')
                                                             {{ $donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A' }}
-                                                            @if($donation->availability)
-                                                                <br>{{ $donation->availability->formatted_time }}
-                                                            @elseif($donation->donation_time)
-                                                                <br>{{ \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
-                                                            @endif
                                                         @else
                                                             {{ $donation->created_at->format('M d, Y') }}<br>{{ $donation->created_at->format('g:i A') }}
                                                         @endif
@@ -879,11 +874,6 @@
                                         <span class="card-value">
                                             @if($donation->donation_method === 'walk_in')
                                                 {{ $donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A' }}
-                                                @if($donation->availability)
-                                                    <br>{{ $donation->availability->formatted_time }}
-                                                @elseif($donation->donation_time)
-                                                    <br>{{ \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
-                                                @endif
                                             @else
                                                 {{ $donation->created_at->format('M d, Y') }}<br>{{ $donation->created_at->format('g:i A') }}
                                             @endif
@@ -945,7 +935,6 @@
                                             <th class="text-center">Address</th>
                                             <th class="text-center">Location</th>
                                             <th class="text-center">Date</th>
-                                            <th class="text-center">Time</th>
                                             <th class="text-center">Total volume</th>
                                             <th class="text-center">Action</th>
                                         </tr>
@@ -1085,9 +1074,6 @@
                                                 </td>
                                                 <td data-label="Date" class="text-center">
                                                     <small>{{ $donation->updated_at ? $donation->updated_at->format('M d, Y') : ($donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A') }}</small>
-                                                </td>
-                                                <td data-label="Time" class="text-center">
-                                                    <small>{{ $donation->updated_at ? $donation->updated_at->format('g:i A') : (isset($donation->donation_time) ? \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') : 'N/A') }}</small>
                                                 </td>
                                                 <td data-label="Action" class="text-center">
                                                     <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap"

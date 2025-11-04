@@ -26,11 +26,27 @@
         @media (max-width: 576px) {
             .bag-item, .volume-item { font-size: 0.85rem; }
         }
+        /* Calendar styles (reused) */
+        .calendar-container { border: 1px solid #dee2e6; border-radius: 12px; overflow: visible; max-width: 480px; width: 100%; margin: 0 auto 24px auto; box-shadow: 0 2px 16px rgba(0,0,0,0.06); background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .calendar-header { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; background-color: #f8f9fa; padding: 18px 24px; border-bottom: 1px solid #dee2e6; width: 100%; }
+        .calendar-nav-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 5px 10px; border-radius: 4px; transition: background-color 0.2s; }
+        .calendar-nav-btn:hover { background-color: #e9ecef; }
+        .calendar-month-year { font-weight: bold; font-size: 1.1rem; text-align: center; white-space: nowrap; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); background-color: white; width: 100%; min-width: 350px; max-width: 480px; margin: 0 auto; }
+        .calendar-day-header { background-color: #e9ecef; padding: 10px 0; text-align: center; font-weight: bold; font-size: 0.95rem; border-bottom: 1px solid #dee2e6; }
+        @media (max-width: 576px) { .calendar-container { max-width: 100%; } .calendar-grid { min-width: 100%; max-width: 100%; } .calendar-header { padding: 12px 16px; } .calendar-month-year { font-size: 1rem; } }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: all 0.2s; position: relative; }
+        .calendar-day:nth-child(7n) { border-right: none; }
+        .calendar-day.available { background-color: #e8f5e8; color: #155724; font-weight: 500; }
+        .calendar-day.available:hover { background-color: #d4edda; transform: scale(1.05); }
+        .calendar-day.unavailable { background-color: #f8f9fa; color: #6c757d; cursor: not-allowed; }
+        .calendar-day.past { background-color: #f8f9fa; color: #adb5bd; cursor: not-allowed; }
+        .calendar-day.selected { background-color: #ff89ceff !important; color: white !important; font-weight: bold; transform: scale(1.1); z-index: 10; }
     </style>
 @endsection
 
 @section('content')
-    <div class="container-fluid page-container-standard">
+    <div id="pending-donations-page" class="container-fluid page-container-standard">
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -41,12 +57,12 @@
 
         @if($pendingDonations->count() > 0)
             <div class="card card-standard">
-                <div class="card-header">
+                <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Your Pending Donations</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-container">
-                        <table class="table table-striped table-hover">
+                        <table class="table table-standard table-hover">
                             <thead>
                                 <tr>
                                     <th class="text-center">Donation Type</th>
@@ -54,8 +70,8 @@
                                     <th class="text-center">Volume per Bag</th>
                                     <th class="text-center">Total Volume</th>
                                     <th class="text-center">Date</th>
-                                    <th class="text-center">Time</th>
                                     <th class="text-center">Status</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -125,16 +141,8 @@
                                                 <span class="text-muted">To be scheduled</span>
                                             @endif
                                         </td>
-                                        <td data-label="Time" class="text-center">
-                                            @if($donation->donation_time)
-                                                {{ $donation->availability ? $donation->availability->formatted_time : \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') }}
-                                            @elseif($donation->scheduled_pickup_time)
-                                                {{ \Carbon\Carbon::parse($donation->scheduled_pickup_time)->format('g:i A') }}
-                                            @else
-                                                <span class="text-muted">To be scheduled</span>
-                                            @endif
-                                        </td>
-                                        <td data-label="Status" class="text-center">
+                                        {{-- Time column removed for walk-in availability (date-only). For pickup, time may be shown elsewhere if needed. --}}
+                                        <td data-label="Status" class="text-center align-middle">
                                             @php
                                                 $statusColors = [
                                                     'pending_walk_in' => 'warning',
@@ -150,9 +158,23 @@
                                             <span class="badge bg-{{ $statusColors[$donation->status] ?? 'secondary' }}">
                                                 {{ $statusLabels[$donation->status] ?? ucfirst(str_replace('_', ' ', $donation->status)) }}
                                             </span>
+                                        </td>
+                                        <td data-label="Actions" class="text-center align-middle">
                                             @if($donation->status === 'pending_walk_in')
-                                            @elseif($donation->status === 'pending_home_collection')
-                                            @elseif($donation->status === 'scheduled_home_collection')
+                                                <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="openRescheduleModal({{ $donation->breastmilk_donation_id }})">
+                                                    Reschedule
+                                                </button>
+                                                <form action="{{ route('user.donation.cancel', $donation->breastmilk_donation_id) }}" method="POST" class="d-inline" onsubmit="return confirmCancel(event)">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                                </form>
+                                            @elseif(in_array($donation->status, ['pending_home_collection','scheduled_home_collection']))
+                                                <form action="{{ route('user.donation.cancel', $donation->breastmilk_donation_id) }}" method="POST" class="d-inline" onsubmit="return confirmCancel(event)">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                                </form>
+                                            @else
+                                                <span class="text-muted">—</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -186,5 +208,181 @@
                 </div>
             </div>
         @endif
+        {{-- Reschedule Walk-in Modal (single, reused) --}}
+        <div class="modal fade" id="rescheduleWalkInModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Reschedule Walk-in</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1);"></button>
+                    </div>
+                    <form id="rescheduleForm" method="POST">
+                        @csrf
+                        <input type="hidden" name="availability_id" id="res_availability_id">
+                        <input type="hidden" name="appointment_date" id="res_selected_date">
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                Select a new date from the calendar below. Only highlighted dates are available.
+                            </div>
+                            <div id="reschedule-calendar" class="calendar-container"></div>
+                            <small id="res-slot-status" class="mt-2 d-block text-muted">Select a highlighted date to check availability.</small>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" id="reschedule-submit-btn" class="btn btn-primary" disabled>Confirm Reschedule</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>{{-- Close container-fluid --}}
+@endsection
+
+@section('scripts')
+<script>
+    // Availability and slots endpoint reused from donation page
+    const RES_SLOTS_URL = "{{ route('admin.availability.slots') }}";
+    let resAvailableDates = @json($availableDates ?? []);
+    let resSelectedDate = null;
+    let resSelectedSlotId = null;
+    let resCurrentMonth = new Date().getMonth();
+    let resCurrentYear = new Date().getFullYear();
+    let resDonationId = null;
+
+    function toLocalYMD(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function renderRescheduleCalendar() {
+        const cal = document.getElementById('reschedule-calendar');
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+        const firstDay = new Date(resCurrentYear, resCurrentMonth, 1);
+        let html = `
+            <div class="calendar-header">
+                <button type="button" class="calendar-nav-btn" onclick="resNav(-1)">&lt;</button>
+                <div class="calendar-month-year">${monthNames[resCurrentMonth]} ${resCurrentYear}</div>
+                <button type="button" class="calendar-nav-btn" onclick="resNav(1)">&gt;</button>
+            </div>
+            <div class="calendar-grid">
+        `;
+        dayNames.forEach(d => html += `<div class="calendar-day-header">${d}</div>`);
+
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        for (let i=0;i<42;i++){
+            const date = new Date(startDate.getTime() + i*86400000);
+            const dateStr = toLocalYMD(date);
+            const isCurrentMonth = date.getMonth() === resCurrentMonth;
+            const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+            const isPast = dayStart < todayStart;
+            const isAvailable = resAvailableDates.includes(dateStr);
+            const isSelected = resSelectedDate === dateStr;
+            let cls = 'calendar-day';
+            if (!isCurrentMonth) cls += ' other-month';
+            else if (isPast) cls += ' past';
+            else if (isAvailable) cls += ' available';
+            else cls += ' unavailable';
+            if (isSelected) cls += ' selected';
+            const click = (!isPast && isAvailable && isCurrentMonth) ? `onclick=\"resSelect('${dateStr}')\"` : '';
+            html += `<div class="${cls}" ${click}>${date.getDate()}</div>`;
+        }
+        html += '</div>';
+        cal.innerHTML = html;
+    }
+
+    function resNav(dir){
+        resCurrentMonth += dir;
+        if (resCurrentMonth > 11){ resCurrentMonth = 0; resCurrentYear++; }
+        else if (resCurrentMonth < 0){ resCurrentMonth = 11; resCurrentYear--; }
+        renderRescheduleCalendar();
+    }
+
+    function resSelect(dateStr){
+        resSelectedDate = dateStr;
+        document.getElementById('res_selected_date').value = dateStr;
+        renderRescheduleCalendar();
+        fetch(`${RES_SLOTS_URL}?date=${encodeURIComponent(dateStr)}`)
+            .then(r=>r.json())
+            .then(data=>{
+                const btn = document.getElementById('reschedule-submit-btn');
+                const statusEl = document.getElementById('res-slot-status');
+                if (data.available_slots && data.available_slots.length > 0){
+                    resSelectedSlotId = data.available_slots[0].id;
+                    document.getElementById('res_availability_id').value = resSelectedSlotId;
+                    statusEl.textContent = 'Slot available. Click Confirm Reschedule to proceed.';
+                    statusEl.className = 'mt-2 d-block text-success';
+                    btn.disabled = false;
+                } else {
+                    resSelectedSlotId = null;
+                    document.getElementById('res_availability_id').value = '';
+                    statusEl.textContent = 'No availability for the selected date. Please choose another date.';
+                    statusEl.className = 'mt-2 d-block text-danger';
+                    btn.disabled = true;
+                }
+            })
+            .catch(()=>{
+                const btn = document.getElementById('reschedule-submit-btn');
+                const statusEl = document.getElementById('res-slot-status');
+                resSelectedSlotId = null;
+                document.getElementById('res_availability_id').value = '';
+                statusEl.textContent = 'Unable to load availability. Please try again.';
+                statusEl.className = 'mt-2 d-block text-warning';
+                btn.disabled = true;
+            });
+    }
+
+    function openRescheduleModal(donationId){
+        resDonationId = donationId;
+        // Set form action dynamically
+        const form = document.getElementById('rescheduleForm');
+        form.action = "{{ url('/user/donations') }}/" + donationId + "/reschedule-walkin";
+
+        // Reset state
+        resSelectedDate = null;
+        resSelectedSlotId = null;
+        document.getElementById('res_availability_id').value = '';
+        document.getElementById('res_selected_date').value = '';
+        const statusEl = document.getElementById('res-slot-status');
+        statusEl.textContent = 'Select a highlighted date to check availability.';
+        statusEl.className = 'mt-2 d-block text-muted';
+
+        // Jump to first available date's month if present
+        if (Array.isArray(resAvailableDates) && resAvailableDates.length){
+            try { const d = new Date(resAvailableDates[0]); resCurrentMonth = d.getMonth(); resCurrentYear = d.getFullYear(); } catch(e){ /* ignore */ }
+        } else {
+            const now = new Date(); resCurrentMonth = now.getMonth(); resCurrentYear = now.getFullYear();
+        }
+        renderRescheduleCalendar();
+
+        const modal = new bootstrap.Modal(document.getElementById('rescheduleWalkInModal'));
+        modal.show();
+    }
+
+    function confirmCancel(e){
+        e.preventDefault();
+        const form = e.target;
+        if (window.Swal){
+            Swal.fire({
+                title: 'Cancel donation?',
+                text: 'This will cancel your pending donation request.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, cancel',
+                cancelButtonText: 'Keep',
+                confirmButtonColor: '#d33'
+            }).then(res=>{ if (res.isConfirmed) form.submit(); });
+            return false;
+        }
+        // Fallback
+        if (confirm('Are you sure you want to cancel this donation?')) form.submit();
+        return false;
+    }
+</script>
 @endsection

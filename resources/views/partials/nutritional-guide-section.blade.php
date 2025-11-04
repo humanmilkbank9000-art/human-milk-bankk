@@ -14,11 +14,9 @@
         margin-bottom: 1.25rem;
     }
 
-    /* Nutritional Guide Card - Exact match to stat-card */
+    /* Nutritional Guide Card - Blue to complement FAQ pink */
     .nutritional-guide-card {
-        /* Use a solid, light background for better contrast and readability on small screens */
-        background: #f8fafc;
-        /* light gray/blue tint */
+        background: linear-gradient(135deg, var(--blue-400) 0%, var(--blue-600) 100%);
         border-radius: 0.75rem;
         padding: 1rem;
         cursor: pointer;
@@ -26,8 +24,7 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         position: relative;
         overflow: hidden;
-        color: #111827;
-        /* dark text for clarity */
+        color: #ffffff;
         min-height: 140px;
         display: flex;
         flex-direction: column;
@@ -48,8 +45,9 @@
 
     .nutritional-guide-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
     }
+    .nutritional-guide-card:focus-visible { outline: 3px solid var(--blue-400); outline-offset: 2px; }
 
     .nutritional-guide-card:hover::before {
         background: rgba(255, 255, 255, 0.1);
@@ -62,7 +60,8 @@
     .nutritional-guide-card-icon {
         font-size: 1.8rem;
         margin-bottom: 0.25rem;
-        opacity: 0.9;
+        opacity: 0.95;
+        color: rgba(255,255,255,0.95);
     }
 
     .nutritional-guide-card-title {
@@ -71,7 +70,8 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 0.25rem;
-        opacity: 0.95;
+        opacity: 0.98;
+        color: #ffffff;
     }
 
     .nutritional-guide-card-value {
@@ -79,11 +79,32 @@
         font-weight: 700;
         line-height: 1;
         margin-bottom: 0.15rem;
+        color: #ffffff;
     }
 
     .nutritional-guide-card-subtitle {
         font-size: 0.75rem;
-        opacity: 0.85;
+        opacity: 0.95;
+        color: rgba(255,255,255,0.95);
+    }
+
+    /* Clickable hint */
+    .nutritional-guide-card .click-hint {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: #ffffff;
+        background: rgba(255,255,255,0.16);
+        padding: 6px 10px;
+        border-radius: 9999px;
+        border: 1px solid rgba(255,255,255,0.28);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        user-select: none;
+        pointer-events: none; /* keep click target as the whole card */
     }
 
     /* Modal Overlay */
@@ -482,6 +503,7 @@
             <div class="nutritional-guide-card-value">{{ count($guideItems) }}</div>
             <div class="nutritional-guide-card-subtitle">Empowering resources</div>
         </div>
+        <span class="click-hint"><i class="fas fa-hand-pointer"></i> Click here</span>
     </div>
 </div>
 

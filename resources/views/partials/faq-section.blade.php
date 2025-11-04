@@ -16,7 +16,8 @@
 
     /* Single Consolidated FAQ Card - Exact match to stat-card */
     .faq-main-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* Pink card to mirror admin pink */
+        background: linear-gradient(135deg, var(--pink-400) 0%, var(--pink-600) 100%);
         border-radius: 0.75rem;
         padding: 1rem;
         cursor: pointer;
@@ -45,7 +46,11 @@
 
     .faq-main-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 8px 20px rgba(232, 62, 140, 0.25);
+    }
+    .faq-main-card:focus-visible {
+        outline: 3px solid var(--pink-400);
+        outline-offset: 2px;
     }
 
     .faq-main-card:hover::before {
@@ -81,6 +86,25 @@
     .faq-main-card-subtitle {
         font-size: 0.75rem;
         opacity: 0.85;
+    }
+
+    /* Clickable hint */
+    .faq-main-card .click-hint {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: #ffffff;
+        background: rgba(255,255,255,0.16);
+        padding: 6px 10px;
+        border-radius: 9999px;
+        border: 1px solid rgba(255,255,255,0.28);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        user-select: none;
+        pointer-events: none; /* keep click target as the whole card */
     }
 
 
@@ -436,6 +460,7 @@
             <div class="faq-main-card-value">{{ count($faqItems) }}</div>
             <div class="faq-main-card-subtitle">Topics available</div>
         </div>
+        <span class="click-hint"><i class="fas fa-hand-pointer"></i> Click here</span>
     </div>
 </div>
 

@@ -117,6 +117,10 @@ Route::post('/admin/settings/update', [App\Http\Controllers\LoginController::cla
 Route::get('/user/pending-donation', [DonationController::class, 'user_pending_donation'])->name('user.pending');
 Route::get('/user/my-donation-history', [DonationController::class, 'user_my_donation_history'])->name('user.history');
 
+// User actions on pending donations
+Route::post('/user/donations/{id}/reschedule-walkin', [DonationController::class, 'userRescheduleWalkIn'])->name('user.donation.reschedule-walkin');
+Route::post('/user/donations/{id}/cancel', [DonationController::class, 'userCancelDonation'])->name('user.donation.cancel');
+
 // User settings (GET/POST)
 Route::get('/user/settings', [App\Http\Controllers\LoginController::class, 'user_settings'])->name('user.settings');
 Route::post('/user/settings/update-password', [App\Http\Controllers\LoginController::class, 'user_update_password'])->name('user.settings.update_password');

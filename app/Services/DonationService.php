@@ -55,7 +55,7 @@ class DonationService
                 'status' => 'pending_walk_in',
                 'availability_id' => $availability->id,
                 'donation_date' => $availability->available_date,
-                'donation_time' => $availability->start_time,
+                // No time component for walk-in availability; date-only scheduling
             ]);
 
             DB::commit();
