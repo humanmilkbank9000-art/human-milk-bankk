@@ -44,6 +44,36 @@
             border-radius: 6px;
         }
 
+        /* Ensure milk type badges have a uniform appearance and width and are vertically centered */
+        .milk-type-badge {
+            min-width: 110px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0.35em 0.6em;
+            height: 34px;
+            /* match typical .btn height for visual parity */
+            line-height: 1;
+            box-sizing: border-box;
+        }
+
+        /* Target action buttons inside standard tables to align heights and visual weight */
+        .table-standard td .admin-review-btn,
+        .table-standard td .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 34px;
+            padding: 0.35rem 0.6rem;
+        }
+
+        /* Small adjustment to ensure spacing between Review and Archive stays correct */
+        .table-standard td .admin-review-btn+.btn,
+        .table-standard td .btn+.btn {
+            margin-left: 0.4rem;
+        }
+
         .card {
             border-radius: 12px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -406,7 +436,7 @@
 
         <!-- Page Header with Action Button -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-       
+
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assistedRequestModal">
                 <i class="fas fa-user-plus"></i> Assist Walk-in Request
             </button>
@@ -434,7 +464,8 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link{{ request()->get('status') == 'archived' ? ' active' : '' }}" href="?status=archived" id="archived-tab" role="tab">
+                <a class="nav-link{{ request()->get('status') == 'archived' ? ' active' : '' }}" href="?status=archived"
+                    id="archived-tab" role="tab">
                     Archived <span class="badge bg-secondary">{{ $archivedCount ?? 0 }}</span>
                 </a>
             </li>
@@ -446,11 +477,8 @@
                 <span class="input-group-text bg-white border-end-0">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" 
-                       class="form-control border-start-0 ps-0" 
-                       id="searchInput" 
-                       placeholder="Search by guardian name, infant name, contact..."
-                       aria-label="Search requests">
+                <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
+                    placeholder="Search by guardian name, infant name, contact..." aria-label="Search requests">
                 <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -484,11 +512,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                                @php
-                                                    $pendingOrdered = $pendingRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                        ? $pendingRequests->getCollection()->sortByDesc('created_at')
-                                                        : collect($pendingRequests)->sortByDesc('created_at');
-                                                @endphp
+                                        @php
+                                            $pendingOrdered = $pendingRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $pendingRequests->getCollection()->sortByDesc('created_at')
+                                                : collect($pendingRequests)->sortByDesc('created_at');
+                                        @endphp
                                         @foreach($pendingOrdered as $request)
                                             <tr>
                                                 <td class="align-middle" data-label="Guardian">
@@ -509,9 +537,12 @@
                                                 </td>
                                                 <td class="align-middle text-center" data-label="Schedule date">
                                                     @if($request->availability)
-                                                        {{ $request->availability->formatted_date }} @if(!empty($request->availability->formatted_time)) {{ $request->availability->formatted_time }}@endif
+                                                        {{ $request->availability->formatted_date }}
+                                                        @if(!empty($request->availability->formatted_time))
+                                                        {{ $request->availability->formatted_time }}@endif
                                                     @else
-                                                        {{ Carbon\Carbon::parse($request->request_date)->format('M d, Y') }} {{ Carbon\Carbon::parse($request->request_time)->format('g:i A') }}
+                                                        {{ Carbon\Carbon::parse($request->request_date)->format('M d, Y') }}
+                                                        {{ Carbon\Carbon::parse($request->request_time)->format('g:i A') }}
                                                     @endif
                                                 </td>
                                                 <td class="align-middle text-center" data-label="Action">
@@ -563,11 +594,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                                @php
-                                                    $dispensedOrdered = $dispensedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                        ? $dispensedRequests->getCollection()->sortByDesc('created_at')
-                                                        : collect($dispensedRequests)->sortByDesc('created_at');
-                                                @endphp
+                                        @php
+                                            $dispensedOrdered = $dispensedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $dispensedRequests->getCollection()->sortByDesc('created_at')
+                                                : collect($dispensedRequests)->sortByDesc('created_at');
+                                        @endphp
                                         @foreach($dispensedOrdered as $request)
                                             <tr>
                                                 <td data-label="Guardian">
@@ -592,13 +623,16 @@
                                                     @endif
                                                 </td>
                                                 <td data-label="Volume">
-                                                    <strong>{{ $request->volume_dispensed ?? $request->volume_requested }}
-                                                        ml</strong>
+                                                    @php
+                                                        $vol = $request->volume_dispensed ?? $request->volume_requested;
+                                                        $vol_display = is_numeric($vol) ? rtrim(rtrim(number_format((float) $vol, 2, '.', ''), '0'), '.') : $vol;
+                                                    @endphp
+                                                    <strong>{{ $vol_display }} ml</strong>
                                                 </td>
                                                 <td data-label="Type">
                                                     @if($request->dispensedMilk && $request->dispensedMilk->milk_type)
                                                         <span
-                                                            class="badge bg-{{ $request->dispensedMilk->milk_type === 'pasteurized' ? 'success' : 'warning' }}">
+                                                            class="badge milk-type-badge bg-{{ $request->dispensedMilk->milk_type === 'pasteurized' ? 'success' : 'warning' }}">
                                                             {{ ucfirst($request->dispensedMilk->milk_type) }}
                                                         </span>
                                                     @else
@@ -612,11 +646,15 @@
                                                     {{ $request->dispensed_at ? \Carbon\Carbon::parse($request->dispensed_at)->format('g:i A') : 'N/A' }}
                                                 </td>
                                                 <td data-label="Action">
-                                                    <button class="admin-review-btn btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
-                                                        Review
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger ms-1" onclick="archiveRequest({{ $request->breastmilk_request_id }})" title="Archive request" aria-label="Archive request">Archive</button>
+                                                    <div class="d-flex gap-2 align-items-center justify-content-center">
+                                                        <button class="admin-review-btn btn-sm" data-bs-toggle="modal"
+                                                            data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
+                                                            Review
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger"
+                                                            onclick="archiveRequest({{ $request->breastmilk_request_id }})"
+                                                            title="Archive request" aria-label="Archive request">Archive</button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -655,11 +693,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                                @php
-                                                    $declinedOrdered = $declinedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                        ? $declinedRequests->getCollection()->sortByDesc('created_at')
-                                                        : collect($declinedRequests)->sortByDesc('created_at');
-                                                @endphp
+                                        @php
+                                            $declinedOrdered = $declinedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                                ? $declinedRequests->getCollection()->sortByDesc('created_at')
+                                                : collect($declinedRequests)->sortByDesc('created_at');
+                                        @endphp
                                         @foreach($declinedOrdered as $request)
                                             <tr>
                                                 <td data-label="Guardian">
@@ -689,7 +727,9 @@
                                                         data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
                                                         Review
                                                     </button>
-                                                    <button class="btn btn-sm btn-danger ms-1" onclick="archiveRequest({{ $request->breastmilk_request_id }})" title="Archive request" aria-label="Archive request">Archive</button>
+                                                    <button class="btn btn-sm btn-danger ms-1"
+                                                        onclick="archiveRequest({{ $request->breastmilk_request_id }})"
+                                                        title="Archive request" aria-label="Archive request">Archive</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -716,7 +756,7 @@
                     ? $pendingRequests->getCollection()->sortByDesc('created_at')
                     : collect($pendingRequests)->sortByDesc('created_at'));
         @endphp
-    @foreach($pendingOrdered as $request)
+        @foreach($pendingOrdered as $request)
             <!-- Dispensing Modal -->
             <div class="modal fade" id="dispensingModal{{ $request->breastmilk_request_id }}" tabindex="-1"
                 aria-labelledby="dispensingModalLabel{{ $request->breastmilk_request_id }}" aria-hidden="true">
@@ -759,12 +799,12 @@
                             @if($request->hasPrescription())
                                 <div class="row mb-3">
                                     <div class="col-12">
-                                            <button type="button" class="admin-review-btn btn-sm force-blue" data-bs-toggle="modal"
-                                                data-bs-target="#prescriptionModal{{ $request->breastmilk_request_id }}"
-                                                onclick="viewPrescriptionModal({{ $request->breastmilk_request_id }})">
-                                                Review Prescription
-                                            </button>
-                                        </div>
+                                        <button type="button" class="admin-review-btn btn-sm force-blue" data-bs-toggle="modal"
+                                            data-bs-target="#prescriptionModal{{ $request->breastmilk_request_id }}"
+                                            onclick="viewPrescriptionModal({{ $request->breastmilk_request_id }})">
+                                            Review Prescription
+                                        </button>
+                                    </div>
                                 </div>
                             @endif
 
@@ -779,8 +819,8 @@
                                                 <i class="fas fa-flask"></i> Volume to Dispense (ml) <span
                                                     class="text-danger">*</span>
                                             </label>
-                                            <input type="text" inputmode="numeric" pattern="[0-9]*([.][0-9]+)?" class="form-control"
-                                                id="volumeToDispense{{ $request->breastmilk_request_id }}"
+                                            <input type="text" inputmode="numeric" pattern="[0-9]*([.][0-9]+)?"
+                                                class="form-control" id="volumeToDispense{{ $request->breastmilk_request_id }}"
                                                 name="volume_dispensed" required
                                                 oninput="updateSelectedVolume({{ $request->breastmilk_request_id }})">
                                             <div class="form-text">Enter the amount of milk to dispense</div>
@@ -850,12 +890,13 @@
                                 <i class="fas fa-times"></i> Close
                             </button>
                             <div class="d-flex gap-2">
-                                    {{-- Archive disabled for pending requests --}}
+                                {{-- Archive disabled for pending requests --}}
                                 <button type="button" class="btn btn-danger"
                                     onclick="handleReject({{ $request->breastmilk_request_id }})">
                                     <i class="fas fa-ban"></i> Reject
                                 </button>
-                                <button type="button" class="btn btn-success" id="dispenseBtn{{ $request->breastmilk_request_id }}"
+                                <button type="button" class="btn btn-success"
+                                    id="dispenseBtn{{ $request->breastmilk_request_id }}"
                                     onclick="handleDispense({{ $request->breastmilk_request_id }})">
                                     <i class="fas fa-check"></i> Dispense
                                 </button>
@@ -992,14 +1033,14 @@
                         id="approveForm{{ $request->breastmilk_request_id }}">
                         @csrf
                         <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="volume_requested" class="form-label">Volume to Dispense (ml) *</label>
-                                            <input type="number" class="form-control" name="volume_requested" step="0.01" min="0" required
-                                                id="volumeRequested{{ $request->breastmilk_request_id }}"
-                                                oninput="validateDispenseForm({{ $request->breastmilk_request_id }})">
-                                            <div class="form-text">Specify the amount of breastmilk to be dispensed.</div>
-                                        </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="volume_requested" class="form-label">Volume to Dispense (ml) *</label>
+                                    <input type="number" class="form-control" name="volume_requested" step="0.01" min="0" required
+                                        id="volumeRequested{{ $request->breastmilk_request_id }}"
+                                        oninput="validateDispenseForm({{ $request->breastmilk_request_id }})">
+                                    <div class="form-text">Specify the amount of breastmilk to be dispensed.</div>
+                                </div>
                                 <div class="mb-3">
                                     <label for="milk_type" class="form-label">Milk Type *</label>
                                     <select class="form-select" name="milk_type" required
@@ -1065,102 +1106,128 @@
         @endforeach
     </div>{{-- Close container-fluid --}}
 
-        <!-- Archived Requests Tab Pane -->
-        <div class="tab-pane fade{{ request()->get('status') == 'archived' ? ' show active' : '' }}" id="archived-requests" role="tabpanel">
-            <div class="card card-standard">
-                <div class="card-header bg-secondary text-white">
-                    <h5>Archived Requests</h5>
-                </div>
-                <div class="card-body">
-                    @if(!empty($archived) && $archived->count() > 0)
-                        <div class="table-container-standard">
-                            <table class="table table-standard table-striped">
-                                <thead>
+    <!-- Archived Requests Tab Pane -->
+    <div class="tab-pane fade{{ request()->get('status') == 'archived' ? ' show active' : '' }}" id="archived-requests"
+        role="tabpanel">
+        <div class="card card-standard">
+            <div class="card-header bg-secondary text-white">
+                <h5>Archived Requests</h5>
+            </div>
+            <div class="card-body">
+                @if(!empty($archived) && $archived->count() > 0)
+                    <div class="table-container-standard">
+                        <table class="table table-standard table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Guardian</th>
+                                    <th class="text-center">Infant</th>
+                                    <th class="text-center">Submitted</th>
+                                    <th class="text-center">Archived At</th>
+                                    <th class="text-center">Restore</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $archivedOrdered = $archived instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                        ? $archived->getCollection()->sortByDesc('created_at')
+                                        : collect($archived)->sortByDesc('created_at');
+                                @endphp
+                                @foreach($archivedOrdered as $req)
                                     <tr>
-                                        <th class="text-center">Guardian</th>
-                                        <th class="text-center">Infant</th>
-                                        <th class="text-center">Submitted</th>
-                                        <th class="text-center">Archived At</th>
-                                        <th class="text-center">Restore</th>
+                                        <td class="align-middle">{{ $req->user->first_name ?? '' }}
+                                            {{ $req->user->last_name ?? '' }}
+                                        </td>
+                                        <td class="align-middle">{{ $req->infant->first_name ?? '' }}
+                                            {{ $req->infant->last_name ?? '' }}
+                                        </td>
+                                        <td class="align-middle">{{ $req->created_at->format('M d, Y g:i A') }}</td>
+                                        <td class="align-middle">
+                                            {{ $req->deleted_at ? $req->deleted_at->format('M d, Y g:i A') : '-' }}
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <button class="btn btn-sm btn-outline-success"
+                                                onclick="restoreRequest({{ $req->breastmilk_request_id }})">Restore</button>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $archivedOrdered = $archived instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                            ? $archived->getCollection()->sortByDesc('created_at')
-                                            : collect($archived)->sortByDesc('created_at');
-                                    @endphp
-                                    @foreach($archivedOrdered as $req)
-                                        <tr>
-                                            <td class="align-middle">{{ $req->user->first_name ?? '' }} {{ $req->user->last_name ?? '' }}</td>
-                                            <td class="align-middle">{{ $req->infant->first_name ?? '' }} {{ $req->infant->last_name ?? '' }}</td>
-                                            <td class="align-middle">{{ $req->created_at->format('M d, Y g:i A') }}</td>
-                                            <td class="align-middle">{{ $req->deleted_at ? $req->deleted_at->format('M d, Y g:i A') : '-' }}</td>
-                                            <td class="align-middle text-center">
-                                                <button class="btn btn-sm btn-outline-success" onclick="restoreRequest({{ $req->breastmilk_request_id }})">Restore</button>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-archive fa-3x mb-3"></i>
-                            <p>No archived requests</p>
-                        </div>
-                    @endif
-                </div>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-archive fa-3x mb-3"></i>
+                        <p>No archived requests</p>
+                    </div>
+                @endif
             </div>
         </div>
+    </div>
 
     <!-- Assisted Walk-in Request Modal -->
-    <div class="modal fade" id="assistedRequestModal" tabindex="-1" aria-labelledby="assistedRequestModalLabel" aria-hidden="true">
+    <div class="modal fade" id="assistedRequestModal" tabindex="-1" aria-labelledby="assistedRequestModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="assistedRequestModalLabel">
                         <i class="fas fa-user-plus"></i> Assist Walk-in Breastmilk Request
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
-                <form id="assistedRequestForm" action="{{ route('admin.breastmilk-request.store-assisted') }}" method="POST" enctype="multipart/form-data">
+                <form id="assistedRequestForm" action="{{ route('admin.breastmilk-request.store-assisted') }}" method="POST"
+                    enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> Use this form to assist mothers/guardians who do not have a device. Interview them and fill in their details below.
+                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> Use this form to assist
+                            mothers/guardians who do not have a device. Interview them and fill in their details below.
                         </div>
 
                         <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-user"></i> Guardian Information</h6>
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label for="guardian_first_name" class="form-label">First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="guardian_first_name" name="guardian_first_name" value="{{ old('guardian_first_name') }}" required>
+                                <label for="guardian_first_name" class="form-label">First Name <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="guardian_first_name" name="guardian_first_name"
+                                    value="{{ old('guardian_first_name') }}" required>
                             </div>
                             <div class="col-md-4">
-                                <label for="guardian_last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="guardian_last_name" name="guardian_last_name" value="{{ old('guardian_last_name') }}" required>
+                                <label for="guardian_last_name" class="form-label">Last Name <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="guardian_last_name" name="guardian_last_name"
+                                    value="{{ old('guardian_last_name') }}" required>
                             </div>
                             <div class="col-md-4">
-                                <label for="guardian_contact" class="form-label">Contact Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="guardian_contact" name="guardian_contact" value="{{ old('guardian_contact') }}" required placeholder="09XXXXXXXXX">
-                                <div id="guardian_contact_feedback" class="form-text text-danger" style="display:none;"></div>
+                                <label for="guardian_contact" class="form-label">Contact Number <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="guardian_contact" name="guardian_contact"
+                                    value="{{ old('guardian_contact') }}" required placeholder="09XXXXXXXXX">
+                                <div id="guardian_contact_feedback" class="form-text text-danger" style="display:none;">
+                                </div>
                             </div>
                         </div>
 
                         <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-baby"></i> Infant Information</h6>
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label for="infant_first_name" class="form-label">Infant First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="infant_first_name" name="infant_first_name" value="{{ old('infant_first_name') }}" required>
+                                <label for="infant_first_name" class="form-label">Infant First Name <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="infant_first_name" name="infant_first_name"
+                                    value="{{ old('infant_first_name') }}" required>
                             </div>
                             <div class="col-md-4">
-                                <label for="infant_last_name" class="form-label">Infant Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="infant_last_name" name="infant_last_name" value="{{ old('infant_last_name') }}" required>
+                                <label for="infant_last_name" class="form-label">Infant Last Name <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="infant_last_name" name="infant_last_name"
+                                    value="{{ old('infant_last_name') }}" required>
                             </div>
                             <div class="col-md-4">
-                                <label for="infant_date_of_birth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="infant_date_of_birth" name="infant_date_of_birth" value="{{ old('infant_date_of_birth') }}" required max="{{ date('Y-m-d') }}">
+                                <label for="infant_date_of_birth" class="form-label">Date of Birth <span
+                                        class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="infant_date_of_birth"
+                                    name="infant_date_of_birth" value="{{ old('infant_date_of_birth') }}" required
+                                    max="{{ date('Y-m-d') }}">
                             </div>
                         </div>
 
@@ -1169,46 +1236,58 @@
                                 <label for="infant_sex" class="form-label">Sex <span class="text-danger">*</span></label>
                                 <select class="form-select" id="infant_sex" name="infant_sex" required>
                                     <option value="">Select Sex</option>
-                                    <option value="Male" {{ old('infant_sex')==='Male' ? 'selected' : '' }}>Male</option>
-                                    <option value="Female" {{ old('infant_sex')==='Female' ? 'selected' : '' }}>Female</option>
+                                    <option value="Male" {{ old('infant_sex') === 'Male' ? 'selected' : '' }}>Male</option>
+                                    <option value="Female" {{ old('infant_sex') === 'Female' ? 'selected' : '' }}>Female
+                                    </option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label for="infant_weight" class="form-label">Weight (kg) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="infant_weight" name="infant_weight" value="{{ old('infant_weight') }}" required min="0.5" max="20" placeholder="e.g., 3.5">
+                                <label for="infant_weight" class="form-label">Weight (kg) <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control" id="infant_weight"
+                                    name="infant_weight" value="{{ old('infant_weight') }}" required min="0.5" max="20"
+                                    placeholder="e.g., 3.5">
                             </div>
                         </div>
 
                         <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-heartbeat"></i> Medical Information</h6>
                         <div class="mb-3">
-                            <label for="medical_condition" class="form-label">Medical Condition / Reason for Request <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="medical_condition" name="medical_condition" rows="3" required placeholder="Describe the infant's medical condition or reason for requesting breastmilk">{{ old('medical_condition') }}</textarea>
+                            <label for="medical_condition" class="form-label">Medical Condition / Reason for Request <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="medical_condition" name="medical_condition" rows="3" required
+                                placeholder="Describe the infant's medical condition or reason for requesting breastmilk">{{ old('medical_condition') }}</textarea>
                         </div>
 
                         <div class="mb-3">
                             <label for="prescription_upload" class="form-label">Prescription (Optional)</label>
-                            <input type="file" class="form-control" id="prescription_upload" name="prescription" accept="image/*,.pdf">
+                            <input type="file" class="form-control" id="prescription_upload" name="prescription"
+                                accept="image/*,.pdf">
                             <small class="text-muted">Upload prescription if available. Images or PDF files only.</small>
                         </div>
 
                         <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-calendar-alt"></i> Request Details</h6>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="request_date" class="form-label">Requested Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="request_date" name="request_date" required value="{{ old('request_date', date('Y-m-d')) }}">
+                                <label for="request_date" class="form-label">Requested Date <span
+                                        class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="request_date" name="request_date" required
+                                    value="{{ old('request_date', date('Y-m-d')) }}">
                             </div>
                             <div class="col-md-6">
-                                <label for="milk_type" class="form-label">Milk Type <span class="text-danger">*</span></label>
+                                <label for="milk_type" class="form-label">Milk Type <span
+                                        class="text-danger">*</span></label>
                                 <select class="form-select" id="milk_type" name="milk_type" required>
                                     <option value="">Select milk type</option>
-                                    <option value="unpasteurized" {{ old('milk_type')==='unpasteurized' ? 'selected' : '' }}>Unpasteurized Breastmilk</option>
-                                    <option value="pasteurized" {{ old('milk_type')==='pasteurized' ? 'selected' : '' }}>Pasteurized Breastmilk</option>
+                                    <option value="unpasteurized" {{ old('milk_type') === 'unpasteurized' ? 'selected' : '' }}>Unpasteurized Breastmilk</option>
+                                    <option value="pasteurized" {{ old('milk_type') === 'pasteurized' ? 'selected' : '' }}>
+                                        Pasteurized Breastmilk</option>
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" value="1" id="dispense_now_checkbox" name="dispense_now" {{ old('dispense_now', '1')=='1' ? 'checked' : '' }}>
+                            <input class="form-check-input" type="checkbox" value="1" id="dispense_now_checkbox"
+                                name="dispense_now" {{ old('dispense_now', '1') == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="dispense_now_checkbox">
                                 Dispense now from available inventory (admin-assisted immediate dispensing)
                             </label>
@@ -1221,9 +1300,13 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label for="assistedVolumeToDispense" class="form-label">
-                                                    <i class="fas fa-flask"></i> Volume to Dispense (ml) <span class="text-danger">*</span>
+                                                    <i class="fas fa-flask"></i> Volume to Dispense (ml) <span
+                                                        class="text-danger">*</span>
                                                 </label>
-                                                <input type="text" inputmode="numeric" pattern="[0-9]*([.][0-9]+)?" class="form-control" id="assistedVolumeToDispense" value="{{ old('assisted_volume') }}" oninput="assistedUpdateSelectedVolume()">
+                                                <input type="text" inputmode="numeric" pattern="[0-9]*([.][0-9]+)?"
+                                                    class="form-control" id="assistedVolumeToDispense"
+                                                    value="{{ old('assisted_volume') }}"
+                                                    oninput="assistedUpdateSelectedVolume()">
                                                 <div class="form-text">Enter the amount of milk to dispense.</div>
                                             </div>
                                         </div>
@@ -1231,8 +1314,10 @@
                                             <div class="mb-2" id="assistedVolumeTracker" style="display:none;">
                                                 <div class="alert alert-info mb-0 py-2">
                                                     <small>
-                                                        <strong>Selected:</strong> <span id="assistedTotalSelected">0.00</span> ml /
-                                                        <strong>Required:</strong> <span id="assistedVolumeRequired">0.00</span> ml
+                                                        <strong>Selected:</strong> <span
+                                                            id="assistedTotalSelected">0.00</span> ml /
+                                                        <strong>Required:</strong> <span
+                                                            id="assistedVolumeRequired">0.00</span> ml
                                                     </small>
                                                 </div>
                                             </div>
@@ -1241,7 +1326,8 @@
                                     <h6 class="card-title mt-2"><i class="fas fa-warehouse"></i> Available Inventory</h6>
                                     <div id="assistedInventoryLoading" style="display:none">Loading inventory...</div>
                                     <div id="assistedInventoryList" style="max-height:300px; overflow-y:auto;"></div>
-                                    <small class="text-muted d-block mt-2">Select one source (donation or batch). The entered volume will be deducted from the selected source.</small>
+                                    <small class="text-muted d-block mt-2">Select one source (donation or batch). The
+                                        entered volume will be deducted from the selected source.</small>
                                 </div>
                             </div>
                         </div>
@@ -1251,7 +1337,8 @@
 
                         <div class="mb-3">
                             <label for="admin_notes" class="form-label">Staff Notes (Optional)</label>
-                            <textarea class="form-control" id="admin_notes" name="admin_notes" rows="2" placeholder="Additional notes or observations from the interview">{{ old('admin_notes') }}</textarea>
+                            <textarea class="form-control" id="admin_notes" name="admin_notes" rows="2"
+                                placeholder="Additional notes or observations from the interview">{{ old('admin_notes') }}</textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1292,7 +1379,7 @@
                         if (!val) return;
                         // Simple format normalization (remove spaces)
                         const normalized = val.replace(/\s+/g, '');
-                        fetch(`{{ route('admin.request.check-contact') }}?contact=${encodeURIComponent(normalized)}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }})
+                        fetch(`{{ route('admin.request.check-contact') }}?contact=${encodeURIComponent(normalized)}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } })
                             .then(r => r.json())
                             .then(data => {
                                 if (data && data.exists) {
@@ -1321,7 +1408,7 @@
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearch');
             const searchResults = document.getElementById('searchResults');
-            
+
             if (!searchInput) return;
 
             // Get all tables across all tabs
@@ -1336,7 +1423,7 @@
                     }
                 });
             });
-            
+
             // Real-time search function
             function performSearch() {
                 const raw = searchInput.value || '';
@@ -1410,8 +1497,8 @@
 
             // Event listeners
             searchInput.addEventListener('input', performSearch);
-            
-            clearBtn.addEventListener('click', function() {
+
+            clearBtn.addEventListener('click', function () {
                 searchInput.value = '';
                 performSearch();
                 searchInput.focus();
@@ -1447,7 +1534,7 @@
                             const m = new bootstrap.Modal(modalEl);
                             m.show();
                         }
-                    } catch(_) {}
+                    } catch (_) { }
                 @endif
                 @if(session('success'))
                     if (hasSwal) {
@@ -1479,7 +1566,7 @@
                         });
                     }
                 @endif
-            } catch (_) {}
+                    } catch (_) { }
         });
     </script>
 
@@ -1546,11 +1633,11 @@
             if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
 
             // Allow navigation and control keys
-            const allowedKeys = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Enter','Home','End'];
+            const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Home', 'End'];
             if (allowedKeys.indexOf(e.key) !== -1) return;
 
             // Allow one dot
-            if (e.key === '.' ) {
+            if (e.key === '.') {
                 if ((el.value || '').indexOf('.') === -1) return;
                 e.preventDefault();
                 return;
@@ -1607,15 +1694,15 @@
             container.id = 'volumeNotice' + requestId;
             container.className = 'mt-2';
             container.innerHTML = `
-                <div class="alert alert-info d-flex align-items-center justify-content-between">
-                    <div>
-                        You entered <strong>${original}</strong> ml — recorded as <strong>${roundedDown}</strong> ml.
-                    </div>
-                    <div class="ms-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('volumeNotice${requestId}').remove()">Dismiss</button>
-                    </div>
-                </div>
-            `;
+                        <div class="alert alert-info d-flex align-items-center justify-content-between">
+                            <div>
+                                You entered <strong>${original}</strong> ml — recorded as <strong>${roundedDown}</strong> ml.
+                            </div>
+                            <div class="ms-3">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('volumeNotice${requestId}').remove()">Dismiss</button>
+                            </div>
+                        </div>
+                    `;
 
             const parent = input.parentElement || input.closest('.mb-3');
             if (parent) parent.appendChild(container);
@@ -1663,14 +1750,14 @@
                             container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
                         } else {
                             container.innerHTML = `
-                                                                                                                                                                    <div class="d-flex flex-column align-items-center justify-content-center">
-                                                                                                                                                                        <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                                                                                                                                                        <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                                                                                                                                                            <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
-                                                                                                                                                                                style="max-width:100%; max-height:70vh; object-fit:contain;">
-                                                                                                                                                                        </div>
-                                                                                                                                                                    </div>
-                                                                                                                                                                `;
+                                                                                                                                                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                                                                                                                                                <h6 class="mb-3">Prescription: ${data.filename}</h6>
+                                                                                                                                                                                <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                                                                                                                                                                    <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
+                                                                                                                                                                                        style="max-width:100%; max-height:70vh; object-fit:contain;">
+                                                                                                                                                                                </div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        `;
                         }
                     })
                     .catch(error => {
@@ -1691,7 +1778,7 @@
 
             fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/prescription`)
                 .then(response => response.json())
-                    .then(data => {
+                .then(data => {
                     if (data.error) {
                         container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
                         return;
@@ -1702,13 +1789,13 @@
                     let userHtml = '';
                     if (user) {
                         userHtml = `
-                            <div class="card p-3 mb-3" style="min-width:250px;">
-                                <h6 class="mb-2"><i class="fas fa-user"></i> Requester</h6>
-                                <p class="mb-1"><strong>Name:</strong> ${escapeHtml(user.full_name || '-')}</p>
-                                <p class="mb-1"><strong>Contact:</strong> ${escapeHtml(user.contact_number || '-')}</p>
-                                <p class="mb-0"><strong>Address:</strong> ${escapeHtml(user.address || '-')}</p>
-                            </div>
-                        `;
+                                    <div class="card p-3 mb-3" style="min-width:250px;">
+                                        <h6 class="mb-2"><i class="fas fa-user"></i> Requester</h6>
+                                        <p class="mb-1"><strong>Name:</strong> ${escapeHtml(user.full_name || '-')}</p>
+                                        <p class="mb-1"><strong>Contact:</strong> ${escapeHtml(user.contact_number || '-')}</p>
+                                        <p class="mb-0"><strong>Address:</strong> ${escapeHtml(user.address || '-')}</p>
+                                    </div>
+                                `;
                     }
 
                     const isPdf = typeof data.image === 'string' && /^data:application\/pdf/i.test(data.image);
@@ -1716,35 +1803,35 @@
                     let viewerHtml = '';
                     if (isPdf) {
                         viewerHtml = `
-                            <div class="ratio ratio-16x9 w-100">
-                                <iframe src="${data.image}" title="${filenameSafe}" style="border:1px solid #dee2e6; border-radius: .25rem;"></iframe>
-                            </div>
-                            <div class="mt-2 text-center">
-                                <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download PDF</a>
-                            </div>
-                        `;
+                                    <div class="ratio ratio-16x9 w-100">
+                                        <iframe src="${data.image}" title="${filenameSafe}" style="border:1px solid #dee2e6; border-radius: .25rem;"></iframe>
+                                    </div>
+                                    <div class="mt-2 text-center">
+                                        <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download PDF</a>
+                                    </div>
+                                `;
                     } else {
                         viewerHtml = `
-                            <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
-                                <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
-                            </div>
-                            <div class="mt-2 text-center">
-                                <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download</a>
-                            </div>
-                        `;
+                                    <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
+                                        <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                    </div>
+                                    <div class="mt-2 text-center">
+                                        <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download</a>
+                                    </div>
+                                `;
                     }
 
                     container.innerHTML = `
-                        <div class="row">
-                            <div class="col-md-4 d-flex justify-content-center align-items-start">
-                                ${userHtml}
-                            </div>
-                            <div class="col-md-8 d-flex flex-column align-items-center">
-                                <h6 class="mb-3">Prescription: ${filenameSafe}</h6>
-                                ${viewerHtml}
-                            </div>
-                        </div>
-                    `;
+                                <div class="row">
+                                    <div class="col-md-4 d-flex justify-content-center align-items-start">
+                                        ${userHtml}
+                                    </div>
+                                    <div class="col-md-8 d-flex flex-column align-items-center">
+                                        <h6 class="mb-3">Prescription: ${filenameSafe}</h6>
+                                        ${viewerHtml}
+                                    </div>
+                                </div>
+                            `;
                 })
                 .catch(err => {
                     container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';
@@ -1788,36 +1875,36 @@
                     data.inventory.forEach(item => {
                         const itemId = milkType === 'unpasteurized' ? item.id : item.id;
                         html += `
-                                                                                                                                                                <div class="card mb-2">
-                                                                                                                                                                    <div class="card-body p-2">
-                                                                                                                                                                        <div class="form-check">
-                                                                                                                                                                            <input class="form-check-input" type="checkbox" 
-                                                                                                                                                                                id="item_${requestId}_${itemId}" 
-                                                                                                                                                                                onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
-                                                                                                                                                                            <label class="form-check-label" for="item_${requestId}_${itemId}">
-                                                                                                                                                                                <small>
-                                                                                                                                                                                    ${milkType === 'unpasteurized' ?
+                                                                                                                                                                        <div class="card mb-2">
+                                                                                                                                                                            <div class="card-body p-2">
+                                                                                                                                                                                <div class="form-check">
+                                                                                                                                                                                    <input class="form-check-input" type="checkbox" 
+                                                                                                                                                                                        id="item_${requestId}_${itemId}" 
+                                                                                                                                                                                        onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
+                                                                                                                                                                                    <label class="form-check-label" for="item_${requestId}_${itemId}">
+                                                                                                                                                                                        <small>
+                                                                                                                                                                                            ${milkType === 'unpasteurized' ?
                                 `<strong>Donation #${item.id}</strong><br>
-                                                                                                                                                                                         ${item.donor_name} - ${item.donation_type}<br>
-                                                                                                                                                                                         <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
+                                                                                                                                                                                                 ${item.donor_name} - ${item.donation_type}<br>
+                                                                                                                                                                                                 <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
                                 `<strong>Batch ${item.batch_number}</strong><br>
-                                                                                                                                                                                         Pasteurized by: ${item.admin_name}<br>
-                                                                                                                                                                                         <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
+                                                                                                                                                                                                 Pasteurized by: ${item.admin_name}<br>
+                                                                                                                                                                                                 <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
                             }
-                                                                                                                                                                                </small>
-                                                                                                                                                                            </label>
+                                                                                                                                                                                        </small>
+                                                                                                                                                                                    </label>
+                                                                                                                                                                                </div>
+                                                                                                                                                                                <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
+                                                                                                                                                                                    <label class="form-label">Volume to deduct (ml):</label>
+                                                                                                                                                                                    <input type="number" class="form-control form-control-sm" 
+                                                                                                                                                                                        id="volume_${requestId}_${itemId}" 
+                                                                                                                                                                                        step="0.01" min="0.01" max="${item.volume}" 
+                                                                                                                                                                                        value="${item.volume}"
+                                                                                                                                                                                        onchange="updateSelectedVolume(${requestId})">
+                                                                                                                                                                                </div>
+                                                                                                                                                                            </div>
                                                                                                                                                                         </div>
-                                                                                                                                                                        <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
-                                                                                                                                                                            <label class="form-label">Volume to deduct (ml):</label>
-                                                                                                                                                                            <input type="number" class="form-control form-control-sm" 
-                                                                                                                                                                                id="volume_${requestId}_${itemId}" 
-                                                                                                                                                                                step="0.01" min="0.01" max="${item.volume}" 
-                                                                                                                                                                                value="${item.volume}"
-                                                                                                                                                                                onchange="updateSelectedVolume(${requestId})">
-                                                                                                                                                                        </div>
-                                                                                                                                                                    </div>
-                                                                                                                                                                </div>
-                                                                                                                                                            `;
+                                                                                                                                                                    `;
                     });
 
                     inventoryList.innerHTML = html;
@@ -1938,9 +2025,9 @@
                 Swal.fire({
                     title: 'Accept Request',
                     html: `
-                                                                                    <p>To accept this request, you need to specify the dispensing details.</p>
-                                                                                    <p class="text-muted">Click "Continue" to open the dispensing form.</p>
-                                                                                `,
+                                                                                            <p>To accept this request, you need to specify the dispensing details.</p>
+                                                                                            <p class="text-muted">Click "Continue" to open the dispensing form.</p>
+                                                                                        `,
                     icon: 'info',
                     showCancelButton: true,
                     confirmButtonText: 'Continue to Dispense Form',
@@ -1994,19 +2081,19 @@
                 Swal.fire({
                     title: 'Decline Request',
                     html: `
-                                                                                    <div class="text-start">
-                                                                                        <p>Are you sure you want to decline this request?</p>
-                                                                                        <div class="mb-3">
-                                                                                            <label for="swalDeclineReason" class="form-label">Reason for Declining <span class="text-danger">*</span></label>
-                                                                                            <textarea 
-                                                                                                id="swalDeclineReason" 
-                                                                                                class="form-control" 
-                                                                                                rows="4" 
-                                                                                                placeholder="Please provide a reason for declining this request...">${notes}</textarea>
-                                                                                            <small class="text-muted">This reason will be sent to the guardian.</small>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                `,
+                                                                                            <div class="text-start">
+                                                                                                <p>Are you sure you want to decline this request?</p>
+                                                                                                <div class="mb-3">
+                                                                                                    <label for="swalDeclineReason" class="form-label">Reason for Declining <span class="text-danger">*</span></label>
+                                                                                                    <textarea 
+                                                                                                        id="swalDeclineReason" 
+                                                                                                        class="form-control" 
+                                                                                                        rows="4" 
+                                                                                                        placeholder="Please provide a reason for declining this request...">${notes}</textarea>
+                                                                                                    <small class="text-muted">This reason will be sent to the guardian.</small>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        `,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, Decline Request',
@@ -2304,7 +2391,7 @@
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Swal.fire('Archived', 'Request archived successfully.', 'success').then(()=> location.reload());
+                        Swal.fire('Archived', 'Request archived successfully.', 'success').then(() => location.reload());
                     }
                 }).catch(() => {
                     Swal.fire('Error', 'Failed to archive request', 'error');
@@ -2312,8 +2399,8 @@
             } else {
                 if (!confirm('Archive request?')) return;
                 fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/archive`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(()=> location.reload())
-                    .catch(()=> alert('Failed to archive'));
+                    .then(() => location.reload())
+                    .catch(() => alert('Failed to archive'));
             }
         }
 
@@ -2338,7 +2425,7 @@
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Swal.fire('Restored', 'Request restored successfully.', 'success').then(()=> location.reload());
+                        Swal.fire('Restored', 'Request restored successfully.', 'success').then(() => location.reload());
                     }
                 }).catch(() => {
                     Swal.fire('Error', 'Failed to restore request', 'error');
@@ -2346,8 +2433,8 @@
             } else {
                 if (!confirm('Restore request?')) return;
                 fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(()=> location.reload())
-                    .catch(()=> alert('Failed to restore'));
+                    .then(() => location.reload())
+                    .catch(() => alert('Failed to restore'));
             }
         }
 
@@ -2420,26 +2507,26 @@
             let html = '<div class="list-group">';
             batches.forEach(batch => {
                 html += `
-                                                                        <div class="list-group-item">
-                                                                            <div class="form-check">
-                                                                                <input class="form-check-input" type="radio" 
-                                                                                    name="batch_${requestId}" 
-                                                                                    id="batch_${requestId}_${batch.batch_id}" 
-                                                                                    value="${batch.batch_id}"
-                                                                                    data-volume="${batch.available_volume}"
-                                                                                    onchange="handleBatchSelection(${requestId}, ${batch.batch_id}, ${batch.available_volume})">
-                                                                                <label class="form-check-label w-100" for="batch_${requestId}_${batch.batch_id}">
-                                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                                        <div>
-                                                                                            <strong>Batch #${batch.batch_number}</strong><br>
-                                                                                            <small class="text-muted">Available: ${batch.available_volume} ml</small><br>
-                                                                                            <small class="text-muted">Date: ${batch.date_pasteurized}</small>
-                                                                                        </div>
+                                                                                <div class="list-group-item">
+                                                                                    <div class="form-check">
+                                                                                        <input class="form-check-input" type="radio" 
+                                                                                            name="batch_${requestId}" 
+                                                                                            id="batch_${requestId}_${batch.batch_id}" 
+                                                                                            value="${batch.batch_id}"
+                                                                                            data-volume="${batch.available_volume}"
+                                                                                            onchange="handleBatchSelection(${requestId}, ${batch.batch_id}, ${batch.available_volume})">
+                                                                                        <label class="form-check-label w-100" for="batch_${requestId}_${batch.batch_id}">
+                                                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                                                <div>
+                                                                                                    <strong>Batch #${batch.batch_number}</strong><br>
+                                                                                                    <small class="text-muted">Available: ${batch.available_volume} ml</small><br>
+                                                                                                    <small class="text-muted">Date: ${batch.date_pasteurized}</small>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </label>
                                                                                     </div>
-                                                                                </label>
-                                                                            </div>
-                                                                        </div>
-                                                                    `;
+                                                                                </div>
+                                                                            `;
             });
             html += '</div>';
             html += '<div class="mt-2"><small class="text-info"><i class="fas fa-info-circle"></i> For pasteurized milk, the entire batch volume will be used.</small></div>';
@@ -2461,27 +2548,27 @@
             donations.forEach(donation => {
                 const donorName = donation.donor_name || 'Anonymous';
                 html += `
-                                                                        <div class="list-group-item">
-                                                                            <div class="form-check">
-                                                                                <input class="form-check-input" type="radio" 
-                                                                                    name="donation_${requestId}" 
-                                                                                    id="donation_${requestId}_${donation.breastmilk_donation_id}" 
-                                                                                    value="${donation.breastmilk_donation_id}"
-                                                                                    data-volume="${donation.available_volume}"
-                                                                                    onchange="handleDonationSelection(${requestId}, ${donation.breastmilk_donation_id}, ${donation.available_volume})">
-                                                                                <label class="form-check-label w-100" for="donation_${requestId}_${donation.breastmilk_donation_id}">
-                                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                                        <div>
-                                                                                            <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
-                                                                                            <small class="text-muted">Donor: ${donorName}</small><br>
-                                                                                            <small class="text-muted">Available: ${donation.available_volume} ml</small><br>
-                                                                                            <small class="text-muted">Date: ${donation.donation_date}</small>
-                                                                                        </div>
+                                                                                <div class="list-group-item">
+                                                                                    <div class="form-check">
+                                                                                        <input class="form-check-input" type="radio" 
+                                                                                            name="donation_${requestId}" 
+                                                                                            id="donation_${requestId}_${donation.breastmilk_donation_id}" 
+                                                                                            value="${donation.breastmilk_donation_id}"
+                                                                                            data-volume="${donation.available_volume}"
+                                                                                            onchange="handleDonationSelection(${requestId}, ${donation.breastmilk_donation_id}, ${donation.available_volume})">
+                                                                                        <label class="form-check-label w-100" for="donation_${requestId}_${donation.breastmilk_donation_id}">
+                                                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                                                <div>
+                                                                                                    <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
+                                                                                                    <small class="text-muted">Donor: ${donorName}</small><br>
+                                                                                                    <small class="text-muted">Available: ${donation.available_volume} ml</small><br>
+                                                                                                    <small class="text-muted">Date: ${donation.donation_date}</small>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </label>
                                                                                     </div>
-                                                                                </label>
-                                                                            </div>
-                                                                        </div>
-                                                                    `;
+                                                                                </div>
+                                                                            `;
             });
             html += '</div>';
             html += '<div class="mt-2"><small class="text-info"><i class="fas fa-info-circle"></i> For unpasteurized milk, the entire donation volume will be used.</small></div>';
@@ -2624,9 +2711,9 @@
             Swal.fire({
                 title: 'Confirm Dispensing',
                 html: `
-                                                                        <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
-                                                                        <p class="text-muted mb-0">This action cannot be undone.</p>
-                                                                    `,
+                                                                                <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
+                                                                                <p class="text-muted mb-0">This action cannot be undone.</p>
+                                                                            `,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#28a745',
@@ -2764,7 +2851,7 @@
                 });
             }, 300); // Wait 300ms for modal to close
         }
-        
+
         // --- Assisted request inventory helpers ---
         document.addEventListener('DOMContentLoaded', function () {
             const dispenseNowCheckbox = document.getElementById('dispense_now_checkbox');
@@ -2858,7 +2945,7 @@
             if (!milkType) return;
             loading.style.display = 'block';
             tracker.style.display = 'block';
-            fetch(`{{ route('admin.request.inventory') }}?type=${milkType}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }})
+            fetch(`{{ route('admin.request.inventory') }}?type=${milkType}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } })
                 .then(r => r.json())
                 .then(data => {
                     loading.style.display = 'none';
@@ -2877,20 +2964,20 @@
                         donations.forEach(d => {
                             const avail = d.available_volume || 0;
                             html += `
-                                <div class="list-group-item">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="assisted_donation_radio" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
-                                        <label class="form-check-label w-100" for="assisted_donation_${d.breastmilk_donation_id}">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <strong>Donation #${d.breastmilk_donation_id}</strong><br>
-                                                    <small class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</small><br>
-                                                    <small class="text-muted">Available: ${avail} ml</small>
-                                                </div>
+                                        <div class="list-group-item">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="assisted_donation_radio" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                                <label class="form-check-label w-100" for="assisted_donation_${d.breastmilk_donation_id}">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <strong>Donation #${d.breastmilk_donation_id}</strong><br>
+                                                            <small class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</small><br>
+                                                            <small class="text-muted">Available: ${avail} ml</small>
+                                                        </div>
+                                                    </div>
+                                                </label>
                                             </div>
-                                        </label>
-                                    </div>
-                                </div>`;
+                                        </div>`;
                         });
                         html += '</div>';
                         list.innerHTML = html;
@@ -2904,20 +2991,20 @@
                         batches.forEach(b => {
                             const avail = b.available_volume || 0;
                             html += `
-                                <div class="list-group-item">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="assisted_batch_radio" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
-                                        <label class="form-check-label w-100" for="assisted_batch_${b.batch_id}">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <strong>Batch #${b.batch_number}</strong><br>
-                                                    <small class="text-muted">Available: ${avail} ml</small><br>
-                                                    <small class="text-muted">Date: ${b.date_pasteurized}</small>
-                                                </div>
+                                        <div class="list-group-item">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="assisted_batch_radio" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                                <label class="form-check-label w-100" for="assisted_batch_${b.batch_id}">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <strong>Batch #${b.batch_number}</strong><br>
+                                                            <small class="text-muted">Available: ${avail} ml</small><br>
+                                                            <small class="text-muted">Date: ${b.date_pasteurized}</small>
+                                                        </div>
+                                                    </div>
+                                                </label>
                                             </div>
-                                        </label>
-                                    </div>
-                                </div>`;
+                                        </div>`;
                         });
                         html += '</div>';
                         list.innerHTML = html;
