@@ -320,7 +320,7 @@
         <div class="col-md-12">
             <label class="form-label">Number of Bags:</label>
             <input type="number" class="form-control" id="hc-bags-input" min="1" max="20"
-                placeholder="Enter number of bags (1-20)" required>
+                placeholder="Enter number of bags" required>
             <small class="text-muted">Enter the number of bags to create input rows below</small>
         </div>
     </div>
@@ -492,7 +492,16 @@
             const volEl = document.getElementById('hc-total-volume');
 
             if (bagsEl) bagsEl.textContent = String(totalBags);
-            if (volEl) volEl.textContent = totalVol.toFixed(2);
+            if (volEl) {
+                // If total volume is a whole number, show it without decimals (remove trailing .0)
+                // Otherwise show with two decimals for precision
+                const rounded = Math.round(totalVol);
+                if (Math.abs(totalVol - rounded) < 1e-9) {
+                    volEl.textContent = String(rounded);
+                } else {
+                    volEl.textContent = totalVol.toFixed(2);
+                }
+            }
         }
 
         function enableSubmitCheck() {
