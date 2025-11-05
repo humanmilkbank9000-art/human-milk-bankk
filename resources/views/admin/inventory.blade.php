@@ -588,8 +588,7 @@
                                     onchange="toggleDonationBags(this)">
                                 </td>
                                                     <td style="white-space: normal;" data-label="Donor">
-                                                        <strong>{{ $donation->user->first_name }}
-                                                            {{ $donation->user->last_name }}</strong>
+                                                        <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
                                                     </td>
                                                     <td class="text-center" data-label="Type">
                                                         <span
@@ -870,7 +869,9 @@
                                                         if (!empty($dispensed->sourceDonations) && $dispensed->sourceDonations->count() > 0) {
                                                             $donorNames = $dispensed->sourceDonations->map(function ($sd) {
                                                                 // Some donations may have a related user, or only donor_name
-                                                                $name = trim((($sd->user->first_name ?? '') . ' ' . ($sd->user->last_name ?? '')));
+                                                                $first = data_get($sd,'user.first_name','');
+                                                                $last = data_get($sd,'user.last_name','');
+                                                                $name = trim(($first.' '.$last));
                                                                 if (empty($name)) {
                                                                     $name = $sd->donor_name ?? ('Donation #' . ($sd->breastmilk_donation_id ?? '-'));
                                                                 }

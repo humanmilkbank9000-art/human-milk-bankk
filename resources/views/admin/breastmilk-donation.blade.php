@@ -738,8 +738,7 @@
                                         @foreach($pendingOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }}
-                                                        {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
                                                 </td>
                                                 <td data-label="Type" class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
@@ -749,24 +748,24 @@
                                                     @endif
                                                 </td>
                                                 <td data-label="Contact" class="text-center">
-                                                    {{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}
+                                                    {{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '-') }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
                                                     <small>
-                                                        {{ $donation->user->address ?? 'Not provided' }}
+                                                        {{ data_get($donation,'user.address','Not provided') }}
                                                     </small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
                                                     @if($donation->donation_method === 'home_collection')
                                                         @php
                                                             // Prefer donation-specific coordinates if available; fallback to user's profile
-                                                            $lat = $donation->latitude ?? $donation->user->latitude ?? null;
-                                                            $lng = $donation->longitude ?? $donation->user->longitude ?? null;
+                                                            $lat = $donation->latitude ?? optional($donation->user)->latitude ?? null;
+                                                            $lng = $donation->longitude ?? optional($donation->user)->longitude ?? null;
                                                         @endphp
                                                         @if(!is_null($lat) && $lat !== '' && !is_null($lng) && $lng !== '')
                                                             <button class="btn btn-info btn-sm view-location" title="View on Map"
-                                                                data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                                data-donor-address="{{ $donation->user->address }}"
+                                                                data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                                data-donor-address="{{ data_get($donation,'user.address','') }}"
                                                                 data-latitude="{{ $lat }}" data-longitude="{{ $lng }}">
                                                                 <i class="fas fa-map-marked-alt"></i>
                                                             </button>
@@ -797,7 +796,7 @@
                                                                 title="Validate Walk-in"
                                                                 data-id="{{ $donation->breastmilk_donation_id }}" data-bs-toggle="modal"
                                                                 data-bs-target="#validateWalkInModal"
-                                                                data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}">
+                                                                data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}">
                                                                 <i class="fas fa-check"></i>
                                                                 <span class="d-none d-md-inline"> Validate</span>
                                                             </button>
@@ -805,8 +804,8 @@
                                                             <button class="btn btn-primary btn-sm px-2 schedule-pickup"
                                                                 title="Schedule Pickup"
                                                                 data-id="{{ $donation->breastmilk_donation_id }}"
-                                                                data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                                data-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                                data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                                data-address="{{ data_get($donation,'user.address','Not provided') }}"
                                                                 data-first-expression="{{ $donation->first_expression_date ? $donation->first_expression_date->format('M d, Y') : '' }}"
                                                                 data-last-expression="{{ $donation->last_expression_date ? $donation->last_expression_date->format('M d, Y') : '' }}"
                                                                 data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
@@ -826,11 +825,10 @@
 
                             {{-- Card Layout for Smaller Screens --}}
                             @foreach($pendingOrdered as $donation)
-                                <div class="donation-card d-block d-md-none">
+                                    <div class="donation-card d-block d-md-none">
                                     <div class="card-header-row">
                                         <div>
-                                            <strong style="font-size: 1rem;">{{ $donation->user->first_name ?? '' }}
-                                                {{ $donation->user->last_name ?? '' }}</strong>
+                                            <strong style="font-size: 1rem;">{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
                                         </div>
                                         <div>
                                             @if($donation->donation_method === 'walk_in')
@@ -844,24 +842,24 @@
                                     <div class="card-row">
                                         <span class="card-label">Contact:</span>
                                         <span
-                                            class="card-value">{{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}</span>
+                                            class="card-value">{{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '-') }}</span>
                                     </div>
 
                                     <div class="card-row">
                                         <span class="card-label">Address:</span>
-                                        <span class="card-value">{{ $donation->user->address ?? 'Not provided' }}</span>
+                                        <span class="card-value">{{ data_get($donation,'user.address','Not provided') }}</span>
                                     </div>
                                     @php
-                                        $latCard = $donation->latitude ?? $donation->user->latitude ?? null;
-                                        $lngCard = $donation->longitude ?? $donation->user->longitude ?? null;
+                                        $latCard = $donation->latitude ?? optional($donation->user)->latitude ?? null;
+                                        $lngCard = $donation->longitude ?? optional($donation->user)->longitude ?? null;
                                     @endphp
                                     @if(!is_null($latCard) && $latCard !== '' && !is_null($lngCard) && $lngCard !== '')
                                         <div class="card-row">
                                             <span class="card-label">Location:</span>
                                             <span class="card-value">
                                                 <button class="btn btn-info btn-sm view-location"
-                                                    data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                    data-donor-address="{{ $donation->user->address }}" data-latitude="{{ $latCard }}"
+                                                    data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                    data-donor-address="{{ data_get($donation,'user.address','') }}" data-latitude="{{ $latCard }}"
                                                     data-longitude="{{ $lngCard }}">
                                                     <i class="fas fa-map-marked-alt"></i>
                                                 </button>
@@ -891,14 +889,14 @@
                                             <button type="button" class="btn btn-success validate-walk-in"
                                                 data-id="{{ $donation->breastmilk_donation_id }}" data-bs-toggle="modal"
                                                 data-bs-target="#validateWalkInModal"
-                                                data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}">
+                                                data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}">
                                                 <i class="fas fa-check"></i> Validate Walk-in
                                             </button>
                                         @else
                                             <button class="btn btn-primary schedule-pickup"
                                                 data-id="{{ $donation->breastmilk_donation_id }}"
-                                                data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                data-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                data-address="{{ data_get($donation,'user.address','Not provided') }}"
                                                 data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
                                                 data-bags="{{ $donation->number_of_bags }}" data-total="{{ $donation->total_volume }}">
                                                 <i class="fas fa-calendar-alt"></i> Schedule Pickup
@@ -948,25 +946,24 @@
                                         @foreach($scheduledOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }}
-                                                        {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
                                                 </td>
                                                 <td data-label="Contact" class="text-center">
-                                                    {{ $donation->user->contact_number ?? $donation->user->phone ?? '-' }}
+                                                    {{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '-') }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
-                                                    <small>{{ $donation->user->address ?? 'Not provided' }}</small>
+                                                    <small>{{ data_get($donation,'user.address','Not provided') }}</small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
                                                     @php
                                                         // Prefer donation-specific coordinates if available; fallback to user's profile
-                                                        $latSched = $donation->latitude ?? $donation->user->latitude ?? null;
-                                                        $lngSched = $donation->longitude ?? $donation->user->longitude ?? null;
+                                                        $latSched = $donation->latitude ?? optional($donation->user)->latitude ?? null;
+                                                        $lngSched = $donation->longitude ?? optional($donation->user)->longitude ?? null;
                                                     @endphp
                                                     @if(!is_null($latSched) && $latSched !== '' && !is_null($lngSched) && $lngSched !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
-                                                            data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                            data-donor-address="{{ $donation->user->address }}"
+                                                            data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                            data-donor-address="{{ data_get($donation,'user.address','') }}"
                                                             data-latitude="{{ $latSched }}" data-longitude="{{ $lngSched }}">
                                                             <i class="fas fa-map-marked-alt"></i>
                                                         </button>
@@ -975,7 +972,7 @@
                                                     @endif
                                                 </td>
                                                 <td data-label="Date" class="text-center">
-                                                    <small>{{ $donation->scheduled_pickup_date->format('M d, Y') }}</small>
+                                                    <small>{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('M d, Y') : 'N/A' }}</small>
                                                 </td>
                                                 <td data-label="Time" class="text-center">
                                                     <small>
@@ -992,8 +989,8 @@
                                                             class="btn btn-success btn-sm px-2 validate-home-collection"
                                                             title="Validate" data-id="{{ $donation->breastmilk_donation_id }}"
                                                             data-bs-toggle="modal" data-bs-target="#validateHomeCollectionModal"
-                                                            data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                            data-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                            data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                            data-address="{{ data_get($donation,'user.address','Not provided') }}"
                                                             data-date="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('M d, Y') : '' }}"
                                                             data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
@@ -1007,8 +1004,8 @@
                                                         <button class="btn btn-outline-primary btn-sm px-2 reschedule-pickup"
                                                             title="Reschedule Pickup"
                                                             data-id="{{ $donation->breastmilk_donation_id }}"
-                                                            data-donor="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                            data-address="{{ $donation->user->address ?? 'Not provided' }}"
+                                                            data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                            data-address="{{ data_get($donation,'user.address','Not provided') }}"
                                                             data-date-iso="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('Y-m-d') : '' }}"
                                                             data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
@@ -1064,10 +1061,10 @@
                                         @foreach($walkInOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    {{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}
+                                                    {{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
-                                                    <small>{{ $donation->user->address ?? 'Not provided' }}</small>
+                                                    <small>{{ data_get($donation,'user.address','Not provided') }}</small>
                                                 </td>
                                                 <td data-label="Total" class="text-center">
                                                     {{ $donation->formatted_total_volume ?? 'N/A' }}ml
@@ -1132,22 +1129,21 @@
                                         @foreach($homeSuccessOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }}
-                                                        {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
                                                 </td>
                                                 <td data-label="Address" class="text-center">
-                                                    <small>{{ $donation->user->address ?? 'Not provided' }}</small>
+                                                    <small>{{ data_get($donation,'user.address','Not provided') }}</small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
                                                     @php
                                                         // Prefer donation-specific coordinates if available; fallback to user's profile
-                                                        $latHome = $donation->latitude ?? $donation->user->latitude ?? null;
-                                                        $lngHome = $donation->longitude ?? $donation->user->longitude ?? null;
+                                                        $latHome = $donation->latitude ?? optional($donation->user)->latitude ?? null;
+                                                        $lngHome = $donation->longitude ?? optional($donation->user)->longitude ?? null;
                                                     @endphp
                                                     @if(!is_null($latHome) && $latHome !== '' && !is_null($lngHome) && $lngHome !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
-                                                            data-donor-name="{{ $donation->user->first_name }} {{ $donation->user->last_name }}"
-                                                            data-donor-address="{{ $donation->user->address }}"
+                                                            data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                            data-donor-address="{{ data_get($donation,'user.address','') }}"
                                                             data-latitude="{{ $latHome }}" data-longitude="{{ $lngHome }}">
                                                             <i class="fas fa-map-marked-alt"></i>
                                                         </button>
@@ -1159,7 +1155,7 @@
                                                     <strong>{{ $donation->formatted_total_volume }}ml</strong>
                                                 </td>
                                                 <td data-label="Date" class="text-center">
-                                                    <small>{{ $donation->scheduled_pickup_date->format('M d, Y') }}</small>
+                                                    <small>{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('M d, Y') : 'N/A' }}</small>
                                                 </td>
                                                 <td data-label="Time" class="text-center">
                                                     <small>
@@ -1171,11 +1167,11 @@
                                                         style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
                                                         <button class="btn btn-sm btn-primary me-1 view-donation"
                                                             data-id="{{ $donation->breastmilk_donation_id }}"
-                                                            data-donor-name="{{ $donation->user->first_name ?? '' }} {{ $donation->user->last_name ?? '' }}"
-                                                            data-donor-contact="{{ $donation->user->contact_number ?? $donation->user->phone ?? '' }}"
-                                                            data-donor-address="{{ $donation->user->address ?? 'Not provided' }}"
-                                                            data-latitude="{{ $donation->latitude ?? $donation->user->latitude ?? '' }}"
-                                                            data-longitude="{{ $donation->longitude ?? $donation->user->longitude ?? '' }}"
+                                                            data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                            data-donor-contact="{{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '') }}"
+                                                            data-donor-address="{{ data_get($donation,'user.address','Not provided') }}"
+                                                            data-latitude="{{ $donation->latitude ?? (optional($donation->user)->latitude ?? '') }}"
+                                                            data-longitude="{{ $donation->longitude ?? (optional($donation->user)->longitude ?? '') }}"
                                                             data-bags="{{ $donation->number_of_bags ?? (is_array($donation->bag_details ?? null) ? count($donation->bag_details) : '') }}"
                                                             data-total="{{ $donation->total_volume ?? $donation->formatted_total_volume ?? '' }}"
                                                             data-bag-details='@json($donation->bag_details ?? [], JSON_HEX_APOS | JSON_HEX_QUOT)'
@@ -1234,8 +1230,7 @@
                                         @endphp
                                         @foreach($archivedOrdered as $donation)
                                             <tr>
-                                                <td class="text-center">{{ $donation->user->first_name ?? '' }}
-                                                    {{ $donation->user->last_name ?? '' }}
+                                                <td class="text-center">{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}
                                                 </td>
                                                 <td class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
@@ -1292,8 +1287,7 @@
                                         @foreach($declinedDonations as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ $donation->user->first_name ?? '' }}
-                                                        {{ $donation->user->last_name ?? '' }}</strong>
+                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
                                                 </td>
                                                 <td data-label="Type" class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
@@ -1303,7 +1297,7 @@
                                                     @endif
                                                 </td>
                                                 <td data-label="Address" class="text-center">
-                                                    <small>{{ $donation->user->address ?? 'Not provided' }}</small>
+                                                    <small>{{ data_get($donation,'user.address','Not provided') }}</small>
                                                 </td>
                                                 <td data-label="Reason" class="text-center">
                                                     <small>{{ $donation->decline_reason ?? '-' }}</small>
