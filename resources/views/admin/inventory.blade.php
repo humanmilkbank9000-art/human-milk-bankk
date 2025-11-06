@@ -764,6 +764,7 @@
                                             <th class="text-center px-2 py-2">Available</th>
                                             <th class="text-center px-2 py-2">Date</th>
                                             <th class="text-center px-2 py-2">Time</th>
+                                            <th class="text-center px-2 py-2">Expires</th>
                                             <th class="text-center px-2 py-2">Actions</th>
                                         </tr>
                                     </thead>
@@ -798,6 +799,18 @@
                                                 </td>
                                                 <td class="text-center" style="white-space: nowrap;" data-label="Time">
                                                     <small>{{ $batch->formatted_time }}</small>
+                                                </td>
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Expires">
+                                                    @php
+                                                        // Pasteurized milk expires 1 year after pasteurization date
+                                                        $expiry = null;
+                                                        try {
+                                                            $expiry = \Carbon\Carbon::parse($batch->date_pasteurized)->addYear()->setTimezone('Asia/Manila');
+                                                        } catch (\Exception $e) {
+                                                            $expiry = null;
+                                                        }
+                                                    @endphp
+                                                    <small>{{ $expiry ? $expiry->format('M d, Y') : '-' }}</small>
                                                 </td>
                                                 <td class="text-center" data-label="Action">
                                                     <button class="admin-review-btn btn-sm" title="Review Details" onclick="viewBatchDetails({{ $batch->batch_id }})">

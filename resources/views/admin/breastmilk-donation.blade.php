@@ -286,11 +286,10 @@
                 padding: 0.15rem 0.25rem !important;
             }
 
-            /* Ensure the donation type badge is not visually cut off in narrow columns */
+            /* Ensure the donation type badge displays on one line */
             #pending-donations .donation-type-badge {
                 display: inline-block;
-                white-space: normal;
-                /* allow wrapping instead of clipping */
+                white-space: nowrap;
                 line-height: 1.05;
                 padding: 0.25rem 0.45rem;
                 font-size: 0.75rem;
@@ -304,7 +303,7 @@
                 overflow: visible;
             }
 
-            /* Specific column width optimization */
+            /* Specific column width optimization (keep fixed for consistency) */
             #pending-donations .table {
                 table-layout: fixed !important;
             }
@@ -324,52 +323,23 @@
                 text-align: center;
             }
 
-            /* Allocate width percentages for better distribution */
-            #pending-donations .table thead th:nth-child(1) {
-                width: 11%;
-            }
+            /* Allocate width percentages for better distribution (sum ~100%) */
+            /* 1: Name */
+            #pending-donations .table thead th:nth-child(1) { width: 14%; }
+            /* 2: Type */
+            #pending-donations .table thead th:nth-child(2) { width: 12%; }
+            /* 3: Contact */
+            #pending-donations .table thead th:nth-child(3) { width: 12%; }
+            /* 4: Address (wider to prevent excessive wrapping) */
+            #pending-donations .table thead th:nth-child(4) { width: 30%; }
+            /* 5: Date */
+            #pending-donations .table thead th:nth-child(5) { width: 12%; }
+            /* 6: Total Volume */
+            #pending-donations .table thead th:nth-child(6) { width: 8%; }
+            /* 7: Action (sticky last column) */
+            #pending-donations .table thead th:nth-child(7) { width: 12%; }
 
-            /* Name */
-            #pending-donations .table thead th:nth-child(2) {
-                width: 7%;
-            }
-
-            /* Type */
-            #pending-donations .table thead th:nth-child(3) {
-                width: 13%;
-            }
-
-            /* Address */
-            #pending-donations .table thead th:nth-child(4) {
-                width: 6%;
-            }
-
-            /* Location */
-            #pending-donations .table thead th:nth-child(5) {
-                width: 6%;
-            }
-
-            /* Bags */
-            #pending-donations .table thead th:nth-child(6) {
-                width: 11%;
-            }
-
-            /* Volume/Bag */
-            #pending-donations .table thead th:nth-child(7) {
-                width: 8%;
-            }
-
-            /* Total */
-            #pending-donations .table thead th:nth-child(8) {
-                width: 12%;
-            }
-
-            /* Date & Time */
-            #pending-donations .table thead th:nth-child(9) {
-                width: 18%;
-            }
-
-            /* Actions - increased from 11% to 18% */
+            /* Actions column is last now; widths defined above */
 
             /* Make table horizontally scrollable as fallback */
             #pending-donations .table-container {
@@ -378,8 +348,8 @@
             }
 
             /* Ensure action buttons stay visible */
-            #pending-donations .table thead th:nth-child(9),
-            #pending-donations .table tbody td:nth-child(9) {
+            #pending-donations .table thead th:nth-child(7),
+            #pending-donations .table tbody td:nth-child(7) {
                 position: sticky;
                 right: 0;
                 background-color: white;
@@ -389,8 +359,12 @@
                 min-width: 140px;
             }
 
-            #pending-donations .table thead th:nth-child(9) {
-                background-color: #f8f9fa;
+            #pending-donations .table thead th:nth-child(7) { background-color: #f8f9fa; }
+
+            /* Address cell should wrap naturally and break long words */
+            #pending-donations .table tbody td[data-label="Address"] {
+                white-space: normal !important;
+                word-break: break-word;
             }
 
             /* Fallback sticky for last column at other sizes (helps with 90% zoom) */
@@ -714,6 +688,39 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <style>
+                            /* Mobile card improvements for Pending Donations */
+                            @media (max-width: 767.98px) {
+                                #pending-donations .donation-card {
+                                    background: #fff;
+                                    border: 1px solid #f1f3f5;
+                                    border-radius: 10px;
+                                    padding: 10px 12px;
+                                    margin-bottom: 12px;
+                                    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+                                }
+                                #pending-donations .card-header-row {
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: space-between;
+                                    margin-bottom: 6px;
+                                }
+                                #pending-donations .card-row {
+                                    display: grid;
+                                    grid-template-columns: 96px 1fr;
+                                    gap: 6px;
+                                    padding: 6px 0;
+                                    border-bottom: 1px dashed #eef2f7;
+                                }
+                                #pending-donations .card-row:last-of-type { border-bottom: none; }
+                                #pending-donations .card-label { color: #6c757d; font-size: 0.86rem; }
+                                #pending-donations .card-value { font-size: 0.95rem; word-break: break-word; }
+                                #pending-donations .card-actions { margin-top: 8px; }
+                                #pending-donations .card-actions .btn { width: 100%; }
+                                #pending-donations .donation-type-badge { font-size: 0.7rem; padding: 0.2rem 0.45rem; }
+                                #pending-donations .card-row .btn.view-location { padding: 0.3rem 0.45rem; }
+                            }
+                        </style>
                         @if($pendingDonations->count() > 0)
                             <div class="table-responsive d-none d-md-block">
                                 <table class="table table-hover" style="min-width: 900px; width:100%;">
@@ -723,7 +730,6 @@
                                             <th class="text-center">Type</th>
                                             <th class="text-center">Contact</th>
                                             <th class="text-center">Address</th>
-                                            <th class="text-center">Location</th>
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Total Volume</th>
                                             <th class="text-center">Action</th>
@@ -755,27 +761,6 @@
                                                         {{ data_get($donation,'user.address','Not provided') }}
                                                     </small>
                                                 </td>
-                                                <td data-label="Location" class="text-center">
-                                                    @if($donation->donation_method === 'home_collection')
-                                                        @php
-                                                            // Prefer donation-specific coordinates if available; fallback to user's profile
-                                                            $lat = $donation->latitude ?? optional($donation->user)->latitude ?? null;
-                                                            $lng = $donation->longitude ?? optional($donation->user)->longitude ?? null;
-                                                        @endphp
-                                                        @if(!is_null($lat) && $lat !== '' && !is_null($lng) && $lng !== '')
-                                                            <button class="btn btn-info btn-sm view-location" title="View on Map"
-                                                                data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                                data-donor-address="{{ data_get($donation,'user.address','') }}"
-                                                                data-latitude="{{ $lat }}" data-longitude="{{ $lng }}">
-                                                                <i class="fas fa-map-marked-alt"></i>
-                                                            </button>
-                                                        @else
-                                                            <span class="text-muted">-</span>
-                                                        @endif
-                                                    @else
-                                                        <span class="text-muted">-</span>
-                                                    @endif
-                                                </td>
                                                 <td data-label="Date" class="text-center">
                                                     <small>
                                                         @if($donation->donation_method === 'walk_in')
@@ -801,6 +786,11 @@
                                                                 <span class="d-none d-md-inline"> Validate</span>
                                                             </button>
                                                         @else
+                                                            @php
+                                                                // Prepare coordinates for modal use
+                                                                $lat = $donation->latitude ?? optional($donation->user)->latitude ?? null;
+                                                                $lng = $donation->longitude ?? optional($donation->user)->longitude ?? null;
+                                                            @endphp
                                                             <button class="btn btn-primary btn-sm px-2 schedule-pickup"
                                                                 title="Schedule Pickup"
                                                                 data-id="{{ $donation->breastmilk_donation_id }}"
@@ -810,7 +800,9 @@
                                                                 data-last-expression="{{ $donation->last_expression_date ? $donation->last_expression_date->format('M d, Y') : '' }}"
                                                                 data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
                                                                 data-bags="{{ $donation->number_of_bags }}"
-                                                                data-total="{{ $donation->total_volume }}">
+                                                                data-total="{{ $donation->total_volume }}"
+                                                                data-latitude="{{ $lat }}"
+                                                                data-longitude="{{ $lng }}">
                                                                 <i class="fas fa-calendar-alt"></i>
                                                                 <span class="d-none d-md-inline"> Schedule</span>
                                                             </button>
@@ -841,8 +833,17 @@
 
                                     <div class="card-row">
                                         <span class="card-label">Contact:</span>
-                                        <span
-                                            class="card-value">{{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '-') }}</span>
+                                        <span class="card-value">
+                                            @php
+                                                $contactRaw = data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '');
+                                                $telHref = $contactRaw ? preg_replace('/[^0-9\+]/','',$contactRaw) : '';
+                                            @endphp
+                                            @if($telHref)
+                                                <a href="tel:{{ $telHref }}" class="text-decoration-none">{{ $contactRaw }}</a>
+                                            @else
+                                                -
+                                            @endif
+                                        </span>
                                     </div>
 
                                     <div class="card-row">
@@ -873,7 +874,7 @@
                                             @if($donation->donation_method === 'walk_in')
                                                 {{ $donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A' }}
                                             @else
-                                                {{ $donation->created_at->format('M d, Y') }}<br>{{ $donation->created_at->format('g:i A') }}
+                                                {{ $donation->created_at->format('M d, Y') }} • {{ $donation->created_at->format('g:i A') }}
                                             @endif
                                         </span>
                                     </div>
@@ -886,14 +887,14 @@
 
                                     <div class="card-actions">
                                         @if($donation->donation_method === 'walk_in')
-                                            <button type="button" class="btn btn-success validate-walk-in"
+                                            <button type="button" class="btn btn-success w-100 validate-walk-in"
                                                 data-id="{{ $donation->breastmilk_donation_id }}" data-bs-toggle="modal"
                                                 data-bs-target="#validateWalkInModal"
                                                 data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}">
                                                 <i class="fas fa-check"></i> Validate Walk-in
                                             </button>
                                         @else
-                                            <button class="btn btn-primary schedule-pickup"
+                                            <button class="btn btn-primary w-100 schedule-pickup"
                                                 data-id="{{ $donation->breastmilk_donation_id }}"
                                                 data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
                                                 data-address="{{ data_get($donation,'user.address','Not provided') }}"
@@ -1432,6 +1433,10 @@
                                 <div class="col-6 col-md-3 info-item">
                                     <strong>Address:</strong>
                                     <span id="schedule-donor-address">&nbsp;</span>
+                                </div>
+                                <div class="col-6 col-md-3 info-item">
+                                    <strong>Location:</strong>
+                                    <span id="schedule-donor-location">-</span>
                                 </div>
                                 <div class="col-6 col-md-3 info-item">
                                     <strong>First Expression Date:</strong>
@@ -1986,6 +1991,8 @@
                 currentDonationId = $(this).data('id');
                 const donorName = $(this).data('donor');
                 const donorAddress = $(this).data('address') || 'Not provided';
+                const lat = $(this).data('latitude');
+                const lng = $(this).data('longitude');
                 const firstExpression = $(this).data('first-expression') || '--';
                 const lastExpression = $(this).data('last-expression') || '--';
                 const bagDetailsRaw = $(this).attr('data-bag-details');
@@ -1996,6 +2003,21 @@
                 $('#schedule-donor-address').text(donorAddress);
                 $('#schedule-first-expression').text(firstExpression);
                 $('#schedule-last-expression').text(lastExpression);
+
+                // Inject location button into modal if coordinates are present
+                (function setScheduleLocation() {
+                    const hasLat = (lat !== undefined && lat !== null && String(lat) !== '');
+                    const hasLng = (lng !== undefined && lng !== null && String(lng) !== '');
+                    if (hasLat && hasLng) {
+                        const safeName = donorName || '';
+                        const safeAddress = donorAddress || '';
+                        $('#schedule-donor-location').html(
+                            `<button class="btn btn-info btn-sm view-location" title="View on Map" data-donor-name="${$('<div>').text(safeName).html()}" data-donor-address="${$('<div>').text(safeAddress).html()}" data-latitude="${lat}" data-longitude="${lng}"><i class="fas fa-map-marked-alt"></i></button>`
+                        );
+                    } else {
+                        $('#schedule-donor-location').text('-');
+                    }
+                })();
 
                 // Robust bag details parser (local copy) to handle HTML-encoded attributes
                 function safeParseBagDetails_local(raw) {
