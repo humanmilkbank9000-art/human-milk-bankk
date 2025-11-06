@@ -3,69 +3,73 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Notifications\SendRecoveryCodeNotification;
 use Illuminate\Http\RedirectResponse;
-use App\Http\Requests\SendRecoveryCodeRequest;
-use App\Http\Requests\VerifyRecoveryCodeRequest;
-use App\Http\Requests\ResetPasswordRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use App\Services\PasswordResetService;
 
 class ForgotPasswordController extends Controller
 {
-    protected int $codeExpiryMinutes = 10;
-    protected PasswordResetService $service;
-
-    public function __construct(PasswordResetService $service)
-    {
-        $this->service = $service;
-    }
-
     public function showForgotPasswordForm(): View
     {
         return view('auth.forgot-password');
     }
 
-    public function sendRecoveryCode(SendRecoveryCodeRequest $request): RedirectResponse
+    public function sendRecoveryCode(Request $request): RedirectResponse
     {
-        $contactNumber = $request->input('contact_number');
+        $request->validate([
+            'contact_number' => 'required|regex:/^09\d{9}$/'
+        ]);
 
-        try {
-            $code = $this->service->generateAndSendCode($contactNumber);
+        $contactNumber = $request->contact_number;
 
-            session()->put('password_reset.contact_number', $contactNumber);
-            session()->put('password_reset.code_sent_at', now());
+        // Check if user exists
+        $user = User::where('contact_number', $contactNumber)->first();
+        if (!$user) {
+            return back()->withErrors(['contact_number' => 'We could not find an account with that mobile number.'])->withInput();
+        }
 
-            $usingLogDriver = strtolower((string) config('sms.driver', 'log')) === 'log';
-            if ($usingLogDriver && config('app.debug')) {
-                session()->put('password_reset.last_code', $code);
-            } else {
-                session()->forget('password_reset.last_code');
-            }
+        $url = 'https://sms.iprogtech.com/api/v1/sms_messages';
+        $api_token = '91d56803aa4a36ef3e7b3b350297ce3b35dee465';
 
-            session()->forget('password_reset.verified');
+        $formatted_number = preg_replace('/^0/', '63', $contactNumber);
+        $code = rand(100000, 999999);
+        $message = "Your Human Milk Bank recovery code is: $code. Do not share this code with anyone.";
 
+        $data = [
+            'api_token' => $api_token,
+            'message' => $message,
+            'phone_number' => $formatted_number
+        ];
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/x-www-form-urlencoded'
+        ]);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        if (stripos($response, 'successfully queued for delivery') !== false) {
+            Session::put('verification_code', $code);
+            Session::put('contact_number', $contactNumber);
             return redirect()->route('password.verify')->with('status', 'We sent a recovery code to your mobile number.');
-        } catch (\RuntimeException $e) {
-            return back()->withErrors(['contact_number' => $e->getMessage()])->withInput();
+        } else {
+            return back()->withErrors(['contact_number' => 'Failed to send SMS. Please try again.'])->withInput();
         }
     }
 
     public function showVerifyCodeForm(): RedirectResponse|View
     {
-        $contactNumber = session('password_reset.contact_number');
-
-        if (!$contactNumber) {
+        if (!Session::has('verification_code')) {
             return redirect()->route('password.forgot');
         }
 
+        $contactNumber = Session::get('contact_number');
         $maskedContact = $this->maskContactNumber($contactNumber);
 
         return view('auth.verify-code', [
@@ -74,27 +78,26 @@ class ForgotPasswordController extends Controller
         ]);
     }
 
-    public function verifyCode(VerifyRecoveryCodeRequest $request): RedirectResponse
+    public function verifyCode(Request $request): RedirectResponse
     {
-        $contactNumber = session('password_reset.contact_number');
+        $request->validate(['code' => 'required|digits:6']);
+        
+        $entered = $request->code;
+        $correct = Session::get('verification_code');
 
-        if (!$contactNumber) {
-            return redirect()->route('password.forgot');
-        }
-        try {
-            $this->service->verifyCode($contactNumber, $request->input('code'));
-            session()->put('password_reset.verified', true);
-            session()->forget('password_reset.last_code');
+        if ($entered == $correct) {
+            Session::put('code_verified', true);
+            Session::forget('verification_code');
             return redirect()->route('password.reset')->with('status', 'Code verified. You can now reset your password.');
-        } catch (\RuntimeException $e) {
-            throw ValidationException::withMessages(['code' => $e->getMessage()]);
+        } else {
+            return back()->withErrors(['code' => 'The recovery code you entered is incorrect.']);
         }
     }
 
     public function showResetPasswordForm(): RedirectResponse|View
     {
-        $contactNumber = session('password_reset.contact_number');
-        $isVerified = session('password_reset.verified');
+        $contactNumber = Session::get('contact_number');
+        $isVerified = Session::get('code_verified');
 
         if (!$contactNumber || !$isVerified) {
             return redirect()->route('password.forgot');
@@ -103,22 +106,30 @@ class ForgotPasswordController extends Controller
         return view('auth.reset-password');
     }
 
-    public function resetPassword(ResetPasswordRequest $request): RedirectResponse
+    public function resetPassword(Request $request): RedirectResponse
     {
-        $contactNumber = session('password_reset.contact_number');
-        $isVerified = session('password_reset.verified');
+        $request->validate([
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $contactNumber = Session::get('contact_number');
+        $isVerified = Session::get('code_verified');
 
         if (!$contactNumber || !$isVerified) {
             return redirect()->route('password.forgot');
         }
 
-        try {
-            $this->service->resetPassword($contactNumber, $request->input('password'));
-            session()->forget('password_reset');
-            return redirect()->route('login')->with('status', 'Your password has been reset. You can now sign in.');
-        } catch (\RuntimeException $e) {
-            return redirect()->route('password.forgot')->withErrors(['contact_number' => $e->getMessage()]);
+        $user = User::where('contact_number', $contactNumber)->first();
+        if (!$user) {
+            return redirect()->route('password.forgot')->withErrors(['contact_number' => 'We could not find an account associated with that mobile number.']);
         }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        Session::forget(['contact_number', 'code_verified']);
+
+        return redirect()->route('login')->with('status', 'Your password has been reset. You can now sign in.');
     }
 
     protected function maskContactNumber(string $contactNumber): string
@@ -128,26 +139,5 @@ class ForgotPasswordController extends Controller
         }
 
         return Str::mask($contactNumber, '*', max(strlen($contactNumber) - 4, 0));
-    }
-
-    protected function shouldLogSms(): bool
-    {
-        return strtolower((string) config('sms.driver', 'log')) === 'log';
-    }
-
-    protected function logRecoveryCode(string $contactNumber, string $code): void
-    {
-        $context = [
-            'contact_number' => $contactNumber,
-            'code' => $code,
-            'expires_in_minutes' => $this->codeExpiryMinutes,
-        ];
-
-        if ($channel = config('sms.log_channel')) {
-            Log::channel($channel)->info('Account recovery code generated (SMS log driver).', $context);
-            return;
-        }
-
-        Log::info('Account recovery code generated (SMS log driver).', $context);
     }
 }

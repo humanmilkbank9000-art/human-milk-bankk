@@ -35,13 +35,22 @@ class OtpService
             'api_token' => $this->apiToken,
             'phone_number' => $this->normalizeLocalNumber($phoneNumber),
         ];
-        // Prefer explicit message, else fallback to configured template if set
+        
+        // Use custom message if provided, otherwise use configured template or default
         $template = $message ?? (string) config('sms.iprogtech_otp.message', '');
         if ($template !== '') {
-            $payload['message'] = $template; // backend replaces :otp
+            $payload['message'] = $template;
         }
 
-        return $this->postJson('/otp/send_otp', $payload);
+        $result = $this->postJson('/otp/send_otp', $payload);
+        
+        // Also check for "successfully queued" message like in the working example
+        if (!$result['success'] && isset($result['message']) && 
+            stripos($result['message'], 'successfully queued') !== false) {
+            $result['success'] = true;
+        }
+        
+        return $result;
     }
 
     /**
@@ -88,15 +97,15 @@ class OtpService
     {
         $url = $this->baseUrl . $path;
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-    // Use default SSL verification settings for security
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/x-www-form-urlencoded'
+        ]);
 
         $raw = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -118,13 +127,20 @@ class OtpService
             ];
         }
 
-        $resp = json_decode($raw, true) ?: [];
-        $success = ($httpCode >= 200 && $httpCode < 300) && (($resp['status'] ?? '') === 'success');
+        // Check if response contains success indicators (like the working SMS example)
+        $rawResponse = is_string($raw) ? $raw : '';
+        $isSuccessText = stripos($rawResponse, 'successfully queued') !== false;
+        
+        // Try to decode as JSON
+        $resp = json_decode($rawResponse, true) ?: [];
+        $success = ($httpCode >= 200 && $httpCode < 300) && 
+                   ((($resp['status'] ?? '') === 'success') || $isSuccessText);
 
         Log::info('IPROGTECH OTP API response', [
             'url' => $url,
             'http_code' => $httpCode,
-            'response' => $resp,
+            'raw_response' => $rawResponse,
+            'parsed_response' => $resp,
         ]);
 
         return [
@@ -181,21 +197,26 @@ class OtpService
 
     protected function normalizeLocalNumber(string $phone): string
     {
-        // Remove non-digits; keep leading 0 if present
+        // Remove non-digits
         $digits = preg_replace('/\D+/', '', $phone);
-        $normalized = $digits;
-
-        if ($digits && $digits[0] !== '0' && strlen($digits) === 10) {
-            // e.g. 9171234567 -> 09171234567
-            $normalized = '0' . $digits;
-        } elseif (str_starts_with($digits, '63') && strlen($digits) === 12) {
-            // 63XXXXXXXXXX -> 0XXXXXXXXXX
-            $normalized = '0' . substr($digits, 2);
-        } elseif (str_starts_with($digits, '+63') && strlen($digits) === 13) {
-            $normalized = '0' . substr($digits, 3);
+        
+        // Convert 09XXXXXXXXX to 63XXXXXXXXX format (remove leading 0, add 63)
+        if (str_starts_with($digits, '0') && strlen($digits) === 11) {
+            return '63' . substr($digits, 1);
         }
-
-        return $normalized;
+        
+        // If already in 63XXXXXXXXX format, keep it
+        if (str_starts_with($digits, '63') && strlen($digits) === 12) {
+            return $digits;
+        }
+        
+        // If it's 10 digits without leading 0, add 63
+        if (strlen($digits) === 10) {
+            return '63' . $digits;
+        }
+        
+        // Return as-is if format is unclear
+        return $digits;
     }
 
     protected function maskSensitive(array $data): array

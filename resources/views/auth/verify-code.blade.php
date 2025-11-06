@@ -5,9 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Recovery Code - Human Milk Bank</title>
-    <link
-    href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         :root {
@@ -196,14 +194,6 @@
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
-            </div>
-        @endif
-
-        @if (config('app.debug') && config('sms.driver') === 'log' && session('password_reset.last_code'))
-            <div class="status-message">
-                <strong>Developer note:</strong> Latest recovery code is
-                <span
-                    style="letter-spacing: 0.25rem; font-family: 'Quicksand', sans-serif;">{{ session('password_reset.last_code') }}</span>.
             </div>
         @endif
 

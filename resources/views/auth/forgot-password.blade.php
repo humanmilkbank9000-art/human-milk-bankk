@@ -5,9 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password - Human Milk Bank</title>
-    <link
-    href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         :root {
@@ -184,28 +182,8 @@
             <div class="form-group">
                 <label for="contact_number">Mobile Number</label>
                 <input type="text" id="contact_number" name="contact_number" inputmode="numeric"
-                    placeholder="09XXXXXXXXX" value="{{ old('contact_number') }}" required autofocus>
-                <div id="contact-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
-                    Contact number must be exactly 11 digits.
-                </div>
-                <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    var contactInput = document.getElementById('contact_number');
-                    var reqMsg = document.getElementById('contact-req');
-                    contactInput.addEventListener('input', function(e) {
-                        // Remove non-digit characters
-                        contactInput.value = contactInput.value.replace(/\D/g, '');
-                        // Show/hide requirements
-                        if (contactInput.value.length === 0) {
-                            reqMsg.style.display = 'none';
-                        } else if (!/^\d{11}$/.test(contactInput.value)) {
-                            reqMsg.style.display = 'block';
-                        } else {
-                            reqMsg.style.display = 'none';
-                        }
-                    });
-                });
-                </script>
+                    placeholder="09XXXXXXXXX" value="{{ old('contact_number') }}" required autofocus
+                    pattern="^09\d{9}$">
             </div>
             <button type="submit" class="btn-primary">Send Recovery Code</button>
         </form>
