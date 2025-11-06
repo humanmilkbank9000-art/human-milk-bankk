@@ -281,6 +281,15 @@
             transform: translateY(0);
         }
 
+        /* Section title for address block */
+        .section-title {
+            font-family: var(--heading-font);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-dark);
+            margin: 0.5rem 0 0.25rem 0;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             body {
@@ -549,13 +558,41 @@
                 </script>
             </div>
 
+            <div class="form-group full-width">
+                <div class="section-title">Please select current address</div>
+            </div>
+
             <div class="form-row">
-                <div class="form-group full-width">
-                    <label for="address" class="form-label">Address</label>
-                    <input type="text" id="address" name="address" class="form-input" value="{{ old('address', $userData['address'] ?? '') }}"
-                        required placeholder="Enter complete address">
+                <div class="form-group">
+                    <label for="region" class="form-label">Region</label>
+                    <select id="region" name="region" class="form-input" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="province" class="form-label">Province</label>
+                    <select id="province" name="province" class="form-input" disabled></select>
                 </div>
             </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city" class="form-label">City/Municipality</label>
+                    <select id="city" name="city" class="form-input" disabled required></select>
+                </div>
+                <div class="form-group">
+                    <label for="barangay" class="form-label">Barangay</label>
+                    <select id="barangay" name="barangay" class="form-input" disabled></select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label for="street" class="form-label">House/Street, Subdivision (optional)</label>
+                    <input type="text" id="street" name="street" class="form-input" value="{{ old('street') }}" placeholder="e.g., 123 Sampaguita St, Unit 5B">
+                </div>
+            </div>
+
+            <!-- Hidden composed address to keep backend unchanged -->
+            <input type="hidden" id="address" name="address" value="{{ old('address', $userData['address'] ?? '') }}">
 
             <div class="form-row">
                 <div class="form-group">
@@ -639,32 +676,193 @@
 
         // ==================== ADDRESS CAPITALIZATION ====================
 
-        const addressInput = document.getElementById('address');
+        // ==================== CASCADING ADDRESS SELECTS (PH) ====================
+        const REGION_API = 'https://psgc.gitlab.io/api/regions/';
+        const PROVINCES_API = (regionCode) => `https://psgc.gitlab.io/api/regions/${regionCode}/provinces/`;
+        const CITIES_MUN_API = (parentCode, parentType) => parentType === 'province'
+            ? `https://psgc.gitlab.io/api/provinces/${parentCode}/cities-municipalities/`
+            : `https://psgc.gitlab.io/api/regions/${parentCode}/cities-municipalities/`;
+        const BARANGAYS_API = (cityMunCode) => `https://psgc.gitlab.io/api/cities-municipalities/${cityMunCode}/barangays/`;
 
-        // Capitalize first letter of address in real-time as user types
-        addressInput.addEventListener('input', function (e) {
-            const cursorPosition = e.target.selectionStart;
-            let value = e.target.value;
+        const selRegion = document.getElementById('region');
+        const selProvince = document.getElementById('province');
+        const selCity = document.getElementById('city');
+        const selBarangay = document.getElementById('barangay');
+        const streetInput = document.getElementById('street');
+        const hiddenAddress = document.getElementById('address');
 
-            if (value.length > 0) {
-                // Always capitalize the very first letter
-                let capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
-
-                // Only update if changed to avoid cursor jumping
-                if (capitalizedValue !== value) {
-                    e.target.value = capitalizedValue;
-                    e.target.setSelectionRange(cursorPosition, cursorPosition);
-                }
+        // Helpers
+        function setOptions(select, items, placeholder) {
+            select.innerHTML = '';
+            const ph = document.createElement('option');
+            ph.value = '';
+            ph.textContent = placeholder;
+            ph.disabled = true;
+            ph.selected = true;
+            select.appendChild(ph);
+            for (const it of items) {
+                const opt = document.createElement('option');
+                opt.value = it.code || it.psgcCode || it.id || it.name;
+                opt.textContent = it.name || it.provinceName || it.municipalityName || it.cityName || it.barangayName || '';
+                // Some PSGC payloads use 'name'
+                if (!opt.textContent && it.fullName) opt.textContent = it.fullName;
+                select.appendChild(opt);
             }
+        }
+
+        function toggle(select, enabled) {
+            select.disabled = !enabled;
+        }
+
+        function composeAddress() {
+            const parts = [];
+            const street = streetInput.value.trim();
+            if (street) parts.push(street);
+            const bgyText = selBarangay.options[selBarangay.selectedIndex]?.textContent;
+            if (selBarangay.value) parts.push(bgyText);
+            const cityText = selCity.options[selCity.selectedIndex]?.textContent;
+            if (selCity.value) parts.push(cityText);
+            const provText = selProvince.options[selProvince.selectedIndex]?.textContent;
+            // Some regions (e.g., NCR) have no province
+            if (selProvince.value) parts.push(provText);
+            const regionText = selRegion.options[selRegion.selectedIndex]?.textContent;
+            if (selRegion.value) parts.push(regionText);
+            hiddenAddress.value = parts.join(', ');
+        }
+
+        async function loadRegions() {
+            try {
+                const res = await fetch(REGION_API, { cache: 'force-cache' });
+                const data = await res.json();
+                // Sort by name
+                data.sort((a, b) => a.regionName.localeCompare(b.regionName));
+                // PSGC regions use 'regionName' field; map to common shape
+                const items = data.map(r => ({ code: r.code || r.psgcCode, name: r.regionName || r.name }));
+                setOptions(selRegion, items, 'Select Region');
+            } catch (e) {
+                setOptions(selRegion, [], 'Failed to load regions');
+            }
+        }
+
+        async function loadProvinces(regionCode) {
+            try {
+                const res = await fetch(PROVINCES_API(regionCode), { cache: 'force-cache' });
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    const items = data.map(p => ({ code: p.code || p.psgcCode, name: p.name || p.provinceName }));
+                    setOptions(selProvince, items, 'Select Province');
+                    toggle(selProvince, true);
+                } else {
+                    // No provinces (e.g., NCR). Disable and clear province; we'll load cities by region
+                    setOptions(selProvince, [], 'No Province');
+                    toggle(selProvince, false);
+                }
+            } catch (e) {
+                setOptions(selProvince, [], 'Failed to load provinces');
+                toggle(selProvince, false);
+            }
+        }
+
+        async function loadCities(parentCode, parentType) {
+            try {
+                const res = await fetch(CITIES_MUN_API(parentCode, parentType), { cache: 'force-cache' });
+                const data = await res.json();
+                const items = data.map(c => ({ code: c.code || c.psgcCode, name: c.name || c.municipalityName || c.cityName }));
+                setOptions(selCity, items, 'Select City/Municipality');
+                toggle(selCity, true);
+            } catch (e) {
+                setOptions(selCity, [], 'Failed to load cities');
+                toggle(selCity, false);
+            }
+        }
+
+        async function loadBarangays(cityCode) {
+            try {
+                const res = await fetch(BARANGAYS_API(cityCode), { cache: 'force-cache' });
+                const data = await res.json();
+                const items = data.map(b => ({ code: b.code || b.psgcCode, name: b.name || b.barangayName }));
+                setOptions(selBarangay, items, 'Select Barangay');
+                toggle(selBarangay, true);
+            } catch (e) {
+                setOptions(selBarangay, [], 'Failed to load barangays');
+                toggle(selBarangay, false);
+            }
+        }
+
+        // Event wiring
+        selRegion.addEventListener('change', async () => {
+            // Reset lower levels
+            setOptions(selProvince, [], 'Loading...');
+            setOptions(selCity, [], 'Select City/Municipality');
+            setOptions(selBarangay, [], 'Select Barangay');
+            toggle(selCity, false); toggle(selBarangay, false);
+
+            const regionCode = selRegion.value;
+            await loadProvinces(regionCode);
+
+            if (selProvince.disabled) {
+                // No provinces; load cities by region
+                await loadCities(regionCode, 'region');
+            } else {
+                // Wait for province selection
+                toggle(selCity, false);
+            }
+            composeAddress();
         });
 
-        // Additional cleanup on blur (when user clicks away)
-        addressInput.addEventListener('blur', function (e) {
-            let value = e.target.value.trim();
-            if (value) {
-                // Ensure first letter is capitalized
-                value = value.charAt(0).toUpperCase() + value.slice(1);
-                e.target.value = value;
+        selProvince.addEventListener('change', async () => {
+            setOptions(selCity, [], 'Loading...');
+            setOptions(selBarangay, [], 'Select Barangay');
+            toggle(selBarangay, false);
+            const provCode = selProvince.value;
+            await loadCities(provCode, 'province');
+            composeAddress();
+        });
+
+        selCity.addEventListener('change', async () => {
+            setOptions(selBarangay, [], 'Loading...');
+            const cityCode = selCity.value;
+            await loadBarangays(cityCode);
+            composeAddress();
+        });
+
+        selBarangay.addEventListener('change', composeAddress);
+        streetInput.addEventListener('input', composeAddress);
+        streetInput.addEventListener('blur', composeAddress);
+
+        // Initialize
+        loadRegions().then(async () => {
+            // Restore previous selections if any
+            const oldRegion = @json(old('region')) || null;
+            const oldProvince = @json(old('province')) || null;
+            const oldCity = @json(old('city')) || null;
+            const oldBarangay = @json(old('barangay')) || null;
+
+            try {
+                if (oldRegion) {
+                    selRegion.value = oldRegion;
+                    await loadProvinces(oldRegion);
+                    // If province list is disabled for this region (e.g., NCR)
+                    if (selProvince.disabled) {
+                        await loadCities(oldRegion, 'region');
+                    } else if (oldProvince) {
+                        selProvince.value = oldProvince;
+                        await loadCities(oldProvince, 'province');
+                    }
+
+                    if (oldCity) {
+                        selCity.value = oldCity;
+                        await loadBarangays(oldCity);
+                    }
+
+                    if (oldBarangay) {
+                        selBarangay.value = oldBarangay;
+                    }
+                }
+            } catch (e) {
+                // ignore restore errors
+            } finally {
+                composeAddress();
             }
         });
 
@@ -766,6 +964,14 @@
                 e.preventDefault();
                 contactInput.focus();
                 alert('Contact number must start with 09.');
+                return false;
+            }
+
+            // Ensure composed address exists
+            composeAddress();
+            if (!hiddenAddress.value) {
+                e.preventDefault();
+                alert('Please complete your address (select region and city/municipality at minimum).');
                 return false;
             }
         });
