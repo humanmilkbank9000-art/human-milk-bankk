@@ -1073,10 +1073,26 @@
                                                 <td data-label="Date" class="text-center">
                                                     <small>{{ $donation->updated_at ? $donation->updated_at->format('M d, Y') : ($donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A') }}</small>
                                                 </td>
+                                                <td data-label="Time" class="text-center">
+                                                    <small>
+                                                        {{ isset($donation->donation_time) && $donation->donation_time ? \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') : ($donation->updated_at ? $donation->updated_at->format('g:i A') : 'N/A') }}
+                                                    </small>
+                                                </td>
                                                 <td data-label="Action" class="text-center">
                                                     <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap"
                                                         style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
-                                                        {{-- View button removed for Home Collection Success temporarily --}}
+                                                        <button class="btn btn-sm btn-primary me-1 view-donation"
+                                                            data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
+                                                            data-donor-contact="{{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '') }}"
+                                                            data-donor-address="{{ data_get($donation,'user.address','Not provided') }}"
+                                                            data-bags="{{ $donation->number_of_bags ?? (is_array($donation->bag_details ?? null) ? count($donation->bag_details) : '') }}"
+                                                            data-total="{{ $donation->total_volume ?? $donation->formatted_total_volume ?? '' }}"
+                                                            data-bag-details='@json($donation->bag_details ?? [], JSON_HEX_APOS | JSON_HEX_QUOT)'
+                                                            title="View donation">
+                                                            <i class="fas fa-eye"></i>
+                                                            <span class="d-none d-md-inline"> View</span>
+                                                        </button>
                                                         <button class="btn btn-sm btn-danger"
                                                             onclick="archiveDonation({{ $donation->breastmilk_donation_id }})"
                                                             title="Archive donation" aria-label="Archive donation">
