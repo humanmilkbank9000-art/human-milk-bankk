@@ -67,16 +67,17 @@ class ReportService
 
     public function buildRequestData(int $year, int $month): array
     {
-        // Get all breastmilk requests for the given month/year
+        // Get all breastmilk requests for the given month/year (excluding pending)
         // Eager-load nested dispensedMilk relations to avoid N+1 when accessing sources
         $requests = \App\Models\BreastmilkRequest::with(['user', 'infant', 'dispensedMilk.sourceDonations.user', 'dispensedMilk.sourceBatches'])
             ->whereYear('request_date', $year)
             ->whereMonth('request_date', $month)
+            ->whereIn('status', ['approved', 'dispensed', 'declined'])
             ->orderBy('request_date', 'desc')
             ->orderBy('request_time', 'desc')
             ->get();
 
-        // Count by status
+        // Count by status (total excludes pending)
         $total = $requests->count();
         // Approved should include both approved and dispensed statuses
         $approved = $requests->whereIn('status', ['approved', 'dispensed'])->count();
