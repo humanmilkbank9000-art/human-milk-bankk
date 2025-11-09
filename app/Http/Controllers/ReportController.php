@@ -27,10 +27,10 @@ class ReportController extends Controller
         if (in_array($reportType, ['requests', 'request'])) {
             $records = collect($payload['records'] ?? []);
 
-            // Only include approved and dispensed, exclude pending and declined
+            // Only include dispensed requests, exclude pending, approved without dispensing, and declined
             $accepted = $records->filter(function ($r) {
                 $status = trim(strtolower($r['status'] ?? ''));
-                return in_array($status, ['approved', 'dispensed']);
+                return $status === 'dispensed';
             })->values();
 
             $payload['records'] = $accepted;
@@ -70,10 +70,10 @@ class ReportController extends Controller
         if (in_array($reportType, ['requests', 'request'])) {
             $records = collect($payload['records'] ?? []);
 
-            // Only include approved and dispensed, exclude pending and declined
+            // Only include dispensed requests, exclude pending, approved without dispensing, and declined
             $accepted = $records->filter(function ($r) {
                 $status = trim(strtolower($r['status'] ?? ''));
-                return in_array($status, ['approved', 'dispensed']);
+                return $status === 'dispensed';
             })->values();
 
             $total = $accepted->count();

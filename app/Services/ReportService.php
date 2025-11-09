@@ -69,18 +69,18 @@ class ReportService
     {
         // Get all breastmilk requests for the given month/year
         // Eager-load nested dispensedMilk relations to avoid N+1 when accessing sources
-        // Only include approved and dispensed requests (exclude pending and declined)
+        // Only include dispensed requests (exclude pending, approved, and declined)
         $requests = \App\Models\BreastmilkRequest::with(['user', 'infant', 'dispensedMilk.sourceDonations.user', 'dispensedMilk.sourceBatches'])
             ->whereYear('request_date', $year)
             ->whereMonth('request_date', $month)
-            ->whereIn('status', ['approved', 'dispensed'])
+            ->where('status', 'dispensed')
             ->orderBy('request_date', 'desc')
             ->orderBy('request_time', 'desc')
             ->get();
 
-        // Count by status (only approved and dispensed are included in the query)
+        // Count by status (only dispensed are included in the query)
         $total = $requests->count();
-        // All requests are either approved or dispensed
+        // All requests are dispensed
         $approved = $total;
         $declined = 0; // Declined requests are excluded from the report
         // Total dispensed volume for the period (sum of volume_dispensed)
