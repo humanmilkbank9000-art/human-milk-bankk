@@ -21,7 +21,7 @@ class ReportController extends Controller
 
         [$view, $payload, $meta] = $this->service->buildReportPayload($type, $year, $month);
 
-        // Ensure preview (used for on-screen print) shows only accepted/successful records
+        // Filter to show only accepted/successful records (approved and dispensed)
         $reportType = strtolower($meta['type'] ?? $type);
 
         if (in_array($reportType, ['requests', 'request'])) {
@@ -42,7 +42,6 @@ class ReportController extends Controller
             });
         } elseif (in_array($reportType, ['donations', 'donation'])) {
             $records = collect($payload['records'] ?? []);
-            // Keep only records that are present (service already filtered successful donations)
             $payload['records'] = $records->values();
             $payload['total_volume'] = $records->sum(function ($r) {
                 return (float) ($r['total_volume'] ?? 0);
@@ -65,8 +64,7 @@ class ReportController extends Controller
 
         [$view, $payload, $meta] = $this->service->buildReportPayload($type, $year, $month);
 
-        // When generating PDF/print output, ensure the exported data contains only "accepted" records.
-        // For requests: only include 'approved' and 'dispensed' statuses
+        // Filter to show only accepted/successful records (approved and dispensed)
         $reportType = strtolower($meta['type'] ?? $type);
 
         if (in_array($reportType, ['requests', 'request'])) {
@@ -78,7 +76,6 @@ class ReportController extends Controller
                 return in_array($status, ['approved', 'dispensed']);
             })->values();
 
-            // Recompute summary values expected by the requests report partial
             $total = $accepted->count();
             $approved = $accepted->count();
             $declined = 0;
@@ -93,12 +90,9 @@ class ReportController extends Controller
             $payload['dispensed_volume'] = $dispensedVolume;
         } elseif (in_array($reportType, ['donations', 'donation'])) {
             $records = collect($payload['records'] ?? []);
-
-            // Donation service already filters to successful donations, but ensure totals reflect only those rows
             $totalVolume = $records->sum(function ($r) {
                 return (float) ($r['total_volume'] ?? 0);
             });
-
             $payload['records'] = $records->values();
             $payload['total_volume'] = $totalVolume;
         }
