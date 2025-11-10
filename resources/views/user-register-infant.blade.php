@@ -971,11 +971,41 @@
         }
 
         function confirmSubmit() {
+            // Check if terms are accepted
+            const checkbox = document.getElementById('accept_terms');
+            const errorDiv = document.getElementById('terms-error');
+            
+            if (!checkbox.checked) {
+                errorDiv.style.display = 'block';
+                checkbox.focus();
+                checkbox.parentElement.parentElement.style.borderColor = '#dc2626';
+                setTimeout(() => {
+                    checkbox.parentElement.parentElement.style.borderColor = '#ec4899';
+                }, 2000);
+                return false;
+            }
+            
+            errorDiv.style.display = 'none';
+            
             // Close modal
             closeModal();
 
             // Submit the form
             const form = document.querySelector('form');
+            
+            // Add hidden input for accept_terms
+            const termsInput = document.createElement('input');
+            termsInput.type = 'hidden';
+            termsInput.name = 'accept_terms';
+            termsInput.value = '1';
+            form.appendChild(termsInput);
+            
+            // Add consent version
+            const consentInput = document.createElement('input');
+            consentInput.type = 'hidden';
+            consentInput.name = 'consent_version';
+            consentInput.value = 'v1';
+            form.appendChild(consentInput);
 
             // Remove the submit event listener to allow actual submission
             const newForm = form.cloneNode(true);
@@ -996,6 +1026,32 @@
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 closeModal();
+            }
+        });
+
+        // ==================== TERMS AND PRIVACY MODALS ====================
+        function showTermsModal(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('termsModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTermsModal() {
+            document.getElementById('termsModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('termsModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeTermsModal();
+        });
+        
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const termsModal = document.getElementById('termsModal');
+                if (termsModal.style.display === 'block') closeTermsModal();
             }
         });
     </script>
@@ -1076,14 +1132,82 @@
                     <p><strong>Note:</strong> Please review the information carefully. Once confirmed, you will be
                         redirected to your dashboard.</p>
                 </div>
+
+                <!-- Terms and Conditions Checkbox -->
+                <div class="info-section" style="background: #fff9e6; border: 1px solid #f0ad4e; border-radius: 0.5rem; padding: 0;">
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem;">
+                        <input type="checkbox" id="accept_terms" name="accept_terms" value="1" 
+                            style="margin-top: 0.3rem; width: 18px; height: 18px; cursor: pointer; accent-color: #ec4899; flex-shrink: 0;" required>
+                        <label for="accept_terms" style="font-size: 0.95rem; color: #374151; cursor: pointer; line-height: 1.6; flex: 1;">
+                            I have read and agree to the 
+                            <a href="#" onclick="showTermsModal(event)" style="color: #d9534f; text-decoration: underline; font-weight: 600;">
+                                Terms and Conditions
+                            </a>
+                        </label>
+                    </div>
+                    <div id="terms-error" style="display: none; color: #dc2626; font-size: 0.85rem; padding: 0 1rem 1rem 2.75rem; font-weight: 500;">
+                        ⚠ You must accept the Terms and Conditions to proceed.
+                    </div>
+                </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-back" onclick="closeModal()">Go Back & Edit</button>
-                <button type="button" class="btn btn-submit" onclick="confirmSubmit()">Confirm & Submit</button>
+                <button type="button" class="btn btn-back" onclick="closeModal()">GO BACK & EDIT</button>
+                <button type="button" class="btn btn-submit" onclick="confirmSubmit()">CONFIRM & SUBMIT</button>
             </div>
         </div>
     </div>
+
+    <!-- Terms and Conditions Modal -->
+    <div id="termsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; overflow-y: auto;">
+        <div style="max-width: 700px; margin: 2rem auto; background: white; border-radius: 1rem; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <div style="padding: 1.5rem; border-bottom: 2px solid #fce7f3; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-family: 'Quicksand', sans-serif; color: #ec4899; font-size: 1.5rem; margin: 0;">Terms and Conditions</h2>
+                <button onclick="closeTermsModal()" style="background: none; border: none; font-size: 2rem; color: #6b7280; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <div style="padding: 1.5rem; max-height: 60vh; overflow-y: auto;">
+                <h3 style="color: #ec4899; font-size: 1.1rem; margin-bottom: 0.75rem;">1. Acceptance of Terms</h3>
+                <p style="margin-bottom: 1rem; line-height: 1.6; color: #374151;">
+                    By creating an account with the Cagayan de Oro City Human Milk Bank & Lactation Support Center, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
+                </p>
+                
+                <h3 style="color: #ec4899; font-size: 1.1rem; margin-bottom: 0.75rem;">2. Eligibility</h3>
+                <p style="margin-bottom: 1rem; line-height: 1.6; color: #374151;">
+                    You must be at least 18 years old to register as a user. By registering, you confirm that all information provided is accurate and truthful.
+                </p>
+                
+                <h3 style="color: #ec4899; font-size: 1.1rem; margin-bottom: 0.75rem;">3. Account Responsibility</h3>
+                <p style="margin-bottom: 1rem; line-height: 1.6; color: #374151;">
+                    You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use of your account.
+                </p>
+                
+                <h3 style="color: #ec4899; font-size: 1.1rem; margin-bottom: 0.75rem;">4. Data Accuracy</h3>
+                <p style="margin-bottom: 1rem; line-height: 1.6; color: #374151;">
+                    You agree to provide accurate, current, and complete information during registration and to update such information as necessary to maintain its accuracy.
+                </p>
+                
+                <h3 style="color: #ec4899; font-size: 1.1rem; margin-bottom: 0.75rem;">5. Health Information</h3>
+                <p style="margin-bottom: 1rem; line-height: 1.6; color: #374151;">
+                    All health screening information must be accurate and complete. False information may result in account suspension and denial of services.
+                </p>
+                
+                <h3 style="color: #ec4899; font-size: 1.1rem; margin-bottom: 0.75rem;">6. Service Usage</h3>
+                <p style="margin-bottom: 1rem; line-height: 1.6; color: #374151;">
+                    Services provided through this platform are subject to availability. The Human Milk Bank reserves the right to accept or decline donations and requests based on health screening results and inventory availability.
+                </p>
+                
+                <h3 style="color: #ec4899; font-size: 1.1rem; margin-bottom: 0.75rem;">7. Termination</h3>
+                <p style="margin-bottom: 1rem; line-height: 1.6; color: #374151;">
+                    We reserve the right to suspend or terminate your account at any time if you violate these terms or engage in fraudulent activity.
+                </p>
+            </div>
+            <div style="padding: 1.5rem; border-top: 1px solid #e5e7eb; text-align: right;">
+                <button onclick="closeTermsModal()" style="background: #ec4899; color: white; border: none; padding: 0.65rem 1.5rem; border-radius: 0.4rem; font-weight: 600; cursor: pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
 </body>
 
 </html>
