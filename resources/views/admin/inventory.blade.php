@@ -488,17 +488,10 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link{{ request()->get('status') == 'disposed_unpasteurized' ? ' active' : '' }}" href="?status=disposed_unpasteurized"
-                    id="disposed-unpasteurized-tab" role="tab">
-                    <i class="fas fa-trash-alt"></i> Disposed Unpasteurized
-                    <span class="badge bg-danger">{{ isset($disposedUnpasteurized) ? $disposedUnpasteurized->count() : 0 }}</span>
-                </a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link{{ request()->get('status') == 'disposed_pasteurized' ? ' active' : '' }}" href="?status=disposed_pasteurized"
-                    id="disposed-pasteurized-tab" role="tab">
-                    <i class="fas fa-trash-alt"></i> Disposed Pasteurized
-                    <span class="badge bg-danger">{{ isset($disposedPasteurized) ? $disposedPasteurized->count() : 0 }}</span>
+                <a class="nav-link{{ request()->get('status') == 'disposed' ? ' active' : '' }}" href="?status=disposed"
+                    id="disposed-tab" role="tab">
+                    <i class="fas fa-trash-alt"></i> Disposed
+                    <span class="badge bg-danger">{{ (isset($disposedUnpasteurized) ? $disposedUnpasteurized->count() : 0) + (isset($disposedPasteurized) ? $disposedPasteurized->count() : 0) }}</span>
                 </a>
             </li>
         </ul>
@@ -704,20 +697,44 @@
                                                         </div>
                                                     </td>
                                                     <td class="text-center" data-label="Expires">
-                                                        @php
-                                                            // Use donation_date if present, otherwise created_at; expiry = +6 months
-                                                            $baseDate = $donation->donation_date ?? $donation->created_at;
-                                                            try {
-                                                                $expiry = \Carbon\Carbon::parse($baseDate)->addMonths(6)->setTimezone('Asia/Manila');
-                                                            } catch (\Exception $e) {
-                                                                $expiry = null;
-                                                            }
-                                                        @endphp
-                                                        @if($expiry)
-                                                            <small>{{ $expiry->format('M d, Y') }}</small>
-                                                        @else
-                                                            <span class="text-muted">-</span>
-                                                        @endif
+                                                        <div class="per-bag-list text-start">
+                                                            @php
+                                                                $bagDetails = is_array($donation->bag_details ?? null) ? $donation->bag_details : [];
+                                                                $isWalkIn = ($donation->donation_method ?? '') === 'walk_in';
+                                                                $bagsCount = isset($bagsCount) ? $bagsCount : max(1, intval($donation->number_of_bags ?? (is_array($bagDetails) ? count($bagDetails) : 1)));
+                                                            @endphp
+                                                            @for ($i = 0; $i < $bagsCount; $i++)
+                                                                @php
+                                                                    $displayExpiry = null;
+
+                                                                    $perBagDate = $bagDetails[$i]['date'] ?? null;
+
+                                                                    if ($isWalkIn && !empty($donation->added_to_inventory_at)) {
+                                                                        $base = $donation->added_to_inventory_at;
+                                                                    } elseif ($perBagDate) {
+                                                                        $base = $perBagDate;
+                                                                    } elseif (!empty($donation->donation_date)) {
+                                                                        $base = $donation->donation_date;
+                                                                    } elseif (!empty($donation->scheduled_pickup_date)) {
+                                                                        $base = $donation->scheduled_pickup_date;
+                                                                    } elseif (!empty($donation->added_to_inventory_at)) {
+                                                                        $base = $donation->added_to_inventory_at;
+                                                                    } else {
+                                                                        $base = null;
+                                                                    }
+
+                                                                    if ($base) {
+                                                                        try {
+                                                                            $expiry = \Carbon\Carbon::parse($base)->addMonths(6)->setTimezone('Asia/Manila');
+                                                                            $displayExpiry = $expiry->format('M d, Y');
+                                                                        } catch (\Exception $e) {
+                                                                            $displayExpiry = null;
+                                                                        }
+                                                                    }
+                                                                @endphp
+                                                                <div><small>{{ $displayExpiry ?? '-' }}</small></div>
+                                                            @endfor
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -935,97 +952,43 @@
             </div>
             
 
-            <!-- Section 4: Disposed Unpasteurized -->
-            <div class="tab-pane fade{{ request()->get('status') == 'disposed_unpasteurized' ? ' show active' : '' }}" id="disposed_unpasteurized"
+            <!-- Section 4: Disposed (Unpasteurized + Pasteurized) -->
+            <div class="tab-pane fade{{ request()->get('status') == 'disposed' ? ' show active' : '' }}" id="disposed"
                 role="tabpanel">
                 <div class="card card-standard">
                     <div class="card-header bg-danger text-white">
-                        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Disposed Unpasteurized</h5>
+                        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Disposed Records</h5>
                     </div>
                     <div class="card-body">
-                        @if(isset($disposedUnpasteurized) && $disposedUnpasteurized->count() > 0)
-                            <div class="table-container-standard">
-                                <table class="table table-standard table-bordered table-striped align-middle">
-                                    <thead class="table-success">
-                                        <tr>
-                                            <th class="text-center px-2 py-2">Source (Donor)</th>
-                                            <th class="text-center px-2 py-2">Volume</th>
-                                            <th class="text-center px-2 py-2">Date</th>
-                                            <th class="text-center px-2 py-2">Time</th>
-                                            <th class="text-center px-2 py-2">Notes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $disposedOrdered = $disposedUnpasteurized instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $disposedUnpasteurized->getCollection()->sortByDesc('date_disposed')
-                                                : collect($disposedUnpasteurized)->sortByDesc('date_disposed');
-                                        @endphp
-                                        @foreach($disposedOrdered as $record)
-                                            <tr>
-                                                <td style="white-space: normal;" data-label="Source">
-                                                    @php
-                                                        $label = '-';
-                                                        if ($record->sourceDonation) {
-                                                            $u = $record->sourceDonation->user;
-                                                            if ($u) {
-                                                                $first = $u->first_name ?? '';
-                                                                $last = $u->last_name ?? '';
-                                                                $name = trim(($first.' '.$last));
-                                                                if ($name !== '') $label = $name;
-                                                            }
-                                                            if ($label === '-' && !empty($record->sourceDonation->donor_name)) {
-                                                                $label = $record->sourceDonation->donor_name;
-                                                            }
-                                                            if ($label === '-') {
-                                                                $label = 'Donation #'.($record->sourceDonation->breastmilk_donation_id ?? '-');
-                                                            }
-                                                        }
-                                                    @endphp
-                                                    <strong>{{ $label }}</strong>
-                                                </td>
-                                                <td class="text-center" data-label="Volume">
-                                                    <span class="badge badge-danger volume-badge">{{ $record->formatted_volume_disposed }}ml</span>
-                                                </td>
-                                                <td class="text-center" style="white-space: nowrap;" data-label="Date">
-                                                    <small>{{ $record->formatted_date }}</small>
-                                                </td>
-                                                <td class="text-center" style="white-space: nowrap;" data-label="Time">
-                                                    <small>{{ $record->formatted_time }}</small>
-                                                </td>
-                                                <td style="white-space: normal;" data-label="Notes">
-                                                    <small class="text-muted">{{ $record->notes ?? '-' }}</small>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-trash-alt fa-3x text-muted mb-3"></i>
-                                <h5 class="text-muted">No disposed unpasteurized records</h5>
-                                <p class="text-muted">Disposed unpasteurized records will appear here</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
+                        @php
+                            // Build a combined list of disposed records with a type flag
+                            $combinedDisposed = collect([]);
+                            if (isset($disposedUnpasteurized)) {
+                                $un = $disposedUnpasteurized instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                    ? $disposedUnpasteurized->getCollection()->sortByDesc('date_disposed')
+                                    : collect($disposedUnpasteurized)->sortByDesc('date_disposed');
+                                foreach ($un as $r) { $combinedDisposed->push(['type' => 'Unpasteurized', 'record' => $r]); }
+                            }
+                            if (isset($disposedPasteurized)) {
+                                $pa = $disposedPasteurized instanceof \Illuminate\Pagination\LengthAwarePaginator
+                                    ? $disposedPasteurized->getCollection()->sortByDesc('date_disposed')
+                                    : collect($disposedPasteurized)->sortByDesc('date_disposed');
+                                foreach ($pa as $r) { $combinedDisposed->push(['type' => 'Pasteurized', 'record' => $r]); }
+                            }
+                            // Sort combined by date_disposed (descending) if present
+                            $combinedDisposed = $combinedDisposed->sortByDesc(function ($item) {
+                                $d = $item['record']->date_disposed ?? $item['record']->created_at ?? null;
+                                return $d;
+                            })->values();
+                        @endphp
 
-            <!-- Section 5: Disposed Pasteurized -->
-            <div class="tab-pane fade{{ request()->get('status') == 'disposed_pasteurized' ? ' show active' : '' }}" id="disposed_pasteurized"
-                role="tabpanel">
-                <div class="card card-standard">
-                    <div class="card-header bg-danger text-white">
-                        <h5 class="mb-0"><i class="fas fa-trash-alt"></i> Disposed Pasteurized</h5>
-                    </div>
-                    <div class="card-body">
-                        @if(isset($disposedPasteurized) && $disposedPasteurized->count() > 0)
+                        @if($combinedDisposed->count() > 0)
                             <div class="table-container-standard">
                                 <table class="table table-standard table-bordered table-striped align-middle">
                                     <thead class="table-success">
                                         <tr>
-                                            <th class="text-center px-2 py-2">Batch</th>
+                                            <th class="text-center px-2 py-2">Type</th>
+                                            <th class="text-center px-2 py-2">Source / Batch</th>
                                             <th class="text-center px-2 py-2">Volume</th>
                                             <th class="text-center px-2 py-2">Date</th>
                                             <th class="text-center px-2 py-2">Time</th>
@@ -1033,15 +996,37 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $disposedBatchesOrdered = $disposedPasteurized instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $disposedPasteurized->getCollection()->sortByDesc('date_disposed')
-                                                : collect($disposedPasteurized)->sortByDesc('date_disposed');
-                                        @endphp
-                                        @foreach($disposedBatchesOrdered as $record)
+                                        @foreach($combinedDisposed as $item)
+                                            @php
+                                                $type = $item['type'];
+                                                $record = $item['record'];
+                                            @endphp
                                             <tr>
-                                                <td style="white-space: normal;" data-label="Batch">
-                                                    <strong>{{ $record->sourceBatch ? $record->sourceBatch->batch_number : '-' }}</strong>
+                                                <td class="text-center" data-label="Type"><small>{{ $type }}</small></td>
+                                                <td style="white-space: normal;" data-label="Source / Batch">
+                                                    @if($type === 'Unpasteurized')
+                                                        @php
+                                                            $label = '-';
+                                                            if ($record->sourceDonation) {
+                                                                $u = $record->sourceDonation->user;
+                                                                if ($u) {
+                                                                    $first = $u->first_name ?? '';
+                                                                    $last = $u->last_name ?? '';
+                                                                    $name = trim(($first.' '.$last));
+                                                                    if ($name !== '') $label = $name;
+                                                                }
+                                                                if ($label === '-' && !empty($record->sourceDonation->donor_name)) {
+                                                                    $label = $record->sourceDonation->donor_name;
+                                                                }
+                                                                if ($label === '-') {
+                                                                    $label = 'Donation #'.($record->sourceDonation->breastmilk_donation_id ?? '-');
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        <strong>{{ $label }}</strong>
+                                                    @else
+                                                        <strong>{{ $record->sourceBatch ? $record->sourceBatch->batch_number : '-' }}</strong>
+                                                    @endif
                                                 </td>
                                                 <td class="text-center" data-label="Volume">
                                                     <span class="badge badge-danger volume-badge">{{ $record->formatted_volume_disposed }}ml</span>
@@ -1063,8 +1048,8 @@
                         @else
                             <div class="text-center py-4">
                                 <i class="fas fa-trash-alt fa-3x text-muted mb-3"></i>
-                                <h5 class="text-muted">No disposed pasteurized records</h5>
-                                <p class="text-muted">Disposed pasteurized batch records will appear here</p>
+                                <h5 class="text-muted">No disposed records</h5>
+                                <p class="text-muted">Disposed records will appear here</p>
                             </div>
                         @endif
                     </div>

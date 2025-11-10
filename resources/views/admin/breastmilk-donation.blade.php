@@ -1180,7 +1180,6 @@
                                         <tr>
                                             <th class="text-center">Name</th>
                                             <th class="text-center">Address</th>
-                                            <th class="text-center">Location</th>
                                             <th class="text-center">Total volume</th>
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Time</th>
@@ -1201,23 +1200,7 @@
                                                 <td data-label="Address" class="text-center">
                                                     <small>{{ data_get($donation, 'user.address', 'Not provided') }}</small>
                                                 </td>
-                                                <td data-label="Location" class="text-center">
-                                                    @php
-                                                        // Prefer donation-specific coordinates if available; fallback to user's profile
-                                                        $latHome = $donation->latitude ?? optional($donation->user)->latitude ?? null;
-                                                        $lngHome = $donation->longitude ?? optional($donation->user)->longitude ?? null;
-                                                    @endphp
-                                                    @if(!is_null($latHome) && $latHome !== '' && !is_null($lngHome) && $lngHome !== '')
-                                                        <button class="btn btn-info btn-sm view-location" title="View on Map"
-                                                            data-donor-name="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
-                                                            data-donor-address="{{ data_get($donation, 'user.address', '') }}"
-                                                            data-latitude="{{ $latHome }}" data-longitude="{{ $lngHome }}">
-                                                            <i class="fas fa-map-marked-alt"></i>
-                                                        </button>
-                                                    @else
-                                                        <span class="text-muted">-</span>
-                                                    @endif
-                                                </td>
+                                                {{-- Location button removed from table (available in View modal) --}}
                                                 <td data-label="Total volume" class="text-center">
                                                     <strong>{{ $donation->formatted_total_volume }}ml</strong>
                                                 </td>

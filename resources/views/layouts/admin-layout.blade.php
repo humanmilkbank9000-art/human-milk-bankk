@@ -393,6 +393,10 @@
         .modal-backdrop.show { opacity: 0.55; }
         .modal { z-index: 12000; }
 
+                /* SweetAlert2: ensure alerts appear above modals and any calendar stacking contexts */
+                .swal2-container { position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; z-index: 2147483647 !important; pointer-events: auto !important; }
+                .swal2-popup, .swal2-toast { z-index: 2147483648 !important; pointer-events: auto !important; }
+
         /* Global Modal Responsive Styles */
         .modal-dialog {
             max-width: 90%;
@@ -881,6 +885,70 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
             const d = parseInt(parts[2], 10);
             return new Date(y, m, d);
         }
+    </script>
+    <script>
+        // Ensure SweetAlert2 is appended to document.body and stacked above modals.
+        (function() {
+            const MAX_Z = '2147483647';
+            function ensureSwalOnTop() {
+                try {
+                    if (!window.Swal) return;
+                    const container = document.querySelector('.swal2-container');
+                    if (container) {
+                        if (container.parentNode !== document.body) {
+                            document.body.appendChild(container);
+                        }
+                        container.style.position = 'fixed';
+                        container.style.top = '0';
+                        container.style.left = '0';
+                        container.style.right = '0';
+                        container.style.bottom = '0';
+                        container.style.zIndex = MAX_Z;
+                        container.style.pointerEvents = 'auto';
+                    }
+                    const popups = document.querySelectorAll('.swal2-popup, .swal2-toast');
+                    popups.forEach(p => {
+                        p.style.zIndex = (parseInt(MAX_Z,10) + 1).toString();
+                        p.style.pointerEvents = 'auto';
+                    });
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            // Robust override: ensure appendTo=document.body on each call and move container to body.
+            if (window.Swal && typeof Swal.fire === 'function') {
+                const original = Swal.fire.bind(Swal);
+                Swal.fire = function() {
+                    try {
+                        // Normalize args into options object
+                        if (arguments.length === 1 && typeof arguments[0] === 'object') {
+                            const opts = Object.assign({}, arguments[0], { appendTo: document.body });
+                            const res = original(opts);
+                            setTimeout(ensureSwalOnTop, 0);
+                            return res;
+                        } else {
+                            // (title, html, icon) style
+                            const title = arguments[0];
+                            const html = arguments[1];
+                            const icon = arguments[2];
+                            const opts = { title: title, html: html, icon: icon, appendTo: document.body };
+                            const res = original(opts);
+                            setTimeout(ensureSwalOnTop, 0);
+                            return res;
+                        }
+                    } catch (e) {
+                        // fallback to original
+                        return original.apply(null, arguments);
+                    }
+                };
+            }
+
+            // Also run on DOMContentLoaded in case a swal is created outside of the override
+            document.addEventListener('DOMContentLoaded', ensureSwalOnTop);
+            // And ensure on window focus (in case calendars/iframes reparented elements)
+            window.addEventListener('focus', ensureSwalOnTop);
+        })();
     </script>
     @yield('scripts')
     {{-- logout confirmation now handled in header partial --}}
