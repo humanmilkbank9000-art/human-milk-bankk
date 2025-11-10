@@ -265,39 +265,7 @@
             }
         }
 
-        /* Search Input Styling */
-        .input-group-text {
-            background-color: white;
-            border-right: 0;
-        }
 
-        #searchInput {
-            border-left: 0;
-            padding-left: 0;
-        }
-
-        #searchInput:focus {
-            box-shadow: none;
-            border-color: #ced4da;
-        }
-
-        .input-group:focus-within .input-group-text {
-            border-color: #86b7fe;
-        }
-
-        .input-group:focus-within #searchInput {
-            border-color: #86b7fe;
-        }
-
-        #clearSearch {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            #searchInput {
-                font-size: 0.9rem;
-            }
-        }
 
         /* Mobile Modal Fixes - Ensure buttons are visible and accessible */
         @media (max-width: 768px) {
@@ -420,6 +388,40 @@
         .hs-archive-btn i {
             margin-right: 0.45rem;
         }
+
+        /* Search Input Styling */
+        .input-group-text {
+            background-color: white;
+            border-right: 0;
+        }
+
+        #searchInput {
+            border-left: 0;
+            padding-left: 0;
+        }
+
+        #searchInput:focus {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #86b7fe;
+        }
+
+        .input-group:focus-within #searchInput {
+            border-color: #86b7fe;
+        }
+
+        #clearSearch {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            #searchInput {
+                font-size: 0.9rem;
+            }
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/responsive-tables.css') }}">
 @endsection
@@ -427,107 +429,7 @@
 @section('content')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    {{-- Real-time Search Functionality (substring Name or Contact; supports table rows and responsive cards) --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('searchInput');
-            const clearBtn = document.getElementById('clearSearch');
-            const searchResults = document.getElementById('searchResults');
-            const tableBody = document.querySelector('.table tbody');
-            const responsiveCards = Array.from(document.querySelectorAll('.responsive-card'));
-            const noDataAlert = document.querySelector('.alert-info');
 
-            if (!searchInput || !tableBody) return;
-
-            const allRows = Array.from(tableBody.querySelectorAll('tr'));
-            const totalCount = allRows.length + responsiveCards.length;
-
-            function getRowHaystack(row) {
-                const nameCell = row.cells && row.cells[0] ? row.cells[0] : null;
-                const contactCell = row.cells && row.cells[1] ? row.cells[1] : null;
-                const nameText = nameCell ? (nameCell.textContent || '') : '';
-                const contactText = contactCell ? (contactCell.textContent || '') : '';
-                return (nameText + ' ' + contactText).trim().toLowerCase();
-            }
-
-            function getCardHaystack(card) {
-                const rows = Array.from(card.querySelectorAll('.card-row'));
-                const nameVal = rows[0] ? (rows[0].querySelector('.card-value')?.textContent || '') : '';
-                const contactRow = rows.find(r => (r.querySelector('.card-label')||{}).textContent?.toLowerCase().includes('contact'));
-                const contactVal = contactRow ? (contactRow.querySelector('.card-value')?.textContent || '') : '';
-                return (nameVal + ' ' + contactVal).trim().toLowerCase();
-            }
-
-            // Real-time search function
-            function performSearch() {
-                const searchTerm = (searchInput.value || '').trim().toLowerCase();
-                let visibleCount = 0;
-
-                if (searchTerm === '') {
-                    // Show all rows in original order
-                    allRows.forEach(row => row.style.display = '');
-                    responsiveCards.forEach(card => card.style.display = '');
-                    clearBtn.style.display = 'none';
-                    searchResults.textContent = '';
-                    return;
-                }
-
-                // Separate matched and non-matched rows
-                const matchedRows = [];
-                const unmatchedRows = [];
-
-                allRows.forEach(row => {
-                    const hay = getRowHaystack(row);
-                    if (hay.indexOf(searchTerm) !== -1) {
-                        row.style.display = '';
-                        matchedRows.push(row);
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
-                        unmatchedRows.push(row);
-                    }
-                });
-
-                // Reorder DOM: matched rows first, then unmatched (hidden)
-                matchedRows.forEach(row => tableBody.appendChild(row));
-                unmatchedRows.forEach(row => tableBody.appendChild(row));
-
-                // Now handle responsive cards similarly
-                responsiveCards.forEach(card => {
-                    const hay = getCardHaystack(card);
-                    if (hay.indexOf(searchTerm) !== -1) {
-                        card.style.display = '';
-                        visibleCount++;
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-
-                // Update UI
-                clearBtn.style.display = 'inline-block';
-                searchResults.textContent = `Showing ${visibleCount} result${visibleCount === 1 ? '' : 's'}`;
-
-                if (visibleCount === 0) {
-                    searchResults.textContent = 'No results found';
-                    searchResults.classList.add('text-danger');
-                } else {
-                    searchResults.classList.remove('text-danger');
-                }
-            }
-
-            // Event listeners
-            searchInput.addEventListener('input', performSearch);
-
-            clearBtn.addEventListener('click', function () {
-                searchInput.value = '';
-                performSearch();
-                searchInput.focus();
-            });
-
-            // Initial state
-            performSearch();
-        });
-    </script>
     <script>
         function restoreHealthScreening(id) {
             if (typeof Swal !== 'undefined') {
@@ -883,7 +785,7 @@
                     <i class="bi bi-search"></i>
                 </span>
                 <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
-                    placeholder="Search name or contact" aria-label="Search health screenings">
+                    placeholder="Search name or contact number" aria-label="Search health screenings">
                 <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -1304,5 +1206,129 @@
                                             .catch(() => alert('Failed to archive'));
                                     }
                                 }
+                            </script>
+
+                            {{-- Real-time Search Functionality for Health Screening --}}
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    const searchInput = document.getElementById('searchInput');
+                                    const clearBtn = document.getElementById('clearSearch');
+                                    const searchResults = document.getElementById('searchResults');
+
+                                    if (!searchInput) return;
+
+                                    // Helpers to extract searchable text from table rows and responsive cards
+                                    function extractRowFields(row) {
+                                        // Include Name and Contact cells for searching
+                                        const cells = row.querySelectorAll('td');
+                                        if (cells.length === 0) return '';
+                                        
+                                        // First cell is Name, second is Contact Number
+                                        const nameText = cells[0] ? cells[0].textContent.trim() : '';
+                                        const contactText = cells[1] ? cells[1].textContent.trim() : '';
+                                        return (nameText + ' ' + contactText).toLowerCase();
+                                    }
+
+                                    function extractCardFields(card) {
+                                        // Mobile card: pull Name and Contact rows
+                                        const rows = card.querySelectorAll('.card-row');
+                                        let nameText = '';
+                                        let contactText = '';
+                                        
+                                        rows.forEach(row => {
+                                            const label = row.querySelector('.card-label');
+                                            const value = row.querySelector('.card-value');
+                                            if (label && value) {
+                                                const labelTxt = label.textContent.toLowerCase();
+                                                if (labelTxt.includes('name')) {
+                                                    nameText = value.textContent.trim();
+                                                } else if (labelTxt.includes('contact')) {
+                                                    contactText = value.textContent.trim();
+                                                }
+                                            }
+                                        });
+                                        return (nameText + ' ' + contactText).toLowerCase();
+                                    }
+
+                                    function isVisible(el) {
+                                        if (!el) return false;
+                                        return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+                                    }
+
+                                    function getAllTableRows() {
+                                        const rows = [];
+                                        document.querySelectorAll('.table tbody tr').forEach(r => rows.push(r));
+                                        return rows;
+                                    }
+
+                                    function getAllCards() {
+                                        return Array.from(document.querySelectorAll('.responsive-card'));
+                                    }
+
+                                    function performSearch() {
+                                        const term = searchInput.value.trim().toLowerCase();
+                                        let totalCount = 0;
+                                        let visibleCount = 0;
+
+                                        const rows = getAllTableRows();
+                                        const cards = getAllCards();
+
+                                        // Get total count from all rows/cards
+                                        totalCount = rows.length + cards.length;
+
+                                        // If no term, restore all rows/cards
+                                        if (!term) {
+                                            rows.forEach(row => { row.style.display = ''; });
+                                            cards.forEach(card => { card.style.display = ''; });
+
+                                            clearBtn.style.display = 'none';
+                                            searchResults.textContent = '';
+                                            searchResults.classList.remove('text-danger');
+                                            return;
+                                        }
+
+                                        // With a search term: hide all rows/cards by default, show only matches
+                                        rows.forEach(row => {
+                                            const hay = extractRowFields(row);
+                                            if (hay.indexOf(term) !== -1) {
+                                                row.style.removeProperty('display');
+                                                visibleCount++;
+                                            } else {
+                                                row.style.setProperty('display', 'none', 'important');
+                                            }
+                                        });
+
+                                        // Handle responsive-card blocks (mobile view)
+                                        cards.forEach(card => {
+                                            const hay = extractCardFields(card);
+                                            if (hay.indexOf(term) !== -1) {
+                                                card.style.removeProperty('display');
+                                                visibleCount++;
+                                            } else {
+                                                card.style.setProperty('display', 'none', 'important');
+                                            }
+                                        });
+
+                                        // Update UI
+                                        clearBtn.style.display = 'inline-block';
+                                        searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
+                                        if (visibleCount === 0) {
+                                            searchResults.textContent = 'No results found';
+                                            searchResults.classList.add('text-danger');
+                                        } else {
+                                            searchResults.classList.remove('text-danger');
+                                        }
+                                    }
+
+                                    searchInput.addEventListener('input', performSearch);
+                                    clearBtn.addEventListener('click', function () {
+                                        searchInput.value = '';
+                                        performSearch();
+                                        searchInput.focus();
+                                    });
+
+                                    // Initial run to ensure correct state
+                                    performSearch();
+                                });
                             </script>
 @endsection
