@@ -156,9 +156,11 @@ class Donation extends Model
 
     public function setBagVolumes(array $volumes)
     {
-        $this->individual_bag_volumes = $volumes;
+        // Normalize volumes to nearest 10 mL
+        $rounded = \App\Helpers\VolumeHelper::roundMlArray($volumes);
+        $this->individual_bag_volumes = $rounded;
         $this->number_of_bags = count($volumes);
-        $total = array_sum($volumes);
+        $total = array_sum($rounded);
         // Set total_volume only (original donation amount - IMMUTABLE)
         // available_volume will be initialized from total_volume when added to inventory
         // Remove .00 from whole numbers

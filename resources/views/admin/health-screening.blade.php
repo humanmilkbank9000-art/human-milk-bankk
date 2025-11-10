@@ -427,28 +427,46 @@
 @section('content')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    {{-- Real-time Search Functionality --}}
+    {{-- Real-time Search Functionality (substring Name or Contact; supports table rows and responsive cards) --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearch');
             const searchResults = document.getElementById('searchResults');
             const tableBody = document.querySelector('.table tbody');
+            const responsiveCards = Array.from(document.querySelectorAll('.responsive-card'));
             const noDataAlert = document.querySelector('.alert-info');
 
             if (!searchInput || !tableBody) return;
 
             const allRows = Array.from(tableBody.querySelectorAll('tr'));
-            const totalCount = allRows.length;
+            const totalCount = allRows.length + responsiveCards.length;
+
+            function getRowHaystack(row) {
+                const nameCell = row.cells && row.cells[0] ? row.cells[0] : null;
+                const contactCell = row.cells && row.cells[1] ? row.cells[1] : null;
+                const nameText = nameCell ? (nameCell.textContent || '') : '';
+                const contactText = contactCell ? (contactCell.textContent || '') : '';
+                return (nameText + ' ' + contactText).trim().toLowerCase();
+            }
+
+            function getCardHaystack(card) {
+                const rows = Array.from(card.querySelectorAll('.card-row'));
+                const nameVal = rows[0] ? (rows[0].querySelector('.card-value')?.textContent || '') : '';
+                const contactRow = rows.find(r => (r.querySelector('.card-label')||{}).textContent?.toLowerCase().includes('contact'));
+                const contactVal = contactRow ? (contactRow.querySelector('.card-value')?.textContent || '') : '';
+                return (nameVal + ' ' + contactVal).trim().toLowerCase();
+            }
 
             // Real-time search function
             function performSearch() {
-                const searchTerm = searchInput.value.toLowerCase();
+                const searchTerm = (searchInput.value || '').trim().toLowerCase();
                 let visibleCount = 0;
 
                 if (searchTerm === '') {
                     // Show all rows in original order
                     allRows.forEach(row => row.style.display = '');
+                    responsiveCards.forEach(card => card.style.display = '');
                     clearBtn.style.display = 'none';
                     searchResults.textContent = '';
                     return;
@@ -459,15 +477,8 @@
                 const unmatchedRows = [];
 
                 allRows.forEach(row => {
-                    // Get all cell content for comprehensive search
-                    let rowText = '';
-                    for (let i = 0; i < row.cells.length; i++) {
-                        rowText += (row.cells[i].textContent || '') + ' ';
-                    }
-                    rowText = rowText.toLowerCase();
-
-                    // Check if search term matches anywhere in the row
-                    if (rowText.indexOf(searchTerm) !== -1) {
+                    const hay = getRowHaystack(row);
+                    if (hay.indexOf(searchTerm) !== -1) {
                         row.style.display = '';
                         matchedRows.push(row);
                         visibleCount++;
@@ -481,9 +492,20 @@
                 matchedRows.forEach(row => tableBody.appendChild(row));
                 unmatchedRows.forEach(row => tableBody.appendChild(row));
 
+                // Now handle responsive cards similarly
+                responsiveCards.forEach(card => {
+                    const hay = getCardHaystack(card);
+                    if (hay.indexOf(searchTerm) !== -1) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
                 // Update UI
                 clearBtn.style.display = 'inline-block';
-                searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
+                searchResults.textContent = `Showing ${visibleCount} result${visibleCount === 1 ? '' : 's'}`;
 
                 if (visibleCount === 0) {
                     searchResults.textContent = 'No results found';
@@ -861,7 +883,7 @@
                     <i class="bi bi-search"></i>
                 </span>
                 <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
-                    placeholder="Search by name, contact number..." aria-label="Search health screenings">
+                    placeholder="Search name or contact" aria-label="Search health screenings">
                 <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                     <i class="bi bi-x-lg"></i>
                 </button>

@@ -683,9 +683,6 @@
                 </style>
                 VERSION 3.0.0
             </p>
-            <p class="app-subtitle">
-                Version 3.
-            </p>
         </div>
 
         <!-- Right Panel - Login Form -->

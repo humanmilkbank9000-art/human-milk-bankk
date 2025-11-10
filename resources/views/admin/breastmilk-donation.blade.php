@@ -656,7 +656,7 @@
                     <i class="bi bi-search"></i>
                 </span>
                 <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
-                    placeholder="Search by donor name, address, contact..." aria-label="Search donations">
+                    placeholder="Search donor name, address, or contact" aria-label="Search donations">
                 <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -1751,34 +1751,26 @@
 
             // Helpers to extract searchable text from table rows and donation cards
             function extractRowFields(row) {
-                // Try to get specific labeled cells first (Name, Address)
+                // Include donor Name, Address, and Contact cells for searching
                 const nameCell = row.querySelector('[data-label="Name"]');
                 const addressCell = row.querySelector('[data-label="Address"]');
+                const contactCell = row.querySelector('[data-label="Contact"]');
                 const nameText = nameCell ? nameCell.textContent.trim() : '';
                 const addressText = addressCell ? addressCell.textContent.trim() : '';
-                return (nameText + ' ' + addressText).toLowerCase();
+                const contactText = contactCell ? contactCell.textContent.trim() : '';
+                return (nameText + ' ' + addressText + ' ' + contactText).toLowerCase();
             }
 
             function extractCardFields(card) {
-                // Donation-card layout: name in .card-header-row strong; address in a card-row where .card-label contains "Address"
+                // Mobile card: pull Name, Address, and Contact rows
                 const nameEl = card.querySelector('.card-header-row strong') || card.querySelector('strong');
-                let nameText = nameEl ? nameEl.textContent.trim() : '';
-
-                // Find card-row with label 'Address'
-                let addressText = '';
-                const rows = card.querySelectorAll('.card-row');
-                rows.forEach(r => {
-                    const label = r.querySelector('.card-label');
-                    const value = r.querySelector('.card-value');
-                    if (label && /address/i.test(label.textContent || '')) {
-                        addressText = value ? value.textContent.trim() : '';
-                    }
-                });
-
-                // Fallback: any text content
-                if (!addressText) addressText = card.textContent.trim();
-
-                return (nameText + ' ' + addressText).toLowerCase();
+                const findRow = (label) => Array.from(card.querySelectorAll('.card-row')).find(r => (r.querySelector('.card-label')||{}).textContent?.toLowerCase().includes(label));
+                const addressValEl = (findRow('address') || {}).querySelector ? findRow('address').querySelector('.card-value') : null;
+                const contactValEl = (findRow('contact') || {}).querySelector ? findRow('contact').querySelector('.card-value') : null;
+                const nameText = nameEl ? nameEl.textContent.trim() : '';
+                const addressText = addressValEl ? addressValEl.textContent.trim() : '';
+                const contactText = contactValEl ? contactValEl.textContent.trim() : '';
+                return (nameText + ' ' + addressText + ' ' + contactText).toLowerCase();
             }
 
 
@@ -1833,12 +1825,12 @@
                     return;
                 }
 
-                // With a search term: limit targets to currently visible elements to avoid matching hidden duplicates
+                // With a search term: limit targets to currently visible elements
                 const visibleRows = rows.filter(r => isVisible(r));
                 const visibleCards = cards.filter(c => isVisible(c));
                 totalCount = visibleRows.length + visibleCards.length;
 
-                // Handle table rows (desktop)
+                // Handle table rows (desktop): match substring on Name or Address
                 visibleRows.forEach(row => {
                     const hay = extractRowFields(row);
                     if (hay.indexOf(term) !== -1) {
@@ -1849,7 +1841,7 @@
                     }
                 });
 
-                // Handle donation-card blocks (mobile view)
+                // Handle donation-card blocks (mobile view) (Name + Address)
                 visibleCards.forEach(card => {
                     const hay = extractCardFields(card);
                     if (hay.indexOf(term) !== -1) {
@@ -3413,5 +3405,76 @@
                     .catch(() => alert('Failed to decline donation'));
             }
         }
+    </script>
+    <script>
+        // Client-side rounding: snap all ml inputs to nearest 10 on blur/change
+        (function () {
+            function round10(val) {
+                const n = parseFloat(val);
+                if (isNaN(n)) return '';
+                if (n < 10) return n; // avoid snapping tiny entries to 0
+                return Math.round(n / 10) * 10;
+            }
+
+            // Walk-in validation individual bag volumes
+            $('#walkin-volume-fields')
+                .on('change', '.walkin-bag-volume-input', function () {
+                    const r = round10(this.value);
+                    if (r !== '' && String(r) !== String(this.value)) {
+                        this.value = r;
+                    }
+                    if (typeof window.calculateWalkinTotal === 'function') window.calculateWalkinTotal();
+                })
+                .on('focusout', '.walkin-bag-volume-input', function () {
+                    const r = round10(this.value);
+                    if (r !== '' && String(r) !== String(this.value)) {
+                        this.value = r;
+                        if (typeof window.calculateWalkinTotal === 'function') window.calculateWalkinTotal();
+                    }
+                });
+
+            // Home collection validation bag volumes (both dynamic containers)
+            $('#home-bag-details-body, #home-volume-fields')
+                .on('change', '.home-bag-volume-input', function () {
+                    const r = round10(this.value);
+                    if (r !== '' && String(r) !== String(this.value)) {
+                        this.value = r;
+                    }
+                    if (typeof window.calculateHomeTotal === 'function') window.calculateHomeTotal();
+                })
+                .on('focusout', '.home-bag-volume-input', function () {
+                    const r = round10(this.value);
+                    if (r !== '' && String(r) !== String(this.value)) {
+                        this.value = r;
+                        if (typeof window.calculateHomeTotal === 'function') window.calculateHomeTotal();
+                    }
+                });
+
+            // Assist Walk-in modal bag volumes
+            $('#assist-volume-fields')
+                .on('change', '.assist-bag-volume', function () {
+                    const r = round10(this.value);
+                    if (r !== '' && String(r) !== String(this.value)) {
+                        this.value = r;
+                    }
+                    // Recompute total locally
+                    let t = 0; $('#assist-volume-fields .assist-bag-volume').each(function () {
+                        const v = parseFloat(this.value || ''); if (!isNaN(v)) t += v;
+                    });
+                    const disp = (t % 1 === 0) ? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, '');
+                    $('#assist-total').text(disp);
+                })
+                .on('focusout', '.assist-bag-volume', function () {
+                    const r = round10(this.value);
+                    if (r !== '' && String(r) !== String(this.value)) {
+                        this.value = r;
+                        let t = 0; $('#assist-volume-fields .assist-bag-volume').each(function () {
+                            const v = parseFloat(this.value || ''); if (!isNaN(v)) t += v;
+                        });
+                        const disp = (t % 1 === 0) ? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, '');
+                        $('#assist-total').text(disp);
+                    }
+                });
+        })();
     </script>
 @endsection

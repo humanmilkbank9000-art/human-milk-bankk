@@ -85,9 +85,16 @@ class BreastmilkRequestService
         // This method will handle approval flow similar to previous controller code.
         DB::beginTransaction();
         try {
-            $volumeRequested = $payload['volume_requested'];
+            // Round requested volume to nearest 10 mL
+            $volumeRequested = \App\Helpers\VolumeHelper::roundMl($payload['volume_requested']);
             $milkType = $payload['milk_type'];
-            $selectedItems = $payload['selected_items'];
+            // Round each selected item volume to nearest 10 mL
+            $selectedItems = array_map(function($item){
+                if (isset($item['volume'])) {
+                    $item['volume'] = \App\Helpers\VolumeHelper::roundMl($item['volume']);
+                }
+                return $item;
+            }, $payload['selected_items']);
 
             $totalSelectedVolume = collect($selectedItems)->sum('volume');
             if ($totalSelectedVolume < $volumeRequested) {
@@ -184,8 +191,14 @@ class BreastmilkRequestService
         // Similar to approveAndDispense but supports flexible sources
         DB::beginTransaction();
         try {
-            $volume = $payload['volume_dispensed'];
-            $sources = $payload['sources'];
+            // Round dispensed volume and each source volume to nearest 10 mL
+            $volume = \App\Helpers\VolumeHelper::roundMl($payload['volume_dispensed']);
+            $sources = array_map(function($s){
+                if (isset($s['volume'])) {
+                    $s['volume'] = \App\Helpers\VolumeHelper::roundMl($s['volume']);
+                }
+                return $s;
+            }, $payload['sources']);
 
             $dispensedMilk = DispensedMilk::create([
                 'breastmilk_request_id' => $breastmilkRequest->breastmilk_request_id,

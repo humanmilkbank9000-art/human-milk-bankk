@@ -478,7 +478,7 @@
                     <i class="bi bi-search"></i>
                 </span>
                 <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
-                    placeholder="Search by guardian name, infant name, contact..." aria-label="Search requests">
+                    placeholder="Search guardian, infant, or contact" aria-label="Search requests">
                 <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -1411,81 +1411,124 @@
 
             if (!searchInput) return;
 
-            // Get all tables across all tabs
-            const allTables = document.querySelectorAll('.tab-pane table tbody');
+            // Helpers: extract searchable text from rows (guardian-only for exact), and full haystack for partial
+            function getGuardianText(row) {
+                const guardianCell = row.querySelector('[data-label="Guardian"], td:nth-child(1)');
+                const guardian = guardianCell ? guardianCell.textContent : '';
+                return (guardian || '').replace(/\s+/g, ' ').trim().toLowerCase();
+            }
+            function extractRowFields(row) {
+                // Guardian + Infant + Contact for partial matching fallback
+                const guardianCell = row.querySelector('[data-label="Guardian"], td:nth-child(1)');
+                const infantCell = row.querySelector('[data-label="Infant"], td:nth-child(2)');
+                const contactCell = row.querySelector('[data-label="Contact"], td:nth-child(3)');
+                const guardian = guardianCell ? guardianCell.textContent.trim() : '';
+                const infant = infantCell ? infantCell.textContent.trim() : '';
+                const contact = contactCell ? contactCell.textContent.trim() : '';
+                return (guardian + ' ' + infant + ' ' + contact).toLowerCase();
+            }
 
-            // Record original order for each row so we can restore it when the search is cleared
-            allTables.forEach((tableBody, tIndex) => {
-                Array.from(tableBody.querySelectorAll('tr')).forEach((row, rIndex) => {
-                    // store a per-table original index
-                    if (!row.dataset.originalOrder) {
-                        row.dataset.originalOrder = rIndex;
-                    }
-                });
-            });
+            function extractCardFields(card) {
+                // If a mobile card layout exists in the future, adapt selectors here
+                // Currently, return empty string so no cards are matched
+                return '';
+            }
 
-            // Real-time search function
+            function getActivePane() {
+                return document.querySelector('.tab-pane.show.active') || document.querySelector('.tab-pane.active') || document.querySelector('.tab-pane');
+            }
+
+            function isVisible(el) {
+                if (!el) return false;
+                return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+            }
+
+            function getAllTableRowsInActivePane() {
+                const pane = getActivePane();
+                if (!pane) return [];
+                const rows = [];
+                pane.querySelectorAll('table tbody tr').forEach(r => rows.push(r));
+                return rows;
+            }
+
+            function getAllCardsInActivePane() {
+                const pane = getActivePane();
+                if (!pane) return [];
+                // No dedicated card layout currently; return empty array
+                return [];
+            }
+
             function performSearch() {
-                const raw = searchInput.value || '';
-                const searchTerm = raw.trim().toLowerCase();
+                const term = (searchInput.value || '').trim().toLowerCase();
                 let totalCount = 0;
                 let visibleCount = 0;
 
-                // Process each tab's table
-                allTables.forEach(tableBody => {
-                    const rows = Array.from(tableBody.querySelectorAll('tr'));
-                    totalCount += rows.length;
+                const rows = getAllTableRowsInActivePane();
+                const cards = getAllCardsInActivePane();
 
-                    if (searchTerm === '') {
-                        // Restore original order and show all rows
-                        rows.sort((a, b) => (parseInt(a.dataset.originalOrder || 0, 10) - parseInt(b.dataset.originalOrder || 0, 10)));
-                        rows.forEach(row => {
-                            row.style.display = '';
-                            tableBody.appendChild(row);
-                        });
-                        visibleCount += rows.length;
+                if (!term) {
+                    rows.forEach(row => { row.hidden = false; row.style.display = ''; });
+                    cards.forEach(card => { card.style.display = ''; });
+                    const visibleRows = rows.filter(r => isVisible(r));
+                    const visibleCards = cards.filter(c => isVisible(c));
+                    totalCount = visibleRows.length + visibleCards.length;
+                    visibleCount = totalCount;
+                    clearBtn.style.display = 'none';
+                    searchResults.textContent = '';
+                    searchResults.classList.remove('text-danger');
+                    return;
+                }
+
+                const visibleRows = rows.filter(r => isVisible(r));
+                const visibleCards = cards.filter(c => isVisible(c));
+                totalCount = visibleRows.length + visibleCards.length;
+
+                // Exact-first by guardian, then fallback to partial across guardian+infant+contact
+                const exactRows = [];
+                const partialRows = [];
+                visibleRows.forEach(row => {
+                    const g = getGuardianText(row);
+                    if (g && g === term) {
+                        exactRows.push(row);
+                        return;
+                    }
+                    const hay = extractRowFields(row);
+                    if (hay.indexOf(term) !== -1) partialRows.push(row);
+                });
+
+                const showRows = exactRows.length > 0 ? exactRows : partialRows;
+                const hideRows = new Set(visibleRows);
+                showRows.forEach(r => hideRows.delete(r));
+
+                // Force hide using !important to beat any table-row styles
+                showRows.forEach(row => {
+                    row.removeAttribute('hidden');
+                    row.style.removeProperty('display');
+                    row.style.setProperty('display', 'table-row');
+                    visibleCount++;
+                });
+                hideRows.forEach(row => {
+                    row.setAttribute('hidden', 'hidden');
+                    row.style.setProperty('display', 'none', 'important');
+                });
+
+                visibleCards.forEach(card => {
+                    const hay = extractCardFields(card);
+                    if (hay.indexOf(term) !== -1) {
+                        card.style.display = '';
+                        visibleCount++;
                     } else {
-                        // Separate matched and non-matched rows
-                        const matchedRows = [];
-                        const unmatchedRows = [];
-
-                        rows.forEach(row => {
-                            // Get all cell content for comprehensive search
-                            let rowText = '';
-                            const cells = row.querySelectorAll('td');
-                            cells.forEach(cell => {
-                                rowText += (cell.textContent || '') + ' ';
-                            });
-                            rowText = rowText.toLowerCase();
-
-                            // Check if search term matches anywhere in the row
-                            if (rowText.indexOf(searchTerm) !== -1) {
-                                row.style.display = '';
-                                matchedRows.push(row);
-                                visibleCount++;
-                            } else {
-                                row.style.display = 'none';
-                                unmatchedRows.push(row);
-                            }
-                        });
-
-                        // Reorder: matched rows first, then unmatched (keep relative original order)
-                        matchedRows.sort((a, b) => parseInt(a.dataset.originalOrder || 0, 10) - parseInt(b.dataset.originalOrder || 0, 10));
-                        unmatchedRows.sort((a, b) => parseInt(a.dataset.originalOrder || 0, 10) - parseInt(b.dataset.originalOrder || 0, 10));
-                        matchedRows.forEach(row => tableBody.appendChild(row));
-                        unmatchedRows.forEach(row => tableBody.appendChild(row));
+                        card.style.display = 'none';
                     }
                 });
 
-                // Update UI
-                if (searchTerm === '') {
+                if (!term) {
                     clearBtn.style.display = 'none';
                     searchResults.textContent = '';
                     searchResults.classList.remove('text-danger');
                 } else {
                     clearBtn.style.display = 'inline-block';
                     searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-
                     if (visibleCount === 0) {
                         searchResults.textContent = 'No results found';
                         searchResults.classList.add('text-danger');
@@ -1495,16 +1538,13 @@
                 }
             }
 
-            // Event listeners
             searchInput.addEventListener('input', performSearch);
-
             clearBtn.addEventListener('click', function () {
                 searchInput.value = '';
                 performSearch();
                 searchInput.focus();
             });
 
-            // Initial state
             performSearch();
         });
     </script>
@@ -1716,20 +1756,77 @@
 
         document.addEventListener('blur', function (e) {
             const el = e.target;
-            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+            if (!el || !el.id) return;
+            const isDispense = el.id.startsWith('volumeToDispense');
+            const isRequested = el.id.startsWith('volumeRequested');
+            const isAssisted = el.id === 'assistedVolumeToDispense';
+            const isItemVolume = /^volume_\d+_\d+$/.test(el.id);
+            if (!(isDispense || isRequested || isAssisted || isItemVolume)) return;
+
             const raw = String(el.value || '').trim();
             if (!raw) return;
             const num = parseFloat(raw.replace(/,/g, ''));
             if (isNaN(num) || num <= 0) return;
 
             if (num >= 10 && Math.round(num) % 10 !== 0) {
-                const roundedDown = Math.floor(num / 10) * 10;
-                if (roundedDown <= 0) return;
-                // auto-apply rounded value
-                el.value = String(roundedDown);
+                const rounded = Math.round(num / 10) * 10;
+                if (rounded <= 0) return;
+                el.value = String(rounded);
                 el.dispatchEvent(new Event('input', { bubbles: true }));
-                const requestId = el.id.replace('volumeToDispense', '');
-                showVolumeNotice(requestId, num, roundedDown);
+                if (isDispense) {
+                    const requestId = el.id.replace('volumeToDispense', '');
+                    showVolumeNotice(requestId, num, rounded);
+                    updateSelectedVolume(requestId);
+                } else if (isRequested) {
+                    const requestId = el.id.replace('volumeRequested', '');
+                    validateDispenseForm(requestId);
+                } else if (isItemVolume) {
+                    // id format: volume_{requestId}_{itemId}
+                    const parts = el.id.split('_');
+                    const requestId = parts[1];
+                    updateSelectedVolume(requestId);
+                    validateDispenseForm(requestId);
+                } else if (isAssisted) {
+                    assistedUpdateSelectedVolume();
+                }
+            }
+        }, true);
+
+        // Also snap on change to give immediate feedback
+        document.addEventListener('change', function (e) {
+            const el = e.target;
+            if (!el || !el.id) return;
+            const isDispense = el.id.startsWith('volumeToDispense');
+            const isRequested = el.id.startsWith('volumeRequested');
+            const isAssisted = el.id === 'assistedVolumeToDispense';
+            const isItemVolume = /^volume_\d+_\d+$/.test(el.id);
+            if (!(isDispense || isRequested || isAssisted || isItemVolume)) return;
+
+            const raw = String(el.value || '').trim();
+            if (!raw) return;
+            const num = parseFloat(raw.replace(/,/g, ''));
+            if (isNaN(num) || num <= 0) return;
+
+            if (num >= 10 && Math.round(num) % 10 !== 0) {
+                const rounded = Math.round(num / 10) * 10;
+                if (rounded <= 0) return;
+                el.value = String(rounded);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                if (isDispense) {
+                    const requestId = el.id.replace('volumeToDispense', '');
+                    showVolumeNotice(requestId, num, rounded);
+                    updateSelectedVolume(requestId);
+                } else if (isRequested) {
+                    const requestId = el.id.replace('volumeRequested', '');
+                    validateDispenseForm(requestId);
+                } else if (isItemVolume) {
+                    const parts = el.id.split('_');
+                    const requestId = parts[1];
+                    updateSelectedVolume(requestId);
+                    validateDispenseForm(requestId);
+                } else if (isAssisted) {
+                    assistedUpdateSelectedVolume();
+                }
             }
         }, true);
 

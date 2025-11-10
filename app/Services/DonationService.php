@@ -78,6 +78,8 @@ class DonationService
         $bagDates = $data['bag_date'] ?? [];
         $bagNumbers = $data['bag_number'] ?? [];
         $bagVolumes = $data['bag_volume'] ?? [];
+        // Round to nearest 10 mL
+        $bagVolumes = \App\Helpers\VolumeHelper::roundMlArray($bagVolumes);
         $bagStorage = $data['bag_storage'] ?? [];
         $bagTemps = $data['bag_temp'] ?? [];
         $bagMethods = $data['bag_method'] ?? [];
@@ -179,6 +181,8 @@ class DonationService
             $vols = array_values(array_filter($data['bag_volumes'], function ($v) {
                 return $v !== null && $v !== '' && is_numeric($v) && (float)$v > 0;
             }));
+            // Round to nearest 10 mL
+            $vols = \App\Helpers\VolumeHelper::roundMlArray($vols);
 
             if (count($vols) > 0) {
                 // Update bag_details volumes if present; otherwise, construct minimal bag_details
@@ -272,6 +276,8 @@ class DonationService
             $vols = array_values(array_filter($data['bag_volumes'], function ($v) {
                 return $v !== null && $v !== '' && is_numeric($v) && (float)$v >= 0;
             }));
+            // Round to nearest 10 mL
+            $vols = \App\Helpers\VolumeHelper::roundMlArray($vols);
 
             if (count($vols) > 0) {
                 $bagDetails = $donation->bag_details ?? [];

@@ -668,6 +668,7 @@
                             class="form-control bag-volume-input"
                             step="0.01"
                             min="0.01"
+                            value="120"
                             required
                             oninput="calculateIndividualTotal()"
                             onchange="calculateIndividualTotal()">
@@ -700,6 +701,36 @@
             const bagsHome = document.getElementById('bags_home');
             if (bagsHome) {
                 bagsHome.addEventListener('input', generateBagVolumeFields);
+            }
+            // Client-side: snap volumes to nearest 10 ml on change/blur
+            function roundMl10(val) {
+                const n = parseFloat(val);
+                if (isNaN(n)) return '';
+                if (n < 10) return n; // keep very small entries as-is to avoid snapping to 0
+                return Math.round(n / 10) * 10;
+            }
+            const bagFields = document.getElementById('bag-volume-fields');
+            if (bagFields) {
+                bagFields.addEventListener('change', function (e) {
+                    const t = e.target;
+                    if (!t || !t.classList || !t.classList.contains('bag-volume-input')) return;
+                    const rounded = roundMl10(t.value);
+                    if (rounded !== '' && String(rounded) !== String(t.value)) {
+                        t.value = rounded;
+                        // recalc after snapping
+                        calculateIndividualTotal();
+                    }
+                });
+                // Also handle blur (some browsers don't fire change if value unchanged numerically)
+                bagFields.addEventListener('focusout', function (e) {
+                    const t = e.target;
+                    if (!t || !t.classList || !t.classList.contains('bag-volume-input')) return;
+                    const rounded = roundMl10(t.value);
+                    if (rounded !== '' && String(rounded) !== String(t.value)) {
+                        t.value = rounded;
+                        calculateIndividualTotal();
+                    }
+                });
             }
         });
     </script>
