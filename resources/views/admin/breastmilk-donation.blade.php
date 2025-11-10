@@ -309,9 +309,9 @@
             }
 
             /* Keep table headers aligned on a single horizontal line
-                               - prevent wrapping of header labels
-                               - use ellipsis when a header is too long
-                               - ensure consistent vertical alignment and padding */
+                                               - prevent wrapping of header labels
+                                               - use ellipsis when a header is too long
+                                               - ensure consistent vertical alignment and padding */
             #pending-donations .table thead th {
                 white-space: nowrap;
                 overflow: hidden;
@@ -325,19 +325,39 @@
 
             /* Allocate width percentages for better distribution (sum ~100%) */
             /* 1: Name */
-            #pending-donations .table thead th:nth-child(1) { width: 14%; }
+            #pending-donations .table thead th:nth-child(1) {
+                width: 14%;
+            }
+
             /* 2: Type */
-            #pending-donations .table thead th:nth-child(2) { width: 12%; }
+            #pending-donations .table thead th:nth-child(2) {
+                width: 12%;
+            }
+
             /* 3: Contact */
-            #pending-donations .table thead th:nth-child(3) { width: 12%; }
+            #pending-donations .table thead th:nth-child(3) {
+                width: 12%;
+            }
+
             /* 4: Address (wider to prevent excessive wrapping) */
-            #pending-donations .table thead th:nth-child(4) { width: 30%; }
+            #pending-donations .table thead th:nth-child(4) {
+                width: 30%;
+            }
+
             /* 5: Date */
-            #pending-donations .table thead th:nth-child(5) { width: 12%; }
+            #pending-donations .table thead th:nth-child(5) {
+                width: 12%;
+            }
+
             /* 6: Total Volume */
-            #pending-donations .table thead th:nth-child(6) { width: 8%; }
+            #pending-donations .table thead th:nth-child(6) {
+                width: 8%;
+            }
+
             /* 7: Action (sticky last column) */
-            #pending-donations .table thead th:nth-child(7) { width: 12%; }
+            #pending-donations .table thead th:nth-child(7) {
+                width: 12%;
+            }
 
             /* Actions column is last now; widths defined above */
 
@@ -359,7 +379,9 @@
                 min-width: 140px;
             }
 
-            #pending-donations .table thead th:nth-child(7) { background-color: #f8f9fa; }
+            #pending-donations .table thead th:nth-child(7) {
+                background-color: #f8f9fa;
+            }
 
             /* Address cell should wrap naturally and break long words */
             #pending-donations .table tbody td[data-label="Address"] {
@@ -558,7 +580,7 @@
                 }
 
                 /* Permanently style the Decline button in the Schedule Pickup modal to
-                                                                                                                                                                                                           match the hovered look of the Cancel (.btn-secondary:hover) button */
+                                                                                                                                                                                                                           match the hovered look of the Cancel (.btn-secondary:hover) button */
                 #schedule-decline-btn {
                     background-color: #5c636a !important;
                     /* darkened secondary */
@@ -699,12 +721,14 @@
                                     margin-bottom: 12px;
                                     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
                                 }
+
                                 #pending-donations .card-header-row {
                                     display: flex;
                                     align-items: center;
                                     justify-content: space-between;
                                     margin-bottom: 6px;
                                 }
+
                                 #pending-donations .card-row {
                                     display: grid;
                                     grid-template-columns: 96px 1fr;
@@ -712,13 +736,37 @@
                                     padding: 6px 0;
                                     border-bottom: 1px dashed #eef2f7;
                                 }
-                                #pending-donations .card-row:last-of-type { border-bottom: none; }
-                                #pending-donations .card-label { color: #6c757d; font-size: 0.86rem; }
-                                #pending-donations .card-value { font-size: 0.95rem; word-break: break-word; }
-                                #pending-donations .card-actions { margin-top: 8px; }
-                                #pending-donations .card-actions .btn { width: 100%; }
-                                #pending-donations .donation-type-badge { font-size: 0.7rem; padding: 0.2rem 0.45rem; }
-                                #pending-donations .card-row .btn.view-location { padding: 0.3rem 0.45rem; }
+
+                                #pending-donations .card-row:last-of-type {
+                                    border-bottom: none;
+                                }
+
+                                #pending-donations .card-label {
+                                    color: #6c757d;
+                                    font-size: 0.86rem;
+                                }
+
+                                #pending-donations .card-value {
+                                    font-size: 0.95rem;
+                                    word-break: break-word;
+                                }
+
+                                #pending-donations .card-actions {
+                                    margin-top: 8px;
+                                }
+
+                                #pending-donations .card-actions .btn {
+                                    width: 100%;
+                                }
+
+                                #pending-donations .donation-type-badge {
+                                    font-size: 0.7rem;
+                                    padding: 0.2rem 0.45rem;
+                                }
+
+                                #pending-donations .card-row .btn.view-location {
+                                    padding: 0.3rem 0.45rem;
+                                }
                             }
                         </style>
                         @if($pendingDonations->count() > 0)
@@ -744,7 +792,7 @@
                                         @foreach($pendingOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
+                                                    <strong>{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}</strong>
                                                 </td>
                                                 <td data-label="Type" class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
@@ -754,11 +802,11 @@
                                                     @endif
                                                 </td>
                                                 <td data-label="Contact" class="text-center">
-                                                    {{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '-') }}
+                                                    {{ data_get($donation, 'user.contact_number') ?: (data_get($donation, 'user.phone') ?: '-') }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
                                                     <small>
-                                                        {{ data_get($donation,'user.address','Not provided') }}
+                                                        {{ data_get($donation, 'user.address', 'Not provided') }}
                                                     </small>
                                                 </td>
                                                 <td data-label="Date" class="text-center">
@@ -781,7 +829,7 @@
                                                                 title="Validate Walk-in"
                                                                 data-id="{{ $donation->breastmilk_donation_id }}" data-bs-toggle="modal"
                                                                 data-bs-target="#validateWalkInModal"
-                                                                data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}">
+                                                                data-donor="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}">
                                                                 <i class="fas fa-check"></i>
                                                                 <span class="d-none d-md-inline"> Validate</span>
                                                             </button>
@@ -794,14 +842,13 @@
                                                             <button class="btn btn-primary btn-sm px-2 schedule-pickup"
                                                                 title="Schedule Pickup"
                                                                 data-id="{{ $donation->breastmilk_donation_id }}"
-                                                                data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                                data-address="{{ data_get($donation,'user.address','Not provided') }}"
+                                                                data-donor="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                                data-address="{{ data_get($donation, 'user.address', 'Not provided') }}"
                                                                 data-first-expression="{{ $donation->first_expression_date ? $donation->first_expression_date->format('M d, Y') : '' }}"
                                                                 data-last-expression="{{ $donation->last_expression_date ? $donation->last_expression_date->format('M d, Y') : '' }}"
                                                                 data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
                                                                 data-bags="{{ $donation->number_of_bags }}"
-                                                                data-total="{{ $donation->total_volume }}"
-                                                                data-latitude="{{ $lat }}"
+                                                                data-total="{{ $donation->total_volume }}" data-latitude="{{ $lat }}"
                                                                 data-longitude="{{ $lng }}">
                                                                 <i class="fas fa-calendar-alt"></i>
                                                                 <span class="d-none d-md-inline"> Schedule</span>
@@ -817,10 +864,11 @@
 
                             {{-- Card Layout for Smaller Screens --}}
                             @foreach($pendingOrdered as $donation)
-                                    <div class="donation-card d-block d-md-none">
+                                <div class="donation-card d-block d-md-none">
                                     <div class="card-header-row">
                                         <div>
-                                            <strong style="font-size: 1rem;">{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
+                                            <strong
+                                                style="font-size: 1rem;">{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}</strong>
                                         </div>
                                         <div>
                                             @if($donation->donation_method === 'walk_in')
@@ -835,8 +883,8 @@
                                         <span class="card-label">Contact:</span>
                                         <span class="card-value">
                                             @php
-                                                $contactRaw = data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '');
-                                                $telHref = $contactRaw ? preg_replace('/[^0-9\+]/','',$contactRaw) : '';
+                                                $contactRaw = data_get($donation, 'user.contact_number') ?: (data_get($donation, 'user.phone') ?: '');
+                                                $telHref = $contactRaw ? preg_replace('/[^0-9\+]/', '', $contactRaw) : '';
                                             @endphp
                                             @if($telHref)
                                                 <a href="tel:{{ $telHref }}" class="text-decoration-none">{{ $contactRaw }}</a>
@@ -848,7 +896,7 @@
 
                                     <div class="card-row">
                                         <span class="card-label">Address:</span>
-                                        <span class="card-value">{{ data_get($donation,'user.address','Not provided') }}</span>
+                                        <span class="card-value">{{ data_get($donation, 'user.address', 'Not provided') }}</span>
                                     </div>
                                     @php
                                         $latCard = $donation->latitude ?? optional($donation->user)->latitude ?? null;
@@ -859,9 +907,9 @@
                                             <span class="card-label">Location:</span>
                                             <span class="card-value">
                                                 <button class="btn btn-info btn-sm view-location"
-                                                    data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                    data-donor-address="{{ data_get($donation,'user.address','') }}" data-latitude="{{ $latCard }}"
-                                                    data-longitude="{{ $lngCard }}">
+                                                    data-donor-name="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                    data-donor-address="{{ data_get($donation, 'user.address', '') }}"
+                                                    data-latitude="{{ $latCard }}" data-longitude="{{ $lngCard }}">
                                                     <i class="fas fa-map-marked-alt"></i>
                                                 </button>
                                             </span>
@@ -874,7 +922,8 @@
                                             @if($donation->donation_method === 'walk_in')
                                                 {{ $donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A' }}
                                             @else
-                                                {{ $donation->created_at->format('M d, Y') }} • {{ $donation->created_at->format('g:i A') }}
+                                                {{ $donation->created_at->format('M d, Y') }} •
+                                                {{ $donation->created_at->format('g:i A') }}
                                             @endif
                                         </span>
                                     </div>
@@ -890,14 +939,14 @@
                                             <button type="button" class="btn btn-success w-100 validate-walk-in"
                                                 data-id="{{ $donation->breastmilk_donation_id }}" data-bs-toggle="modal"
                                                 data-bs-target="#validateWalkInModal"
-                                                data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}">
+                                                data-donor="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}">
                                                 <i class="fas fa-check"></i> Validate Walk-in
                                             </button>
                                         @else
                                             <button class="btn btn-primary w-100 schedule-pickup"
                                                 data-id="{{ $donation->breastmilk_donation_id }}"
-                                                data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                data-address="{{ data_get($donation,'user.address','Not provided') }}"
+                                                data-donor="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                data-address="{{ data_get($donation, 'user.address', 'Not provided') }}"
                                                 data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
                                                 data-bags="{{ $donation->number_of_bags }}" data-total="{{ $donation->total_volume }}">
                                                 <i class="fas fa-calendar-alt"></i> Schedule Pickup
@@ -947,13 +996,13 @@
                                         @foreach($scheduledOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
+                                                    <strong>{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}</strong>
                                                 </td>
                                                 <td data-label="Contact" class="text-center">
-                                                    {{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '-') }}
+                                                    {{ data_get($donation, 'user.contact_number') ?: (data_get($donation, 'user.phone') ?: '-') }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
-                                                    <small>{{ data_get($donation,'user.address','Not provided') }}</small>
+                                                    <small>{{ data_get($donation, 'user.address', 'Not provided') }}</small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
                                                     @php
@@ -963,8 +1012,8 @@
                                                     @endphp
                                                     @if(!is_null($latSched) && $latSched !== '' && !is_null($lngSched) && $lngSched !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
-                                                            data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                            data-donor-address="{{ data_get($donation,'user.address','') }}"
+                                                            data-donor-name="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                            data-donor-address="{{ data_get($donation, 'user.address', '') }}"
                                                             data-latitude="{{ $latSched }}" data-longitude="{{ $lngSched }}">
                                                             <i class="fas fa-map-marked-alt"></i>
                                                         </button>
@@ -990,8 +1039,8 @@
                                                             class="btn btn-success btn-sm px-2 validate-home-collection"
                                                             title="Validate" data-id="{{ $donation->breastmilk_donation_id }}"
                                                             data-bs-toggle="modal" data-bs-target="#validateHomeCollectionModal"
-                                                            data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                            data-address="{{ data_get($donation,'user.address','Not provided') }}"
+                                                            data-donor="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                            data-address="{{ data_get($donation, 'user.address', 'Not provided') }}"
                                                             data-date="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('M d, Y') : '' }}"
                                                             data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
@@ -1005,8 +1054,8 @@
                                                         <button class="btn btn-outline-primary btn-sm px-2 reschedule-pickup"
                                                             title="Reschedule Pickup"
                                                             data-id="{{ $donation->breastmilk_donation_id }}"
-                                                            data-donor="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                            data-address="{{ data_get($donation,'user.address','Not provided') }}"
+                                                            data-donor="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                            data-address="{{ data_get($donation, 'user.address', 'Not provided') }}"
                                                             data-date-iso="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('Y-m-d') : '' }}"
                                                             data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
@@ -1062,10 +1111,10 @@
                                         @foreach($walkInOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    {{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}
+                                                    {{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
-                                                    <small>{{ data_get($donation,'user.address','Not provided') }}</small>
+                                                    <small>{{ data_get($donation, 'user.address', 'Not provided') }}</small>
                                                 </td>
                                                 <td data-label="Total" class="text-center">
                                                     {{ $donation->formatted_total_volume ?? 'N/A' }}ml
@@ -1073,10 +1122,27 @@
                                                 <td data-label="Date" class="text-center">
                                                     <small>{{ $donation->updated_at ? $donation->updated_at->format('M d, Y') : ($donation->donation_date ? $donation->donation_date->format('M d, Y') : 'N/A') }}</small>
                                                 </td>
+                                                <td data-label="Time" class="text-center">
+                                                    <small>
+                                                        {{ isset($donation->donation_time) && $donation->donation_time ? \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') : ($donation->updated_at ? $donation->updated_at->format('g:i A') : 'N/A') }}
+                                                    </small>
+                                                </td>
                                                 <td data-label="Action" class="text-center">
                                                     <div class="table-actions d-inline-flex align-items-center gap-2 flex-nowrap"
                                                         style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
-                                                        {{-- View button removed for Home Collection Success temporarily --}}
+                                                        <button class="btn btn-sm btn-primary me-1 view-donation"
+                                                            data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            data-donor-name="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                            data-donor-contact="{{ data_get($donation, 'user.contact_number') ?: (data_get($donation, 'user.phone') ?: '') }}"
+                                                            data-donor-address="{{ data_get($donation, 'user.address', 'Not provided') }}"
+                                                            data-donation-method="{{ $donation->donation_method ?? 'walk_in' }}"
+                                                            data-bags="{{ $donation->number_of_bags ?? (is_array($donation->bag_details ?? null) ? count($donation->bag_details) : '') }}"
+                                                            data-total="{{ $donation->total_volume ?? $donation->formatted_total_volume ?? '' }}"
+                                                            data-bag-details='@json($donation->bag_details ?? [], JSON_HEX_APOS | JSON_HEX_QUOT)'
+                                                            title="View donation">
+                                                            <i class="fas fa-eye"></i>
+                                                            <span class="d-none d-md-inline"> View</span>
+                                                        </button>
                                                         <button class="btn btn-sm btn-danger"
                                                             onclick="archiveDonation({{ $donation->breastmilk_donation_id }})"
                                                             title="Archive donation" aria-label="Archive donation">
@@ -1130,10 +1196,10 @@
                                         @foreach($homeSuccessOrdered as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
+                                                    <strong>{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}</strong>
                                                 </td>
                                                 <td data-label="Address" class="text-center">
-                                                    <small>{{ data_get($donation,'user.address','Not provided') }}</small>
+                                                    <small>{{ data_get($donation, 'user.address', 'Not provided') }}</small>
                                                 </td>
                                                 <td data-label="Location" class="text-center">
                                                     @php
@@ -1143,8 +1209,8 @@
                                                     @endphp
                                                     @if(!is_null($latHome) && $latHome !== '' && !is_null($lngHome) && $lngHome !== '')
                                                         <button class="btn btn-info btn-sm view-location" title="View on Map"
-                                                            data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                            data-donor-address="{{ data_get($donation,'user.address','') }}"
+                                                            data-donor-name="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                            data-donor-address="{{ data_get($donation, 'user.address', '') }}"
                                                             data-latitude="{{ $latHome }}" data-longitude="{{ $lngHome }}">
                                                             <i class="fas fa-map-marked-alt"></i>
                                                         </button>
@@ -1168,11 +1234,12 @@
                                                         style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:0.5rem;">
                                                         <button class="btn btn-sm btn-primary me-1 view-donation"
                                                             data-id="{{ $donation->breastmilk_donation_id }}"
-                                                            data-donor-name="{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}"
-                                                            data-donor-contact="{{ data_get($donation,'user.contact_number') ?: (data_get($donation,'user.phone') ?: '') }}"
-                                                            data-donor-address="{{ data_get($donation,'user.address','Not provided') }}"
+                                                            data-donor-name="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                            data-donor-contact="{{ data_get($donation, 'user.contact_number') ?: (data_get($donation, 'user.phone') ?: '') }}"
+                                                            data-donor-address="{{ data_get($donation, 'user.address', 'Not provided') }}"
                                                             data-latitude="{{ $donation->latitude ?? (optional($donation->user)->latitude ?? '') }}"
                                                             data-longitude="{{ $donation->longitude ?? (optional($donation->user)->longitude ?? '') }}"
+                                                            data-donation-method="{{ $donation->donation_method ?? 'home_collection' }}"
                                                             data-bags="{{ $donation->number_of_bags ?? (is_array($donation->bag_details ?? null) ? count($donation->bag_details) : '') }}"
                                                             data-total="{{ $donation->total_volume ?? $donation->formatted_total_volume ?? '' }}"
                                                             data-bag-details='@json($donation->bag_details ?? [], JSON_HEX_APOS | JSON_HEX_QUOT)'
@@ -1231,7 +1298,8 @@
                                         @endphp
                                         @foreach($archivedOrdered as $donation)
                                             <tr>
-                                                <td class="text-center">{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}
+                                                <td class="text-center">
+                                                    {{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}
                                                 </td>
                                                 <td class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
@@ -1288,7 +1356,7 @@
                                         @foreach($declinedDonations as $donation)
                                             <tr>
                                                 <td data-label="Name" class="text-center">
-                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
+                                                    <strong>{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}</strong>
                                                 </td>
                                                 <td data-label="Type" class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
@@ -1298,7 +1366,7 @@
                                                     @endif
                                                 </td>
                                                 <td data-label="Address" class="text-center">
-                                                    <small>{{ data_get($donation,'user.address','Not provided') }}</small>
+                                                    <small>{{ data_get($donation, 'user.address', 'Not provided') }}</small>
                                                 </td>
                                                 <td data-label="Reason" class="text-center">
                                                     <small>{{ $donation->decline_reason ?? '-' }}</small>
@@ -1507,14 +1575,14 @@
             </div>
         </div>
 
-        <!-- View Donation Details Modal for Home Collection Success -->
+        <!-- View Donation Details Modal -->
         <div class="modal fade" id="viewHomeDonationModal" tabindex="-1" aria-labelledby="viewHomeDonationModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header bg-pink text-white"
                         style="background: linear-gradient(90deg,#ff7eb6,#ff65a3);">
-                        <h5 class="modal-title" id="viewHomeDonationModalLabel">Home Collection Success</h5>
+                        <h5 class="modal-title" id="viewHomeDonationModalLabel">Donation Details</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -1554,9 +1622,6 @@
                                         <th class="text-center">Volume</th>
                                         <th class="text-center">Date</th>
                                         <th class="text-center">Time</th>
-                                        <th class="text-center">Storage Location</th>
-                                        <th class="text-center">Temp(°C)</th>
-                                        <th class="text-center">Milk Collection Method</th>
                                     </tr>
                                 </thead>
                                 <tbody id="view-bag-details-body">
@@ -1896,10 +1961,10 @@
                 let html = '<div class="row">';
                 for (let i = 1; i <= n; i++) {
                     html += `
-                                                                                                                    <div class="col-md-6 mb-2">
-                                                                                                                        <label class="form-label">Bag ${i} (ml)</label>
-                                                                                                                        <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
-                                                                                                                    </div>`;
+                                                                                                                            <div class="col-md-6 mb-2">
+                                                                                                                                <label class="form-label">Bag ${i} (ml)</label>
+                                                                                                                                <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
+                                                                                                                            </div>`;
                 }
                 html += '</div>';
                 container.innerHTML = html;
@@ -2088,44 +2153,44 @@
                         const method = bag.collection_method || '--';
 
                         const row = `
-                                                                                                                        <tr>
-                                                                                                                            <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                                                                                                            <td>${time}</td>
-                                                                                                                            <td>${date}</td>
-                                                                                                                            <td>
-                                                                                                                                <div class="input-group input-group-sm">
-                                                                                                                                    <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
-                                                                                                                                    <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
-                                                                                                                                    <span class="input-group-text">ml</span>
-                                                                                                                                </div>
-                                                                                                                            </td>
-                                                                                                                            <td>${storageLabel}</td>
-                                                                                                                            <td class="text-end">${temp}</td>
-                                                                                                                            <td><small>${method}</small></td>
-                                                                                                                        </tr>
-                                                                                                                    `;
+                                                                                                                                <tr>
+                                                                                                                                    <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                                                                                    <td>${time}</td>
+                                                                                                                                    <td>${date}</td>
+                                                                                                                                    <td>
+                                                                                                                                        <div class="input-group input-group-sm">
+                                                                                                                                            <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
+                                                                                                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
+                                                                                                                                            <span class="input-group-text">ml</span>
+                                                                                                                                        </div>
+                                                                                                                                    </td>
+                                                                                                                                    <td>${storageLabel}</td>
+                                                                                                                                    <td class="text-end">${temp}</td>
+                                                                                                                                    <td><small>${method}</small></td>
+                                                                                                                                </tr>
+                                                                                                                            `;
                         tbody.append(row);
                         const v = parseFloat(volume); if (!isNaN(v)) total += v;
                     });
                 } else if (numberOfBags > 0) {
                     for (let i = 0; i < numberOfBags; i++) {
                         const row = `
-                                                                                                                        <tr>
-                                                                                                                            <td class="text-center fw-bold">Bag ${i + 1}</td>
-                                                                                                                            <td>--</td>
-                                                                                                                            <td>--</td>
-                                                                                                                            <td>
-                                                                                                                                <div class="input-group input-group-sm">
-                                                                                                                                    <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
-                                                                                                                                    <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
-                                                                                                                                    <span class="input-group-text">ml</span>
-                                                                                                                                </div>
-                                                                                                                            </td>
-                                                                                                                            <td>--</td>
-                                                                                                                            <td class="text-end">--</td>
-                                                                                                                            <td><small>--</small></td>
-                                                                                                                        </tr>
-                                                                                                                    `;
+                                                                                                                                <tr>
+                                                                                                                                    <td class="text-center fw-bold">Bag ${i + 1}</td>
+                                                                                                                                    <td>--</td>
+                                                                                                                                    <td>--</td>
+                                                                                                                                    <td>
+                                                                                                                                        <div class="input-group input-group-sm">
+                                                                                                                                            <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
+                                                                                                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
+                                                                                                                                            <span class="input-group-text">ml</span>
+                                                                                                                                        </div>
+                                                                                                                                    </td>
+                                                                                                                                    <td>--</td>
+                                                                                                                                    <td class="text-end">--</td>
+                                                                                                                                    <td><small>--</small></td>
+                                                                                                                                </tr>
+                                                                                                                            `;
                         tbody.append(row);
                     }
                 } else {
@@ -2432,72 +2497,72 @@
                                 totalVol += parseFloat(volume) || 0;
 
                                 const row = `
-                                                                                                <tr>
-                                                                                                    <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                                                                                    <td>
-                                                                                                        <input type="text" name="bag_time[]" class="form-control form-control-sm" value="${bag.time || ''}" placeholder="time">
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <input type="text" name="bag_date[]" class="form-control form-control-sm" value="${bag.date || ''}" placeholder="date">
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <div class="input-group input-group-sm">
-                                                                                                            <input type="number"
-                                                                                                                   id="home_bag_volume_${index + 1}"
-                                                                                                                   name="bag_volumes[]"
-                                                                                                                   class="form-control home-bag-volume-input"
-                                                                                                                   step="0.01"
-                                                                                                                   min="0.01"
-                                                                                                                   value="${volume}"
-                                                                                                                   placeholder="ml" required>
-                                                                                                            <span class="input-group-text">ml</span>
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <select name="bag_storage[]" class="form-select form-select-sm">
-                                                                                                            ${(() => {
+                                                                                                        <tr>
+                                                                                                            <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                                                            <td>
+                                                                                                                <input type="text" name="bag_time[]" class="form-control form-control-sm" value="${bag.time || ''}" placeholder="time">
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <input type="text" name="bag_date[]" class="form-control form-control-sm" value="${bag.date || ''}" placeholder="date">
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <div class="input-group input-group-sm">
+                                                                                                                    <input type="number"
+                                                                                                                           id="home_bag_volume_${index + 1}"
+                                                                                                                           name="bag_volumes[]"
+                                                                                                                           class="form-control home-bag-volume-input"
+                                                                                                                           step="0.01"
+                                                                                                                           min="0.01"
+                                                                                                                           value="${volume}"
+                                                                                                                           placeholder="ml" required>
+                                                                                                                    <span class="input-group-text">ml</span>
+                                                                                                                </div>
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <select name="bag_storage[]" class="form-select form-select-sm">
+                                                                                                                    ${(() => {
                                         const raw = bag.storage_location || '';
                                         const key = String(raw).toLowerCase();
                                         if (key.indexOf('ref') !== -1 || key.indexOf('refrig') !== -1 || key.indexOf('fridge') !== -1) return `
-                                                                                                                    <option value="Refrigerator" selected>Refrigerator</option>
-                                                                                                                    <option value="Freezer">Freezer</option>
-                                                                                                                    <option value="Room temperature">Room temperature</option>
-                                                                                                                    <option value="Other">Other</option>
-                                                                                                                `;
+                                                                                                                            <option value="Refrigerator" selected>Refrigerator</option>
+                                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                                            <option value="Other">Other</option>
+                                                                                                                        `;
                                         if (key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1 || key.indexOf('frz') !== -1) return `
-                                                                                                                    <option value="Refrigerator">Refrigerator</option>
-                                                                                                                    <option value="Freezer" selected>Freezer</option>
-                                                                                                                    <option value="Room temperature">Room temperature</option>
-                                                                                                                    <option value="Other">Other</option>
-                                                                                                                `;
+                                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                                            <option value="Freezer" selected>Freezer</option>
+                                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                                            <option value="Other">Other</option>
+                                                                                                                        `;
                                         if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1) return `
-                                                                                                                    <option value="Refrigerator">Refrigerator</option>
-                                                                                                                    <option value="Freezer">Freezer</option>
-                                                                                                                    <option value="Room temperature" selected>Room temperature</option>
-                                                                                                                    <option value="Other">Other</option>
-                                                                                                                `;
+                                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                                            <option value="Room temperature" selected>Room temperature</option>
+                                                                                                                            <option value="Other">Other</option>
+                                                                                                                        `;
                                         if (raw && raw !== '') return `
-                                                                                                                    <option value="Refrigerator">Refrigerator</option>
-                                                                                                                    <option value="Freezer">Freezer</option>
-                                                                                                                    <option value="Room temperature">Room temperature</option>
-                                                                                                                    <option value="Other" selected>Other</option>
-                                                                                                                `;
+                                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                                            <option value="Other" selected>Other</option>
+                                                                                                                        `;
                                         return `
-                                                                                                                    <option value="Refrigerator">Refrigerator</option>
-                                                                                                                    <option value="Freezer">Freezer</option>
-                                                                                                                    <option value="Room temperature">Room temperature</option>
-                                                                                                                    <option value="Other">Other</option>
-                                                                                                                `;
+                                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                                            <option value="Other">Other</option>
+                                                                                                                        `;
                                     })()}
-                                                                                                        </select>
-                                                                                                    </td>
-                                                                                                    <td class="text-end">
-                                                                                                        <input type="text" name="bag_temp[]" class="form-control form-control-sm text-end" value="${bag.temperature || ''}" placeholder="temp">
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <input type="text" name="bag_method[]" class="form-control form-control-sm" value="${bag.collection_method || ''}" placeholder="method">
-                                                                                                    </td>
-                                                                                                </tr>`;
+                                                                                                                </select>
+                                                                                                            </td>
+                                                                                                            <td class="text-end">
+                                                                                                                <input type="text" name="bag_temp[]" class="form-control form-control-sm text-end" value="${bag.temperature || ''}" placeholder="temp">
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <input type="text" name="bag_method[]" class="form-control form-control-sm" value="${bag.collection_method || ''}" placeholder="method">
+                                                                                                            </td>
+                                                                                                        </tr>`;
                                 tbody.append(row);
                                 tbody.closest('.table-responsive').show();
                             });
@@ -2507,39 +2572,39 @@
                             if (n > 0) {
                                 for (let i = 1; i <= n; i++) {
                                     const row = `
-                                                                                                            <tr>
-                                                                                                                <td class="text-center fw-bold">Bag ${i}</td>
-                                                                                                                <td>
-                                                                                                                    <input type="text" name="bag_time[]" class="form-control form-control-sm" value="" placeholder="time">
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <input type="text" name="bag_date[]" class="form-control form-control-sm" value="" placeholder="date">
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <div class="input-group input-group-sm">
-                                                                                                                        <input type="number"
-                                                                                                                               id="home_bag_volume_${i}"
-                                                                                                                               name="bag_volumes[]"
-                                                                                                                               class="form-control home-bag-volume-input"
-                                                                                                                               step="0.01" min="0.01" placeholder="ml" required>
-                                                                                                                        <span class="input-group-text">ml</span>
-                                                                                                                    </div>
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <select name="bag_storage[]" class="form-select form-select-sm">
-                                                                                                                        <option value="Refrigerator">Refrigerator</option>
-                                                                                                                        <option value="Freezer">Freezer</option>
-                                                                                                                        <option value="Room temperature">Room temperature</option>
-                                                                                                                        <option value="Other">Other</option>
-                                                                                                                    </select>
-                                                                                                                </td>
-                                                                                                                <td class="text-end">
-                                                                                                                    <input type="text" name="bag_temp[]" class="form-control form-control-sm text-end" value="" placeholder="temp">
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <input type="text" name="bag_method[]" class="form-control form-control-sm" value="" placeholder="method">
-                                                                                                                </td>
-                                                                                                            </tr>`;
+                                                                                                                    <tr>
+                                                                                                                        <td class="text-center fw-bold">Bag ${i}</td>
+                                                                                                                        <td>
+                                                                                                                            <input type="text" name="bag_time[]" class="form-control form-control-sm" value="" placeholder="time">
+                                                                                                                        </td>
+                                                                                                                        <td>
+                                                                                                                            <input type="text" name="bag_date[]" class="form-control form-control-sm" value="" placeholder="date">
+                                                                                                                        </td>
+                                                                                                                        <td>
+                                                                                                                            <div class="input-group input-group-sm">
+                                                                                                                                <input type="number"
+                                                                                                                                       id="home_bag_volume_${i}"
+                                                                                                                                       name="bag_volumes[]"
+                                                                                                                                       class="form-control home-bag-volume-input"
+                                                                                                                                       step="0.01" min="0.01" placeholder="ml" required>
+                                                                                                                                <span class="input-group-text">ml</span>
+                                                                                                                            </div>
+                                                                                                                        </td>
+                                                                                                                        <td>
+                                                                                                                            <select name="bag_storage[]" class="form-select form-select-sm">
+                                                                                                                                <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                <option value="Freezer">Freezer</option>
+                                                                                                                                <option value="Room temperature">Room temperature</option>
+                                                                                                                                <option value="Other">Other</option>
+                                                                                                                            </select>
+                                                                                                                        </td>
+                                                                                                                        <td class="text-end">
+                                                                                                                            <input type="text" name="bag_temp[]" class="form-control form-control-sm text-end" value="" placeholder="temp">
+                                                                                                                        </td>
+                                                                                                                        <td>
+                                                                                                                            <input type="text" name="bag_method[]" class="form-control form-control-sm" value="" placeholder="method">
+                                                                                                                        </td>
+                                                                                                                    </tr>`;
                                     tbody.append(row);
                                 }
                                 totalVol = 0;
@@ -2651,17 +2716,17 @@
                 let fieldsHTML = '<div class="row">';
                 for (let i = 1; i <= bagCount; i++) {
                     fieldsHTML += `
-                                                                            <div class="col-md-6 mb-2">
-                                                                                                                                                                                                                                    <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                                                                                                                    <input type="number" 
-                                                                                                                                                                                                                                           id="walkin_bag_volume_${i}" 
-                                                                                                                                                                                                                                           name="bag_volumes[]" 
-                                                                                                                                                                                                                                           class="form-control walkin-bag-volume-input" 
-                                                                                                                                                                                                                                           step="0.01" 
-                                                                                                                                                                                                                                           min="0.01" 
-                                                                                                                                                                                                                                           required>
-                                                                                                                                                                                                                                </div>
-                                                                        `;
+                                                                                    <div class="col-md-6 mb-2">
+                                                                                                                                                                                                                                            <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                                            <input type="number" 
+                                                                                                                                                                                                                                                   id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                                   name="bag_volumes[]" 
+                                                                                                                                                                                                                                                   class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                                   step="0.01" 
+                                                                                                                                                                                                                                                   min="0.01" 
+                                                                                                                                                                                                                                                   required>
+                                                                                                                                                                                                                                        </div>
+                                                                                `;
                 }
                 fieldsHTML += '</div>';
 
@@ -2983,19 +3048,19 @@
                 // Restore existing value if it exists
                 const existingValue = existingValues[i] || '';
                 fieldsHTML += `
-                                                                            <div class="col-md-6 mb-2">
-                                                                                                                                                                                                                                    <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                                                                                                                    <input type="number" 
-                                                                                                                                                                                                                                           id="walkin_bag_volume_${i}" 
-                                                                                                                                                                                                                                           name="bag_volumes[]" 
-                                                                                                                                                                                                                                           class="form-control walkin-bag-volume-input" 
-                                                                                                                                                                                                                                           step="0.01" 
-                                                                                                                                                                                                                                           min="0.01" 
-                                                                                                                                                                                                                                           value="${existingValue}"
-                                                                                                                                                                                                                                           placeholder="Enter volume"
-                                                                                                                                                                                                                                           required>
-                                                                                                                                                                                                                                </div>
-                                                                        `;
+                                                                                    <div class="col-md-6 mb-2">
+                                                                                                                                                                                                                                            <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                                            <input type="number" 
+                                                                                                                                                                                                                                                   id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                                   name="bag_volumes[]" 
+                                                                                                                                                                                                                                                   class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                                   step="0.01" 
+                                                                                                                                                                                                                                                   min="0.01" 
+                                                                                                                                                                                                                                                   value="${existingValue}"
+                                                                                                                                                                                                                                                   placeholder="Enter volume"
+                                                                                                                                                                                                                                                   required>
+                                                                                                                                                                                                                                        </div>
+                                                                                `;
             }
             fieldsHTML += '</div>';
 
@@ -3056,24 +3121,24 @@
                 }
 
                 fieldsHTML += `
-                                                                            <div class="col-md-6">
-                                                                                <div class="input-group input-group-lg">
-                                                                                    <span class="input-group-text bg-primary text-white fw-bold">
-                                                                                        <i class="fas fa-flask me-2"></i>Bag ${i}
-                                                                                    </span>
-                                                                                    <input type="number"
-                                                                                        id="home_bag_volume_${i}"
-                                                                                        name="bag_volumes[]"
-                                                                                        class="form-control home-bag-volume-input"
-                                                                                        step="0.01"
-                                                                                        min="0.01"
-                                                                                        value="${existingValue}"
-                                                                                        placeholder="Enter volume"
-                                                                                        required>
-                                                                                        <span class="input-group-text">ml</span>
-                                                                                </div>
-                                                                                                                                                                                                    </div>
-                                                                            `;
+                                                                                    <div class="col-md-6">
+                                                                                        <div class="input-group input-group-lg">
+                                                                                            <span class="input-group-text bg-primary text-white fw-bold">
+                                                                                                <i class="fas fa-flask me-2"></i>Bag ${i}
+                                                                                            </span>
+                                                                                            <input type="number"
+                                                                                                id="home_bag_volume_${i}"
+                                                                                                name="bag_volumes[]"
+                                                                                                class="form-control home-bag-volume-input"
+                                                                                                step="0.01"
+                                                                                                min="0.01"
+                                                                                                value="${existingValue}"
+                                                                                                placeholder="Enter volume"
+                                                                                                required>
+                                                                                                <span class="input-group-text">ml</span>
+                                                                                        </div>
+                                                                                                                                                                                                            </div>
+                                                                                    `;
             }
             fieldsHTML += '</div>';
 
@@ -3141,6 +3206,33 @@
             const bBags = btn.attr('data-bags') || '';
             const bTotal = btn.attr('data-total') || '';
             const bBagDetailsRaw = btn.attr('data-bag-details') || '';
+            const donationMethodAttr = (btn.data('donationMethod') || btn.attr('data-donation-method') || '').toString().toLowerCase();
+
+            const fallbackBagDetails = (function parseBagDetails(raw) {
+                if (!raw) return [];
+                try {
+                    const parsed = JSON.parse(raw);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (err) {
+                    console.warn('Unable to parse fallback bag details', err);
+                    return [];
+                }
+            })(bBagDetailsRaw);
+
+            function setModalTitle(method) {
+                const normalized = (method || '').toString().toLowerCase();
+                const titleEl = $('#viewHomeDonationModalLabel');
+                if (!titleEl.length) return;
+                if (normalized === 'walk_in') {
+                    titleEl.text('Walk-in Success');
+                } else if (normalized === 'home_collection') {
+                    titleEl.text('Home Collection Success');
+                } else {
+                    titleEl.text('Donation Details');
+                }
+            }
+
+            setModalTitle(donationMethodAttr);
 
             // Clear previous content then set immediate donor info fallbacks only (we'll render bag details from server)
             $('#view-donor-name').text(bDonorName || 'Loading...');
@@ -3150,20 +3242,38 @@
             $('#view-total-bags').text('Loading...');
             $('#view-total-vol').text('Loading...');
             // show loading row for bag details until AJAX finishes
-            $('#view-bag-details-body').html('<tr><td colspan="7" class="text-center text-muted">Loading details&hellip;</td></tr>');
+            $('#view-bag-details-body').html('<tr><td colspan="4" class="text-center text-muted">Loading details&hellip;</td></tr>');
 
-            // Helper to map storage short codes to readable labels
-            function mapStorageLabel(s) {
-                if (!s && s !== 0) return '-';
-                const str = String(s).toLowerCase();
-                if (str.indexOf('ref') !== -1 || str.indexOf('refrig') !== -1) return 'Refrigerator';
-                if (str.indexOf('freez') !== -1 || str.indexOf('frz') !== -1) return 'Freezer';
-                if (str.indexOf('room') !== -1 || str.indexOf('ambient') !== -1) return 'Room temperature';
-                // Fallback: capitalize words and replace underscores
-                return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            // Render helper so we can reuse for server/fallback data
+            function renderBagTableRows(bags) {
+                const tbody = $('#view-bag-details-body');
+                if (!Array.isArray(bags) || bags.length === 0) {
+                    tbody.html('<tr><td colspan="4" class="text-center text-muted">No bag details available</td></tr>');
+                    return;
+                }
+
+                const rows = bags.map((bag, i) => {
+                    const bagNum = bag.bag_number ?? bag.bagNumber ?? (i + 1);
+                    const volumeRaw = bag.volume ?? bag.vol ?? bag.amount ?? '-';
+                    const volume = (volumeRaw || volumeRaw === 0)
+                        ? String(volumeRaw)
+                        : '-';
+                    const date = bag.date ?? bag.collection_date ?? bag.collected_at ?? '-';
+                    const rawTime = bag.time ?? bag.collection_time ?? bag.collected_time ?? null;
+                    const time = formatTimeDisplay(rawTime);
+
+                    return `
+                            <tr>
+                                <td class="text-center">${bagNum ?? '-'}</td>
+                                <td class="text-center">${volume}</td>
+                                <td class="text-center">${date || '-'}</td>
+                                <td class="text-center">${time}</td>
+                            </tr>
+                        `;
+                }).join('');
+
+                tbody.html(rows);
             }
-
-            // Do NOT pre-render the bag details from the button fallback; always use server response so validated values show
 
             // Show modal immediately for snappy UI, we'll fill content after fetch
             const modalEl = document.getElementById('viewHomeDonationModal');
@@ -3179,8 +3289,25 @@
                     const donation = resp && resp.donation ? resp.donation : null;
                     if (!donation) {
                         $('#view-donor-name').text(bDonorName || 'N/A');
+                        renderBagTableRows(fallbackBagDetails);
+                        if (fallbackBagDetails.length) {
+                            $('#view-total-bags').text(fallbackBagDetails.length);
+                            const fallbackTotal = fallbackBagDetails.reduce((acc, bag) => {
+                                const val = parseFloat(bag.volume ?? bag.vol ?? bag.amount ?? 0);
+                                return acc + (isNaN(val) ? 0 : val);
+                            }, 0);
+                            if (fallbackTotal || fallbackTotal === 0) {
+                                const fallbackDisplay = fallbackTotal % 1 === 0 ? Math.round(fallbackTotal) : fallbackTotal.toFixed(2);
+                                const normalizedFallback = normalizeVolumeValue(fallbackDisplay);
+                                $('#view-total-vol').text(normalizedFallback !== '' ? `${normalizedFallback} ml` : '-');
+                            } else {
+                                $('#view-total-vol').text('-');
+                            }
+                        }
                         return;
                     }
+
+                    setModalTitle(donation.donation_method || donationMethodAttr);
 
                     // Donor info
                     const donorName = (donation.user && donation.user.first_name && donation.user.last_name) ? `${donation.user.first_name} ${donation.user.last_name}` : (donation.donor_name || bDonorName || 'N/A');
@@ -3203,85 +3330,93 @@
                     }
 
                     // Totals
-                    const bags = donation.number_of_bags ?? (Array.isArray(donation.bag_details) ? donation.bag_details.length : bBags || '-');
-                    const totalVol = donation.total_volume ?? donation.formatted_total_volume ?? bTotal ?? '-';
-                    $('#view-total-bags').text(bags);
-                    $('#view-total-vol').text((totalVol !== null && totalVol !== undefined && totalVol !== '') ? `${totalVol} ml` : '-');
+                    const bagDetails = Array.isArray(donation.bag_details) ? donation.bag_details : (Array.isArray(donation.bags) ? donation.bags : []);
+                    const resolvedBagDetails = bagDetails.length ? bagDetails : fallbackBagDetails;
+                    renderBagTableRows(resolvedBagDetails);
 
-                    // Bag details (overwrite)
-                    const tbody = $('#view-bag-details-body');
-                    tbody.empty();
-                    const bagDetails = donation.bag_details ?? donation.bags ?? [];
-                    if (!Array.isArray(bagDetails) || bagDetails.length === 0) {
-                        tbody.append('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
-                        return;
+                    let bagCount = donation.number_of_bags ?? (bagDetails.length ? bagDetails.length : (fallbackBagDetails.length || bBags || '-'));
+                    let totalVol = donation.total_volume ?? donation.formatted_total_volume ?? bTotal ?? '';
+
+                    if ((!totalVol || totalVol === '-') && Array.isArray(resolvedBagDetails) && resolvedBagDetails.length) {
+                        const computedTotal = resolvedBagDetails.reduce((acc, bag) => {
+                            const val = parseFloat(bag.volume ?? bag.vol ?? bag.amount ?? 0);
+                            return acc + (isNaN(val) ? 0 : val);
+                        }, 0);
+                        if (computedTotal || computedTotal === 0) {
+                            totalVol = computedTotal % 1 === 0 ? Math.round(computedTotal) : computedTotal.toFixed(2);
+                        }
                     }
 
-                    // Helper: format various time strings into a user-friendly 12-hour format
-                    function formatTimeDisplay(t) {
-                        if (t === null || t === undefined) return '-';
-                        const s = String(t).trim();
-                        if (s === '') return '-';
-                        // If already contains am/pm, normalize spacing and uppercase
-                        if (/\b(am|pm)\b/i.test(s)) return s.replace(/\s+/g, ' ').toUpperCase();
-
-                        // Match HH:MM or HH:MM:SS (24-hour)
-                        const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-                        if (m) {
-                            let hh = parseInt(m[1], 10);
-                            const mm = m[2];
-                            const ampm = hh >= 12 ? 'PM' : 'AM';
-                            hh = hh % 12; if (hh === 0) hh = 12;
-                            return hh + ':' + mm + ' ' + ampm;
-                        }
-
-                        // Try parsing as ISO datetime and extract time portion
-                        const asDate = new Date(s);
-                        if (!isNaN(asDate.getTime())) {
-                            let hh = asDate.getHours();
-                            const mm = String(asDate.getMinutes()).padStart(2, '0');
-                            const ampm = hh >= 12 ? 'PM' : 'AM';
-                            hh = hh % 12; if (hh === 0) hh = 12;
-                            return hh + ':' + mm + ' ' + ampm;
-                        }
-
-                        // Fallback: return original string
-                        return s;
-                    }
-
-                    bagDetails.forEach(function (bag, i) {
-                        const bagNum = bag.bag_number ?? (i + 1);
-                        const volume = (typeof bag.volume !== 'undefined' && bag.volume !== null) ? bag.volume : (bag.vol ? bag.vol : '-');
-                        const date = bag.date ?? bag.collection_date ?? '-';
-                        const rawTime = bag.time ?? bag.collection_time ?? null;
-                        const time = formatTimeDisplay(rawTime);
-                        const storageRaw = bag.storage_location ?? bag.storage ?? '-';
-                        const storage = mapStorageLabel(storageRaw);
-                        const temp = (bag.temperature !== undefined && bag.temperature !== null) ? bag.temperature : '-';
-                        const method = bag.collection_method ?? bag.method ?? '-';
-
-                        const row = `
-                                            <tr>
-                                                <td class="text-center">${bagNum}</td>
-                                                <td class="text-center">${volume}</td>
-                                                <td class="text-center">${date}</td>
-                                                <td class="text-center">${time}</td>
-                                                <td class="text-center">${storage}</td>
-                                                <td class="text-center">${temp}</td>
-                                                <td class="text-center"><small>${method}</small></td>
-                                            </tr>
-                                        `;
-                        tbody.append(row);
-                    });
+                    $('#view-total-bags').text(bagCount || (bagCount === 0 ? 0 : '-'));
+                    const normalizedTotal = normalizeVolumeValue(totalVol);
+                    $('#view-total-vol').text(normalizedTotal !== '' ? `${normalizedTotal} ml` : '-');
                 },
                 error: function () {
                     // keep any fallback values already rendered from button data
-                    if ($('#view-bag-details-body').children().length === 0) {
-                        $('#view-bag-details-body').empty().append('<tr><td colspan="7" class="text-center text-danger">Failed to load details</td></tr>');
+                    renderBagTableRows(fallbackBagDetails);
+                    if (!fallbackBagDetails.length) {
+                        $('#view-bag-details-body').empty().append('<tr><td colspan="4" class="text-center text-danger">Failed to load details</td></tr>');
+                    }
+                    if (fallbackBagDetails.length) {
+                        $('#view-total-bags').text(fallbackBagDetails.length);
+                        const fallbackTotal = fallbackBagDetails.reduce((acc, bag) => {
+                            const val = parseFloat(bag.volume ?? bag.vol ?? bag.amount ?? 0);
+                            return acc + (isNaN(val) ? 0 : val);
+                        }, 0);
+                        if (fallbackTotal || fallbackTotal === 0) {
+                            const fallbackDisplay = fallbackTotal % 1 === 0 ? Math.round(fallbackTotal) : fallbackTotal.toFixed(2);
+                            const normalizedFallback = normalizeVolumeValue(fallbackDisplay);
+                            $('#view-total-vol').text(normalizedFallback !== '' ? `${normalizedFallback} ml` : '-');
+                        } else {
+                            $('#view-total-vol').text('-');
+                        }
+                    } else {
+                        $('#view-total-bags').text(bBags || '-');
+                        const normalizedFallback = normalizeVolumeValue(bTotal);
+                        $('#view-total-vol').text(normalizedFallback !== '' ? `${normalizedFallback} ml` : '-');
                     }
                 }
             });
         });
+
+        // Helper: format various time strings into a user-friendly 12-hour format
+        function formatTimeDisplay(t) {
+            if (t === null || t === undefined) return '-';
+            const s = String(t).trim();
+            if (s === '') return '-';
+            // If already contains am/pm, normalize spacing and uppercase
+            if (/\b(am|pm)\b/i.test(s)) return s.replace(/\s+/g, ' ').toUpperCase();
+
+            // Match HH:MM or HH:MM:SS (24-hour)
+            const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+            if (m) {
+                let hh = parseInt(m[1], 10);
+                const mm = m[2];
+                const ampm = hh >= 12 ? 'PM' : 'AM';
+                hh = hh % 12; if (hh === 0) hh = 12;
+                return hh + ':' + mm + ' ' + ampm;
+            }
+
+            // Try parsing as ISO datetime and extract time portion
+            const asDate = new Date(s);
+            if (!isNaN(asDate.getTime())) {
+                let hh = asDate.getHours();
+                const mm = String(asDate.getMinutes()).padStart(2, '0');
+                const ampm = hh >= 12 ? 'PM' : 'AM';
+                hh = hh % 12; if (hh === 0) hh = 12;
+                return hh + ':' + mm + ' ' + ampm;
+            }
+
+            // Fallback: return original string
+            return s;
+        }
+
+        function normalizeVolumeValue(val) {
+            if (val === null || val === undefined) return '';
+            const str = String(val).trim();
+            if (!str) return '';
+            return str.replace(/\s*ml$/i, '');
+        }
     </script>
 
     <script>

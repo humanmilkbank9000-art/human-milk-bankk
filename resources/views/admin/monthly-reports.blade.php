@@ -193,7 +193,6 @@
                         href="?tab=request&year={{ $year }}&month={{ $month }}">
                         <i class="fas fa-file-medical tab-icon"></i>
                         <span class="tab-text-full">Breastmilk Request Reports</span>
-                        <span class="tab-text-short">Requests</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -201,7 +200,6 @@
                         href="?tab=donation&year={{ $year }}&month={{ $month }}">
                         <i class="fas fa-hand-holding-heart tab-icon"></i>
                         <span class="tab-text-full">Breastmilk Donation Reports</span>
-                        <span class="tab-text-short">Donations</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -209,7 +207,6 @@
                         href="?tab=inventory&year={{ $year }}&month={{ $month }}">
                         <i class="fas fa-boxes tab-icon"></i>
                         <span class="tab-text-full">Inventory Reports</span>
-                        <span class="tab-text-short">Inventory</span>
                     </a>
                 </li>
             </ul>
