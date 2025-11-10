@@ -393,9 +393,28 @@
         .modal-backdrop.show { opacity: 0.55; }
         .modal { z-index: 12000; }
 
-                /* SweetAlert2: ensure alerts appear above modals and any calendar stacking contexts */
-                .swal2-container { position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; z-index: 2147483647 !important; pointer-events: auto !important; }
-                .swal2-popup, .swal2-toast { z-index: 2147483648 !important; pointer-events: auto !important; }
+        /* SweetAlert2: Force alerts above all modals and calendar stacking contexts */
+        .swal2-container {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 2147483647 !important;
+            pointer-events: auto !important;
+        }
+        .swal2-popup, .swal2-toast {
+            z-index: 2147483648 !important;
+            pointer-events: auto !important;
+        }
+        /* Support for customClass.container = 'swal-high-zindex' used in dashboard */
+        .swal-high-zindex {
+            z-index: 2147483647 !important;
+        }
+        .swal-high-zindex .swal2-popup,
+        .swal-high-zindex .swal2-toast {
+            z-index: 2147483648 !important;
+        }
 
         /* Global Modal Responsive Styles */
         .modal-dialog {
@@ -886,68 +905,101 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
             return new Date(y, m, d);
         }
     </script>
+    <!-- SweetAlert2 z-index fix: ensure container appended to body and maximum z-index applied -->
     <script>
-        // Ensure SweetAlert2 is appended to document.body and stacked above modals.
         (function() {
-            const MAX_Z = '2147483647';
+            const MAX_Z_INDEX = '2147483647';
+            
             function ensureSwalOnTop() {
                 try {
                     if (!window.Swal) return;
+                    
                     const container = document.querySelector('.swal2-container');
                     if (container) {
+                        // Move to body if not already there
                         if (container.parentNode !== document.body) {
                             document.body.appendChild(container);
                         }
+                        // Force fixed positioning and max z-index
                         container.style.position = 'fixed';
                         container.style.top = '0';
                         container.style.left = '0';
                         container.style.right = '0';
                         container.style.bottom = '0';
-                        container.style.zIndex = MAX_Z;
+                        container.style.zIndex = MAX_Z_INDEX;
                         container.style.pointerEvents = 'auto';
                     }
+                    
+                    // Ensure popups have even higher z-index
                     const popups = document.querySelectorAll('.swal2-popup, .swal2-toast');
-                    popups.forEach(p => {
-                        p.style.zIndex = (parseInt(MAX_Z,10) + 1).toString();
-                        p.style.pointerEvents = 'auto';
+                    popups.forEach(popup => {
+                        popup.style.zIndex = (parseInt(MAX_Z_INDEX, 10) + 1).toString();
+                        popup.style.pointerEvents = 'auto';
                     });
                 } catch (e) {
-                    // ignore
+                    console.error('SweetAlert z-index fix error:', e);
                 }
             }
-
-            // Robust override: ensure appendTo=document.body on each call and move container to body.
+            
+            // Override Swal.fire to force appendTo: document.body
             if (window.Swal && typeof Swal.fire === 'function') {
-                const original = Swal.fire.bind(Swal);
+                const originalFire = Swal.fire.bind(Swal);
+                
                 Swal.fire = function() {
                     try {
-                        // Normalize args into options object
+                        // Normalize arguments to options object
+                        let options = {};
+                        
                         if (arguments.length === 1 && typeof arguments[0] === 'object') {
-                            const opts = Object.assign({}, arguments[0], { appendTo: document.body });
-                            const res = original(opts);
-                            setTimeout(ensureSwalOnTop, 0);
-                            return res;
-                        } else {
-                            // (title, html, icon) style
-                            const title = arguments[0];
-                            const html = arguments[1];
-                            const icon = arguments[2];
-                            const opts = { title: title, html: html, icon: icon, appendTo: document.body };
-                            const res = original(opts);
-                            setTimeout(ensureSwalOnTop, 0);
-                            return res;
+                            // Called as Swal.fire({ ... })
+                            options = Object.assign({}, arguments[0]);
+                        } else if (arguments.length > 0) {
+                            // Called as Swal.fire(title, text, icon)
+                            options = {
+                                title: arguments[0],
+                                text: arguments[1],
+                                icon: arguments[2]
+                            };
                         }
+                        
+                        // Force appendTo body to avoid modal stacking context issues
+                        options.target = document.body;
+                        
+                        const result = originalFire(options);
+                        
+                        // Schedule z-index fix after Swal renders
+                        setTimeout(ensureSwalOnTop, 0);
+                        setTimeout(ensureSwalOnTop, 50);
+                        
+                        return result;
                     } catch (e) {
-                        // fallback to original
-                        return original.apply(null, arguments);
+                        console.error('Swal.fire override error:', e);
+                        return originalFire.apply(null, arguments);
                     }
                 };
             }
-
-            // Also run on DOMContentLoaded in case a swal is created outside of the override
+            
+            // Run on DOM ready and window focus
             document.addEventListener('DOMContentLoaded', ensureSwalOnTop);
-            // And ensure on window focus (in case calendars/iframes reparented elements)
             window.addEventListener('focus', ensureSwalOnTop);
+            
+            // Also watch for new Swal containers being added to DOM
+            if (window.MutationObserver) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.classList && node.classList.contains('swal2-container')) {
+                                ensureSwalOnTop();
+                            }
+                        });
+                    });
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            }
         })();
     </script>
     @yield('scripts')

@@ -1393,18 +1393,33 @@
         // Determine which dates to save
         const datesToSave = multiSelectEnabled ? selectedDates.slice() : (formDate.value ? [formDate.value] : []);
         if (!datesToSave.length) {
-          Swal.fire({ icon: 'warning', title: 'No Date Selected', text: 'Please select at least one date.', confirmButtonColor: '#ff6fa8' });
+          // Close modal first
+          const modalEl = document.getElementById('availabilityModal');
+          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+          try { modal.hide(); } catch (e) { /* ignore */ }
+          
+          // Wait for modal to close before showing alert
+          setTimeout(() => {
+            Swal.fire({ icon: 'warning', title: 'No Date Selected', text: 'Please select at least one date.', confirmButtonColor: '#ff6fa8' });
+          }, 300);
           return;
         }
 
-        // Show loading SweetAlert
-        Swal.fire({
-          title: 'Saving Availability...',
-          text: 'Please wait while we save your availability settings.',
-          allowOutsideClick: false,
-          allowEscapeKey: false,
-          didOpen: () => { Swal.showLoading(); }
-        });
+        // Close modal before showing loading SweetAlert
+        const modalEl = document.getElementById('availabilityModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        try { modal.hide(); } catch (e) { /* ignore */ }
+        
+        // Wait for modal to close, then show loading
+        setTimeout(() => {
+          Swal.fire({
+            title: 'Saving Availability...',
+            text: 'Please wait while we save your availability settings.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => { Swal.showLoading(); }
+          });
+        }, 300);
 
         // Post each date sequentially and collect results
         const csrf = document.querySelector('input[name="_token"]').value;
@@ -1425,11 +1440,6 @@
 
           // Update availableDates array
           saved.forEach(d => { if (!availableDates.includes(d)) availableDates.push(d); });
-
-          // Close modal reliably
-          const modalEl = document.getElementById('availabilityModal');
-          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-          try { modal.hide(); } catch (e) { /* ignore */ }
 
           // Build message
           let msg = '';
@@ -1452,19 +1462,34 @@
           // Collect availability ids for selected dates
           const ids = Object.values(selectedAvailabilityIds).filter(Boolean);
           if (!ids.length) {
-            Swal.fire({ icon: 'warning', title: 'Nothing to delete', text: 'There is no availability record for the selected date(s).', confirmButtonColor: '#e83e8c' });
+            // Close modal first
+            const modalEl = document.getElementById('availabilityModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            try { modal.hide(); } catch (e) { /* ignore */ }
+            
+            // Wait for modal to close before showing alert
+            setTimeout(() => {
+              Swal.fire({ icon: 'warning', title: 'Nothing to delete', text: 'There is no availability record for the selected date(s).', confirmButtonColor: '#e83e8c' });
+            }, 300);
             return;
           }
 
-          Swal.fire({
-            title: 'Delete availability?',
-            text: `This will remove the availability for ${ids.length} selected date(s). This action cannot be undone.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, delete them',
-          }).then((result) => {
+          // Close modal before showing delete confirmation
+          const modalEl = document.getElementById('availabilityModal');
+          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+          try { modal.hide(); } catch (e) { /* ignore */ }
+          
+          // Wait for modal to close, then show confirmation
+          setTimeout(() => {
+            Swal.fire({
+              title: 'Delete availability?',
+              text: `This will remove the availability for ${ids.length} selected date(s). This action cannot be undone.`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Yes, delete them',
+            }).then((result) => {
             if (!result.isConfirmed) return;
 
             const csrf = document.querySelector('input[name="_token"]').value;
@@ -1496,11 +1521,6 @@
                 }
               });
 
-              // Close modal reliably
-              const modalEl = document.getElementById('availabilityModal');
-              const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-              try { modal.hide(); } catch (e) { /* ignore */ }
-
               // Show result
               let msg = `${succeeded.length} date(s) deleted.`;
               if (failed.length) msg += ` ${failed.length} failed.`;
@@ -1510,6 +1530,7 @@
               Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred while deleting availability.', confirmButtonColor: '#b21f66', customClass: { container: 'swal-high-zindex' } });
             });
           });
+          }, 300); // End setTimeout for delete confirmation
         });
       }
 
