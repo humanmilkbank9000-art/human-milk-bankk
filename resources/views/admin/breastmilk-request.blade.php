@@ -68,7 +68,7 @@
             padding: 0.35rem 0.6rem;
         }
 
-        /* Small adjustment to ensure spacing between Review and Archive stays correct */
+        /* Small adjustment to ensure spacing between buttons stays correct */
         .table-standard td .admin-review-btn+.btn,
         .table-standard td .btn+.btn {
             margin-left: 0.4rem;
@@ -216,6 +216,36 @@
             .table td {
                 line-height: 1.3;
             }
+
+        /* Assist button + search layout (reused from donation view) */
+        .assist-btn {
+            background: linear-gradient(90deg,#ff7eb6,#ff65a3) !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 0.35rem 0.9rem !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+        .assist-btn:hover, .assist-btn:focus {
+            filter: brightness(0.96);
+            color: #fff !important;
+        }
+
+        .search-assist-row { width:100%; gap:0; }
+        .search-assist-row .input-group { flex:1; min-width:260px; }
+        .search-assist-row .assist-btn { flex-shrink:0; height:32px; line-height:1; }
+        .search-assist-row .assist-btn i { font-size:0.9rem; }
+        .search-assist-row .assist-btn span { font-size:0.78rem; font-weight:600; }
+        .search-assist-row .input-group .form-control { height:32px; }
+        .search-assist-row .input-group-text { height:32px; display:flex; align-items:center; }
+        @media (max-width: 576px) {
+            .search-assist-row { flex-direction:column; }
+            .search-assist-row .assist-btn { width:100%; margin-left:0 !important; margin-top:6px; }
+        }
 
             /* Compact tabs for mobile while keeping them horizontal */
             .nav-tabs {
@@ -434,12 +464,12 @@
             </div>
         @endif
 
-        <!-- Page Header with Action Button -->
+        <!-- Page Header (Action moved beside search for compact layout) -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assistedRequestModal">
-                <i class="fas fa-user-plus"></i> Assist Walk-in Request
-            </button>
+            <div>
+                <h4 class="mb-0">Breastmilk Requests</h4>
+            </div>
+            {{-- The Assist button has been moved next to the search input for a compact header --}}
         </div>
 
         <!-- Navigation Tabs -->
@@ -463,26 +493,27 @@
                     Declined Requests <span class="badge bg-danger">{{ $declinedRequests->count() }}</span>
                 </a>
             </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link{{ request()->get('status') == 'archived' ? ' active' : '' }}" href="?status=archived"
-                    id="archived-tab" role="tab">
-                    Archived <span class="badge bg-secondary">{{ $archivedCount ?? 0 }}</span>
-                </a>
-            </li>
         </ul>
 
         {{-- Search Input Below Tabs --}}
         <div class="mb-3">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
-                    placeholder="Search guardian, infant, or contact" aria-label="Search requests">
-                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
-                    <i class="bi bi-x-lg"></i>
+            <form method="GET" action="{{ route('admin.request') }}" class="d-flex align-items-stretch search-assist-row">
+                <input type="hidden" name="status" value="{{ request()->get('status', 'pending') }}">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control form-control-sm border-start-0 ps-0" id="searchInput"
+                        name="q" placeholder="Search guardian, infant, or contact" aria-label="Search requests" value="{{ request('q') }}">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <button type="button" class="btn btn-sm assist-btn ms-2" data-bs-toggle="modal" data-bs-target="#assistedRequestModal" style="background: linear-gradient(90deg,#ff7eb6,#ff65a3) !important; color:#fff !important; border:none !important;">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Assist Walk-in Request</span>
                 </button>
-            </div>
+            </form>
             <small class="text-muted d-block mt-1">
                 <span id="searchResults"></span>
             </small>
@@ -651,9 +682,6 @@
                                                             data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
                                                             Review
                                                         </button>
-                                                        <button class="btn btn-sm btn-danger"
-                                                            onclick="archiveRequest({{ $request->breastmilk_request_id }})"
-                                                            title="Archive request" aria-label="Archive request">Archive</button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -727,9 +755,6 @@
                                                         data-bs-target="#viewModal{{ $request->breastmilk_request_id }}">
                                                         Review
                                                     </button>
-                                                    <button class="btn btn-sm btn-danger ms-1"
-                                                        onclick="archiveRequest({{ $request->breastmilk_request_id }})"
-                                                        title="Archive request" aria-label="Archive request">Archive</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -1106,62 +1131,7 @@
         @endforeach
     </div>{{-- Close container-fluid --}}
 
-    <!-- Archived Requests Tab Pane -->
-    <div class="tab-pane fade{{ request()->get('status') == 'archived' ? ' show active' : '' }}" id="archived-requests"
-        role="tabpanel">
-        <div class="card card-standard">
-            <div class="card-header bg-secondary text-white">
-                <h5>Archived Requests</h5>
-            </div>
-            <div class="card-body">
-                @if(!empty($archived) && $archived->count() > 0)
-                    <div class="table-container-standard">
-                        <table class="table table-standard table-striped">
-                            <thead>
-                                <tr>
-                                    <th class="text-center">Guardian</th>
-                                    <th class="text-center">Infant</th>
-                                    <th class="text-center">Submitted</th>
-                                    <th class="text-center">Archived At</th>
-                                    <th class="text-center">Restore</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $archivedOrdered = $archived instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                        ? $archived->getCollection()->sortByDesc('created_at')
-                                        : collect($archived)->sortByDesc('created_at');
-                                @endphp
-                                @foreach($archivedOrdered as $req)
-                                    <tr>
-                                        <td class="align-middle">{{ $req->user->first_name ?? '' }}
-                                            {{ $req->user->last_name ?? '' }}
-                                        </td>
-                                        <td class="align-middle">{{ $req->infant->first_name ?? '' }}
-                                            {{ $req->infant->last_name ?? '' }}
-                                        </td>
-                                        <td class="align-middle">{{ $req->created_at->format('M d, Y g:i A') }}</td>
-                                        <td class="align-middle">
-                                            {{ $req->deleted_at ? $req->deleted_at->format('M d, Y g:i A') : '-' }}
-                                        </td>
-                                        <td class="align-middle text-center">
-                                            <button class="btn btn-sm btn-outline-success"
-                                                onclick="restoreRequest({{ $req->breastmilk_request_id }})">Restore</button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-archive fa-3x mb-3"></i>
-                        <p>No archived requests</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Assisted Walk-in Request Modal -->
     <div class="modal fade" id="assistedRequestModal" tabindex="-1" aria-labelledby="assistedRequestModalLabel"
@@ -2467,73 +2437,7 @@
             }
         }
 
-        // Archive request (soft-delete)
-        function archiveRequest(requestId) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Archive request?',
-                    text: 'This will archive (soft-delete) the request. You can restore it from the database if needed.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, archive',
-                    preConfirm: () => {
-                        return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/archive`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }).then(r => r.json());
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire('Archived', 'Request archived successfully.', 'success').then(() => location.reload());
-                    }
-                }).catch(() => {
-                    Swal.fire('Error', 'Failed to archive request', 'error');
-                });
-            } else {
-                if (!confirm('Archive request?')) return;
-                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/archive`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(() => location.reload())
-                    .catch(() => alert('Failed to archive'));
-            }
-        }
-
-        // Restore archived request
-        function restoreRequest(requestId) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Restore request?',
-                    text: 'This will restore the archived request back to active lists.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, restore',
-                    preConfirm: () => {
-                        return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/restore`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }).then(r => r.json());
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire('Restored', 'Request restored successfully.', 'success').then(() => location.reload());
-                    }
-                }).catch(() => {
-                    Swal.fire('Error', 'Failed to restore request', 'error');
-                });
-            } else {
-                if (!confirm('Restore request?')) return;
-                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(() => location.reload())
-                    .catch(() => alert('Failed to restore'));
-            }
-        }
+        // Archive and restore functionality removed per requirements
 
         // New functions for the dispensing modal
 

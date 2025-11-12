@@ -330,10 +330,29 @@ class Donation extends Model
     {
         // Show ALL success donations that are unpasteurized
         // Now we only show donations that still have milk available (> 0)
+                // Exclude donations that expire today or earlier (treat equality as expired)
+                $today = now()->toDateString();
+                return $query->whereIn('status', ['success_walk_in', 'success_home_collection'])
+                                        ->where('pasteurization_status', 'unpasteurized')
+                                        ->where('available_volume', '>', 0)
+                                        ->where(function($q) use ($today) {
+                                                $q->whereNull('expiration_date')
+                                                    ->orWhereDate('expiration_date', '>', $today);
+                                        })
+                                        ->orderBy('added_to_inventory_at', 'asc');
+    }
+
+    /**
+     * Expired unpasteurized donations (not yet disposed) for separate tab display.
+     * Criteria: success donations, unpasteurized status, expiration_date < today, available_volume > 0
+     */
+    public function scopeExpiredUnpasteurized($query)
+    {
         return $query->whereIn('status', ['success_walk_in', 'success_home_collection'])
-                    ->where('pasteurization_status', 'unpasteurized')
-                    ->where('available_volume', '>', 0)
-                    ->orderBy('added_to_inventory_at', 'asc');
+            ->where('pasteurization_status', 'unpasteurized')
+            // Include items expiring today as expired
+            ->whereDate('expiration_date', '<=', now()->toDateString())
+            ->where('available_volume', '>', 0);
     }
 
     public function scopeReadyForPasteurization($query)

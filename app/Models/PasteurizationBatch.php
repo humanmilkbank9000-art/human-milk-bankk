@@ -110,4 +110,39 @@ class PasteurizationBatch extends Model
         
         return false;
     }
+
+    /*
+     |--------------------------------------------------------------------------
+     | Scopes for inventory filtering (expiry-aware)
+     |--------------------------------------------------------------------------
+     | Pasteurized breastmilk expires 1 year after the date_pasteurized. The
+     | requirement is: ON the day it expires it should disappear from the active
+     | pasteurized tab and appear in the expired tab. That means equality is
+     | considered expired (<= today after adding one year).
+     */
+
+    /**
+     * Active (non-expired) batches with available volume.
+     * Logic: status = active, available_volume > 0, date_pasteurized > (today - 1 year)
+     */
+    public function scopeNonExpiredActive($query)
+    {
+        // A batch is expired if date_pasteurized <= today - 1 year
+        $oneYearAgo = now()->subYear()->toDateString();
+        return $query->where('status', 'active')
+            ->where('available_volume', '>', 0)
+            ->whereDate('date_pasteurized', '>', $oneYearAgo);
+    }
+
+    /**
+     * Expired batches (still having available volume) that should move to the expired tab.
+     * Expired when date_pasteurized <= today - 1 year.
+     */
+    public function scopeExpiredActive($query)
+    {
+        $oneYearAgo = now()->subYear()->toDateString();
+        return $query->where('status', 'active')
+            ->where('available_volume', '>', 0)
+            ->whereDate('date_pasteurized', '<=', $oneYearAgo);
+    }
 }

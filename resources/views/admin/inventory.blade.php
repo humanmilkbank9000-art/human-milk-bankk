@@ -481,6 +481,13 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
+                <a class="nav-link{{ request()->get('status') == 'expired' ? ' active' : '' }}" href="?status=expired"
+                    id="expired-tab" role="tab">
+                    <i class="fas fa-hourglass-end"></i> Expired Breastmilk
+                    <span class="badge bg-secondary">{{ (isset($expiredUnpasteurized) ? $expiredUnpasteurized->count() : 0) + (isset($expiredPasteurizedBatches) ? $expiredPasteurizedBatches->count() : 0) }}</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
                 <a class="nav-link{{ request()->get('status') == 'dispensed' ? ' active' : '' }}" href="?status=dispensed"
                     id="dispensed-tab" role="tab">
                     <i class="fas fa-hand-holding-medical"></i> Dispensed Breastmilk
@@ -753,6 +760,159 @@
                 </div>
             </div>
 
+            <!-- Section 2b: Expired Breastmilk (Unpasteurized Donations + Pasteurized Batches) -->
+            <div class="tab-pane fade{{ request()->get('status') == 'expired' ? ' show active' : '' }}" id="expired" role="tabpanel">
+                <div class="card card-standard">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-hourglass-end"></i> Expired Breastmilk</h5>
+                    </div>
+                    <div class="card-body">
+                        @php
+                            $expiredUnpCount = isset($expiredUnpasteurized) ? $expiredUnpasteurized->count() : 0;
+                            $expiredBatchCount = isset($expiredPasteurizedBatches) ? $expiredPasteurizedBatches->count() : 0;
+                            $anyExpired = ($expiredUnpCount + $expiredBatchCount) > 0;
+                        @endphp
+
+                        @if($anyExpired)
+                            <div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
+                                @if($expiredUnpCount > 0)
+                                    <button type="button" class="btn btn-dispose btn-sm" onclick="disposeAllExpired()">
+                                        <i class="fas fa-trash-alt"></i> Dispose All Expired Donations ({{ $expiredUnpCount }})
+                                    </button>
+                                @endif
+                                @if($expiredBatchCount > 0)
+                                    <button type="button" class="btn btn-dispose btn-sm" onclick="disposeAllExpiredBatches()">
+                                        <i class="fas fa-trash-alt"></i> Dispose All Expired Batches ({{ $expiredBatchCount }})
+                                    </button>
+                                @endif
+                            </div>
+                        @endif
+
+                        @if($expiredUnpCount > 0)
+                            <h6 class="fw-bold mb-2">Expired Unpasteurized Donations</h6>
+                            <div class="table-responsive d-none d-md-block">
+                                <table class="table table-hover" style="min-width: 900px; width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Donor</th>
+                                            <th class="text-center">Available</th>
+                                            <th class="text-center">Bags</th>
+                                            <th class="text-center">Date Added</th>
+                                            <th class="text-center">Expired</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($expiredUnpasteurized as $donation)
+                                            <tr>
+                                                <td class="text-center"><strong>{{ data_get($donation,'user.first_name') }} {{ data_get($donation,'user.last_name') }}</strong></td>
+                                                <td class="text-center"><span class="badge bg-secondary">{{ (int)$donation->available_volume }} ml</span></td>
+                                                <td class="text-center">{{ (int)$donation->number_of_bags }}</td>
+                                                <td class="text-center">{{ optional($donation->added_to_inventory_at)->format('M d, Y') }}</td>
+                                                <td class="text-center">{{ optional($donation->expiration_date)->format('M d, Y') }}</td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-dispose btn-sm" onclick="disposeExpiredDonation({{ $donation->breastmilk_donation_id }})">
+                                                        <i class="fas fa-trash"></i> Dispose
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-md-none">
+                                @foreach($expiredUnpasteurized as $donation)
+                                    <div class="border rounded p-2 mb-2">
+                                        <div class="d-flex justify-content-between"><strong>{{ data_get($donation,'user.first_name') }} {{ data_get($donation,'user.last_name') }}</strong><span class="badge bg-secondary">{{ (int)$donation->available_volume }} ml</span></div>
+                                        <div class="small text-muted">Bags: {{ (int)$donation->number_of_bags }}</div>
+                                        <div class="small">Added: {{ optional($donation->added_to_inventory_at)->format('M d, Y') }}</div>
+                                        <div class="small">Expired: {{ optional($donation->expiration_date)->format('M d, Y') }}</div>
+                                        <div class="mt-2 d-flex gap-2">
+                                            <button type="button" class="btn btn-dispose btn-sm w-100" onclick="disposeExpiredDonation({{ $donation->breastmilk_donation_id }})">
+                                                <i class="fas fa-trash"></i> Dispose
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if($expiredBatchCount > 0)
+                            <hr>
+                            <h6 class="fw-bold mb-2">Expired Pasteurized Batches</h6>
+                            <div class="table-responsive d-none d-md-block">
+                                <table class="table table-hover" style="min-width: 900px; width:100%;">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Batch</th>
+                                            <th class="text-center">No. of Donation</th>
+                                            <th class="text-center">Total Volume</th>
+                                            <th class="text-center">Available</th>
+                                            <th class="text-center">Date</th>
+                                            <th class="text-center">Time</th>
+                                            <th class="text-center">Expired</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($expiredPasteurizedBatches as $batch)
+                                            @php
+                                                try {
+                                                    $expiry = \Carbon\Carbon::parse($batch->date_pasteurized)->addYear()->setTimezone('Asia/Manila');
+                                                } catch (\Exception $e) {
+                                                    $expiry = null;
+                                                }
+                                            @endphp
+                                            <tr>
+                                                <td class="text-center"><strong>{{ $batch->batch_number }}</strong></td>
+                                                <td class="text-center">{{ $batch->donations->count() }}</td>
+                                                <td class="text-center"><span class="badge badge-info volume-badge">{{ $batch->formatted_total_volume }}ml</span></td>
+                                                <td class="text-center"><span class="badge badge-success volume-badge">{{ $batch->formatted_available_volume }}ml</span></td>
+                                                <td class="text-center">{{ $batch->formatted_date }}</td>
+                                                <td class="text-center">{{ $batch->formatted_time }}</td>
+                                                <td class="text-center">{{ $expiry ? $expiry->format('M d, Y') : '-' }}</td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-dispose btn-sm" onclick="disposeExpiredBatch({{ $batch->batch_id }})">
+                                                        <i class="fas fa-trash"></i> Dispose
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-md-none">
+                                @foreach($expiredPasteurizedBatches as $batch)
+                                    @php
+                                        try {
+                                            $expiry = \Carbon\Carbon::parse($batch->date_pasteurized)->addYear()->setTimezone('Asia/Manila');
+                                        } catch (\Exception $e) {
+                                            $expiry = null;
+                                        }
+                                    @endphp
+                                    <div class="border rounded p-2 mb-2">
+                                        <div class="d-flex justify-content-between"><strong>{{ $batch->batch_number }}</strong><span class="badge badge-success volume-badge">{{ $batch->formatted_available_volume }}ml</span></div>
+                                        <div class="small text-muted">Donations: {{ $batch->donations->count() }}</div>
+                                        <div class="small">Date: {{ $batch->formatted_date }}</div>
+                                        <div class="small">Time: {{ $batch->formatted_time }}</div>
+                                        <div class="small">Expired: {{ $expiry ? $expiry->format('M d, Y') : '-' }}</div>
+                                        <div class="mt-2 d-flex gap-2">
+                                            <button type="button" class="btn btn-dispose btn-sm w-100" onclick="disposeExpiredBatch({{ $batch->batch_id }})">
+                                                <i class="fas fa-trash"></i> Dispose
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if(!$anyExpired)
+                            <p class="text-muted">No expired breastmilk at the moment.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
             <!-- Section 2: Pasteurized Breastmilk -->
             <div class="tab-pane fade{{ request()->get('status') == 'pasteurized' ? ' show active' : '' }}" id="pasteurized"
                 role="tabpanel">
@@ -762,19 +922,10 @@
                     </div>
                     <div class="card-body">
                         @if($pasteurizationBatches->count() > 0)
-                            <div class="d-flex justify-content-between align-items-center mb-3 pasteurized-actions flex-wrap" style="gap: .5rem;">
-                                <div class="text-muted small">Select batch(es) to dispose</div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <button type="button" class="btn btn-dispose btn-sm" id="disposeBatchesBtn" disabled onclick="disposeSelectedBatches()">
-                                        <i class="fas fa-trash-alt"></i> Dispose Selected Batches
-                                    </button>
-                                </div>
-                            </div>
                             <div class="table-container-standard">
                                 <table class="table table-standard table-bordered table-striped align-middle">
                                     <thead class="table-success">
                                         <tr>
-                                            <th class="text-center px-2 py-2" style="width:36px;">&nbsp;</th>
                                             <th class="text-center px-2 py-2">Batch</th>
                                             <th class="text-center px-2 py-2">No. of Donation</th>
                                             <th class="text-center px-2 py-2">Total Volume</th>
@@ -793,12 +944,6 @@
                                         @endphp
                                         @foreach($batchesOrdered as $batch)
                                             <tr class="batch-row">
-                                                <td class="text-center align-middle">
-                                                    <input type="checkbox" class="form-check-input batch-checkbox"
-                                                           data-batch-id="{{ $batch->batch_id }}"
-                                                           data-available-volume="{{ (float)$batch->available_volume }}"
-                                                           onchange="updateDisposeBatchesButton()">
-                                                </td>
                                                 <td style="white-space: normal;" data-label="Batch">
                                                     <strong>{{ $batch->batch_number }}</strong>
                                                 </td>
@@ -1133,39 +1278,7 @@
         </div>
     </div>
 
-    <!-- Pasteurized Disposal Modal -->
-    <div class="modal fade" id="disposalBatchesModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-trash-alt"></i> Dispose Selected Batches
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Warning:</strong> Disposing a batch will permanently remove its available volume.
-                    </div>
-
-                    <div id="selectedBatchesDisposalList"></div>
-
-                    <div class="mb-3">
-                        <label for="disposalBatchesNotes" class="form-label">Notes (Optional)</label>
-                        <textarea class="form-control" id="disposalBatchesNotes" rows="3"
-                            placeholder="Reason for disposal (e.g. contaminated, expired)"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-dispose" onclick="confirmBatchDisposal()">
-                        <i class="fas fa-trash-alt"></i> Confirm Disposal
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Batch Details Modal -->
     <div class="modal fade" id="batchDetailsModal" tabindex="-1">
@@ -1200,6 +1313,10 @@
 
 @section('scripts')
     <script>
+    // Provide list of expired donation IDs for bulk disposal (if available)
+    window.EXPIRED_DONATION_IDS = @json(isset($expiredUnpasteurized) ? $expiredUnpasteurized->pluck('breastmilk_donation_id') : []);
+    // Provide list of expired pasteurized batch IDs for bulk disposal (if available)
+    window.EXPIRED_BATCH_IDS = @json(isset($expiredPasteurizedBatches) ? $expiredPasteurizedBatches->pluck('batch_id') : []);
         function selectAllDonations() {
             // Check all bag checkboxes and donation master checkboxes
             document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = true);
@@ -1361,98 +1478,80 @@
             modal.show();
         }
 
-        // ==== Pasteurized disposal helpers ====
-        function updateDisposeBatchesButton() {
-            const boxes = document.querySelectorAll('.batch-checkbox:checked');
-            const btn = document.getElementById('disposeBatchesBtn');
-            if (!btn) return;
-            btn.disabled = boxes.length === 0;
-            if (boxes.length > 0) {
-                btn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected Batches (${boxes.length})`;
-            } else {
-                btn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected Batches`;
-            }
-        }
-
-        function disposeSelectedBatches() {
-            const boxes = document.querySelectorAll('.batch-checkbox:checked');
-            if (boxes.length === 0) return;
-
-            let total = 0;
-            let list = '<h6>Selected Batches for Disposal:</h6><ul>';
-            boxes.forEach(cb => {
-                const row = cb.closest('tr');
-                const batchId = cb.getAttribute('data-batch-id');
-                const vol = parseFloat(cb.getAttribute('data-available-volume')) || 0;
-                total += vol;
-                let batchLabel = 'Batch';
-                if (row && row.querySelector('[data-label="Batch"], td:nth-child(2)')) {
-                    const cell = row.cells[1];
-                    batchLabel = cell ? cell.textContent.trim() : `Batch #${batchId}`;
-                }
-                list += `<li>${batchLabel} - ${vol}ml</li>`;
-            });
-            list += `</ul><p><strong>Total Volume: ${total}ml</strong></p>`;
-
-            const container = document.getElementById('selectedBatchesDisposalList');
-            container.innerHTML = list;
-
-            const modal = new bootstrap.Modal(document.getElementById('disposalBatchesModal'));
-            modal.show();
-        }
-
-        function confirmBatchDisposal() {
-            const boxes = Array.from(document.querySelectorAll('.batch-checkbox:checked'));
-            if (boxes.length === 0) return;
-            const notes = document.getElementById('disposalBatchesNotes').value;
-            const batchIds = boxes.map(cb => parseInt(cb.getAttribute('data-batch-id'))).filter(id => id > 0);
-
-            const modal = bootstrap.Modal.getInstance(document.getElementById('disposalBatchesModal'));
-            modal.hide();
-
+        // Dispose a single expired pasteurized batch entirely
+        function disposeExpiredBatch(batchId) {
+            if(!batchId) return;
             Swal.fire({
-                title: 'Processing...',
-                text: 'Disposing selected batches',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => Swal.showLoading()
+                title: 'Dispose Expired Batch?',
+                text: 'This will mark the entire expired batch as disposed.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, dispose',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc2626'
+            }).then(result => {
+                if(!result.isConfirmed) return;
+                Swal.fire({ title: 'Processing...', text: 'Disposing expired batch', icon: 'info', allowOutsideClick:false, showConfirmButton:false, willOpen: () => Swal.showLoading() });
+                fetch('{{ route("admin.inventory.dispose-batches") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ batch_ids: [batchId], notes: 'Expired pasteurized batch disposed' })
+                })
+                .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
+                .then(res => {
+                    let data = null;
+                    if(res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch(e) {} }
+                    if(data && data.errors) {
+                        const errs = []; Object.values(data.errors).forEach(arr => (arr||[]).forEach(m => errs.push(m)));
+                        Swal.fire({ title:'Validation Error', html:`<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626'});
+                        return;
+                    }
+                    if(data && data.success) {
+                        Swal.fire({ title:'Disposed', text:data.message||'Expired batch disposed.', icon:'success', confirmButtonText:'OK', confirmButtonColor:'#10b981' }).then(()=>location.reload());
+                        return;
+                    }
+                    Swal.fire({ title:'Error', text:(data && (data.error||data.message)) || 'Failed to dispose batch.', icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' });
+                })
+                .catch(err => Swal.fire({ title:'Error', text: err.message||'Unexpected error.', icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' }));
             });
+        }
 
-            fetch('{{ route("admin.inventory.dispose-batches") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ batch_ids: batchIds, notes })
-            })
-            .then(async response => {
-                const contentType = response.headers.get('content-type') || '';
-                const text = await response.text();
-                if (contentType.includes('application/json')) {
-                    try { return { ok: response.ok, data: JSON.parse(text) }; } catch (e) { return { ok: response.ok, data: null, text }; }
-                }
-                return { ok: response.ok, data: null, text };
-            })
-            .then(res => {
-                if (res.data && res.data.errors) {
-                    const errs = [];
-                    Object.keys(res.data.errors).forEach(k => (res.data.errors[k] || []).forEach(m => errs.push(m)));
-                    Swal.fire({ title: 'Validation Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(errs.join('\n'))}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                    return;
-                }
-                if (res.data && res.data.success) {
-                    Swal.fire({ title: 'Disposed', text: res.data.message || 'Selected batches have been disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#b91c1c' }).then(() => location.reload());
-                    return;
-                }
-                const serverText = (res.text || '').toString();
-                const short = serverText.length > 1000 ? serverText.substring(0, 1000) + '... (truncated)' : serverText;
-                Swal.fire({ title: 'Server Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(short)}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-            })
-            .catch(error => {
-                Swal.fire({ title: 'Error', text: error.message || 'An error occurred while disposing batches.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+        // Bulk dispose all expired pasteurized batches
+        function disposeAllExpiredBatches() {
+            const ids = (window.EXPIRED_BATCH_IDS || []).map(Number).filter(id => id > 0);
+            if(ids.length === 0) return;
+            Swal.fire({
+                title: 'Dispose All Expired Batches?',
+                text: `This will dispose ${ids.length} expired batch(es).`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, dispose all',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc2626'
+            }).then(result => {
+                if(!result.isConfirmed) return;
+                Swal.fire({ title: 'Processing...', text: 'Disposing expired batches', icon: 'info', allowOutsideClick:false, showConfirmButton:false, willOpen: () => Swal.showLoading() });
+                fetch('{{ route("admin.inventory.dispose-batches") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ batch_ids: ids, notes: 'Bulk disposal of expired pasteurized batches' })
+                })
+                .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
+                .then(res => {
+                    let data = null;
+                    if(res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch(e) {} }
+                    if(data && data.errors) {
+                        const errs = []; Object.values(data.errors).forEach(arr => (arr||[]).forEach(m => errs.push(m)));
+                        Swal.fire({ title:'Validation Error', html:`<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' });
+                        return;
+                    }
+                    if(data && data.success) {
+                        Swal.fire({ title:'Disposed', text:data.message||'All expired batches disposed.', icon:'success', confirmButtonText:'OK', confirmButtonColor:'#10b981' }).then(()=>location.reload());
+                        return;
+                    }
+                    Swal.fire({ title:'Error', text:(data && (data.error||data.message)) || 'Failed to dispose expired batches.', icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' });
+                })
+                .catch(err => Swal.fire({ title:'Error', text: err.message||'Unexpected error.', icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' }));
             });
         }
 
@@ -1509,6 +1608,83 @@
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('disposalModal'));
             modal.show();
+        }
+
+        // Dispose a single expired donation entirely
+        function disposeExpiredDonation(donationId) {
+            if(!donationId) return;
+            Swal.fire({
+                title: 'Dispose Expired Donation?',
+                text: 'This will mark the entire expired donation as disposed.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, dispose',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc2626'
+            }).then(result => {
+                if(!result.isConfirmed) return;
+                Swal.fire({ title: 'Processing...', text: 'Disposing expired donation', icon: 'info', allowOutsideClick:false, showConfirmButton:false, willOpen: () => Swal.showLoading() });
+                fetch('{{ route("admin.inventory.dispose") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ donation_ids: [donationId], notes: 'Expired donation disposed' })
+                })
+                .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
+                .then(res => {
+                    let data = null;
+                    if(res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch(e) {} }
+                    if(data && data.errors) {
+                        const errs = []; Object.values(data.errors).forEach(arr => (arr||[]).forEach(m => errs.push(m)));
+                        Swal.fire({ title:'Validation Error', html:`<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626'});
+                        return;
+                    }
+                    if(data && data.success) {
+                        Swal.fire({ title:'Disposed', text:data.message||'Expired donation disposed.', icon:'success', confirmButtonText:'OK', confirmButtonColor:'#10b981' }).then(()=>location.reload());
+                        return;
+                    }
+                    Swal.fire({ title:'Error', text:(data && (data.error||data.message)) || 'Failed to dispose donation.', icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' });
+                })
+                .catch(err => Swal.fire({ title:'Error', text: err.message||'Unexpected error.', icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' }));
+            });
+        }
+
+        // Bulk dispose all expired
+        function disposeAllExpired() {
+            const ids = (window.EXPIRED_DONATION_IDS || []).map(Number).filter(id => id > 0);
+            if(ids.length === 0) return;
+            Swal.fire({
+                title: 'Dispose All Expired?',
+                text: `This will dispose ${ids.length} expired donation(s).`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, dispose all',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc2626'
+            }).then(result => {
+                if(!result.isConfirmed) return;
+                Swal.fire({ title: 'Processing...', text: 'Disposing expired donations', icon: 'info', allowOutsideClick:false, showConfirmButton:false, willOpen: () => Swal.showLoading() });
+                fetch('{{ route("admin.inventory.dispose") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ donation_ids: ids, notes: 'Bulk disposal of expired donations' })
+                })
+                .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
+                .then(res => {
+                    let data = null;
+                    if(res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch(e) {} }
+                    if(data && data.errors) {
+                        const errs = []; Object.values(data.errors).forEach(arr => (arr||[]).forEach(m => errs.push(m)));
+                        Swal.fire({ title:'Validation Error', html:`<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' });
+                        return;
+                    }
+                    if(data && data.success) {
+                        Swal.fire({ title:'Disposed', text:data.message||'All expired donations disposed.', icon:'success', confirmButtonText:'OK', confirmButtonColor:'#10b981' }).then(()=>location.reload());
+                        return;
+                    }
+                    Swal.fire({ title:'Error', text:(data && (data.error||data.message)) || 'Failed to dispose expired donations.', icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' });
+                })
+                .catch(err => Swal.fire({ title:'Error', text: err.message||'Unexpected error.', icon:'error', confirmButtonText:'OK', confirmButtonColor:'#dc2626' }));
+            });
         }
 
         function confirmDisposal() {

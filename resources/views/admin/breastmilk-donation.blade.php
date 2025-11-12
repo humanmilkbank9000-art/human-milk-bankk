@@ -612,6 +612,37 @@
             font-weight: 700;
             border-radius: 0.375rem;
         }
+
+        /* Assist button styling to match screenshot */
+        .assist-btn {
+            background: linear-gradient(90deg,#ff7eb6,#ff65a3) !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 0.35rem 0.9rem !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+        .assist-btn:hover, .assist-btn:focus {
+            filter: brightness(0.96);
+            color: #fff !important;
+        }
+
+        /* Search + Assist layout refinement */
+        .search-assist-row { width:100%; gap:0; }
+        .search-assist-row .input-group { flex:1; min-width:260px; }
+        .search-assist-row .assist-btn { flex-shrink:0; height:32px; line-height:1; }
+        .search-assist-row .assist-btn i { font-size:0.9rem; }
+        .search-assist-row .assist-btn span { font-size:0.78rem; font-weight:600; }
+        .search-assist-row .input-group .form-control { height:32px; }
+        .search-assist-row .input-group-text { height:32px; display:flex; align-items:center; }
+        @media (max-width: 576px) {
+            .search-assist-row { flex-direction:column; }
+            .search-assist-row .assist-btn { width:100%; margin-left:0 !important; margin-top:6px; }
+        }
     </style>
 
     @if(session('success'))
@@ -623,13 +654,7 @@
     @endif
 
     <div class="container-fluid page-container-standard">
-        <!-- Assist Walk-in Donation button placed above tabs (consistent with Breastmilk Request UI) -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                data-bs-target="#assistWalkInDonationModal">
-                <i class="fas fa-user-plus"></i> Assist Walk-in Donation
-            </button>
-        </div>
+        <!-- Assist button moved beside searchbar (right aligned) -->
         <!-- Navigation Tabs with status query for persistence -->
         @php
             $tabStatus = request('status', 'pending');
@@ -659,11 +684,7 @@
                     Home Collection Success <span class="badge bg-success">{{ $successHomeCollection->count() }}</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link {{ $tabStatus == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}"
-                    href="?status=archived">Archived <span
-                        class="badge bg-secondary text-white">{{ $archivedCount ?? 0 }}</span></a>
-            </li>
+            
             <li class="nav-item">
                 <a class="nav-link {{ $tabStatus == 'declined' ? 'active bg-danger text-white' : 'text-danger' }}"
                     href="?status=declined">Declined <span
@@ -672,20 +693,29 @@
         </ul>
 
         {{-- Search Input Below Tabs --}}
+        {{-- Searchbar with Assist button on the right --}}
         <div class="mb-3">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
-                    placeholder="Search donor name, address, or contact" aria-label="Search donations">
-                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
-                    <i class="bi bi-x-lg"></i>
+            <form method="GET" action="{{ route('admin.donation') }}" class="d-flex align-items-stretch search-assist-row">
+                <input type="hidden" name="status" value="{{ $tabStatus }}">
+                @if(request('donation_type'))
+                    <input type="hidden" name="donation_type" value="{{ request('donation_type') }}">
+                @endif
+                <div class="input-group input-group-sm flex-grow-1 flex-wrap">
+                    <span class="input-group-text bg-white border-end-0 py-0 px-2">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control form-control-sm border-start-0 ps-0" id="searchInput" name="q"
+                        placeholder="Search by name, contact number..." aria-label="Search donations" value="{{ request('q') }}">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <button type="button" class="btn btn-sm assist-btn ms-2" data-bs-toggle="modal" data-bs-target="#assistWalkInDonationModal">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Assist Walk-in Donation</span>
                 </button>
-            </div>
-            <small class="text-muted d-block mt-1">
-                <span id="searchResults"></span>
-            </small>
+            </form>
+            <small class="text-muted d-block mt-1"><span id="searchResults"></span></small>
         </div>
 
         <div class="tab-content" id="donationTabContent" aria-live="polite">
@@ -1143,12 +1173,7 @@
                                                             <i class="fas fa-eye"></i>
                                                             <span class="d-none d-md-inline"> View</span>
                                                         </button>
-                                                        <button class="btn btn-sm btn-danger"
-                                                            onclick="archiveDonation({{ $donation->breastmilk_donation_id }})"
-                                                            title="Archive donation" aria-label="Archive donation">
-                                                            <i class="fas fa-archive"></i>
-                                                            <span class="d-none d-md-inline"> Archive</span>
-                                                        </button>
+                                                        
                                                     </div>
                                                 </td>
                                             </tr>
@@ -1230,12 +1255,7 @@
                                                             <i class="fas fa-eye"></i>
                                                             <span class="d-none d-md-inline"> View</span>
                                                         </button>
-                                                        <button class="btn btn-sm btn-danger"
-                                                            onclick="archiveDonation({{ $donation->breastmilk_donation_id }})"
-                                                            title="Archive donation" aria-label="Archive donation">
-                                                            <i class="fas fa-archive"></i>
-                                                            <span class="d-none d-md-inline"> Archive</span>
-                                                        </button>
+                                                        
                                                     </div>
                                                 </td>
                                             </tr>
@@ -1243,71 +1263,11 @@
                                     </tbody>
                                 </table>
                             </div>
-                        @else
-                            <div class="text-center text-muted py-4">
-                                <i class="fas fa-home fa-3x mb-3"></i>
-                                <p>No completed home collections yet</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Archived Tab -->
-            <div class="tab-pane fade show {{ $tabStatus == 'archived' ? 'active' : '' }}" id="archived-donations"
-                role="tabpanel">
-                <div class="card card-standard">
-                    <div class="card-header bg-secondary text-white py-3">
-                        <h5 class="mb-0">Archived Donations</h5>
-                    </div>
-                    <div class="card-body">
-                        @if(!empty($archived) && $archived->count() > 0)
-                            <div class="table-container table-wide">
-                                <table class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-center">Name</th>
-                                            <th class="text-center">Type</th>
-                                            <th class="text-center">Total</th>
-                                            <th class="text-center">Archived At</th>
-                                            <th class="text-center">Restore</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $archivedOrdered = $archived instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $archived->getCollection()->sortByDesc('created_at')
-                                                : collect($archived)->sortByDesc('created_at');
-                                        @endphp
-                                        @foreach($archivedOrdered as $donation)
-                                            <tr>
-                                                <td class="text-center">
-                                                    {{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}
-                                                </td>
-                                                <td class="text-center">
-                                                    @if($donation->donation_method === 'walk_in')
-                                                        <span class="badge donation-type-badge bg-info">Walk-in</span>
-                                                    @else
-                                                        <span class="badge donation-type-badge bg-primary">Home Collection</span>
-                                                    @endif
-                                                </td>
-                                                <td class="text-center">{{ $donation->formatted_total_volume ?? '-' }}ml</td>
-                                                <td class="text-center">
-                                                    {{ $donation->deleted_at ? $donation->deleted_at->format('M d, Y g:i A') : '-' }}
-                                                </td>
-                                                <td class="text-center">
-                                                    <button class="btn btn-sm btn-outline-success"
-                                                        onclick="restoreDonation({{ $donation->breastmilk_donation_id }})">Restore</button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+            
                             </div>
                         @else
                             <div class="text-center text-muted py-4">
-                                <i class="fas fa-archive fa-3x mb-3"></i>
-                                <p>No archived donations</p>
+                                
                             </div>
                         @endif
                     </div>
@@ -1359,8 +1319,7 @@
                                                 </td>
                                                 <td data-label="Action" class="text-center">
                                                     <button class="btn btn-sm btn-danger"
-                                                        onclick="archiveDonation({{ $donation->breastmilk_donation_id }})"
-                                                        title="Archive donation">
+                                                        
                                                         <i class="fas fa-archive"></i>
                                                         <span class="d-none d-md-inline"> Archive</span>
                                                     </button>
@@ -3402,70 +3361,7 @@
         }
     </script>
 
-    <script>
-        function archiveDonation(id) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Archive donation?',
-                    text: 'This will archive (soft-delete) the donation record. You can restore it from the database if needed.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, archive',
-                    preConfirm: () => {
-                        return fetch(`/ admin / donations / ${id}/archive`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }).then(r => r.json());
-                    }
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        Swal.fire('Archived', 'Donation archived successfully.', 'success').then(() => location.reload());
-                    }
-                }).catch(() => Swal.fire('Error', 'Failed to archive donation', 'error'));
-            } else {
-                if (!confirm('Archive donation?')) return;
-                fetch(`/admin/donations/${id}/archive`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(() => location.reload())
-                    .catch(() => alert('Failed to archive'));
-            }
-        }
-    </script>
-    <script>
-        function restoreDonation(id) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Restore donation?',
-                    text: 'This will restore the archived donation back to active lists.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, restore',
-                    preConfirm: () => {
-                        return fetch(`/admin/donations/${id}/restore`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }).then(r => r.json());
-                    }
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        Swal.fire('Restored', 'Donation restored successfully.', 'success').then(() => location.reload());
-                    }
-                }).catch(() => Swal.fire('Error', 'Failed to restore donation', 'error'));
-            } else {
-                if (!confirm('Restore donation?')) return;
-                fetch(`/admin/donations/${id}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(() => location.reload())
-                    .catch(() => alert('Failed to restore'));
-            }
-        }
-    </script>
+    <!-- Archive/restore functionality removed per requirements -->
     <script>
         function declineDonation(id) {
             if (typeof Swal !== 'undefined') {

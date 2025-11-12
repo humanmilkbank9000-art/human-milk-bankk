@@ -156,24 +156,7 @@ class BreastmilkRequestController extends Controller
             ->orderBy('declined_at', 'desc')
             ->get();
 
-        $archivedCount = BreastmilkRequest::onlyTrashed()->count();
-
-        if ($status === 'archived') {
-            $archived = BreastmilkRequest::onlyTrashed()->with(['user', 'infant', 'availability'])->get();
-
-            // pass the same variables the view expects to avoid undefined variable errors
-            return view('admin.breastmilk-request', compact(
-                'pendingRequests',
-                'approvedRequests',
-                'dispensedRequests',
-                'declinedRequests',
-                'status',
-                'archivedCount',
-                'archived'
-            ));
-        }
-
-        return view('admin.breastmilk-request', compact('pendingRequests', 'approvedRequests', 'dispensedRequests', 'declinedRequests', 'archivedCount'));
+        return view('admin.breastmilk-request', compact('pendingRequests', 'approvedRequests', 'dispensedRequests', 'declinedRequests'));
     }
 
     /**
@@ -411,51 +394,7 @@ class BreastmilkRequestController extends Controller
         ]);
     }
 
-    /**
-     * Archive (soft-delete) a breastmilk request
-     */
-    public function archive($requestId)
-    {
-        try {
-            $breastmilkRequest = BreastmilkRequest::findOrFail($requestId);
-            $breastmilkRequest->delete();
-
-            if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['success' => true, 'message' => 'Request archived successfully.']);
-            }
-
-            return redirect()->back()->with('success', 'Request archived.');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('BreastmilkRequest archive error: ' . $e->getMessage());
-            if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['error' => 'Failed to archive request.'], 500);
-            }
-            return redirect()->back()->with('error', 'Failed to archive request.');
-        }
-    }
-
-    /**
-     * Restore (unarchive) a breastmilk request
-     */
-    public function restore($requestId)
-    {
-        try {
-            $breastmilkRequest = BreastmilkRequest::withTrashed()->findOrFail($requestId);
-            $breastmilkRequest->restore();
-
-            if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['success' => true, 'message' => 'Request restored successfully.']);
-            }
-
-            return redirect()->back()->with('success', 'Request restored.');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('BreastmilkRequest restore error: ' . $e->getMessage());
-            if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['error' => 'Failed to restore request.'], 500);
-            }
-            return redirect()->back()->with('error', 'Failed to restore request.');
-        }
-    }
+    // Archive/restore endpoints removed per requirements
 
     /**
      * Deduct selected unpasteurized donations

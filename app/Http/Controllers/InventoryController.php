@@ -31,15 +31,26 @@ class InventoryController extends Controller
         }
 
         // Section 1: Unpasteurized Breastmilk (Ready for direct dispensing or pasteurization)
-        $unpasteurizedDonations = Donation::with(['user', 'admin'])
+        $unpasteurizedDonations = Donation::with(['user', 'admin', 'availability'])
             ->unpasteurizedInventory()
             ->orderBy('added_to_inventory_at', 'asc') // FIFO ordering
             ->get();
 
-        // Section 2: Pasteurized Breastmilk (Batches with available volume)
+        // Section 2: Pasteurized Breastmilk (ACTIVE & NON-EXPIRED batches with available volume)
         $pasteurizationBatches = PasteurizationBatch::with(['admin', 'donations.user'])
-            ->where('status', 'active')
-            ->where('available_volume', '>', 0)
+            ->nonExpiredActive()
+            ->orderBy('date_pasteurized', 'asc')
+            ->get();
+
+        // Section 2b: Expired Unpasteurized Breastmilk
+        $expiredUnpasteurized = Donation::with(['user', 'admin'])
+            ->expiredUnpasteurized()
+            ->orderBy('expiration_date', 'asc')
+            ->get();
+
+        // Section 2c: Expired Pasteurized Breastmilk Batches (still have volume)
+        $expiredPasteurizedBatches = PasteurizationBatch::with(['admin', 'donations.user'])
+            ->expiredActive()
             ->orderBy('date_pasteurized', 'asc')
             ->get();
 
@@ -66,6 +77,8 @@ class InventoryController extends Controller
         return view('admin.inventory', compact(
             'unpasteurizedDonations',
             'pasteurizationBatches', 
+            'expiredUnpasteurized',
+            'expiredPasteurizedBatches',
             'dispensedMilk',
             'disposedUnpasteurized',
             'disposedPasteurized'
@@ -418,10 +431,14 @@ class InventoryController extends Controller
         $stats = [
             'unpasteurized_donations_count' => Donation::unpasteurizedInventory()->count(),
             'unpasteurized_total_volume' => Donation::unpasteurizedInventory()->sum('available_volume'),
-            'pasteurized_batches_count' => PasteurizationBatch::where('status', 'active')->count(),
-            'pasteurized_total_volume' => PasteurizationBatch::where('status', 'active')->sum('available_volume'),
+            // Only count NON-EXPIRED active pasteurized batches
+            'pasteurized_batches_count' => PasteurizationBatch::nonExpiredActive()->count(),
+            'pasteurized_total_volume' => PasteurizationBatch::nonExpiredActive()->sum('available_volume'),
             'total_dispensed_volume' => DispensedMilk::sum('volume_dispensed'),
             'dispensed_records_count' => DispensedMilk::count(),
+            // Provide expired counts for frontend if needed later
+            'expired_unpasteurized_count' => Donation::expiredUnpasteurized()->count(),
+            'expired_pasteurized_batches_count' => PasteurizationBatch::expiredActive()->count(),
         ];
 
         return response()->json($stats);

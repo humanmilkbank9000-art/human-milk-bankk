@@ -79,28 +79,6 @@ class DonationController extends Controller
             ->get();
         $declinedCount = $declinedDonations->count();
 
-        $archivedCount = Donation::onlyTrashed()->count();
-
-        if ($status === 'archived') {
-            $archived = Donation::onlyTrashed()->with(['user', 'availability'])->get();
-
-            // pass the same variables the view expects to avoid undefined variable errors
-            return view('admin.breastmilk-donation', compact(
-                'pendingWalkIn',
-                'pendingHomeCollection',
-                'pendingDonations',
-                'successWalkIn',
-                'scheduledHomeCollection',
-                'successHomeCollection',
-                'status',
-                'archivedCount',
-                'donationType',
-                'archived',
-                'declinedDonations',
-                'declinedCount'
-            ));
-        }
-
         return view('admin.breastmilk-donation', compact(
             'pendingWalkIn',
             'pendingHomeCollection',
@@ -109,7 +87,6 @@ class DonationController extends Controller
             'scheduledHomeCollection',
             'successHomeCollection',
             'status',
-            'archivedCount',
             'declinedDonations',
             'declinedCount'
         ));
@@ -485,51 +462,7 @@ class DonationController extends Controller
         }
     }
     
-    /**
-     * Archive (soft-delete) a donation record
-     */
-    public function archive($id)
-    {
-        try {
-            $donation = Donation::findOrFail($id);
-            $donation->delete();
-
-            if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['success' => true, 'message' => 'Donation archived successfully.']);
-            }
-
-            return redirect()->back()->with('success', 'Donation archived.');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Donation archive error: ' . $e->getMessage());
-            if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['error' => 'Failed to archive donation.'], 500);
-            }
-            return redirect()->back()->with('error', 'Failed to archive donation.');
-        }
-    }
-
-    /**
-     * Restore (unarchive) a donation
-     */
-    public function restore($id)
-    {
-        try {
-            $donation = Donation::withTrashed()->findOrFail($id);
-            $donation->restore();
-
-            if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['success' => true, 'message' => 'Donation restored successfully.']);
-            }
-
-            return redirect()->back()->with('success', 'Donation restored.');
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Donation restore error: ' . $e->getMessage());
-            if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['error' => 'Failed to restore donation.'], 500);
-            }
-            return redirect()->back()->with('error', 'Failed to restore donation.');
-        }
-    }
+    // Archive/restore endpoints removed per requirements
     // ==================== MY REQUESTS PAGE ====================
     public function user_my_requests()
     {

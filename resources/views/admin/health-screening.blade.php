@@ -32,22 +32,23 @@
 
         .table tbody tr {
             transition: box-shadow 0.2s, background 0.2s;
-        }
+                /* Archive button styles removed */
+                /* .hs-archive-btn {
+                    background: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                    color: #6c757d;
+                    padding: 0.375rem 0.75rem;
+                    border-radius: 6px;
+                }
 
-        .table tbody tr:hover {
-            background: #f6f8ff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
+                .hs-archive-btn:hover {
+                    background: #f1f3f5;
+                    color: #495057;
+                }
 
-        .badge {
-            font-size: 0.95rem;
-            padding: 0.5em 0.8em;
-            border-radius: 6px;
-        }
-
-        .card {
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+                .hs-archive-btn i {
+                    margin-right: 0.25rem;
+                } */
         }
 
         .card-header {
@@ -430,38 +431,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
-    <script>
-        function restoreHealthScreening(id) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Restore record?',
-                    text: 'This will unarchive the record and make it visible in the main lists again.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, restore',
-                    preConfirm: () => {
-                        return fetch(`/admin/health-screening/${id}/restore`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        }).then(r => r.json());
-                    }
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        Swal.fire('Restored', 'Record restored successfully.', 'success').then(() => location.reload());
-                    }
-                }).catch(() => Swal.fire('Error', 'Failed to restore record', 'error'));
-            } else {
-                if (!confirm('Restore record?')) return;
-                fetch(`/admin/health-screening/${id}/restore`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                    .then(() => location.reload())
-                    .catch(() => alert('Failed to restore'));
-            }
-        }
-    </script>
+    <!-- Restore functionality removed per requirements -->
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -477,43 +447,7 @@
                         icon: isAccept ? 'success' : 'error',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        form.submit();
-                    });
-                });
-            });
-
-            // Ensure modals are properly initialized and stable
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                modal.addEventListener('show.bs.modal', function (e) {
-                    // Prevent any background scrolling
-                    document.body.style.overflow = 'hidden';
-                });
-
-                modal.addEventListener('hidden.bs.modal', function (e) {
-                    // Restore scrolling
-                    document.body.style.overflow = 'auto';
-                    // Clean up any remaining backdrops
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    backdrops.forEach(backdrop => backdrop.remove());
-                });
-            });
-
-            // Prevent modal flickering by ensuring proper pointer events
-            document.querySelectorAll('.modal-dialog').forEach(dialog => {
-                dialog.addEventListener('mouseenter', function (e) {
-                    e.stopPropagation();
-                });
-                dialog.addEventListener('mouseleave', function (e) {
-                    e.stopPropagation();
-                });
-            });
-        });
-
-        // Accept health screening with SweetAlert confirmation
-        function acceptScreening(screeningId) {
-            const comments = document.getElementById('adminComments' + screeningId).value;
-
+                            <!-- Archive functionality removed per requirements -->
             Swal.fire({
                 title: 'Accept Health Screening?',
                 text: "Are you sure you want to accept this health screening? The user will be notified.",
@@ -751,7 +685,7 @@
                     <span class="badge bg-warning text-dark ms-1">{{ $pendingCount }}</span>
                 </a>
             </li>
-            <!-- Archived tab moved to end of tabs list to match requested ordering -->
+            <!-- Archived tab removed per requirements -->
             <li class="nav-item">
                 <a class="nav-link {{ $status == 'accepted' ? 'active bg-success text-white' : 'text-success' }}"
                     href="{{ route('admin.health-screening', ['status' => 'accepted']) }}">
@@ -768,14 +702,7 @@
                         class="badge {{ $status == 'declined' ? 'bg-light text-danger' : 'bg-danger text-white' }} ms-1">{{ $declinedCount }}</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link {{ $status == 'archived' ? 'active bg-secondary text-white' : 'text-secondary' }}"
-                    href="{{ route('admin.health-screening', ['status' => 'archived']) }}">
-                    Archived
-                    <span
-                        class="badge {{ $status == 'archived' ? 'bg-light text-secondary' : 'bg-secondary text-white' }} ms-1">{{ $archivedCount ?? 0 }}</span>
-                </a>
-            </li>
+            
         </ul>
 
         {{-- Search Input Below Tabs --}}
@@ -816,14 +743,7 @@
                                         @elseif($status == 'declined')
                                             <th class="text-center px-4 py-3" style="width: 18%">Date and Time Declined</th>
                                         @endif
-                                        {{-- When showing archived items, provide a dedicated Restore column so actions are not
-                                        duplicated inside modals --}}
-                                        @if($status == 'archived')
-                                            <th class="text-center px-4 py-3" style="width: 12%">View</th>
-                                            <th class="text-center px-4 py-3" style="width: 12%">Restore</th>
-                                        @else
-                                            <th class="text-center px-4 py-3" style="width: 12%">Actions</th>
-                                        @endif
+                                        <th class="text-center px-4 py-3" style="width: 12%">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -871,33 +791,14 @@
                                                     @endif
                                                 </td>
                                             @endif
-                                            @if($status == 'archived')
-                                                <td class="text-center align-middle">
+                                            <td class="text-center align-middle">
+                                                <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
                                                     <button class="admin-review-btn" data-bs-toggle="modal"
                                                         data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
                                                         Review
                                                     </button>
-                                                </td>
-                                                <td class="text-center align-middle">
-                                                    <button class="btn btn-sm btn-outline-success"
-                                                        onclick="restoreHealthScreening({{ $screening->health_screening_id }})">Restore</button>
-                                                </td>
-                                            @else
-                                                <td class="text-center align-middle">
-                                                    <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
-                                                        <button class="admin-review-btn" data-bs-toggle="modal"
-                                                            data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
-                                                            Review
-                                                        </button>
-                                                        @if($screening->status !== 'pending')
-                                                            <button class="hs-archive-btn"
-                                                                onclick="archiveHealthScreening({{ $screening->health_screening_id }})">
-                                                                <i class="bi bi-archive"></i> Archive
-                                                            </button>
-                                                        @endif
-                                                    </div>
-                                                </td>
-                                            @endif
+                                                </div>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -949,12 +850,7 @@
                                             data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
                                             Review
                                         </button>
-                                        @if($screening->status !== 'pending')
-                                            <button class="hs-archive-btn"
-                                                onclick="archiveHealthScreening({{ $screening->health_screening_id }})">
-                                                <i class="bi bi-archive"></i> Archive
-                                            </button>
-                                        @endif
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -1159,7 +1055,7 @@
                                                             <i class="bi bi-check-circle me-1"></i> Accept
                                                         </button>
                                                     @elseif($screening->status == 'declined')
-                                                            {{-- Allow undo/accept when declined, but do not show archive here --}}
+                                                            {{-- Allow undo/accept when declined --}}
                                                         <button type="button" class="btn btn-success"
                                                             onclick="undoDeclineScreening({{ $screening->health_screening_id }})">
                                                             <i class="bi bi-arrow-counterclockwise me-1"></i> Undo & Accept
@@ -1170,43 +1066,7 @@
                                         </div>
             @endforeach
         @endif
-                            </div> <script>
-                                function archiveHealthScreening(id) {
-                                    if (typeof Swal !== 'undefined') {
-                                        Swal.fire({
-                                            title: 'Archive record?',
-                                            text: 'This will archive (soft-delete) the record. You can restore it from the database if
-                            needed.',
-                            icon: 'warning',
-                                            showCancelButton: true,
-                                            confirmButtonText: 'Yes, archive',
-                                            preConfirm: () => {
-                                                return fetch(`/admin/health-screening/${id}/archive`, {
-                                                    method: 'POST',
-                                                    headers: {
-                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                                        'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                                                    }
-                                                }).then(resp => resp.json());
-                                            }
-                                        }).then(result => {
-                                            if (result.isConfirmed) {
-                                                Swal.fire('Archived', 'Record archived successfully.', 'success').then(() => location.reload());
-                                            }
-                                        }).catch(err => {
-                                            Swal.fire('Error', 'Failed to archive record', 'error');
-                                        });
-                                    } else {
-                                        if (!confirm('Archive record?')) return;
-                                        fetch(`/admin/health-screening/${id}/archive`, {
-                                            method: 'POST', headers: {
-                                                'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
-                                            .then(() => location.reload())
-                                            .catch(() => alert('Failed to archive'));
-                                    }
-                                }
-                            </script>
+                            </div>
 
                             {{-- Real-time Search Functionality for Health Screening --}}
                             <script>
