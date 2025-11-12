@@ -633,12 +633,34 @@
 
         /* Search + Assist layout refinement */
         .search-assist-row { width:100%; gap:0; }
-        .search-assist-row .input-group { flex:1; min-width:260px; }
+        .search-assist-row .donation-search-wrap { flex:1; min-width:260px; position: relative; }
         .search-assist-row .assist-btn { flex-shrink:0; height:32px; line-height:1; }
         .search-assist-row .assist-btn i { font-size:0.9rem; }
         .search-assist-row .assist-btn span { font-size:0.78rem; font-weight:600; }
-        .search-assist-row .input-group .form-control { height:32px; }
-        .search-assist-row .input-group-text { height:32px; display:flex; align-items:center; }
+        .search-assist-row .donation-search-input { height:32px; }
+
+        /* New donation searchbox (no input-group) */
+        .donation-search-wrap { width:100%; }
+        .donation-search-input {
+            width: 100%;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            background: #fff;
+            padding-left: 2.9rem !important; /* ensure space for icon, override any global padding */
+            padding-right: 2rem; /* clear button space */
+            transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        }
+        .donation-search-input::placeholder { color:#9aa0a6; opacity:.95; }
+        .donation-search-input:focus { border-color:#0d6efd; box-shadow:0 0 0 3px rgba(13,110,253,.12); }
+        .donation-search-icon {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color:#6c757d; pointer-events:none; font-size:1rem;
+            width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+        }
+        .donation-search-clear { position:absolute; right:10px; top:50%; transform:translateY(-50%);
+            display:none; border:none; background:transparent; color:#6c757d; padding:0; line-height:1; }
+        .donation-search-clear:hover { color:#495057; }
+        .donation-search-clear:focus { outline:none; box-shadow:0 0 0 3px rgba(13,110,253,.2); border-radius:50%; }
         @media (max-width: 576px) {
             .search-assist-row { flex-direction:column; }
             .search-assist-row .assist-btn { width:100%; margin-left:0 !important; margin-top:6px; }
@@ -685,11 +707,7 @@
                 </a>
             </li>
             
-            <li class="nav-item">
-                <a class="nav-link {{ $tabStatus == 'declined' ? 'active bg-danger text-white' : 'text-danger' }}"
-                    href="?status=declined">Declined <span
-                        class="badge bg-danger text-white">{{ $declinedCount ?? 0 }}</span></a>
-            </li>
+            <!-- Declined tab link removed per request -->
         </ul>
 
         {{-- Search Input Below Tabs --}}
@@ -700,13 +718,11 @@
                 @if(request('donation_type'))
                     <input type="hidden" name="donation_type" value="{{ request('donation_type') }}">
                 @endif
-                <div class="input-group input-group-sm flex-grow-1 flex-wrap">
-                    <span class="input-group-text bg-white border-end-0 py-0 px-2">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" class="form-control form-control-sm border-start-0 ps-0" id="searchInput" name="q"
-                        placeholder="Search by name, contact number..." aria-label="Search donations" value="{{ request('q') }}">
-                    <button class="btn btn-sm btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                <div class="donation-search-wrap flex-grow-1" role="search" aria-label="Search donations by name or contact number">
+                    <i class="bi bi-search donation-search-icon" aria-hidden="true"></i>
+                    <input type="text" class="form-control form-control-sm donation-search-input" id="searchInput" name="q"
+                        placeholder="Search by name, contact number..." aria-describedby="searchResults" value="{{ request('q') }}" autocomplete="off">
+                    <button type="button" class="donation-search-clear" id="clearSearch" aria-label="Clear search" style="display:none;">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -720,7 +736,7 @@
 
         <div class="tab-content" id="donationTabContent" aria-live="polite">
             <!-- Pending Donations Tab -->
-            <div class="tab-pane fade show {{ $tabStatus == 'pending' ? 'active' : '' }}" id="pending-donations"
+            <div class="tab-pane fade {{ $tabStatus == 'pending' ? 'show active' : '' }}" id="pending-donations"
                 role="tabpanel">
                 <div class="card card-standard">
                     <div
@@ -996,7 +1012,7 @@
             </div>
 
             <!-- Scheduled Home Collection Tab -->
-            <div class="tab-pane fade show {{ $tabStatus == 'scheduled' ? 'active' : '' }}" id="scheduled-home"
+            <div class="tab-pane fade {{ $tabStatus == 'scheduled' ? 'show active' : '' }}" id="scheduled-home"
                 role="tabpanel">
                 <div class="card card-standard">
                     <div class="card-header bg-primary text-white py-3">
@@ -1112,7 +1128,7 @@
             </div>
 
             <!-- Success Walk-in Tab -->
-            <div class="tab-pane fade show {{ $tabStatus == 'success_walk_in' ? 'active' : '' }}" id="success-walk-in"
+            <div class="tab-pane fade {{ $tabStatus == 'success_walk_in' ? 'show active' : '' }}" id="success-walk-in"
                 role="tabpanel">
                 <div class="card card-standard">
                     <div class="card-header bg-success text-white py-3">
@@ -1191,7 +1207,7 @@
             </div>
 
             <!-- Success Home Collection Tab -->
-            <div class="tab-pane fade show {{ $tabStatus == 'success_home_collection' ? 'active' : '' }}" id="success-home"
+            <div class="tab-pane fade {{ $tabStatus == 'success_home_collection' ? 'show active' : '' }}" id="success-home"
                 role="tabpanel">
                 <div class="card card-standard">
                     <div class="card-header bg-success text-white py-3">
@@ -1274,70 +1290,7 @@
                 </div>
             </div>
 
-            <!-- Declined Tab -->
-            <div class="tab-pane fade show {{ $tabStatus == 'declined' ? 'active' : '' }}" id="declined-donations"
-                role="tabpanel">
-                <div class="card card-standard">
-                    <div class="card-header bg-danger text-white py-3">
-                        <h5 class="mb-0">Declined Donations</h5>
-                    </div>
-                    <div class="card-body">
-                        @if(isset($declinedDonations) && $declinedDonations->count() > 0)
-                            <div class="table-container table-wide">
-                                <table class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-center">Name</th>
-                                            <th class="text-center">Type</th>
-                                            <th class="text-center">Address</th>
-                                            <th class="text-center">Reason</th>
-                                            <th class="text-center">Declined At</th>
-                                            <th class="text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($declinedDonations as $donation)
-                                            <tr>
-                                                <td data-label="Name" class="text-center">
-                                                    <strong>{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}</strong>
-                                                </td>
-                                                <td data-label="Type" class="text-center">
-                                                    @if($donation->donation_method === 'walk_in')
-                                                        <span class="badge donation-type-badge bg-info">Walk-in</span>
-                                                    @else
-                                                        <span class="badge donation-type-badge bg-primary">Home Collection</span>
-                                                    @endif
-                                                </td>
-                                                <td data-label="Address" class="text-center">
-                                                    <small>{{ data_get($donation, 'user.address', 'Not provided') }}</small>
-                                                </td>
-                                                <td data-label="Reason" class="text-center">
-                                                    <small>{{ $donation->decline_reason ?? '-' }}</small>
-                                                </td>
-                                                <td data-label="Declined At" class="text-center">
-                                                    <small>{{ $donation->declined_at ? \Carbon\Carbon::parse($donation->declined_at)->format('M d, Y g:i A') : '-' }}</small>
-                                                </td>
-                                                <td data-label="Action" class="text-center">
-                                                    <button class="btn btn-sm btn-danger"
-                                                        
-                                                        <i class="fas fa-archive"></i>
-                                                        <span class="d-none d-md-inline"> Archive</span>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            <div class="text-center text-muted py-4">
-                                <i class="fas fa-times-circle fa-3x mb-3"></i>
-                                <p>No declined donations</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
+            <!-- Declined Tab Removed Per Request -->
         </div>
 
         <!-- Walk-in Validation Modal -->
@@ -3364,46 +3317,75 @@
     <!-- Archive/restore functionality removed per requirements -->
     <script>
         function declineDonation(id) {
+            // Close any open Bootstrap modals first to prevent focus trap blocking textarea typing
+            try {
+                if (typeof bootstrap !== 'undefined') {
+                    document.querySelectorAll('.modal.show').forEach(m => {
+                        const inst = bootstrap.Modal.getInstance(m);
+                        if (inst) inst.hide(); else m.classList.remove('show');
+                    });
+                } else if (window.$) {
+                    $('.modal.show').modal('hide');
+                }
+            } catch (e) { /* ignore */ }
+
             if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Decline donation',
-                    input: 'textarea',
-                    inputLabel: 'Reason for decline',
-                    inputPlaceholder: 'Enter reason/notes...',
-                    inputAttributes: { 'aria-label': 'Reason for decline' },
-                    inputValidator: (value) => {
-                        if (!value || value.trim() === '') {
-                            return 'Please enter a reason.';
-                        }
-                        return undefined;
-                    },
-                    showCancelButton: true,
-                    confirmButtonText: 'Decline'
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        const reason = result.value.trim();
-                        fetch(`/admin/donations/${id}/decline`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            body: JSON.stringify({ reason })
-                        })
-                            .then(r => r.json())
-                            .then(data => {
-                                if (data && data.success) {
-                                    Swal.fire('Declined', data.message || 'Donation declined successfully.', 'success')
-                                        .then(() => location.reload());
-                                } else {
-                                    Swal.fire('Error', (data && data.message) || 'Failed to decline donation', 'error');
-                                }
+                // Slight delay to allow modal backdrop removal before SweetAlert opens
+                setTimeout(() => {
+                    Swal.fire({
+                        title: 'Decline Donation',
+                        input: 'textarea',
+                        inputLabel: 'Reason for decline',
+                        inputPlaceholder: 'Enter reason/notes...',
+                        inputAttributes: {
+                            'aria-label': 'Reason for decline',
+                            'style': 'min-height:110px;resize:vertical;'
+                        },
+                        didOpen: (el) => {
+                            const ta = el.querySelector('textarea.swal2-textarea');
+                            if (ta) { ta.focus(); ta.select(); }
+                        },
+                        inputValidator: (value) => {
+                            if (!value || value.trim() === '') {
+                                return 'Please enter a reason.';
+                            }
+                            if (value.trim().length < 3) {
+                                return 'Reason must be at least 3 characters.';
+                            }
+                            return undefined;
+                        },
+                        showCancelButton: true,
+                        confirmButtonText: 'Decline',
+                        confirmButtonColor: '#dc2626'
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            const reason = (result.value || '').trim();
+                            fetch(`/admin/donations/${id}/decline`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: JSON.stringify({ reason })
                             })
-                            .catch(() => Swal.fire('Error', 'Failed to decline donation', 'error'));
-                    }
-                });
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (data && data.success) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Declined',
+                                            text: data.message || 'Donation declined successfully.'
+                                        }).then(() => location.reload());
+                                    } else {
+                                        Swal.fire('Error', (data && data.message) || 'Failed to decline donation', 'error');
+                                    }
+                                })
+                                .catch(() => Swal.fire('Error', 'Failed to decline donation', 'error'));
+                        }
+                    });
+                }, 50);
             } else {
                 const reason = prompt('Enter reason for declining:');
                 if (!reason || reason.trim() === '') return;
