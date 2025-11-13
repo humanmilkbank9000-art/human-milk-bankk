@@ -480,18 +480,19 @@
                     <span class="badge bg-primary">{{ $pasteurizationBatches->count() }}</span>
                 </a>
             </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link{{ request()->get('status') == 'expired' ? ' active' : '' }}" href="?status=expired"
-                    id="expired-tab" role="tab">
-                    <i class="fas fa-hourglass-end"></i> Expired Breastmilk
-                    <span class="badge bg-secondary">{{ (isset($expiredUnpasteurized) ? $expiredUnpasteurized->count() : 0) + (isset($expiredPasteurizedBatches) ? $expiredPasteurizedBatches->count() : 0) }}</span>
-                </a>
-            </li>
+            <!-- Moved Dispensed before Expired so Expired becomes second to last -->
             <li class="nav-item" role="presentation">
                 <a class="nav-link{{ request()->get('status') == 'dispensed' ? ' active' : '' }}" href="?status=dispensed"
                     id="dispensed-tab" role="tab">
                     <i class="fas fa-hand-holding-medical"></i> Dispensed Breastmilk
                     <span class="badge bg-success">{{ $dispensedMilk->count() }}</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link{{ request()->get('status') == 'expired' ? ' active' : '' }}" href="?status=expired"
+                    id="expired-tab" role="tab">
+                    <i class="fas fa-hourglass-end"></i> Expired Breastmilk
+                    <span class="badge bg-secondary">{{ (isset($expiredUnpasteurized) ? $expiredUnpasteurized->count() : 0) + (isset($expiredPasteurizedBatches) ? $expiredPasteurizedBatches->count() : 0) }}</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
