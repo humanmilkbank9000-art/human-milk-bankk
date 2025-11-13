@@ -11,6 +11,70 @@
             transition: background 0.2s, color 0.2s;
         }
 
+        /* Compact pill-style tabs for Admin Health Screening */
+        .nav-tabs.hs-tabs {
+            justify-content: flex-start;
+            gap: 4px;
+            border-bottom: 1px solid #dee2e6;
+            flex-wrap: nowrap;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        .nav-tabs.hs-tabs .nav-item { 
+            flex: 0 0 auto;
+        }
+        .nav-tabs.hs-tabs .nav-link {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+            border-radius: 0;
+            border: none;
+            border-bottom: 2px solid transparent;
+            line-height: 1.2;
+            background: transparent;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .nav-tabs.hs-tabs .nav-link:hover {
+            background: rgba(0,0,0,0.02);
+        }
+        .nav-tabs.hs-tabs .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 0.3rem;
+            border-radius: 9999px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-left: 0.3rem;
+        }
+        /* inactive colors */
+        .nav-tabs.hs-tabs .nav-link.hs-pending { color: #6c757d; }
+        .nav-tabs.hs-tabs .nav-link.hs-accepted { color: #6c757d; }
+        .nav-tabs.hs-tabs .nav-link.hs-declined { color: #6c757d; }
+        /* active fills - remove background, use border-bottom */
+        .nav-tabs.hs-tabs .nav-link.active.hs-pending { 
+            background-color: transparent; 
+            color: #ffc107; 
+            border-bottom-color: #ffc107;
+        }
+        .nav-tabs.hs-tabs .nav-link.active.hs-accepted { 
+            background-color: transparent; 
+            color: #198754; 
+            border-bottom-color: #198754;
+        }
+        .nav-tabs.hs-tabs .nav-link.active.hs-declined { 
+            background-color: transparent; 
+            color: #dc3545; 
+            border-bottom-color: #dc3545;
+        }
+        /* count bubble colors (both active/inactive) */
+        .nav-tabs.hs-tabs .nav-link.hs-pending .count-badge { background: #ffc107; color: #111827; }
+        .nav-tabs.hs-tabs .nav-link.hs-accepted .count-badge { background: #198754; color: #fff; }
+        .nav-tabs.hs-tabs .nav-link.hs-declined .count-badge { background: #dc3545; color: #fff; }
+
         .nav-tabs .nav-link.active {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
@@ -435,19 +499,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Handle form submissions with SweetAlert
-            document.querySelectorAll('.modal-footer form').forEach(function (form) {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    let isAccept = form.querySelector('button').classList.contains('btn-success');
-                    Swal.fire({
-                        title: isAccept ? 'Accepted!' : 'Rejected!',
-                        text: isAccept ? 'Health screening has been accepted.' : 'Health screening has been rejected.',
-                        icon: isAccept ? 'success' : 'error',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                            <!-- Archive functionality removed per requirements -->
+        // Accept health screening with SweetAlert confirmation
+        function acceptScreening(screeningId) {
+            const commentsEl = document.getElementById('adminComments' + screeningId);
+            const comments = commentsEl ? commentsEl.value : '';
+
             Swal.fire({
                 title: 'Accept Health Screening?',
                 text: "Are you sure you want to accept this health screening? The user will be notified.",
@@ -677,29 +733,27 @@
     <div class="container-fluid px-2 px-md-4">
 
         {{-- Tabs for statuses; clicking reloads page with status query param so controller provides matching rows --}}
-        <ul class="nav nav-tabs mb-3" role="tablist">
+        <ul class="nav nav-tabs hs-tabs mb-3" role="tablist">
             <li class="nav-item">
-                <a class="nav-link {{ $status == 'pending' ? 'active bg-warning text-dark' : 'text-dark' }}"
+                <a class="nav-link hs-pending {{ $status == 'pending' ? 'active' : '' }}"
                     href="{{ route('admin.health-screening', ['status' => 'pending']) }}">
                     Pending
-                    <span class="badge bg-warning text-dark ms-1">{{ $pendingCount }}</span>
+                    <span class="count-badge">{{ $pendingCount }}</span>
                 </a>
             </li>
             <!-- Archived tab removed per requirements -->
             <li class="nav-item">
-                <a class="nav-link {{ $status == 'accepted' ? 'active bg-success text-white' : 'text-success' }}"
+                <a class="nav-link hs-accepted {{ $status == 'accepted' ? 'active' : '' }}"
                     href="{{ route('admin.health-screening', ['status' => 'accepted']) }}">
                     Accepted
-                    <span
-                        class="badge {{ $status == 'accepted' ? 'bg-light text-success' : 'bg-success text-white' }} ms-1">{{ $acceptedCount }}</span>
+                    <span class="count-badge">{{ $acceptedCount }}</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ $status == 'declined' ? 'active bg-danger text-white' : 'text-danger' }}"
+                <a class="nav-link hs-declined {{ $status == 'declined' ? 'active' : '' }}"
                     href="{{ route('admin.health-screening', ['status' => 'declined']) }}">
                     Rejected
-                    <span
-                        class="badge {{ $status == 'declined' ? 'bg-light text-danger' : 'bg-danger text-white' }} ms-1">{{ $declinedCount }}</span>
+                    <span class="count-badge">{{ $declinedCount }}</span>
                 </a>
             </li>
             

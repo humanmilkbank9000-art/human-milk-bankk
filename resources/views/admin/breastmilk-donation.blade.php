@@ -706,8 +706,12 @@
                     Home Collection Success <span class="badge bg-success">{{ $successHomeCollection->count() }}</span>
                 </a>
             </li>
-            
-            <!-- Declined tab link removed per request -->
+            <li class="nav-item">
+                <a class="nav-link {{ $tabStatus == 'declined' ? 'active bg-danger text-white' : 'text-danger' }}"
+                    href="?status=declined">
+                    Declined <span class="badge bg-danger">{{ $declinedCount }}</span>
+                </a>
+            </li>
         </ul>
 
         {{-- Search Input Below Tabs --}}
@@ -1279,8 +1283,6 @@
                                     </tbody>
                                 </table>
                             </div>
-            
-                            </div>
                         @else
                             <div class="text-center text-muted py-4">
                                 
@@ -1290,7 +1292,64 @@
                 </div>
             </div>
 
-            <!-- Declined Tab Removed Per Request -->
+            <!-- Declined Tab -->
+            <div class="tab-pane fade {{ $tabStatus == 'declined' ? 'show active' : '' }}" id="declined-donations" role="tabpanel">
+                <div class="card card-standard">
+                    <div class="card-header text-white" style="background: linear-gradient(90deg,#ff7eb6,#ff65a3);">
+                        <h5 class="mb-0">Declined Donations</h5>
+                    </div>
+                    @php
+                        $declinedOrdered = $declinedDonations instanceof \Illuminate\Pagination\LengthAwarePaginator
+                            ? $declinedDonations->getCollection()->sortByDesc('declined_at')
+                            : collect($declinedDonations)->sortByDesc('declined_at');
+                    @endphp
+                    <div class="card-body">
+                        @if($declinedOrdered->count())
+                            <div class="table-container table-wide">
+                                <table class="table table-striped table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Name</th>
+                                            <th class="text-center">Contact</th>
+                                            <th class="text-center">Method</th>
+                                            <th class="text-center">Bags</th>
+                                            <th class="text-center">Declined At</th>
+                                            <th class="text-center">Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($declinedOrdered as $donation)
+                                            <tr>
+                                                <td class="text-center">
+                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
+                                                </td>
+                                                <td class="text-center">
+                                                    <small>{{ data_get($donation,'user.contact_number','N/A') }}</small>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if($donation->donation_method === 'walk_in')
+                                                        <span class="badge donation-type-badge bg-info">Walk-in</span>
+                                                    @else
+                                                        <span class="badge donation-type-badge bg-primary">Home Collection</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center"><strong>{{ $donation->number_of_bags ?? '-' }}</strong></td>
+                                                <td class="text-center"><small>{{ $donation->declined_at ? $donation->declined_at->format('M d, Y g:i A') : 'N/A' }}</small></td>
+                                                <td class="text-center"><small>{{ $donation->decline_reason ?? 'No reason provided' }}</small></td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p class="mb-0">No declined donations</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Walk-in Validation Modal -->
@@ -1510,13 +1569,16 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped" id="view-bag-details-table">
+                            <table class="table table-bordered" id="view-bag-details-table">
                                 <thead>
                                     <tr>
-                                        <th class="text-center">Bag</th>
-                                        <th class="text-center">Volume</th>
-                                        <th class="text-center">Date</th>
-                                        <th class="text-center">Time</th>
+                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Bag #</th>
+                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Time</th>
+                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Date</th>
+                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Volume (ml)</th>
+                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Storage</th>
+                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Temp (°C)</th>
+                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Method</th>
                                     </tr>
                                 </thead>
                                 <tbody id="view-bag-details-body">
@@ -1588,18 +1650,17 @@
                             <!-- NOTE: Original read-only bag table removed; editable bag details only -->
 
                             <div class="mb-3">
-                                <label class="form-label"><strong>Bag Details (editable for validation)</strong></label>
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-sm" id="home-bag-details-table">
-                                        <thead class="table-light">
+                                    <table class="table table-bordered" id="home-bag-details-table">
+                                        <thead>
                                             <tr>
-                                                <th>Bag #</th>
-                                                <th>Time</th>
-                                                <th>Date</th>
-                                                <th style="width:150px;">Volume (ml)</th>
-                                                <th>Storage</th>
-                                                <th>Temp (°C)</th>
-                                                <th>Method</th>
+                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Bag #</th>
+                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Time</th>
+                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Date</th>
+                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center; width: 180px;">Volume (ml)</th>
+                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Storage</th>
+                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Temp (°C)</th>
+                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Method</th>
                                             </tr>
                                         </thead>
                                         <tbody id="home-bag-details-body">
@@ -2393,15 +2454,15 @@
 
                                 const row = `
                                                                                                         <tr>
-                                                                                                            <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                                                                                            <td>
-                                                                                                                <input type="text" name="bag_time[]" class="form-control form-control-sm" value="${bag.time || ''}" placeholder="time">
+                                                                                                            <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${bagNum}</td>
+                                                                                                            <td style="padding: 8px;">
+                                                                                                                <input type="text" name="bag_time[]" class="form-control" value="${bag.time || ''}" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                             </td>
-                                                                                                            <td>
-                                                                                                                <input type="text" name="bag_date[]" class="form-control form-control-sm" value="${bag.date || ''}" placeholder="date">
+                                                                                                            <td style="padding: 8px;">
+                                                                                                                <input type="text" name="bag_date[]" class="form-control" value="${bag.date || ''}" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                             </td>
-                                                                                                            <td>
-                                                                                                                <div class="input-group input-group-sm">
+                                                                                                            <td style="padding: 8px;">
+                                                                                                                <div class="input-group">
                                                                                                                     <input type="number"
                                                                                                                            id="home_bag_volume_${index + 1}"
                                                                                                                            name="bag_volumes[]"
@@ -2409,12 +2470,14 @@
                                                                                                                            step="0.01"
                                                                                                                            min="0.01"
                                                                                                                            value="${volume}"
-                                                                                                                           placeholder="ml" required>
-                                                                                                                    <span class="input-group-text">ml</span>
+                                                                                                                           placeholder="400"
+                                                                                                                           style="border: 1px solid #dee2e6; padding: 8px; text-align: right;"
+                                                                                                                           required>
+                                                                                                                    <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
                                                                                                                 </div>
                                                                                                             </td>
-                                                                                                            <td>
-                                                                                                                <select name="bag_storage[]" class="form-select form-select-sm">
+                                                                                                            <td style="padding: 8px;">
+                                                                                                                <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                                     ${(() => {
                                         const raw = bag.storage_location || '';
                                         const key = String(raw).toLowerCase();
@@ -2451,11 +2514,11 @@
                                     })()}
                                                                                                                 </select>
                                                                                                             </td>
-                                                                                                            <td class="text-end">
-                                                                                                                <input type="text" name="bag_temp[]" class="form-control form-control-sm text-end" value="${bag.temperature || ''}" placeholder="temp">
+                                                                                                            <td style="padding: 8px;">
+                                                                                                                <input type="text" name="bag_temp[]" class="form-control" value="${bag.temperature || ''}" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                                                                                                             </td>
-                                                                                                            <td>
-                                                                                                                <input type="text" name="bag_method[]" class="form-control form-control-sm" value="${bag.collection_method || ''}" placeholder="method">
+                                                                                                            <td style="padding: 8px;">
+                                                                                                                <input type="text" name="bag_method[]" class="form-control" value="${bag.collection_method || ''}" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                             </td>
                                                                                                         </tr>`;
                                 tbody.append(row);
@@ -2468,36 +2531,36 @@
                                 for (let i = 1; i <= n; i++) {
                                     const row = `
                                                                                                                     <tr>
-                                                                                                                        <td class="text-center fw-bold">Bag ${i}</td>
-                                                                                                                        <td>
-                                                                                                                            <input type="text" name="bag_time[]" class="form-control form-control-sm" value="" placeholder="time">
+                                                                                                                        <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${i}</td>
+                                                                                                                        <td style="padding: 8px;">
+                                                                                                                            <input type="text" name="bag_time[]" class="form-control" value="" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                                         </td>
-                                                                                                                        <td>
-                                                                                                                            <input type="text" name="bag_date[]" class="form-control form-control-sm" value="" placeholder="date">
+                                                                                                                        <td style="padding: 8px;">
+                                                                                                                            <input type="text" name="bag_date[]" class="form-control" value="" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                                         </td>
-                                                                                                                        <td>
-                                                                                                                            <div class="input-group input-group-sm">
+                                                                                                                        <td style="padding: 8px;">
+                                                                                                                            <div class="input-group">
                                                                                                                                 <input type="number"
                                                                                                                                        id="home_bag_volume_${i}"
                                                                                                                                        name="bag_volumes[]"
                                                                                                                                        class="form-control home-bag-volume-input"
-                                                                                                                                       step="0.01" min="0.01" placeholder="ml" required>
-                                                                                                                                <span class="input-group-text">ml</span>
+                                                                                                                                       step="0.01" min="0.01" placeholder="400" style="border: 1px solid #dee2e6; padding: 8px; text-align: right;" required>
+                                                                                                                                <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
                                                                                                                             </div>
                                                                                                                         </td>
-                                                                                                                        <td>
-                                                                                                                            <select name="bag_storage[]" class="form-select form-select-sm">
+                                                                                                                        <td style="padding: 8px;">
+                                                                                                                            <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                                                 <option value="Refrigerator">Refrigerator</option>
                                                                                                                                 <option value="Freezer">Freezer</option>
                                                                                                                                 <option value="Room temperature">Room temperature</option>
                                                                                                                                 <option value="Other">Other</option>
                                                                                                                             </select>
                                                                                                                         </td>
-                                                                                                                        <td class="text-end">
-                                                                                                                            <input type="text" name="bag_temp[]" class="form-control form-control-sm text-end" value="" placeholder="temp">
+                                                                                                                        <td style="padding: 8px;">
+                                                                                                                            <input type="text" name="bag_temp[]" class="form-control" value="" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                                                                                                                         </td>
-                                                                                                                        <td>
-                                                                                                                            <input type="text" name="bag_method[]" class="form-control form-control-sm" value="" placeholder="method">
+                                                                                                                        <td style="padding: 8px;">
+                                                                                                                            <input type="text" name="bag_method[]" class="form-control" value="" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                                         </td>
                                                                                                                     </tr>`;
                                     tbody.append(row);
@@ -3137,13 +3200,13 @@
             $('#view-total-bags').text('Loading...');
             $('#view-total-vol').text('Loading...');
             // show loading row for bag details until AJAX finishes
-            $('#view-bag-details-body').html('<tr><td colspan="4" class="text-center text-muted">Loading details&hellip;</td></tr>');
+            $('#view-bag-details-body').html('<tr><td colspan="7" class="text-center text-muted">Loading details&hellip;</td></tr>');
 
             // Render helper so we can reuse for server/fallback data
             function renderBagTableRows(bags) {
                 const tbody = $('#view-bag-details-body');
                 if (!Array.isArray(bags) || bags.length === 0) {
-                    tbody.html('<tr><td colspan="4" class="text-center text-muted">No bag details available</td></tr>');
+                    tbody.html('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
                     return;
                 }
 
@@ -3156,13 +3219,19 @@
                     const date = bag.date ?? bag.collection_date ?? bag.collected_at ?? '-';
                     const rawTime = bag.time ?? bag.collection_time ?? bag.collected_time ?? null;
                     const time = formatTimeDisplay(rawTime);
+                    const storage = bag.storage_location ?? bag.storage ?? '-';
+                    const temp = bag.temperature ?? bag.temp ?? '-';
+                    const method = bag.collection_method ?? bag.method ?? '-';
 
                     return `
                             <tr>
-                                <td class="text-center">${bagNum ?? '-'}</td>
-                                <td class="text-center">${volume}</td>
-                                <td class="text-center">${date || '-'}</td>
-                                <td class="text-center">${time}</td>
+                                <td style="text-align: center; padding: 12px; font-weight: 600;">${bagNum ?? '-'}</td>
+                                <td style="text-align: center; padding: 12px;">${time}</td>
+                                <td style="text-align: center; padding: 12px;">${date || '-'}</td>
+                                <td style="text-align: center; padding: 12px;"><span style="color: #0d6efd; font-weight: 500;">${volume}</span> ml</td>
+                                <td style="text-align: center; padding: 12px;">${storage}</td>
+                                <td style="text-align: center; padding: 12px;">${temp}</td>
+                                <td style="text-align: center; padding: 12px;">${method}</td>
                             </tr>
                         `;
                 }).join('');
@@ -3250,7 +3319,7 @@
                     // keep any fallback values already rendered from button data
                     renderBagTableRows(fallbackBagDetails);
                     if (!fallbackBagDetails.length) {
-                        $('#view-bag-details-body').empty().append('<tr><td colspan="4" class="text-center text-danger">Failed to load details</td></tr>');
+                        $('#view-bag-details-body').empty().append('<tr><td colspan="7" class="text-center text-danger">Failed to load details</td></tr>');
                     }
                     if (fallbackBagDetails.length) {
                         $('#view-total-bags').text(fallbackBagDetails.length);

@@ -220,6 +220,14 @@
     padding-top: 0.5rem !important;
 }
 
+/* Declined donations tab: tighten vertical spacing to match other success tables */
+#declined-donations {
+    padding-top: 0 !important;
+}
+#declined-donations .card-standard {
+    margin-top: 0 !important;
+}
+
 /* ========================================
    STEP INDICATORS (for multi-step forms)
    ======================================== */

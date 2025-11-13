@@ -375,8 +375,8 @@ class DonationController extends Controller
     {
         try {
             $donation = Donation::findOrFail($id);
-            if (!in_array($donation->status, ['pending_walk_in', 'pending_home_collection'])) {
-                throw new \RuntimeException('Only pending donations can be declined.');
+            if (!in_array($donation->status, ['pending_walk_in', 'pending_home_collection', 'scheduled_home_collection'])) {
+                throw new \RuntimeException('Only pending or scheduled donations can be declined.');
             }
 
             $reason = trim(request('reason', ''));
