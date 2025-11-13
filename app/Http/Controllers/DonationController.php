@@ -417,6 +417,23 @@ class DonationController extends Controller
                     ? json_decode($donation->bag_details, true) 
                     : $donation->bag_details;
             }
+            if (empty($bagDetails) && !empty($donation->individual_bag_volumes)) {
+                // Build minimal bag details so the modal shows rows for walk-in validations
+                $timeStr = $donation->donation_time ? \Carbon\Carbon::parse($donation->donation_time)->format('g:i A') : null;
+                $dateStr = $donation->donation_date ? $donation->donation_date->format('M d, Y') : null;
+                $bagDetails = [];
+                foreach ((array)$donation->individual_bag_volumes as $idx => $vol) {
+                    $bagDetails[] = [
+                        'bag_number' => ($idx + 1),
+                        'time' => $timeStr,
+                        'date' => $dateStr,
+                        'volume' => $vol,
+                        'storage_location' => null,
+                        'temperature' => null,
+                        'collection_method' => $donation->donation_method === 'walk_in' ? 'Walk-in' : null,
+                    ];
+                }
+            }
 
             // Determine the display date and time (prefer donation_date/time, fallback to scheduled)
             $displayDate = 'N/A';
