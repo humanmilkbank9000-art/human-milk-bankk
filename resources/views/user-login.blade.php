@@ -681,7 +681,7 @@
                 <style>
                     font-weight: bold;    
                 </style>
-                VERSION 3.0.0
+                VERSION 4.0.0.0
             </p>
         </div>
 
