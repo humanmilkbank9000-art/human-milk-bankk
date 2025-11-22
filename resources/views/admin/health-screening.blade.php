@@ -738,7 +738,7 @@
                 <a class="nav-link hs-pending {{ $status == 'pending' ? 'active' : '' }}"
                     href="{{ route('admin.health-screening', ['status' => 'pending']) }}">
                     Pending
-                    <span class="count-badge">{{ $pendingCount }}</span>
+                    <span class="count-badge badge bg-warning text-dark ms-1">{{ $pendingCount }}</span>
                 </a>
             </li>
             <!-- Archived tab removed per requirements -->
