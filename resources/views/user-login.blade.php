@@ -681,7 +681,7 @@
                 <style>
                     font-weight: bold;    
                 </style>
-                VERSION 4.0.0.0
+                VERSION 5.0.0.0
             </p>
         </div>
 
@@ -714,7 +714,7 @@
                 <div class="form-group">
                     <label for="phone" class="form-label">Contact Number</label>
                     <input type="text" id="phone" name="phone" class="form-input @error('phone') error @enderror"
-                        placeholder="Enter your phone number " required value="{{ old('phone') }}" maxlength="20">
+                        placeholder="Enter your phone number " value="{{ old('phone') }}" maxlength="20">
                     @error('phone')
                         <span class="error-text">{{ $message }}</span>
                     @enderror
@@ -725,8 +725,7 @@
                     <label for="password" class="form-label">Password</label>
                     <div class="input-wrapper">
                         <input type="password" id="password" name="password"
-                            class="form-input @error('password') error @enderror" placeholder="Enter your password"
-                            required>
+                            class="form-input @error('password') error @enderror" placeholder="Enter your password">
                         <button type="button" class="password-toggle" onclick="togglePassword()">
                             <svg id="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2">

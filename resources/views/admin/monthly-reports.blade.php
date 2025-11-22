@@ -249,7 +249,6 @@
                                         <th>Month</th>
                                         <th>Total Request</th>
                                         <th>Approved</th>
-                                        <th>Declined</th>
                                         <th>Total Dispensed (ml)</th>
                                     </tr>
                                 </thead>
@@ -269,7 +268,6 @@
                                             </td>
                                             <td>{{ $selectedRequestRow['total'] ?? 0 }}</td>
                                             <td>{{ $selectedRequestRow['approved'] ?? 0 }}</td>
-                                            <td>{{ $selectedRequestRow['declined'] ?? 0 }}</td>
                                             <td>{{ $selectedRequestRow['dispensed_volume'] ?? 0 }}</td>
                                         </tr>
                                     @elseif(!empty($requestStats))
@@ -278,12 +276,11 @@
                                             </td>
                                             <td>{{ $requestStats['total'] ?? 0 }}</td>
                                             <td>{{ $requestStats['approved'] ?? 0 }}</td>
-                                            <td>{{ $requestStats['declined'] ?? 0 }}</td>
                                             <td>{{ $requestStats['dispensed_volume'] ?? 0 }}</td>
                                         </tr>
                                     @else
                                         <tr>
-                                            <td colspan="5" class="text-center">No data for selected month/year.</td>
+                                            <td colspan="4" class="text-center">No data for selected month/year.</td>
                                         </tr>
                                     @endif
                                 </tbody>

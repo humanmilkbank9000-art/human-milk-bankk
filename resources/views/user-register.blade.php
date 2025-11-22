@@ -430,7 +430,10 @@
                 <div class="form-group">
                     <label for="first_name" class="form-label">First Name</label>
                     <input type="text" id="first_name" name="first_name" class="form-input"
-                        value="{{ old('first_name', $userData['first_name'] ?? '') }}" required style="text-transform: capitalize;">
+                        value="{{ old('first_name', $userData['first_name'] ?? '') }}" style="text-transform: capitalize;">
+                    <div id="first-name-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please enter your first name.
+                    </div>
                     <div id="first-name-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                         Special characters like <, >, =, ', " are not allowed in names.
                     </div>
@@ -454,7 +457,10 @@
                 <div class="form-group">
                     <label for="last_name" class="form-label">Last Name</label>
                     <input type="text" id="last_name" name="last_name" class="form-input" value="{{ old('last_name', $userData['last_name'] ?? '') }}"
-                        required style="text-transform: capitalize;">
+                        style="text-transform: capitalize;">
+                    <div id="last-name-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please enter your last name.
+                    </div>
                     <div id="last-name-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                         Special characters like <, >, =, ', " are not allowed in names.
                     </div>
@@ -506,7 +512,7 @@
                     <div class="radio-group">
                         <div class="radio-option">
                             <input type="radio" id="female" name="sex" value="female" 
-                                {{ old('sex', $userData['sex'] ?? '') == 'female' ? 'checked' : '' }} required>
+                                {{ old('sex', $userData['sex'] ?? '') == 'female' ? 'checked' : '' }}>
                             <label for="female">Female</label>
                         </div>
                         <div class="radio-option">
@@ -515,6 +521,9 @@
                             <label for="male">Male</label>
                         </div>
                     </div>
+                    <div id="sex-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please select your gender.
+                    </div>
                 </div>
             </div>
 
@@ -522,7 +531,10 @@
                 <div class="form-group">
                     <label for="date_of_birth" class="form-label">Birthday</label>
                     <input type="date" id="date_of_birth" name="date_of_birth" class="form-input"
-                        value="{{ old('date_of_birth', $userData['date_of_birth'] ?? '') }}" required>
+                        value="{{ old('date_of_birth', $userData['date_of_birth'] ?? '') }}">
+                    <div id="dob-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please enter your date of birth.
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -534,9 +546,12 @@
             <div class="form-group">
                 <label for="contact_number" class="form-label">Contact Number</label>
                 <input type="text" id="contact_number" name="contact_number" class="form-input"
-                    value="{{ old('contact_number', $userData['contact_number'] ?? '') }}" required placeholder="09XXXXXXXXX" pattern="[0-9]{11}">
+                    value="{{ old('contact_number', $userData['contact_number'] ?? '') }}" placeholder="09XXXXXXXXX" pattern="[0-9]{11}">
+                <div id="contact-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                    Please enter your contact number.
+                </div>
                 <div id="contact-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
-                    Contact number must be exactly 11 digits.
+                    Contact number must be exactly 11 digits and start with 09.
                 </div>
                 <script>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -565,7 +580,10 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="region" class="form-label">Region</label>
-                    <select id="region" name="region" class="form-input" required></select>
+                    <select id="region" name="region" class="form-input"></select>
+                    <div id="region-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please select your region.
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="province" class="form-label">Province</label>
@@ -576,7 +594,10 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="city" class="form-label">City/Municipality</label>
-                    <select id="city" name="city" class="form-input" disabled required></select>
+                    <select id="city" name="city" class="form-input" disabled></select>
+                    <div id="city-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please select your city/municipality.
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="barangay" class="form-label">Barangay</label>
@@ -599,7 +620,7 @@
                     <label for="password" class="form-label">Password</label>
                     <div class="input-wrapper">
                         <input type="password" id="password" name="password" class="form-input" 
-                            value="{{ old('password', $userData['password'] ?? '') }}" required>
+                            value="{{ old('password', $userData['password'] ?? '') }}">
                         <button type="button" class="password-toggle"
                             onclick="togglePassword('password', 'eye-icon-1')">
                             <svg id="eye-icon-1" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -608,6 +629,9 @@
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                         </button>
+                    </div>
+                    <div id="password-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please enter a password.
                     </div>
                     <div id="password-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                         Password must be 8-64 chars and include upper, lower, number, and special character.
@@ -637,7 +661,7 @@
                     <label for="password_confirmation" class="form-label">Confirm Password</label>
                     <div class="input-wrapper">
                         <input type="password" id="password_confirmation" name="password_confirmation"
-                            class="form-input" value="{{ old('password_confirmation', $userData['password'] ?? '') }}" required>
+                            class="form-input" value="{{ old('password_confirmation', $userData['password'] ?? '') }}">
                         <button type="button" class="password-toggle"
                             onclick="togglePassword('password_confirmation', 'eye-icon-2')">
                             <svg id="eye-icon-2" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -646,6 +670,12 @@
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                         </button>
+                    </div>
+                    <div id="password-confirm-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please confirm your password.
+                    </div>
+                    <div id="password-match-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Passwords do not match.
                     </div>
                 </div>
             </div>
@@ -945,35 +975,174 @@
 
         const form = document.querySelector('form');
         form.addEventListener('submit', function (e) {
-            // Trim all text inputs before submission
+            e.preventDefault();
+
+            // Hide all error messages first
+            document.querySelectorAll('[id$="-error"]').forEach(el => el.style.display = 'none');
+
+            // Trim all text inputs before validation
             const textInputs = form.querySelectorAll('input[type="text"]');
             textInputs.forEach(input => {
                 input.value = input.value.trim();
             });
 
-            // Final contact number validation
-            const contactValue = contactInput.value;
-            if (contactValue.length !== 11) {
-                e.preventDefault();
-                contactInput.focus();
-                alert('Please enter a valid 11-digit contact number.');
-                return false;
+            let isValid = true;
+            let firstErrorField = null;
+
+            // Validate First Name
+            const firstName = document.getElementById('first_name');
+            const firstNameError = document.getElementById('first-name-error');
+            const firstNameReq = document.getElementById('first-name-req');
+            if (!firstName.value.trim()) {
+                firstNameError.style.display = 'block';
+                firstNameReq.style.display = 'none';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = firstName;
+            } else if (/[<>=\'\"]/.test(firstName.value)) {
+                firstNameError.style.display = 'none';
+                firstNameReq.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = firstName;
             }
 
-            if (!contactValue.startsWith('09')) {
-                e.preventDefault();
-                contactInput.focus();
-                alert('Contact number must start with 09.');
-                return false;
+            // Validate Last Name
+            const lastName = document.getElementById('last_name');
+            const lastNameError = document.getElementById('last-name-error');
+            const lastNameReq = document.getElementById('last-name-req');
+            if (!lastName.value.trim()) {
+                lastNameError.style.display = 'block';
+                lastNameReq.style.display = 'none';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = lastName;
+            } else if (/[<>=\'\"]/.test(lastName.value)) {
+                lastNameError.style.display = 'none';
+                lastNameReq.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = lastName;
+            }
+
+            // Validate Middle Name (optional but check for invalid chars if filled)
+            const middleName = document.getElementById('middle_name');
+            const middleNameReq = document.getElementById('middle-name-req');
+            if (middleName.value && /[<>=\'\"]/.test(middleName.value)) {
+                middleNameReq.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = middleName;
+            }
+
+            // Validate Gender
+            const sex = document.querySelector('input[name=\"sex\"]:checked');
+            const sexError = document.getElementById('sex-error');
+            if (!sex) {
+                sexError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Date of Birth
+            const dob = document.getElementById('date_of_birth');
+            const dobError = document.getElementById('dob-error');
+            if (!dob.value) {
+                dobError.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = dob;
+            } else {
+                const dobDate = new Date(dob.value);
+                const today = new Date();
+                if (dobDate > today) {
+                    dobError.textContent = 'Date of birth cannot be in the future.';
+                    dobError.style.display = 'block';
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = dob;
+                }
+            }
+
+            // Validate Contact Number
+            const contactInput = document.getElementById('contact_number');
+            const contactError = document.getElementById('contact-error');
+            const contactReq = document.getElementById('contact-req');
+            const contactValue = contactInput.value.trim();
+            if (!contactValue) {
+                contactError.style.display = 'block';
+                contactReq.style.display = 'none';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = contactInput;
+            } else if (contactValue.length !== 11 || !contactValue.startsWith('09')) {
+                contactError.style.display = 'none';
+                contactReq.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = contactInput;
+            }
+
+            // Validate Region
+            const selRegion = document.getElementById('region');
+            const regionError = document.getElementById('region-error');
+            if (!selRegion.value) {
+                regionError.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = selRegion;
+            }
+
+            // Validate City
+            const selCity = document.getElementById('city');
+            const cityError = document.getElementById('city-error');
+            if (!selCity.value) {
+                cityError.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = selCity;
+            }
+
+            // Validate Password
+            const password = document.getElementById('password');
+            const passwordError = document.getElementById('password-error');
+            const passwordReq = document.getElementById('password-req');
+            if (!password.value) {
+                passwordError.style.display = 'block';
+                passwordReq.style.display = 'none';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = password;
+            } else if (!checkPasswordStrength(password.value)) {
+                passwordError.style.display = 'none';
+                passwordReq.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = password;
+            }
+
+            // Validate Password Confirmation
+            const passwordConfirm = document.getElementById('password_confirmation');
+            const passwordConfirmError = document.getElementById('password-confirm-error');
+            const passwordMatchError = document.getElementById('password-match-error');
+            if (!passwordConfirm.value) {
+                passwordConfirmError.style.display = 'block';
+                passwordMatchError.style.display = 'none';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = passwordConfirm;
+            } else if (password.value !== passwordConfirm.value) {
+                passwordConfirmError.style.display = 'none';
+                passwordMatchError.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = passwordConfirm;
             }
 
             // Ensure composed address exists
             composeAddress();
+            const hiddenAddress = document.getElementById('address');
             if (!hiddenAddress.value) {
-                e.preventDefault();
-                alert('Please complete your address (select region and city/municipality at minimum).');
+                if (!selRegion.value) regionError.style.display = 'block';
+                if (!selCity.value) cityError.style.display = 'block';
+                isValid = false;
+            }
+
+            // If validation failed, focus on first error field and scroll to it
+            if (!isValid) {
+                if (firstErrorField) {
+                    firstErrorField.focus();
+                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
                 return false;
             }
+
+            // All validations passed, submit the form
+            form.submit();
         });
     </script>
 </body>

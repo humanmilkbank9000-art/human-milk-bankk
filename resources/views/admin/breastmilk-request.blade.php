@@ -885,7 +885,7 @@
                                             </label>
                                             <input type="text" inputmode="numeric" pattern="[0-9]*([.][0-9]+)?"
                                                 class="form-control" id="volumeToDispense{{ $request->breastmilk_request_id }}"
-                                                name="volume_dispensed" required
+                                                name="volume_dispensed"
                                                 oninput="updateSelectedVolume({{ $request->breastmilk_request_id }})">
                                             <div class="form-text">Enter the amount of milk to dispense</div>
                                         </div>
@@ -895,7 +895,7 @@
                                                 <i class="fas fa-vial"></i> Breastmilk Type <span class="text-danger">*</span>
                                             </label>
                                             <select class="form-select" id="milkTypeSelect{{ $request->breastmilk_request_id }}"
-                                                name="milk_type" required
+                                                name="milk_type"
                                                 onchange="handleMilkTypeChange({{ $request->breastmilk_request_id }})">
                                                 <option value="pasteurized" selected>Pasteurized Breastmilk</option>
                                             </select>
@@ -1099,14 +1099,14 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="volume_requested" class="form-label">Volume to Dispense (ml) *</label>
-                                    <input type="number" class="form-control" name="volume_requested" step="0.01" min="0" required
+                                    <input type="number" class="form-control" name="volume_requested" step="0.01" min="0"
                                         id="volumeRequested{{ $request->breastmilk_request_id }}"
                                         oninput="validateDispenseForm({{ $request->breastmilk_request_id }})">
                                     <div class="form-text">Specify the amount of breastmilk to be dispensed.</div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="milk_type" class="form-label">Milk Type *</label>
-                                    <select class="form-select" name="milk_type" required
+                                    <select class="form-select" name="milk_type"
                                         id="milkType{{ $request->breastmilk_request_id }}"
                                         onchange="loadInventory({{ $request->breastmilk_request_id }}); validateDispenseForm({{ $request->breastmilk_request_id }})">
                                         <option value="pasteurized" selected>Pasteurized Breastmilk</option>
@@ -1184,7 +1184,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="assist_option" class="form-label"><i class="fas fa-tag me-1"></i> Assist Option <span class="text-danger">*</span></label>
-                            <select class="form-select" id="assist_option" name="assist_option" required>
+                            <select class="form-select" id="assist_option" name="assist_option">
                                 <option value="">Select option</option>
                                 <option value="no_account_direct_record">No account or direct record</option>
                                 <option value="record_to_existing_user">Record to existing user</option>
@@ -1205,19 +1205,19 @@
                                 <label for="guardian_first_name" class="form-label">First Name <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="guardian_first_name" name="guardian_first_name"
-                                    value="{{ old('guardian_first_name') }}" required>
+                                    value="{{ old('guardian_first_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="guardian_last_name" class="form-label">Last Name <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="guardian_last_name" name="guardian_last_name"
-                                    value="{{ old('guardian_last_name') }}" required>
+                                    value="{{ old('guardian_last_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="guardian_contact" class="form-label">Contact Number <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="guardian_contact" name="guardian_contact"
-                                    value="{{ old('guardian_contact') }}" required placeholder="09XXXXXXXXX">
+                                    value="{{ old('guardian_contact') }}" placeholder="09XXXXXXXXX">
                                 <div id="guardian_contact_feedback" class="form-text text-danger" style="display:none;">
                                 </div>
                             </div>
@@ -1235,19 +1235,19 @@
                                 <label for="infant_first_name" class="form-label">Infant First Name <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="infant_first_name" name="infant_first_name"
-                                    value="{{ old('infant_first_name') }}" required>
+                                    value="{{ old('infant_first_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="infant_last_name" class="form-label">Infant Last Name <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="infant_last_name" name="infant_last_name"
-                                    value="{{ old('infant_last_name') }}" required>
+                                    value="{{ old('infant_last_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="infant_date_of_birth" class="form-label">Date of Birth <span
                                         class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="infant_date_of_birth"
-                                    name="infant_date_of_birth" value="{{ old('infant_date_of_birth') }}" required
+                                    name="infant_date_of_birth" value="{{ old('infant_date_of_birth') }}"
                                     max="{{ date('Y-m-d') }}">
                             </div>
                         </div>
@@ -1255,7 +1255,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="infant_sex" class="form-label">Sex <span class="text-danger">*</span></label>
-                                <select class="form-select" id="infant_sex" name="infant_sex" required>
+                                <select class="form-select" id="infant_sex" name="infant_sex">
                                     <option value="">Select Sex</option>
                                     <option value="Male" {{ old('infant_sex') === 'Male' ? 'selected' : '' }}>Male</option>
                                     <option value="Female" {{ old('infant_sex') === 'Female' ? 'selected' : '' }}>Female
@@ -1266,7 +1266,7 @@
                                 <label for="infant_weight" class="form-label">Weight (kg) <span
                                         class="text-danger">*</span></label>
                                 <input type="number" step="0.01" class="form-control" id="infant_weight"
-                                    name="infant_weight" value="{{ old('infant_weight') }}" required min="0.5" max="20"
+                                    name="infant_weight" value="{{ old('infant_weight') }}" min="0.5" max="20"
                                     placeholder="e.g., 3.5">
                             </div>
                         </div>
@@ -1275,7 +1275,7 @@
                         <div class="mb-3">
                             <label for="medical_condition" class="form-label">Medical Condition / Reason for Request <span
                                     class="text-danger">*</span></label>
-                            <textarea class="form-control" id="medical_condition" name="medical_condition" rows="3" required
+                            <textarea class="form-control" id="medical_condition" name="medical_condition" rows="3"
                                 placeholder="Describe the infant's medical condition or reason for requesting breastmilk">{{ old('medical_condition') }}</textarea>
                         </div>
 
@@ -1291,13 +1291,13 @@
                             <div class="col-md-6">
                                 <label for="request_date" class="form-label">Requested Date <span
                                         class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="request_date" name="request_date" required
+                                <input type="date" class="form-control" id="request_date" name="request_date"
                                     value="{{ old('request_date', date('Y-m-d')) }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="milk_type" class="form-label">Milk Type <span
                                         class="text-danger">*</span></label>
-                                <select class="form-select" id="milk_type" name="milk_type" required>
+                                <select class="form-select" id="milk_type" name="milk_type">
                                     <option value="pasteurized" selected>Pasteurized Breastmilk</option>
                                 </select>
                                 <small class="text-muted">Only pasteurized breastmilk can be dispensed for safety.</small>
@@ -1345,8 +1345,7 @@
                                     <h6 class="card-title mt-2"><i class="fas fa-warehouse"></i> Available Inventory</h6>
                                     <div id="assistedInventoryLoading" style="display:none">Loading inventory...</div>
                                     <div id="assistedInventoryList" style="max-height:300px; overflow-y:auto;"></div>
-                                    <small class="text-muted d-block mt-2">Select one source (donation or batch). The
-                                        entered volume will be deducted from the selected source.</small>
+                                    <small class="text-muted d-block mt-2">Select bags in order. Volume will be automatically deducted based on your input above.</small>
                                 </div>
                             </div>
                         </div>
@@ -1797,6 +1796,22 @@
                 else alert(title || (icon === 'error' ? 'Error' : ''));
             }
         };
+
+        // Initialize dispensing modals - auto-load inventory when modal opens
+        document.addEventListener('DOMContentLoaded', function () {
+            // Find all dispensing modals and attach event listeners
+            const dispensingModals = document.querySelectorAll('[id^="dispensingModal"]');
+            dispensingModals.forEach(function(modalEl) {
+                modalEl.addEventListener('shown.bs.modal', function () {
+                    // Extract request ID from modal ID (e.g., "dispensingModal123" -> 123)
+                    const requestId = modalEl.id.replace('dispensingModal', '');
+                    if (requestId) {
+                        // Auto-load inventory since "pasteurized" is pre-selected
+                        handleMilkTypeChange(requestId);
+                    }
+                });
+            });
+        });
 
         // Sanitize manual typing into volumeToDispense inputs to prevent browser auto-rounding/snapping
         // Keep as text inputs (inputmode=numeric) and allow only digits and one decimal point.
@@ -2668,32 +2683,30 @@
                 return;
             }
 
-            let html = '<div class="list-group">';
+            let html = '';
             batches.forEach(batch => {
                 html += `
-                                                                                <div class="list-group-item">
-                                                                                    <div class="form-check">
-                                                                                        <input class="form-check-input" type="radio" 
-                                                                                            name="batch_${requestId}" 
-                                                                                            id="batch_${requestId}_${batch.batch_id}" 
-                                                                                            value="${batch.batch_id}"
-                                                                                            data-volume="${batch.available_volume}"
-                                                                                            onchange="handleBatchSelection(${requestId}, ${batch.batch_id}, ${batch.available_volume})">
-                                                                                        <label class="form-check-label w-100" for="batch_${requestId}_${batch.batch_id}">
-                                                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                                                <div>
-                                                                                                    <strong>Batch #${batch.batch_number}</strong><br>
-                                                                                                    <small class="text-muted">Available: ${batch.available_volume} ml</small><br>
-                                                                                                    <small class="text-muted">Date: ${batch.date_pasteurized}</small>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </div>
-                                                                            `;
+                    <div class="card mb-2">
+                        <div class="card-body p-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                    id="batch_${requestId}_${batch.batch_id}" 
+                                    value="${batch.batch_id}"
+                                    data-volume="${batch.available_volume}"
+                                    onchange="updateSelectedVolume(${requestId})">
+                                <label class="form-check-label" for="batch_${requestId}_${batch.batch_id}">
+                                    <small>
+                                        <strong>Batch #${batch.batch_number}</strong><br>
+                                        <span class="text-primary">${batch.available_volume} ml available</span><br>
+                                        <span class="text-muted">Date: ${batch.date_pasteurized}</span>
+                                    </small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
-            html += '</div>';
-            html += '<div class="mt-2"><small class="text-info"><i class="fas fa-info-circle"></i> For pasteurized milk, the entire batch volume will be used.</small></div>';
+            html += '<div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle"></i> Select batches in order. Volume will be automatically deducted based on your input above.</small></div>';
             inventoryList.innerHTML = html;
         }
 
@@ -2708,87 +2721,62 @@
                 return;
             }
 
-            let html = '<div class="list-group">';
+            let html = '';
             donations.forEach(donation => {
                 const donorName = donation.donor_name || 'Anonymous';
                 html += `
-                                                                                <div class="list-group-item">
-                                                                                    <div class="form-check">
-                                                                                        <input class="form-check-input" type="radio" 
-                                                                                            name="donation_${requestId}" 
-                                                                                            id="donation_${requestId}_${donation.breastmilk_donation_id}" 
-                                                                                            value="${donation.breastmilk_donation_id}"
-                                                                                            data-volume="${donation.available_volume}"
-                                                                                            onchange="handleDonationSelection(${requestId}, ${donation.breastmilk_donation_id}, ${donation.available_volume})">
-                                                                                        <label class="form-check-label w-100" for="donation_${requestId}_${donation.breastmilk_donation_id}">
-                                                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                                                <div>
-                                                                                                    <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
-                                                                                                    <small class="text-muted">Donor: ${donorName}</small><br>
-                                                                                                    <small class="text-muted">Available: ${donation.available_volume} ml</small><br>
-                                                                                                    <small class="text-muted">Date: ${donation.donation_date}</small>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </div>
-                                                                            `;
+                    <div class="card mb-2">
+                        <div class="card-body p-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                    id="donation_${requestId}_${donation.breastmilk_donation_id}" 
+                                    value="${donation.breastmilk_donation_id}"
+                                    data-volume="${donation.available_volume}"
+                                    onchange="updateSelectedVolume(${requestId})">
+                                <label class="form-check-label" for="donation_${requestId}_${donation.breastmilk_donation_id}">
+                                    <small>
+                                        <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
+                                        <span class="text-muted">Donor: ${donorName}</span><br>
+                                        <span class="text-primary">${donation.available_volume} ml available</span><br>
+                                        <span class="text-muted">Date: ${donation.donation_date}</span>
+                                    </small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
-            html += '</div>';
-            html += '<div class="mt-2"><small class="text-info"><i class="fas fa-info-circle"></i> For unpasteurized milk, the entire donation volume will be used.</small></div>';
+            html += '<div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle"></i> Select donations in order. Volume will be automatically deducted based on your input above.</small></div>';
             inventoryList.innerHTML = html;
         }
 
         /**
-         * Handle unpasteurized donation selection
-         */
-        function handleDonationSelection(requestId, donationId, availableVolume) {
-            // Auto-fill the volume to dispense with the donation's total volume
-            const volumeInput = document.getElementById(`volumeToDispense${requestId}`);
-            if (volumeInput && !volumeInput.value) {
-                volumeInput.value = availableVolume;
-            }
-            updateSelectedVolume(requestId);
-        }
-
-        /**
-         * Handle pasteurized batch selection
-         */
-        function handleBatchSelection(requestId, batchId, availableVolume) {
-            // Auto-fill the volume to dispense with the batch's total volume
-            const volumeInput = document.getElementById(`volumeToDispense${requestId}`);
-            if (volumeInput && !volumeInput.value) {
-                volumeInput.value = availableVolume;
-            }
-            updateSelectedVolume(requestId);
-        }
-
-        /**
-         * Update the selected volume tracker
+         * Update the selected volume tracker - calculate automatic distribution
          */
         function updateSelectedVolume(requestId) {
             const milkTypeSelect = document.getElementById(`milkTypeSelect${requestId}`);
             const milkType = milkTypeSelect.value;
             const volumeRequired = parseFloat(document.getElementById(`volumeToDispense${requestId}`).value) || 0;
 
-            let totalSelected = 0;
+            let totalAvailable = 0;
+            let selectedCheckboxes = [];
 
             if (milkType === 'pasteurized') {
-                // Get selected batch volume (radio button)
-                const selectedBatch = document.querySelector(`input[name="batch_${requestId}"]:checked`);
-                if (selectedBatch) {
-                    totalSelected = parseFloat(selectedBatch.dataset.volume) || 0;
-                }
+                // Get all checked batch checkboxes
+                selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="batch_${requestId}_"]:checked`));
             } else if (milkType === 'unpasteurized') {
-                // Get selected donation volume
-                const selectedDonation = document.querySelector(`input[name="donation_${requestId}"]:checked`);
-                if (selectedDonation) {
-                    totalSelected = parseFloat(selectedDonation.dataset.volume) || 0;
-                }
+                // Get all checked donation checkboxes
+                selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="donation_${requestId}_"]:checked`));
             }
 
+            // Calculate total available from selected sources
+            selectedCheckboxes.forEach(checkbox => {
+                const available = parseFloat(checkbox.dataset.volume) || 0;
+                totalAvailable += available;
+            });
+
             // Update display
-            const displaySelected = totalSelected % 1 === 0 ? Math.round(totalSelected) : totalSelected.toFixed(2).replace(/\.?0+$/, '');
+            const displaySelected = totalAvailable % 1 === 0 ? Math.round(totalAvailable) : totalAvailable.toFixed(2).replace(/\.?0+$/, '');
             const displayRequired = volumeRequired % 1 === 0 ? Math.round(volumeRequired) : volumeRequired.toFixed(2).replace(/\.?0+$/, '');
             document.getElementById(`totalSelected${requestId}`).textContent = displaySelected;
             document.getElementById(`volumeRequired${requestId}`).textContent = displayRequired;
@@ -2823,51 +2811,80 @@
                 return;
             }
 
-            // Collect selected sources
+            // Collect selected sources and automatically distribute volume
             let selectedSources = [];
-            let totalSelected = 0;
+            let selectedCheckboxes = [];
+            let totalAvailable = 0;
 
             if (milkType === 'pasteurized') {
-                const selectedBatch = document.querySelector(`input[name="batch_${requestId}"]:checked`);
+                selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="batch_${requestId}_"]:checked`));
 
-                if (!selectedBatch) {
+                if (selectedCheckboxes.length === 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'No Batch Selected',
-                        text: 'Please select a pasteurized batch.',
+                        text: 'Please select at least one pasteurized batch.',
                         confirmButtonColor: '#3085d6'
                     });
                     return;
                 }
-
-                // Use the volume entered by the user, not the full batch volume
-                selectedSources.push({
-                    type: 'pasteurized',
-                    id: selectedBatch.value,
-                    volume: volumeToDispense  // ← Fixed: use the amount entered by user
-                });
-                totalSelected = volumeToDispense;
-
             } else if (milkType === 'unpasteurized') {
-                const selectedDonation = document.querySelector(`input[name="donation_${requestId}"]:checked`);
+                selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="donation_${requestId}_"]:checked`));
 
-                if (!selectedDonation) {
+                if (selectedCheckboxes.length === 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'No Donation Selected',
-                        text: 'Please select an unpasteurized donation.',
+                        text: 'Please select at least one unpasteurized donation.',
                         confirmButtonColor: '#3085d6'
                     });
                     return;
                 }
+            }
 
-                // Use the volume entered by the user, not the full donation volume
-                selectedSources.push({
-                    type: 'unpasteurized',
-                    id: selectedDonation.value,
-                    volume: volumeToDispense  // ← Fixed: use the amount entered by user
+            // Calculate total available volume
+            selectedCheckboxes.forEach(checkbox => {
+                totalAvailable += parseFloat(checkbox.dataset.volume) || 0;
+            });
+
+            // Check if we have enough volume
+            if (totalAvailable < volumeToDispense) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Insufficient Volume',
+                    text: `Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volumeToDispense} ml. Please select more bags.`,
+                    confirmButtonColor: '#3085d6'
                 });
-                totalSelected = volumeToDispense;
+                return;
+            }
+
+            // Automatically distribute the volume across selected bags in order
+            let remainingVolume = volumeToDispense;
+            selectedCheckboxes.forEach(checkbox => {
+                if (remainingVolume <= 0) return;
+                
+                const availableVolume = parseFloat(checkbox.dataset.volume) || 0;
+                const volumeToTake = Math.min(remainingVolume, availableVolume);
+                
+                if (volumeToTake > 0) {
+                    selectedSources.push({
+                        type: milkType,
+                        id: checkbox.value,
+                        volume: volumeToTake
+                    });
+                    remainingVolume -= volumeToTake;
+                }
+            });
+
+            // Validate that we collected the sources
+            if (selectedSources.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Sources Selected',
+                    text: 'Please select at least one source.',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
             }
 
             // Confirm and dispense
@@ -3050,40 +3067,98 @@
                 assistedForm.addEventListener('submit', function (e) {
                     const dispenseNow = document.getElementById('dispense_now_checkbox').checked;
                     if (!dispenseNow) return; // nothing to do
-                    // read milk type, selected radio, and overall volume
+                    
                     const milkType = (document.getElementById('milk_type') || {}).value;
                     const volumeStr = (document.getElementById('assistedVolumeToDispense') || {}).value || '';
                     const volume = parseFloat(volumeStr);
+                    
                     if (!milkType) {
                         e.preventDefault();
-                        alert('Please select a milk type.');
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Missing Milk Type',
+                                text: 'Please select a milk type.',
+                                confirmButtonColor: '#3085d6'
+                            });
+                        } else {
+                            alert('Please select a milk type.');
+                        }
                         return false;
                     }
                     if (!volume || volume <= 0) {
                         e.preventDefault();
-                        alert('Please enter a valid volume to dispense.');
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Invalid Volume',
+                                text: 'Please enter a valid volume to dispense.',
+                                confirmButtonColor: '#3085d6'
+                            });
+                        } else {
+                            alert('Please enter a valid volume to dispense.');
+                        }
                         return false;
                     }
-                    let selectedRadio = null;
+                    
+                    // Get all checked checkboxes
+                    let selectedCheckboxes = [];
                     if (milkType === 'unpasteurized') {
-                        selectedRadio = document.querySelector('input[name="assisted_donation_radio"]:checked');
+                        selectedCheckboxes = Array.from(document.querySelectorAll('input[id^="assisted_donation_"]:checked'));
                     } else {
-                        selectedRadio = document.querySelector('input[name="assisted_batch_radio"]:checked');
+                        selectedCheckboxes = Array.from(document.querySelectorAll('input[id^="assisted_batch_"]:checked'));
                     }
-                    if (!selectedRadio) {
+                    
+                    if (selectedCheckboxes.length === 0) {
                         e.preventDefault();
-                        alert('Please select a source from inventory.');
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'No Source Selected',
+                                text: 'Please select at least one source from inventory.',
+                                confirmButtonColor: '#3085d6'
+                            });
+                        } else {
+                            alert('Please select at least one source from inventory.');
+                        }
                         return false;
                     }
-                    const available = parseFloat(selectedRadio.dataset.volume || '0');
-                    if (volume > available + 1e-6) {
+                    
+                    // Calculate total available
+                    let totalAvailable = 0;
+                    selectedCheckboxes.forEach(cb => {
+                        totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
+                    });
+                    
+                    if (volume > totalAvailable + 1e-6) {
                         e.preventDefault();
-                        alert('Entered volume exceeds the available volume of the selected source.');
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Insufficient Volume',
+                                text: `Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volume} ml. Please select more bags.`,
+                                confirmButtonColor: '#3085d6'
+                            });
+                        } else {
+                            alert(`Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volume} ml. Please select more bags.`);
+                        }
                         return false;
                     }
-                    const src = { type: milkType, id: selectedRadio.value, volume: volume };
-                    document.getElementById('selected_sources_json').value = JSON.stringify([src]);
-                    // allow submit to continue
+                    
+                    // Automatically distribute volume across selected bags in order
+                    const sources = [];
+                    let remainingVolume = volume;
+                    selectedCheckboxes.forEach(cb => {
+                        if (remainingVolume <= 0) return;
+                        const availableVolume = parseFloat(cb.dataset.volume || '0') || 0;
+                        const volumeToTake = Math.min(remainingVolume, availableVolume);
+                        if (volumeToTake > 0) {
+                            sources.push({ type: milkType, id: cb.value, volume: volumeToTake });
+                            remainingVolume -= volumeToTake;
+                        }
+                    });
+                    
+                    document.getElementById('selected_sources_json').value = JSON.stringify(sources);
                 });
             }
         });
@@ -3111,26 +3186,25 @@
                             list.innerHTML = '<div class="alert alert-warning">No unpasteurized donations available.</div>';
                             return;
                         }
-                        let html = '<div class="list-group">';
+                        let html = '';
                         donations.forEach(d => {
                             const avail = d.available_volume || 0;
                             html += `
-                                        <div class="list-group-item">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="assisted_donation_radio" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
-                                                <label class="form-check-label w-100" for="assisted_donation_${d.breastmilk_donation_id}">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <strong>Donation #${d.breastmilk_donation_id}</strong><br>
-                                                            <small class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</small><br>
-                                                            <small class="text-muted">Available: ${avail} ml</small>
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </div>`;
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                            <label class="form-check-label" for="assisted_donation_${d.breastmilk_donation_id}">
+                                                <small>
+                                                    <strong>Donation #${d.breastmilk_donation_id}</strong><br>
+                                                    <span class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</span><br>
+                                                    <span class="text-primary">${avail} ml available</span>
+                                                </small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>`;
                         });
-                        html += '</div>';
                         list.innerHTML = html;
                     } else {
                         const batches = data.batches || [];
@@ -3138,26 +3212,25 @@
                             list.innerHTML = '<div class="alert alert-warning">No pasteurized batches available.</div>';
                             return;
                         }
-                        let html = '<div class="list-group">';
+                        let html = '';
                         batches.forEach(b => {
                             const avail = b.available_volume || 0;
                             html += `
-                                        <div class="list-group-item">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="assisted_batch_radio" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
-                                                <label class="form-check-label w-100" for="assisted_batch_${b.batch_id}">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <strong>Batch #${b.batch_number}</strong><br>
-                                                            <small class="text-muted">Available: ${avail} ml</small><br>
-                                                            <small class="text-muted">Date: ${b.date_pasteurized}</small>
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </div>`;
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                            <label class="form-check-label" for="assisted_batch_${b.batch_id}">
+                                                <small>
+                                                    <strong>Batch #${b.batch_number}</strong><br>
+                                                    <span class="text-primary">${avail} ml available</span><br>
+                                                    <span class="text-muted">Date: ${b.date_pasteurized}</span>
+                                                </small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>`;
                         });
-                        html += '</div>';
                         list.innerHTML = html;
                     }
 
@@ -3172,18 +3245,25 @@
         function assistedUpdateSelectedVolume() {
             const milkType = (document.getElementById('milk_type') || {}).value;
             const volumeRequired = parseFloat((document.getElementById('assistedVolumeToDispense') || {}).value || '0') || 0;
-            let selectedVol = 0;
+            let totalAvailable = 0;
+            
+            // Get all checked checkboxes and sum available volumes
             if (milkType === 'unpasteurized') {
-                const r = document.querySelector('input[name="assisted_donation_radio"]:checked');
-                if (r) selectedVol = parseFloat(r.dataset.volume || '0') || 0;
+                const checked = document.querySelectorAll('input[id^="assisted_donation_"]:checked');
+                checked.forEach(cb => {
+                    totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
+                });
             } else if (milkType === 'pasteurized') {
-                const r = document.querySelector('input[name="assisted_batch_radio"]:checked');
-                if (r) selectedVol = parseFloat(r.dataset.volume || '0') || 0;
+                const checked = document.querySelectorAll('input[id^="assisted_batch_"]:checked');
+                checked.forEach(cb => {
+                    totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
+                });
             }
+            
             const selEl = document.getElementById('assistedTotalSelected');
             const reqEl = document.getElementById('assistedVolumeRequired');
             if (selEl && reqEl) {
-                const displaySel = selectedVol % 1 === 0 ? Math.round(selectedVol) : selectedVol.toFixed(2).replace(/\.?0+$/, '');
+                const displaySel = totalAvailable % 1 === 0 ? Math.round(totalAvailable) : totalAvailable.toFixed(2).replace(/\.?0+$/, '');
                 const displayReq = volumeRequired % 1 === 0 ? Math.round(volumeRequired) : volumeRequired.toFixed(2).replace(/\.?0+$/, '');
                 selEl.textContent = displaySel;
                 reqEl.textContent = displayReq;

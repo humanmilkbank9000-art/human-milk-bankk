@@ -659,7 +659,10 @@
                 <div class="form-group">
                     <label for="first_name" class="form-label">First Name</label>
                     <input type="text" id="first_name" name="first_name" class="form-input"
-                        value="{{ old('first_name', $infantData['first_name'] ?? '') }}" required style="text-transform: capitalize;">
+                        value="{{ old('first_name', $infantData['first_name'] ?? '') }}" style="text-transform: capitalize;">
+                    <div id="first-name-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please enter the infant's first name.
+                    </div>
                     <div id="first-name-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                         Special characters like <, >, =, ', " are not allowed in names.
                     </div>
@@ -683,7 +686,10 @@
                 <div class="form-group">
                     <label for="last_name" class="form-label">Last Name</label>
                     <input type="text" id="last_name" name="last_name" class="form-input" value="{{ old('last_name', $infantData['last_name'] ?? '') }}"
-                        required style="text-transform: capitalize;">
+                        style="text-transform: capitalize;">
+                    <div id="last-name-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please enter the infant's last name.
+                    </div>
                     <div id="last-name-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                         Special characters like <, >, =, ', " are not allowed in names.
                     </div>
@@ -743,7 +749,7 @@
                     <div class="radio-group">
                         <div class="radio-option">
                             <input type="radio" id="female" name="infant_sex" value="female" 
-                                {{ old('infant_sex', $infantData['infant_sex'] ?? '') == 'female' ? 'checked' : '' }} required>
+                                {{ old('infant_sex', $infantData['infant_sex'] ?? '') == 'female' ? 'checked' : '' }}>
                             <label for="female">Female</label>
                         </div>
                         <div class="radio-option">
@@ -752,6 +758,9 @@
                             <label for="male">Male</label>
                         </div>
                     </div>
+                    <div id="sex-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please select the infant's gender.
+                    </div>
                 </div>
             </div>
 
@@ -759,7 +768,10 @@
                 <div class="form-group">
                     <label for="infant_date_of_birth" class="form-label">Birthday</label>
                     <input type="date" id="infant_date_of_birth" name="infant_date_of_birth" class="form-input"
-                        value="{{ old('infant_date_of_birth', $infantData['infant_date_of_birth'] ?? '') }}" required>
+                        value="{{ old('infant_date_of_birth', $infantData['infant_date_of_birth'] ?? '') }}">
+                    <div id="dob-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                        Please enter the infant's date of birth.
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -772,7 +784,10 @@
             <div class="form-group">
                 <label for="birth_weight" class="form-label">Birth weight (kg)</label>
                 <input type="number" step="0.01" id="birth_weight" name="birth_weight" class="form-input"
-                    value="{{ old('birth_weight', $infantData['birth_weight'] ?? '') }}" min="0" placeholder="e.g., 3.2" required>
+                    value="{{ old('birth_weight', $infantData['birth_weight'] ?? '') }}" min="0" placeholder="e.g., 3.2">
+                <div id="weight-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
+                    Please enter the infant's birth weight (0-20 kg).
+                </div>
             </div>
 
             <div class="button-group">
@@ -853,19 +868,112 @@
         form.addEventListener('submit', function (e) {
             e.preventDefault(); // Prevent immediate submission
 
+            // Hide all error messages first
+            document.querySelectorAll('[id$="-error"]').forEach(el => el.style.display = 'none');
+
             // Trim all text inputs before validation
             const textInputs = form.querySelectorAll('input[type="text"]');
             textInputs.forEach(input => {
                 input.value = input.value.trim();
             });
 
-            // Validate form before showing modal
-            if (form.checkValidity()) {
-                showConfirmationModal();
-            } else {
-                // If form is invalid, show validation errors
-                form.reportValidity();
+            let isValid = true;
+            let firstErrorField = null;
+
+            // Validate First Name
+            const firstName = document.getElementById('first_name');
+            const firstNameError = document.getElementById('first-name-error');
+            const firstNameReq = document.getElementById('first-name-req');
+            if (!firstName.value.trim()) {
+                firstNameError.style.display = 'block';
+                firstNameReq.style.display = 'none';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = firstName;
+            } else if (/[<>=\'\"]/.test(firstName.value)) {
+                firstNameError.style.display = 'none';
+                firstNameReq.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = firstName;
             }
+
+            // Validate Last Name
+            const lastName = document.getElementById('last_name');
+            const lastNameError = document.getElementById('last-name-error');
+            const lastNameReq = document.getElementById('last-name-req');
+            if (!lastName.value.trim()) {
+                lastNameError.style.display = 'block';
+                lastNameReq.style.display = 'none';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = lastName;
+            } else if (/[<>=\'\"]/.test(lastName.value)) {
+                lastNameError.style.display = 'none';
+                lastNameReq.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = lastName;
+            }
+
+            // Validate Middle Name (optional but check for invalid chars if filled)
+            const middleName = document.getElementById('middle_name');
+            const middleNameReq = document.getElementById('middle-name-req');
+            if (middleName.value && /[<>=\'\"]/.test(middleName.value)) {
+                middleNameReq.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = middleName;
+            }
+
+            // Validate Gender
+            const infantSex = document.querySelector('input[name="infant_sex"]:checked');
+            const sexError = document.getElementById('sex-error');
+            if (!infantSex) {
+                sexError.style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate Date of Birth
+            const infantDob = document.getElementById('infant_date_of_birth');
+            const dobError = document.getElementById('dob-error');
+            if (!infantDob.value) {
+                dobError.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = infantDob;
+            } else {
+                const dobDate = new Date(infantDob.value);
+                const today = new Date();
+                if (dobDate > today) {
+                    dobError.textContent = 'Date of birth cannot be in the future.';
+                    dobError.style.display = 'block';
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = infantDob;
+                }
+            }
+
+            // Validate Birth Weight
+            const birthWeight = document.getElementById('birth_weight');
+            const weightError = document.getElementById('weight-error');
+            if (!birthWeight.value) {
+                weightError.style.display = 'block';
+                isValid = false;
+                if (!firstErrorField) firstErrorField = birthWeight;
+            } else {
+                const weightValue = parseFloat(birthWeight.value);
+                if (weightValue < 0 || weightValue > 20) {
+                    weightError.style.display = 'block';
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = birthWeight;
+                }
+            }
+
+            // If validation failed, focus on first error field and scroll to it
+            if (!isValid) {
+                if (firstErrorField) {
+                    firstErrorField.focus();
+                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return false;
+            }
+
+            // All validations passed, show confirmation modal
+            showConfirmationModal();
         });
 
         // ==================== SAVE AND GO BACK ====================
@@ -1137,7 +1245,7 @@
                 <div class="info-section" style="background: #fff9e6; border: 1px solid #f0ad4e; border-radius: 0.5rem; padding: 0;">
                     <div style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem;">
                         <input type="checkbox" id="accept_terms" name="accept_terms" value="1" 
-                            style="margin-top: 0.3rem; width: 18px; height: 18px; cursor: pointer; accent-color: #ec4899; flex-shrink: 0;" required>
+                            style="margin-top: 0.3rem; width: 18px; height: 18px; cursor: pointer; accent-color: #ec4899; flex-shrink: 0;">
                         <label for="accept_terms" style="font-size: 0.95rem; color: #374151; cursor: pointer; line-height: 1.6; flex: 1;">
                             I have read and agree to the 
                             <a href="#" onclick="showTermsModal(event)" style="color: #d9534f; text-decoration: underline; font-weight: 600;">

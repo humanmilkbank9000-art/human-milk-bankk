@@ -181,8 +181,7 @@
         }
 
         /* Ensure disposed tables show readable black text in Volume badges */
-        #disposed_unpasteurized .volume-badge,
-        #disposed_pasteurized .volume-badge {
+        #disposed .volume-badge {
             color: #000 !important;           /* black text for visibility */
             background-color: #f8d7da !important; /* light red background to indicate disposed */
             border: 1px solid #f1aeb5;        /* subtle border for contrast */
