@@ -1942,6 +1942,23 @@
             const donorContact = document.querySelector('input[name="donor_contact"]');
             const donorAddress = document.querySelector('input[name="donor_address"]');
 
+            function setDonorFieldsReadonly(readonly) {
+                const fields = [donorFirst, donorLast, donorContact, donorAddress];
+                fields.forEach(field => {
+                    if (field) {
+                        if (readonly) {
+                            field.setAttribute('readonly', 'readonly');
+                            field.style.backgroundColor = '#e9ecef';
+                            field.style.cursor = 'not-allowed';
+                        } else {
+                            field.removeAttribute('readonly');
+                            field.style.backgroundColor = '';
+                            field.style.cursor = '';
+                        }
+                    }
+                });
+            }
+
             function toggleExistingUser() {
                 const val = optionSelect ? optionSelect.value : '';
                 if (val === 'record_to_existing_user') {
@@ -1950,6 +1967,7 @@
                     existingWrap.style.display = 'none';
                     resultsBox.innerHTML = '';
                     userIdInput.value = '';
+                    setDonorFieldsReadonly(false); // Enable fields when switching away from existing user
                 }
             }
             if (optionSelect) {
@@ -1975,6 +1993,8 @@
                         if (donorAddress) donorAddress.value = u.address || '';
                         resultsBox.innerHTML = '';
                         searchInput.value = name || u.contact_number || '';
+                        // Make donor fields readonly when existing user is selected
+                        setDonorFieldsReadonly(true);
                     });
                     resultsBox.appendChild(a);
                 });
@@ -2055,6 +2075,18 @@
                         })
                         .catch(() => { err.textContent = 'Failed to record walk-in donation.'; err.style.display = 'block'; })
                         .finally(() => { spinner.style.display = 'none'; text.textContent = 'Record Donation'; });
+                });
+            }
+
+            // Reset donor fields to editable when modal is closed
+            const assistModal = document.getElementById('assistWalkInDonationModal');
+            if (assistModal) {
+                assistModal.addEventListener('hidden.bs.modal', function () {
+                    setDonorFieldsReadonly(false);
+                    // Also clear the hidden user ID and search results
+                    if (userIdInput) userIdInput.value = '';
+                    if (resultsBox) resultsBox.innerHTML = '';
+                    if (searchInput) searchInput.value = '';
                 });
             }
         })();

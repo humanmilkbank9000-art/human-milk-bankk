@@ -1449,7 +1449,47 @@
                     if (infantWrap) infantWrap.style.display = 'none';
                 }
 
-                function applyInfant(i) {
+                function setGuardianFieldsReadonly(readonly) {
+                    const fields = [gFirst, gLast, gContact];
+                    fields.forEach(field => {
+                        if (field) {
+                            if (readonly) {
+                                field.setAttribute('readonly', 'readonly');
+                                field.style.backgroundColor = '#e9ecef';
+                                field.style.cursor = 'not-allowed';
+                            } else {
+                                field.removeAttribute('readonly');
+                                field.style.backgroundColor = '';
+                                field.style.cursor = '';
+                            }
+                        }
+                    });
+                }
+
+                function setInfantFieldsReadonly(readonly) {
+                    const fields = [iFirst, iLast, iDob, iSex, iWeight];
+                    fields.forEach(field => {
+                        if (field) {
+                            if (readonly) {
+                                field.setAttribute('readonly', 'readonly');
+                                if (field.tagName === 'SELECT') {
+                                    field.setAttribute('disabled', 'disabled');
+                                }
+                                field.style.backgroundColor = '#e9ecef';
+                                field.style.cursor = 'not-allowed';
+                            } else {
+                                field.removeAttribute('readonly');
+                                if (field.tagName === 'SELECT') {
+                                    field.removeAttribute('disabled');
+                                }
+                                field.style.backgroundColor = '';
+                                field.style.cursor = '';
+                            }
+                        }
+                    });
+                }
+
+                function applyInfant(i, makeReadonly = false) {
                     if (!i) return;
                     if (iFirst) iFirst.value = i.first_name || '';
                     if (iLast) iLast.value = i.last_name || '';
@@ -1459,6 +1499,9 @@
                         if (val) iSex.value = val;
                     }
                     if (iWeight) iWeight.value = i.birth_weight != null ? i.birth_weight : '';
+                    if (makeReadonly) {
+                        setInfantFieldsReadonly(true);
+                    }
                 }
 
                 async function loadInfantsForUser(userId) {
@@ -1473,16 +1516,12 @@
                             // nothing to select; keep fields as-is
                             return;
                         }
-                        if (infants.length === 1) {
-                            applyInfant(infants[0]);
-                            return; // no need to show selector
-                        }
-                        // Populate selector
+                        // Always show selector to allow user to see and switch between infants
                         if (!infantSelect) return;
                         infantSelect.innerHTML = '';
                         const ph = document.createElement('option');
                         ph.value = '';
-                        ph.textContent = 'Select an infant to auto-fill…';
+                        ph.textContent = infants.length === 1 ? 'Infant selected (you can view details below)' : 'Select an infant to auto-fill…';
                         infantSelect.appendChild(ph);
                         infants.forEach(i => {
                             const opt = document.createElement('option');
@@ -1497,6 +1536,11 @@
                             infantSelect.appendChild(opt);
                         });
                         if (infantWrap) infantWrap.style.display = 'block';
+                        // Auto-select first infant
+                        if (infants.length > 0) {
+                            infantSelect.value = infants[0].infant_id;
+                            applyInfant(infants[0], true);
+                        }
                     } catch (e) {
                         // fail silently
                     }
@@ -1506,7 +1550,11 @@
                     infantSelect.addEventListener('change', function () {
                         const sel = infantSelect.options[infantSelect.selectedIndex];
                         const payload = sel && sel.dataset && sel.dataset.payload ? JSON.parse(sel.dataset.payload) : null;
-                        if (payload) applyInfant(payload);
+                        if (payload) {
+                            // When user is selected from existing user, keep fields readonly when switching infants
+                            const isExistingUser = hiddenId && hiddenId.value;
+                            applyInfant(payload, isExistingUser);
+                        }
                     });
                 }
                 function toggle() {
@@ -1516,6 +1564,8 @@
                         list.innerHTML = '';
                         hiddenId.value = '';
                         clearInfantSelector();
+                        setGuardianFieldsReadonly(false); // Enable fields when switching away from existing user
+                        setInfantFieldsReadonly(false); // Enable infant fields when switching away from existing user
                     }
                 }
                 if (optionSel) {
@@ -1537,6 +1587,8 @@
                             if (gContact) gContact.value = u.contact_number || '';
                             list.innerHTML = '';
                             search.value = name || u.contact_number || '';
+                            // Make guardian fields readonly when existing user is selected
+                            setGuardianFieldsReadonly(true);
                             // Load infants for this user and auto-fill when possible
                             loadInfantsForUser(u.user_id);
                         });
@@ -1556,6 +1608,19 @@
                 }
                 if (search) {
                     search.addEventListener('input', () => { if (t) clearTimeout(t); t = setTimeout(doFetch, 300); });
+                }
+
+                // Reset guardian and infant fields to editable when modal is closed
+                const assistModal = document.getElementById('assistedRequestModal');
+                if (assistModal) {
+                    assistModal.addEventListener('hidden.bs.modal', function () {
+                        setGuardianFieldsReadonly(false);
+                        setInfantFieldsReadonly(false);
+                        // Also clear the hidden user ID and search results
+                        if (hiddenId) hiddenId.value = '';
+                        if (list) list.innerHTML = '';
+                        if (search) search.value = '';
+                    });
                 }
             })();
         });
