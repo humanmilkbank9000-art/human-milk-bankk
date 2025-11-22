@@ -1036,7 +1036,7 @@
                         @endphp
 
                         @if(count($batchGroups) > 0)
-                            <div class="table-container-standard">
+                            <div class="table-container-standard table-responsive">
                                 <table class="table table-standard table-bordered table-striped align-middle">
                                     <thead class="table-success">
                                         <tr>
@@ -1064,8 +1064,8 @@
                                                 <td class="text-center" data-label="Total Volume">
                                                     <span class="badge badge-success volume-badge">{{ $formattedVol }}ml</span>
                                                 </td>
-                                                <td class="text-center" style="white-space: nowrap;" data-label="Date of Pasteurization">
-                                                    <small>{{ $batch->formatted_date }}</small>
+                                                <td class="text-center" data-label="Date of Pasteurization">
+                                                    {{ $batch->formatted_date }}
                                                 </td>
                                                 <td class="text-center" data-label="Actions">
                                                     <button type="button" class="btn btn-sm btn-primary" 
@@ -1117,7 +1117,7 @@
                                         <tbody>
                                             @foreach($group['dispensed_records'] as $dispensed)
                                                 <tr>
-                                                    <td style="white-space: normal;">
+                                                    <td data-label="Guardian">
                                                         @if($dispensed->guardian)
                                                             <strong>{{ $dispensed->guardian->first_name }}
                                                                 {{ $dispensed->guardian->last_name }}</strong>
@@ -1125,7 +1125,7 @@
                                                             <span class="text-muted">Unknown</span>
                                                         @endif
                                                     </td>
-                                                    <td style="white-space: normal;">
+                                                    <td data-label="Recipient">
                                                         @if($dispensed->recipient)
                                                             <strong>{{ $dispensed->recipient->first_name }}
                                                                 {{ $dispensed->recipient->last_name }}</strong><br>
@@ -1134,14 +1134,14 @@
                                                             <span class="text-muted">Unknown</span>
                                                         @endif
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td class="text-center" data-label="Dispensed Volume">
                                                         <span class="badge badge-success">{{ $dispensed->formatted_volume_dispensed }}ml</span>
                                                     </td>
-                                                    <td class="text-center" style="white-space: nowrap;">
-                                                        <small>{{ $dispensed->formatted_date }}</small>
+                                                    <td class="text-center" data-label="Date">
+                                                        {{ $dispensed->formatted_date }}
                                                     </td>
-                                                    <td class="text-center" style="white-space: nowrap;">
-                                                        <small>{{ $dispensed->formatted_time }}</small>
+                                                    <td class="text-center" data-label="Time">
+                                                        {{ $dispensed->formatted_time }}
                                                     </td>
                                                 </tr>
                                             @endforeach
