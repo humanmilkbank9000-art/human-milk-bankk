@@ -1204,13 +1204,13 @@
                             <div class="col-md-4">
                                 <label for="guardian_first_name" class="form-label">First Name <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="guardian_first_name" name="guardian_first_name"
+                                <input type="text" class="form-control auto-capitalize-words" id="guardian_first_name" name="guardian_first_name"
                                     value="{{ old('guardian_first_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="guardian_last_name" class="form-label">Last Name <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="guardian_last_name" name="guardian_last_name"
+                                <input type="text" class="form-control auto-capitalize-words" id="guardian_last_name" name="guardian_last_name"
                                     value="{{ old('guardian_last_name') }}">
                             </div>
                             <div class="col-md-4">
@@ -1234,13 +1234,13 @@
                             <div class="col-md-4">
                                 <label for="infant_first_name" class="form-label">Infant First Name <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="infant_first_name" name="infant_first_name"
+                                <input type="text" class="form-control auto-capitalize-words" id="infant_first_name" name="infant_first_name"
                                     value="{{ old('infant_first_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="infant_last_name" class="form-label">Infant Last Name <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="infant_last_name" name="infant_last_name"
+                                <input type="text" class="form-control auto-capitalize-words" id="infant_last_name" name="infant_last_name"
                                     value="{{ old('infant_last_name') }}">
                             </div>
                             <div class="col-md-4">
@@ -3281,5 +3281,25 @@
                 return div.innerHTML;
             };
         }
+
+        // Auto-capitalize first letter of each word
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.auto-capitalize-words').forEach(function(input) {
+                input.addEventListener('input', function(e) {
+                    const cursorPosition = e.target.selectionStart;
+                    const originalLength = e.target.value.length;
+                    
+                    // Capitalize first letter of each word
+                    e.target.value = e.target.value.replace(/\b\w/g, function(char) {
+                        return char.toUpperCase();
+                    });
+                    
+                    // Restore cursor position
+                    const newLength = e.target.value.length;
+                    const newPosition = cursorPosition + (newLength - originalLength);
+                    e.target.setSelectionRange(newPosition, newPosition);
+                });
+            });
+        });
     </script>
 @endsection

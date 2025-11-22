@@ -57,7 +57,8 @@ class BreastmilkRequestService
                 $request->storePrescriptionFile($data['prescription']);
             }
 
-            $availability->markAsBooked();
+            // Do NOT mark the availability as booked so multiple users can book the same date.
+            // Keeping status as 'available' allows multi-book per day while admin can still block dates when needed.
 
             DB::commit();
 

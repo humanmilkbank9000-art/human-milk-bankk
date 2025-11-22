@@ -1742,11 +1742,11 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label">First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="donor_first_name" required>
+                                <input type="text" class="form-control auto-capitalize-words" name="donor_first_name" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="donor_last_name" required>
+                                <input type="text" class="form-control auto-capitalize-words" name="donor_last_name" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Contact Number <span class="text-danger">*</span></label>
@@ -1756,7 +1756,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Address (optional)</label>
-                            <input type="text" class="form-control" name="donor_address">
+                            <input type="text" class="form-control auto-capitalize-words" name="donor_address">
                         </div>
 
                         <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-flask"></i> Bags & Volumes</h6>
@@ -3691,6 +3691,26 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // Auto-capitalize first letter of each word
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.auto-capitalize-words').forEach(function(input) {
+                input.addEventListener('input', function(e) {
+                    const cursorPosition = e.target.selectionStart;
+                    const originalLength = e.target.value.length;
+                    
+                    // Capitalize first letter of each word
+                    e.target.value = e.target.value.replace(/\b\w/g, function(char) {
+                        return char.toUpperCase();
+                    });
+                    
+                    // Restore cursor position
+                    const newLength = e.target.value.length;
+                    const newPosition = cursorPosition + (newLength - originalLength);
+                    e.target.setSelectionRange(newPosition, newPosition);
+                });
+            });
+        });
 
         // Edit UI removed per request
     </script>

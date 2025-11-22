@@ -1003,90 +1003,76 @@
                         <h5 class="mb-0"><i class="fas fa-hand-holding-medical"></i> Dispensed Breastmilk</h5>
                     </div>
                     <div class="card-body">
-                        @if($dispensedMilk->count() > 0)
+                        @php
+                            // Group dispensed milk by batch
+                            $batchGroups = [];
+                            
+                            foreach($dispensedMilk as $dispensed) {
+                                // Check if this dispensed record has pasteurized batches
+                                if (!empty($dispensed->sourceBatches) && $dispensed->sourceBatches->count() > 0) {
+                                    foreach($dispensed->sourceBatches as $batch) {
+                                        $batchId = $batch->batch_id;
+                                        
+                                        if (!isset($batchGroups[$batchId])) {
+                                            $batchGroups[$batchId] = [
+                                                'batch' => $batch,
+                                                'total_recipients' => 0,
+                                                'total_volume' => 0,
+                                                'dispensed_records' => []
+                                            ];
+                                        }
+                                        
+                                        $batchGroups[$batchId]['total_recipients']++;
+                                        $batchGroups[$batchId]['total_volume'] += (float)$dispensed->volume_dispensed;
+                                        $batchGroups[$batchId]['dispensed_records'][] = $dispensed;
+                                    }
+                                }
+                            }
+                            
+                            // Sort by date descending
+                            usort($batchGroups, function($a, $b) {
+                                return $b['batch']->date_pasteurized <=> $a['batch']->date_pasteurized;
+                            });
+                        @endphp
+
+                        @if(count($batchGroups) > 0)
                             <div class="table-container-standard">
                                 <table class="table table-standard table-bordered table-striped align-middle">
                                     <thead class="table-success">
                                         <tr>
-                                            <th class="text-center px-2 py-2">Guardian</th>
-                                            <th class="text-center px-2 py-2">Recipient</th>
-                                            <th class="text-center px-2 py-2">Source</th>
-                                            <th class="text-center px-2 py-2">Volume</th>
-                                            <th class="text-center px-2 py-2">Date</th>
-                                            <th class="text-center px-2 py-2">Time</th>
+                                            <th class="text-center px-2 py-2">Batch</th>
+                                            <th class="text-center px-2 py-2">Total Recipients</th>
+                                            <th class="text-center px-2 py-2">Total Volume</th>
+                                            <th class="text-center px-2 py-2">Date of Pasteurization</th>
+                                            <th class="text-center px-2 py-2">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $dispensedOrdered = $dispensedMilk instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $dispensedMilk->getCollection()->sortBy('created_at')
-                                                : collect($dispensedMilk)->sortBy('created_at');
-                                        @endphp
-                                        @foreach($dispensedOrdered as $dispensed)
+                                        @foreach($batchGroups as $batchId => $group)
+                                            @php
+                                                $batch = $group['batch'];
+                                                $totalVol = $group['total_volume'];
+                                                $formattedVol = $totalVol == (int)$totalVol ? (int)$totalVol : rtrim(rtrim(number_format($totalVol, 2, '.', ''), '0'), '.');
+                                            @endphp
                                             <tr>
-                                                <td style="white-space: normal;" data-label="Guardian">
-                                                    @if($dispensed->guardian)
-                                                        <strong>{{ $dispensed->guardian->first_name }}
-                                                            {{ $dispensed->guardian->last_name }}</strong>
-                                                    @else
-                                                        <span class="text-muted">Unknown</span>
-                                                    @endif
+                                                <td class="text-center" data-label="Batch">
+                                                    <strong>{{ $batch->batch_number }}</strong>
                                                 </td>
-                                                <td style="white-space: normal;" data-label="Recipient">
-                                                    @if($dispensed->recipient)
-                                                        <strong>{{ $dispensed->recipient->first_name }}
-                                                            {{ $dispensed->recipient->last_name }}</strong><br>
-                                                        <small class="text-muted">{{ $dispensed->recipient->getFormattedAge() }}</small>
-                                                    @else
-                                                        <span class="text-muted">Unknown</span>
-                                                    @endif
+                                                <td class="text-center" data-label="Total Recipients">
+                                                    <span class="badge bg-info">{{ $group['total_recipients'] }}</span>
                                                 </td>
-                                                <td style="white-space: normal; font-size: 0.85rem;" data-label="Source">
-                                                    @php
-                                                        // Prefer donor name(s) from sourceDonations (unpasteurized),
-                                                        // otherwise use batch numbers from sourceBatches (pasteurized).
-                                                        $sourceLabel = '-';
-
-                                                        // If there are any related sourceDonations (could be multiple),
-                                                        // build a unique list of donor full names.
-                                                        if (!empty($dispensed->sourceDonations) && $dispensed->sourceDonations->count() > 0) {
-                                                            $donorNames = $dispensed->sourceDonations->map(function ($sd) {
-                                                                // Some donations may have a related user, or only donor_name
-                                                                $first = data_get($sd,'user.first_name','');
-                                                                $last = data_get($sd,'user.last_name','');
-                                                                $name = trim(($first.' '.$last));
-                                                                if (empty($name)) {
-                                                                    $name = $sd->donor_name ?? ('Donation #' . ($sd->breastmilk_donation_id ?? '-'));
-                                                                }
-                                                                return $name;
-                                                            })->filter()->unique()->values()->all();
-
-                                                            if (!empty($donorNames)) {
-                                                                $sourceLabel = implode(', ', $donorNames);
-                                                            }
-
-                                                            // Otherwise, use batch numbers from related sourceBatches
-                                                        } elseif (!empty($dispensed->sourceBatches) && $dispensed->sourceBatches->count() > 0) {
-                                                            $batchNumbers = $dispensed->sourceBatches->pluck('batch_number')->filter()->all();
-                                                            if (!empty($batchNumbers)) {
-                                                                $sourceLabel = implode(', ', $batchNumbers);
-                                                            } else {
-                                                                $sourceLabel = 'Pasteurized batch';
-                                                            }
-                                                        }
-                                                    @endphp
-
-                                                    <small><strong>{{ $dispensed->source_name }}</strong></small>
+                                                <td class="text-center" data-label="Total Volume">
+                                                    <span class="badge badge-success volume-badge">{{ $formattedVol }}ml</span>
                                                 </td>
-                                                <td class="text-center" data-label="Volume">
-                                                    <span
-                                                        class="badge badge-success volume-badge">{{ $dispensed->formatted_volume_dispensed }}ml</span>
+                                                <td class="text-center" style="white-space: nowrap;" data-label="Date of Pasteurization">
+                                                    <small>{{ $batch->formatted_date }}</small>
                                                 </td>
-                                                <td class="text-center" style="white-space: nowrap;" data-label="Date">
-                                                    <small>{{ $dispensed->formatted_date }}</small>
-                                                </td>
-                                                <td class="text-center" style="white-space: nowrap;" data-label="Time">
-                                                    <small>{{ $dispensed->formatted_time }}</small>
+                                                <td class="text-center" data-label="Actions">
+                                                    <button type="button" class="btn btn-sm btn-primary" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#dispensedDetailsModal{{ $batchId }}">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -1103,6 +1089,73 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Dispensed Details Modals -->
+            @foreach($batchGroups as $batchId => $group)
+                <div class="modal fade" id="dispensedDetailsModal{{ $batchId }}" tabindex="-1" 
+                     aria-labelledby="dispensedDetailsModalLabel{{ $batchId }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title" id="dispensedDetailsModalLabel{{ $batchId }}">
+                                    <i class="fas fa-info-circle"></i> Dispensed Details - {{ $group['batch']->batch_number }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped align-middle">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="text-center">Guardian</th>
+                                                <th class="text-center">Recipient</th>
+                                                <th class="text-center">Dispensed Volume</th>
+                                                <th class="text-center">Date</th>
+                                                <th class="text-center">Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($group['dispensed_records'] as $dispensed)
+                                                <tr>
+                                                    <td style="white-space: normal;">
+                                                        @if($dispensed->guardian)
+                                                            <strong>{{ $dispensed->guardian->first_name }}
+                                                                {{ $dispensed->guardian->last_name }}</strong>
+                                                        @else
+                                                            <span class="text-muted">Unknown</span>
+                                                        @endif
+                                                    </td>
+                                                    <td style="white-space: normal;">
+                                                        @if($dispensed->recipient)
+                                                            <strong>{{ $dispensed->recipient->first_name }}
+                                                                {{ $dispensed->recipient->last_name }}</strong><br>
+                                                            <small class="text-muted">{{ $dispensed->recipient->getFormattedAge() }}</small>
+                                                        @else
+                                                            <span class="text-muted">Unknown</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span class="badge badge-success">{{ $dispensed->formatted_volume_dispensed }}ml</span>
+                                                    </td>
+                                                    <td class="text-center" style="white-space: nowrap;">
+                                                        <small>{{ $dispensed->formatted_date }}</small>
+                                                    </td>
+                                                    <td class="text-center" style="white-space: nowrap;">
+                                                        <small>{{ $dispensed->formatted_time }}</small>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
             
 
             <!-- Section 4: Disposed (Unpasteurized + Pasteurized) -->
