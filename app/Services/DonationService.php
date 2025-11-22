@@ -118,7 +118,22 @@ class DonationService
         $donation->longitude = $data['longitude'] ?? null;
     $donation->bag_details = $bagDetails;
 
-    // Consent captured client-side; no questionnaire fields persisted here
+            // Persist Lifestyle Checklist (optional YES/NO fields)
+            $yn = function($v) {
+                if (is_null($v)) return null;
+                $s = strtoupper(trim((string)$v));
+                return $s === 'YES' ? 'YES' : ($s === 'NO' ? 'NO' : null);
+            };
+            $donation->good_health = $yn($data['good_health'] ?? null);
+            $donation->no_smoking = $yn($data['no_smoking'] ?? null);
+            $donation->no_medication = $yn($data['no_medication'] ?? null);
+            $donation->no_alcohol = $yn($data['no_alcohol'] ?? null);
+            $donation->no_fever = $yn($data['no_fever'] ?? null);
+            $donation->no_cough_colds = $yn($data['no_cough_colds'] ?? null);
+            $donation->no_breast_infection = $yn($data['no_breast_infection'] ?? null);
+            $donation->followed_hygiene = $yn($data['followed_hygiene'] ?? null);
+            $donation->followed_labeling = $yn($data['followed_labeling'] ?? null);
+            $donation->followed_storage = $yn($data['followed_storage'] ?? null);
         
         $donation->save();
 

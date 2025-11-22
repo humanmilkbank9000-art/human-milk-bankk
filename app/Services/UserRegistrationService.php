@@ -50,17 +50,31 @@ class UserRegistrationService
             'user_type'      => 'donor',
         ]);
 
-        Infant::create([
-            'user_id'        => $user->user_id,
-            'first_name'     => $infantData['first_name'],
-            'middle_name'    => $infantData['middle_name'] ?? null,
-            'last_name'      => $infantData['last_name'],
-            'suffix'         => $infantData['suffix'] ?? null,
-            'sex'            => $infantData['infant_sex'],
-            'date_of_birth'  => $infantData['infant_date_of_birth'],
-            'age'            => $ageInMonths,
-            'birth_weight'   => $infantData['birth_weight'],
-        ]);
+        // Enforce single infant per user: reuse existing if any (should not exist for fresh registration)
+        $existingInfant = Infant::where('user_id', $user->user_id)->first();
+        if ($existingInfant) {
+            $existingInfant->first_name    = $infantData['first_name'];
+            $existingInfant->middle_name   = $infantData['middle_name'] ?? null;
+            $existingInfant->last_name     = $infantData['last_name'];
+            $existingInfant->suffix        = $infantData['suffix'] ?? null;
+            $existingInfant->sex           = $infantData['infant_sex'];
+            $existingInfant->date_of_birth = $infantData['infant_date_of_birth'];
+            $existingInfant->age           = $ageInMonths;
+            $existingInfant->birth_weight  = $infantData['birth_weight'];
+            $existingInfant->save();
+        } else {
+            Infant::create([
+                'user_id'        => $user->user_id,
+                'first_name'     => $infantData['first_name'],
+                'middle_name'    => $infantData['middle_name'] ?? null,
+                'last_name'      => $infantData['last_name'],
+                'suffix'         => $infantData['suffix'] ?? null,
+                'sex'            => $infantData['infant_sex'],
+                'date_of_birth'  => $infantData['infant_date_of_birth'],
+                'age'            => $ageInMonths,
+                'birth_weight'   => $infantData['birth_weight'],
+            ]);
+        }
 
         // Auto-login
         Session::put('account_id', $user->user_id);

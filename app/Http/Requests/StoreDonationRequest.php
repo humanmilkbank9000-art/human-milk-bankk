@@ -57,7 +57,13 @@ class StoreDonationRequest extends FormRequest
             $rules['bag_method'] = 'required|array|min:1';
             $rules['bag_method.*'] = 'required|string';
 
-            // Consent handled client-side; no additional boolean fields required here
+            // Lifestyle checklist (optional); captured client-side and sent as YES/NO
+            foreach ([
+                'good_health','no_smoking','no_medication','no_alcohol','no_fever',
+                'no_cough_colds','no_breast_infection','followed_hygiene','followed_labeling','followed_storage'
+            ] as $field) {
+                $rules[$field] = 'nullable|in:YES,NO';
+            }
         }
 
         return $rules;

@@ -852,10 +852,6 @@
                 <button type="button" id="prevMonth" class="btn btn-outline-secondary btn-sm">&lt;</button>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <h5 id="currentMonth" class="mb-0"></h5>
-                  <div class="form-check form-switch ms-3">
-                    <input class="form-check-input" type="checkbox" id="multiSelectToggle">
-                    <label class="form-check-label" for="multiSelectToggle" style="font-size:0.9rem;">Multi-select</label>
-                  </div>
                 </div>
                 <button type="button" id="nextMonth" class="btn btn-outline-secondary btn-sm">&gt;</button>
               </div>
@@ -1177,10 +1173,9 @@
       const saveBtn = document.getElementById('saveBtn');
 
     let currentDate = new Date();
-    // Multi-select support
+    // Multi-date selection always enabled (toggle removed for simplicity)
     let selectedDates = []; // array of 'YYYY-MM-DD' strings
     let selectedAvailabilityIds = {}; // map dateString -> availabilityId (if exists)
-    let multiSelectEnabled = false;
 
       // Format date in local timezone to avoid UTC offset issues
       function formatDate(date) {
@@ -1273,84 +1268,47 @@
       function selectDate(date) {
         const dateStr = formatDate(new Date(date));
 
-        // Multi-select mode: toggle the date in selectedDates
-        if (multiSelectEnabled) {
-          const idx = selectedDates.indexOf(dateStr);
-          if (idx !== -1) {
-            // Deselect
-            selectedDates.splice(idx, 1);
-            delete selectedAvailabilityIds[dateStr];
-          } else {
-            // Select
-            selectedDates.push(dateStr);
-            // fetch availability id for this date if exists
-            fetch(`{{ route('admin.availability.slots') }}?date=${encodeURIComponent(dateStr)}`)
-              .then(r => r.json())
-              .then(data => {
-                if (data && Array.isArray(data.available_slots) && data.available_slots.length > 0) {
-                  selectedAvailabilityIds[dateStr] = data.available_slots[0].id;
+        // Toggle selection for this date (multi-date always enabled)
+        const idx = selectedDates.indexOf(dateStr);
+        if (idx !== -1) {
+          // Deselect
+          selectedDates.splice(idx, 1);
+          delete selectedAvailabilityIds[dateStr];
+        } else {
+          // Select
+          selectedDates.push(dateStr);
+          // Fetch availability id for this date if exists (for delete support)
+          fetch(`{{ route('admin.availability.slots') }}?date=${encodeURIComponent(dateStr)}`)
+            .then(r => r.json())
+            .then(data => {
+              if (data && Array.isArray(data.available_slots) && data.available_slots.length > 0) {
+                selectedAvailabilityIds[dateStr] = data.available_slots[0].id;
+                // Update delete button visibility after async load
+                const deleteBtnEl = document.getElementById('deleteBtn');
+                if (deleteBtnEl) {
+                  const hasAnyId = Object.keys(selectedAvailabilityIds).length > 0;
+                  deleteBtnEl.style.display = hasAnyId ? 'inline-block' : 'none';
+                  deleteBtnEl.disabled = !hasAnyId;
                 }
-              })
-              .catch(err => console.error('Error checking availability slots:', err));
-          }
-
-          // Update display
-          selectedDateText.textContent = selectedDates.length ? selectedDates.join(', ') : '';
-          selectedDateDisplay.style.display = selectedDates.length ? 'block' : 'none';
-          renderCalendar();
-          if (saveBtn) saveBtn.disabled = selectedDates.length === 0;
-          // Show delete button if any selected date has an availability id
-          const deleteBtnEl = document.getElementById('deleteBtn');
-          const hasAnyId = Object.keys(selectedAvailabilityIds).length > 0;
-          if (deleteBtnEl) {
-            deleteBtnEl.style.display = hasAnyId ? 'inline-block' : 'none';
-            deleteBtnEl.disabled = !hasAnyId;
-          }
-          return;
+              }
+            })
+            .catch(err => console.error('Error checking availability slots:', err));
         }
 
-        // Single-select behavior (legacy)
-        selectedDates = [dateStr];
-        selectedAvailabilityIds = {};
-        formDate.value = dateStr;
-        selectedDateText.textContent = formatDisplayDate(new Date(date));
-        selectedDateDisplay.style.display = 'block';
+        // Update display (show raw list of YYYY-MM-DD for clarity; could be improved to formatted list)
+        selectedDateText.textContent = selectedDates.length ? selectedDates.join(', ') : '';
+        selectedDateDisplay.style.display = selectedDates.length ? 'block' : 'none';
+        if (saveBtn) saveBtn.disabled = selectedDates.length === 0;
 
-        renderCalendar(); // Re-render to update selected state
-
-        // Enable save button (date-only availability)
-        if (saveBtn) saveBtn.disabled = false;
-
-        // Reset delete button state while we check for availability
+        // Update delete button
         const deleteBtnEl = document.getElementById('deleteBtn');
         if (deleteBtnEl) {
-          deleteBtnEl.style.display = 'none';
-          deleteBtnEl.disabled = true;
+          const hasAnyId = Object.keys(selectedAvailabilityIds).length > 0;
+          deleteBtnEl.style.display = hasAnyId ? 'inline-block' : 'none';
+          deleteBtnEl.disabled = !hasAnyId;
         }
-
-        // Ask server if there's an availability record for this date and get its id(s)
-        fetch(`{{ route('admin.availability.slots') }}?date=${encodeURIComponent(formDate.value)}`)
-          .then(r => r.json())
-          .then(data => {
-            if (data && Array.isArray(data.available_slots) && data.available_slots.length > 0) {
-              // Use the first availability record id for delete action (date-only entries should be one)
-              selectedAvailabilityIds[dateStr] = data.available_slots[0].id;
-              if (deleteBtnEl) {
-                deleteBtnEl.style.display = 'inline-block';
-                deleteBtnEl.disabled = false;
-              }
-            } else {
-              if (deleteBtnEl) {
-                deleteBtnEl.style.display = 'none';
-                deleteBtnEl.disabled = true;
-              }
-            }
-          })
-          .catch(err => {
-            console.error('Error checking availability slots:', err);
-          });
-
-        console.log('Date selected:', dateStr);
+        renderCalendar();
+        console.log('Date toggled:', dateStr, 'Selected set:', selectedDates);
       }
 
       // No time slots to render - admin selects date only
@@ -1366,32 +1324,13 @@
         renderCalendar();
       });
 
-      // Multi-select toggle
-      const multiSelectToggle = document.getElementById('multiSelectToggle');
-      if (multiSelectToggle) {
-        multiSelectToggle.addEventListener('change', function () {
-          multiSelectEnabled = this.checked;
-          // Reset selections when switching modes
-          selectedDates = [];
-          selectedAvailabilityIds = {};
-          formDate.value = '';
-          selectedDateText.textContent = '';
-          selectedDateDisplay.style.display = 'none';
-          const deleteBtnEl = document.getElementById('deleteBtn');
-          if (deleteBtnEl) {
-            deleteBtnEl.style.display = 'none';
-            deleteBtnEl.disabled = true;
-          }
-          if (saveBtn) saveBtn.disabled = true;
-          renderCalendar();
-        });
-      }
+      // Multi-select toggle removed; multi-date selection always active
 
       // Form submission (date-only availability)
       document.getElementById('availabilityForm').addEventListener('submit', function (e) {
         e.preventDefault();
         // Determine which dates to save
-        const datesToSave = multiSelectEnabled ? selectedDates.slice() : (formDate.value ? [formDate.value] : []);
+        const datesToSave = selectedDates.slice();
         if (!datesToSave.length) {
           // Close modal first
           const modalEl = document.getElementById('availabilityModal');

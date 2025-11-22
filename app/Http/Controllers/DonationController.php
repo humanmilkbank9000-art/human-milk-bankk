@@ -229,6 +229,155 @@ class DonationController extends Controller
     }
 
     /**
+     * Return lifestyle / screening answers (10-question checklist) for a donation.
+     * Used by the admin Schedule Home Collection Pickup modal (tab 3).
+     */
+    public function screening($id)
+    {
+        // Restrict to admin
+        if (!Session::has('account_id') || Session::get('account_role') !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        $donation = Donation::with(['healthScreening','user'])->find($id);
+        if (!$donation) {
+            return response()->json(['error' => 'Donation not found'], 404);
+        }
+
+        $questions = [];
+
+        // Lifestyle checklist answers (10) taken directly from the Donation record
+        $lifestyle = [
+            'good_health' => $donation->good_health,
+            'no_smoking' => $donation->no_smoking,
+            'no_medication' => $donation->no_medication,
+            'no_alcohol' => $donation->no_alcohol,
+            'no_fever' => $donation->no_fever,
+            'no_cough_colds' => $donation->no_cough_colds,
+            'no_breast_infection' => $donation->no_breast_infection,
+            'followed_hygiene' => $donation->followed_hygiene,
+            'followed_labeling' => $donation->followed_labeling,
+            'followed_storage' => $donation->followed_storage,
+        ];
+
+        // If this donation has no captured lifestyle answers, attempt to reuse the user's latest
+        // previous donation that contains lifestyle data so admins still see what the donor answered.
+        $allNull = true;
+        foreach ($lifestyle as $v) { if (!is_null($v) && trim((string)$v) !== '') { $allNull = false; break; } }
+        $fromPrevious = false;
+        $previousDate = null;
+        if ($allNull && $donation->user_id) {
+            $prev = Donation::where('user_id', $donation->user_id)
+                ->where('breastmilk_donation_id', '!=', $donation->breastmilk_donation_id)
+                ->where(function($q){
+                    $q->whereNotNull('good_health')
+                      ->orWhereNotNull('no_smoking')
+                      ->orWhereNotNull('no_medication')
+                      ->orWhereNotNull('no_alcohol')
+                      ->orWhereNotNull('no_fever')
+                      ->orWhereNotNull('no_cough_colds')
+                      ->orWhereNotNull('no_breast_infection')
+                      ->orWhereNotNull('followed_hygiene')
+                      ->orWhereNotNull('followed_labeling')
+                      ->orWhereNotNull('followed_storage');
+                })
+                ->latest('created_at')
+                ->first();
+            if ($prev) {
+                $lifestyle = [
+                    'good_health' => $prev->good_health,
+                    'no_smoking' => $prev->no_smoking,
+                    'no_medication' => $prev->no_medication,
+                    'no_alcohol' => $prev->no_alcohol,
+                    'no_fever' => $prev->no_fever,
+                    'no_cough_colds' => $prev->no_cough_colds,
+                    'no_breast_infection' => $prev->no_breast_infection,
+                    'followed_hygiene' => $prev->followed_hygiene,
+                    'followed_labeling' => $prev->followed_labeling,
+                    'followed_storage' => $prev->followed_storage,
+                ];
+                $fromPrevious = true;
+                $previousDate = $prev->created_at ? $prev->created_at->format('M d, Y') : null;
+            }
+        }
+
+        // Use the exact same wording as shown to the user in the Lifestyle Checklist modal
+        $questionsMap = [
+            'good_health' => 'I am in good health',
+            'no_smoking' => 'I do not smoke',
+            'no_medication' => 'I am not taking medication or herbal supplements',
+            'no_alcohol' => 'I am not consuming alcohol',
+            'no_fever' => 'I have not had a fever',
+            'no_cough_colds' => 'I have not had cough or colds',
+            'no_breast_infection' => 'I have no breast infections',
+            'followed_hygiene' => 'I have followed all hygiene instructions',
+            'followed_labeling' => 'I have followed all labeling instructions',
+            'followed_storage' => 'I have followed all storage instructions',
+        ];
+
+        $normalize = function($raw) {
+            if (is_null($raw)) return 'N/A';
+            $s = trim(strtolower((string)$raw));
+            if ($s === '') return 'N/A';
+            $yesVals = ['1','yes','y','true','t','on','checked','yes'];
+            $noVals  = ['0','no','n','false','f','off','no'];
+            if (in_array($s, $yesVals, true)) return 'Yes';
+            if (in_array($s, $noVals, true)) return 'No';
+            return strtoupper((string)$raw);
+        };
+
+        foreach ($questionsMap as $key => $label) {
+            $raw = $lifestyle[$key] ?? null;
+            $answer = $normalize($raw);
+            $item = [ 'key' => $key, 'label' => $label, 'answer' => $answer ];
+            if ($fromPrevious && $previousDate) {
+                $item['details'] = 'From previous donation on ' . $previousDate;
+            }
+            $questions[] = $item;
+        }
+
+        return response()->json([
+            'donation_id' => $donation->breastmilk_donation_id,
+            'user_id' => $donation->user_id,
+            'questions' => $questions,
+        ]);
+    }
+
+    /**
+     * Admin endpoint to update/repair Lifestyle checklist answers on a donation.
+     */
+    public function updateLifestyle(Request $request, $id)
+    {
+        if (!Session::has('account_id') || Session::get('account_role') !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $donation = Donation::find($id);
+        if (!$donation) {
+            return response()->json(['success' => false, 'message' => 'Donation not found'], 404);
+        }
+
+        $data = $request->validate([
+            'good_health' => 'nullable|in:YES,NO',
+            'no_smoking' => 'nullable|in:YES,NO',
+            'no_medication' => 'nullable|in:YES,NO',
+            'no_alcohol' => 'nullable|in:YES,NO',
+            'no_fever' => 'nullable|in:YES,NO',
+            'no_cough_colds' => 'nullable|in:YES,NO',
+            'no_breast_infection' => 'nullable|in:YES,NO',
+            'followed_hygiene' => 'nullable|in:YES,NO',
+            'followed_labeling' => 'nullable|in:YES,NO',
+            'followed_storage' => 'nullable|in:YES,NO',
+        ]);
+
+        foreach ($data as $k => $v) {
+            $donation->{$k} = $v; // save as provided (YES/NO)
+        }
+        $donation->save();
+
+        return response()->json(['success' => true, 'message' => 'Lifestyle answers updated.']);
+    }
+
+    /**
      * Assist Walk-in Donation: Admin creates a walk-in donation and validates it using
      * the same service method as normal walk-in validation to ensure consistent behavior.
      */
@@ -242,6 +391,8 @@ class DonationController extends Controller
         }
 
         $validated = $request->validate([
+            'assist_option' => 'required|in:no_account_direct_record,record_to_existing_user,milk_letting_activity',
+            'existing_user_id' => 'nullable|integer',
             'donor_first_name' => 'required|string|max:255',
             'donor_last_name' => 'required|string|max:255',
             'donor_contact' => ['required','string','max:20','regex:/^09\d{9}$/'],
@@ -256,33 +407,51 @@ class DonationController extends Controller
         try {
             DB::beginTransaction();
 
-            // Find existing user by contact; ensure name consistency to avoid mis-linking
-            $user = User::where('contact_number', $validated['donor_contact'])->first();
-            if ($user) {
-                $fnameMatch = trim(strtolower($user->first_name)) === trim(strtolower($validated['donor_first_name']));
-                $lnameMatch = trim(strtolower($user->last_name)) === trim(strtolower($validated['donor_last_name']));
-                if (!$fnameMatch || !$lnameMatch) {
+            // Resolve user by assist option
+            if ($validated['assist_option'] === 'record_to_existing_user') {
+                $userId = (int)($validated['existing_user_id'] ?? 0);
+                if ($userId <= 0) {
                     DB::rollBack();
-                    $msg = 'This contact number is registered to ' . trim(($user->first_name ?? '').' '.($user->last_name ?? '')) . '. Please use that exact name or a different contact.';
+                    $msg = 'Please select an existing user from the list.';
                     if ($request->ajax() || $request->wantsJson()) return response()->json(['success'=>false,'message'=>$msg],422);
                     return back()->withInput()->with('error', $msg);
                 }
+                $user = User::find($userId);
+                if (!$user) {
+                    DB::rollBack();
+                    $msg = 'Selected user not found.';
+                    if ($request->ajax() || $request->wantsJson()) return response()->json(['success'=>false,'message'=>$msg],404);
+                    return back()->withInput()->with('error', $msg);
+                }
             } else {
-                // Create a minimal donor profile
-                $user = User::create([
-                    'contact_number' => $validated['donor_contact'],
-                    'password' => bcrypt('temporary_password_' . time()),
-                    'first_name' => $validated['donor_first_name'],
-                    'middle_name' => null,
-                    'last_name' => $validated['donor_last_name'],
-                    'address' => $validated['donor_address'] ?? 'Walk-in (not provided)',
-                    'latitude' => null,
-                    'longitude' => null,
-                    'date_of_birth' => now()->toDateString(),
-                    'age' => 0,
-                    'sex' => 'female',
-                    'user_type' => 'donor',
-                ]);
+                // Previous behavior: link by contact if exists else create minimal donor profile
+                $user = User::where('contact_number', $validated['donor_contact'])->first();
+                if ($user) {
+                    $fnameMatch = trim(strtolower($user->first_name)) === trim(strtolower($validated['donor_first_name']));
+                    $lnameMatch = trim(strtolower($user->last_name)) === trim(strtolower($validated['donor_last_name']));
+                    if (!$fnameMatch || !$lnameMatch) {
+                        DB::rollBack();
+                        $msg = 'This contact number is registered to ' . trim(($user->first_name ?? '').' '.($user->last_name ?? '')) . '. Please use that exact name or a different contact.';
+                        if ($request->ajax() || $request->wantsJson()) return response()->json(['success'=>false,'message'=>$msg],422);
+                        return back()->withInput()->with('error', $msg);
+                    }
+                } else {
+                    // Create a minimal donor profile
+                    $user = User::create([
+                        'contact_number' => $validated['donor_contact'],
+                        'password' => bcrypt('temporary_password_' . time()),
+                        'first_name' => $validated['donor_first_name'],
+                        'middle_name' => null,
+                        'last_name' => $validated['donor_last_name'],
+                        'address' => $validated['donor_address'] ?? 'Walk-in (not provided)',
+                        'latitude' => null,
+                        'longitude' => null,
+                        'date_of_birth' => now()->toDateString(),
+                        'age' => 0,
+                        'sex' => 'female',
+                        'user_type' => 'donor',
+                    ]);
+                }
             }
 
             // Do NOT block on health screening; auto-create a minimal accepted screening if missing
@@ -341,6 +510,7 @@ class DonationController extends Controller
             $donation->status = 'pending_walk_in';
             $donation->donation_date = $validated['donation_date'] ?? now()->toDateString();
             $donation->donation_time = $validated['donation_time'] ?? now()->format('H:i');
+            $donation->assist_option = $validated['assist_option'];
 
             $donation->save();
 
@@ -353,6 +523,15 @@ class DonationController extends Controller
             DB::commit();
 
             $message = 'Walk-in donation recorded and added to inventory.';
+            if (!empty($donation->assist_option)) {
+                $map = [
+                    'no_account_direct_record' => 'No account or direct record',
+                    'record_to_existing_user' => 'Recorded to existing user',
+                    'milk_letting_activity' => 'Milk letting activity'
+                ];
+                $human = $map[$donation->assist_option] ?? $donation->assist_option;
+                $message .= ' (Assist Option: ' . $human . ')';
+            }
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => true, 'message' => $message]);
             }

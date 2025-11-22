@@ -57,9 +57,27 @@ class BreastmilkRequestController extends Controller
 
     public function getInfantInfo($infantId)
     {
-        if (!Session::has('account_id') || Session::get('account_role') !== 'user') {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        if (!Session::has('account_id')) {
+            return response()->json(['error' => 'Unauthorized (no session)'], 401);
         }
+        $role = Session::get('account_role');
+        if (!in_array($role, ['user','requester'])) { // allow broader user roles
+            return response()->json(['error' => 'Unauthorized role: '.$role], 403);
+        }
+            // Normalize date format if user entered DD/MM/YYYY or MM/DD/YYYY
+            $rawDob = $request->input('infant_date_of_birth');
+            if ($rawDob && strpos($rawDob, '/') !== false) {
+                $normalized = null;
+                foreach (['d/m/Y','m/d/Y'] as $fmt) {
+                    try {
+                        $dt = \Carbon\Carbon::createFromFormat($fmt, $rawDob);
+                        if ($dt) { $normalized = $dt->format('Y-m-d'); break; }
+                    } catch (\Exception $e) {}
+                }
+                if ($normalized) {
+                    $request->merge(['infant_date_of_birth' => $normalized]);
+                }
+            }
 
         $userId = Session::get('account_id');
 
@@ -126,6 +144,136 @@ class BreastmilkRequestController extends Controller
             ->get();
 
         return view('user.my-breastmilk-requests', compact('requests'));
+    }
+
+    /**
+     * Add a new infant for the currently logged-in user (AJAX only)
+     */
+    public function addInfant(Request $request)
+    {
+        // Check authentication
+        if (!Session::has('account_id')) {
+            Log::error('addInfant: No session account_id');
+            return response()->json(['error' => 'Not logged in. Please refresh the page.'], 401);
+        }
+        
+        $role = Session::get('account_role');
+        if (!in_array($role, ['user', 'requester'])) {
+            Log::error('addInfant: Invalid role', ['role' => $role]);
+            return response()->json(['error' => 'Unauthorized role: ' . $role], 403);
+        }
+
+        $userId = Session::get('account_id');
+        
+        Log::info('addInfant: Request received', [
+            'user_id' => $userId,
+            'role' => $role,
+            'input' => $request->except(['_token'])
+        ]);
+
+        try {
+            // Validate input
+            $validated = $request->validate([
+                'first_name' => 'required|string|max:255',
+                'middle_name' => 'nullable|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'suffix' => 'nullable|string|max:50',
+                'infant_sex' => 'required|in:Male,Female,male,female',
+                'infant_date_of_birth' => 'required|date|before_or_equal:today',
+                'birth_weight' => 'required|numeric|min:0.5|max:20',
+            ]);
+
+            Log::info('addInfant: Validation passed', ['validated' => $validated]);
+
+            // Calculate age in months
+            $dob = Carbon::parse($validated['infant_date_of_birth'])->startOfDay();
+            $now = Carbon::now()->startOfDay();
+            $diff = $dob->diff($now);
+            $months = max(0, ($diff->y * 12) + $diff->m);
+
+            // Create infant using mass assignment
+            $infant = Infant::create([
+                'user_id' => $userId,
+                'first_name' => $validated['first_name'],
+                'middle_name' => $validated['middle_name'] ?? null,
+                'last_name' => $validated['last_name'],
+                'suffix' => $validated['suffix'] ?? null,
+                'sex' => strtolower($validated['infant_sex']),
+                'date_of_birth' => $validated['infant_date_of_birth'],
+                'age' => $months,
+                'birth_weight' => $validated['birth_weight'],
+            ]);
+
+            Log::info('addInfant: Infant created successfully', [
+                'infant_id' => $infant->infant_id,
+                'user_id' => $userId
+            ]);
+
+            // Prepare response payload
+            $displayDob = Carbon::parse($infant->date_of_birth)->format('M d, Y');
+            $sexDisplay = $infant->sex === 'male' ? 'Male' : 'Female';
+            $fullName = trim(implode(' ', array_filter([
+                $infant->first_name,
+                $infant->middle_name,
+                $infant->last_name,
+                $infant->suffix
+            ])));
+
+            $response = [
+                'success' => true,
+                'message' => 'Infant added successfully',
+                'infant' => [
+                    'infant_id' => $infant->infant_id,
+                    'name' => $fullName,
+                    'date_of_birth' => $displayDob,
+                    'age_text' => $infant->getFormattedAge(),
+                    'sex' => $sexDisplay,
+                    'birth_weight' => number_format((float)$infant->birth_weight, 2),
+                ]
+            ];
+
+            Log::info('addInfant: Sending success response', $response);
+
+            return response()->json($response, 201);
+
+        } catch (\Illuminate\Validation\ValidationException $ve) {
+            Log::warning('addInfant: Validation failed', [
+                'errors' => $ve->errors(),
+                'user_id' => $userId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'errors' => $ve->errors()
+            ], 422);
+
+        } catch (\Illuminate\Database\QueryException $qe) {
+            Log::error('addInfant: Database error', [
+                'user_id' => $userId,
+                'message' => $qe->getMessage(),
+                'sql' => $qe->getSql() ?? 'N/A'
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Database error. Please try again or contact support.'
+            ], 500);
+
+        } catch (\Exception $e) {
+            Log::error('addInfant: Unexpected error', [
+                'user_id' => $userId,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function admin_breastmilk_request()
@@ -360,10 +508,6 @@ class BreastmilkRequestController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $request->validate([
-            'admin_notes' => 'required|string|max:1000'
-        ]);
-
         $breastmilkRequest = BreastmilkRequest::findOrFail($requestId);
         
         if ($breastmilkRequest->status !== 'pending') {
@@ -375,7 +519,7 @@ class BreastmilkRequestController extends Controller
         $breastmilkRequest->update([
             'status' => 'declined',
             'admin_id' => $adminId,
-            'admin_notes' => $request->input('admin_notes'),
+            'admin_notes' => null,
             'declined_at' => now()
         ]);
 
@@ -384,7 +528,7 @@ class BreastmilkRequestController extends Controller
         if ($user) {
             $user->notify(new SystemAlert(
                 'Request Declined', 
-                'Your breastmilk request #' . $breastmilkRequest->breastmilk_request_id . ' has been declined. Reason: ' . $request->input('admin_notes')
+                'Your breastmilk request #' . $breastmilkRequest->breastmilk_request_id . ' has been declined.'
             ));
         }
 
@@ -589,6 +733,8 @@ class BreastmilkRequestController extends Controller
 
         // Validate request data
         $validated = $request->validate([
+            'assist_option' => 'required|in:no_account_direct_record,record_to_existing_user,milk_letting_activity',
+            'existing_user_id' => 'nullable|integer',
             'guardian_first_name' => 'required|string|max:255',
             'guardian_last_name' => 'required|string|max:255',
             // enforce normalized mobile format (e.g., 09XXXXXXXXX) and max length
@@ -611,31 +757,45 @@ class BreastmilkRequestController extends Controller
         try {
             DB::beginTransaction();
 
-            // Check if user exists by contact number
-            $user = \App\Models\User::where('contact_number', $validated['guardian_contact'])->first();
+            // Resolve user by assist option
+            if ($validated['assist_option'] === 'record_to_existing_user') {
+                $selId = (int)($validated['existing_user_id'] ?? 0);
+                if ($selId <= 0) {
+                    DB::rollBack();
+                    return redirect()->back()->withInput()->with('error', 'Please select an existing user from the list.');
+                }
+                $user = \App\Models\User::find($selId);
+                if (!$user) {
+                    DB::rollBack();
+                    return redirect()->back()->withInput()->with('error', 'Selected user not found.');
+                }
+            } else {
+                // Check if user exists by contact number
+                $user = \App\Models\User::where('contact_number', $validated['guardian_contact'])->first();
 
-            // If user exists but provided name does not match, prevent accidental duplicate/linking
-            if ($user && (trim(strtolower($user->first_name)) !== trim(strtolower($validated['guardian_first_name'])) || trim(strtolower($user->last_name)) !== trim(strtolower($validated['guardian_last_name'])))) {
-                DB::rollBack();
-                return redirect()->back()->withInput()->with('error', 'The contact number you entered is already registered to another user (Name: ' . ($user->first_name ?? '') . ' ' . ($user->last_name ?? '') . '). If you intend to link to that user, enter their exact name; otherwise use a different contact number.');
-            }
+                // If user exists but provided name does not match, prevent accidental duplicate/linking
+                if ($user && (trim(strtolower($user->first_name)) !== trim(strtolower($validated['guardian_first_name'])) || trim(strtolower($user->last_name)) !== trim(strtolower($validated['guardian_last_name'])))) {
+                    DB::rollBack();
+                    return redirect()->back()->withInput()->with('error', 'The contact number you entered is already registered to another user (Name: ' . ($user->first_name ?? '') . ' ' . ($user->last_name ?? '') . '). If you intend to link to that user, enter their exact name; otherwise use a different contact number.');
+                }
 
-            // If user doesn't exist, create a new minimal requester profile per current schema
-            if (!$user) {
-                $user = \App\Models\User::create([
-                    'contact_number' => $validated['guardian_contact'],
-                    'password' => bcrypt('temporary_password_' . time()), // Temporary password
-                    'first_name' => $validated['guardian_first_name'],
-                    'middle_name' => null,
-                    'last_name' => $validated['guardian_last_name'],
-                    'address' => 'Walk-in (not provided)',
-                    'latitude' => null,
-                    'longitude' => null,
-                    'date_of_birth' => now()->toDateString(),
-                    'age' => 0,
-                    'sex' => 'female', // default for guardians when not specified
-                    'user_type' => 'requester',
-                ]);
+                // If user doesn't exist, create a new minimal requester profile per current schema
+                if (!$user) {
+                    $user = \App\Models\User::create([
+                        'contact_number' => $validated['guardian_contact'],
+                        'password' => bcrypt('temporary_password_' . time()), // Temporary password
+                        'first_name' => $validated['guardian_first_name'],
+                        'middle_name' => null,
+                        'last_name' => $validated['guardian_last_name'],
+                        'address' => 'Walk-in (not provided)',
+                        'latitude' => null,
+                        'longitude' => null,
+                        'date_of_birth' => now()->toDateString(),
+                        'age' => 0,
+                        'sex' => 'female', // default for guardians when not specified
+                        'user_type' => 'requester',
+                    ]);
+                }
             }
 
             // Create infant record (schema requires lowercase sex and non-null age)
@@ -644,15 +804,28 @@ class BreastmilkRequestController extends Controller
             $months = max(0, ($dob->diff($now)->y * 12) + $dob->diff($now)->m);
             $sexLower = strtolower($validated['infant_sex']); // map 'Male'/'Female' -> 'male'/'female'
 
-            $infant = Infant::create([
-                'user_id' => $user->user_id,
-                'first_name' => $validated['infant_first_name'],
-                'last_name' => $validated['infant_last_name'],
-                'date_of_birth' => $validated['infant_date_of_birth'],
-                'sex' => $sexLower,
-                'age' => $months,
-                'birth_weight' => $validated['infant_weight'],
-            ]);
+            // Enforce single infant per user: reuse existing if present, else create new
+            $infant = Infant::where('user_id', $user->user_id)->first();
+            if ($infant) {
+                // Update with latest provided data (admin assisted form acts as source of truth)
+                $infant->first_name = $validated['infant_first_name'];
+                $infant->last_name = $validated['infant_last_name'];
+                $infant->date_of_birth = $validated['infant_date_of_birth'];
+                $infant->sex = $sexLower;
+                $infant->age = $months;
+                $infant->birth_weight = $validated['infant_weight'];
+                $infant->save();
+            } else {
+                $infant = Infant::create([
+                    'user_id' => $user->user_id,
+                    'first_name' => $validated['infant_first_name'],
+                    'last_name' => $validated['infant_last_name'],
+                    'date_of_birth' => $validated['infant_date_of_birth'],
+                    'sex' => $sexLower,
+                    'age' => $months,
+                    'birth_weight' => $validated['infant_weight'],
+                ]);
+            }
 
             // Handle prescription upload
             $prescriptionPath = null;
@@ -674,6 +847,7 @@ class BreastmilkRequestController extends Controller
                 'admin_notes' => 'Medical Condition: ' . $validated['medical_condition'] . 
                     ($validated['admin_notes'] ? "\nStaff Notes: " . $validated['admin_notes'] : ''),
                 'assisted_by_admin' => Session::get('account_id'), // Track which admin assisted
+                'assist_option' => $validated['assist_option'],
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -755,8 +929,17 @@ class BreastmilkRequestController extends Controller
                 ));
             }
 
+            $successMsg = 'Assisted request submitted successfully for ' . $validated['guardian_first_name'] . ' ' . $validated['guardian_last_name'];
+            $optMap = [
+                'no_account_direct_record' => 'No account or direct record',
+                'record_to_existing_user' => 'Recorded to existing user',
+                'milk_letting_activity' => 'Milk letting activity'
+            ];
+            if (!empty($validated['assist_option'])) {
+                $successMsg .= ' (Assist Option: ' . ($optMap[$validated['assist_option']] ?? $validated['assist_option']) . ')';
+            }
             return redirect()->route('admin.request')
-                ->with('success', 'Assisted request submitted successfully for ' . $validated['guardian_first_name'] . ' ' . $validated['guardian_last_name']);
+                ->with('success', $successMsg);
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -15,9 +15,9 @@ class DispenseBreastmilkRequest extends FormRequest
     {
         return [
             'volume_dispensed' => 'required|numeric|min:0.01',
-            'milk_type' => 'required|in:unpasteurized,pasteurized',
+            'milk_type' => 'required|in:pasteurized',
             'sources' => 'required|array|min:1',
-            'sources.*.type' => 'required|in:unpasteurized,pasteurized',
+            'sources.*.type' => 'required|in:pasteurized',
             'sources.*.id' => 'required|integer',
             'sources.*.volume' => 'required|numeric|min:0.01',
             'dispensing_notes' => 'nullable|string|max:1000'

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lifestyle Checklist Test</title>
+</head>
+<body>
+    <h1>Test Lifestyle Data Collection</h1>
+    
+    <div id="test-form">
+        <h2>Simulated Q&A</h2>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q1]" value="yes"> Yes
+                <input type="radio" name="hcqa[q1]" value="no"> No
+                good_health
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q2]" value="yes"> Yes
+                <input type="radio" name="hcqa[q2]" value="no"> No
+                no_smoking
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q3]" value="yes"> Yes
+                <input type="radio" name="hcqa[q3]" value="no"> No
+                no_medication
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q4]" value="yes"> Yes
+                <input type="radio" name="hcqa[q4]" value="no"> No
+                no_alcohol
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q5]" value="yes"> Yes
+                <input type="radio" name="hcqa[q5]" value="no"> No
+                no_fever
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q6]" value="yes"> Yes
+                <input type="radio" name="hcqa[q6]" value="no"> No
+                no_cough_colds
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q7]" value="yes"> Yes
+                <input type="radio" name="hcqa[q7]" value="no"> No
+                no_breast_infection
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q8]" value="yes"> Yes
+                <input type="radio" name="hcqa[q8]" value="no"> No
+                followed_hygiene
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q9]" value="yes"> Yes
+                <input type="radio" name="hcqa[q9]" value="no"> No
+                followed_labeling
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="radio" name="hcqa[q10]" value="yes"> Yes
+                <input type="radio" name="hcqa[q10]" value="no"> No
+                followed_storage
+            </label>
+        </div>
+        
+        <button onclick="testCollection()">Test Collection</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        function testCollection() {
+            const codeToField = {
+                'q1': 'good_health',
+                'q2': 'no_smoking',
+                'q3': 'no_medication',
+                'q4': 'no_alcohol',
+                'q5': 'no_fever',
+                'q6': 'no_cough_colds',
+                'q7': 'no_breast_infection',
+                'q8': 'followed_hygiene',
+                'q9': 'followed_labeling',
+                'q10': 'followed_storage'
+            };
+            
+            const answers = {};
+            Object.keys(codeToField).forEach(code => {
+                const sel = document.querySelector(`input[name="hcqa[${code}]"]:checked`);
+                if (sel) {
+                    const fieldName = codeToField[code];
+                    const value = String(sel.value).toUpperCase() === 'YES' ? 'YES' : 'NO';
+                    answers[fieldName] = value;
+                    console.log(`${fieldName} = ${value}`);
+                }
+            });
+            
+            console.log('All answers:', answers);
+            
+            document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(answers, null, 2) + '</pre>';
+        }
+    </script>
+</body>
+</html>

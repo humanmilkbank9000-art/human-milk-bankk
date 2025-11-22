@@ -149,25 +149,19 @@
                 }
 
                 function fmtTime(t) {
-                    if ( !t) return '--';
+                    if (!t) return '--';
                     if (/\b(am|pm)\b/i.test(t)) return t;
-
-                    const m=t.toString().match(/^(\d {
-                                1, 2
-
-                            }):(\d {
-                                2
-
-                            })(?::(\d {
-                                    2
-                                }))?$/);
-                    if ( !m) return t;
-                    let hh=parseInt(m[1], 10);
-                    const mm=m[2];
-                    const ampm=hh>=12 ? 'PM' : 'AM';
-                    hh=hh % 12;
-                    if (hh===0) hh=12;
-                    return hh+':'+mm+' '+ampm;
+                    
+                    // Match time patterns like "16:49" or "16:49:30"
+                    const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+                    if (!m) return t;
+                    
+                    let hh = parseInt(m[1], 10);
+                    const mm = m[2];
+                    const ampm = hh >= 12 ? 'PM' : 'AM';
+                    hh = hh % 12;
+                    if (hh === 0) hh = 12;
+                    return hh + ':' + mm + ' ' + ampm;
                 }
 
                 function mapStorageLabel(s) {
@@ -190,31 +184,22 @@
                         const temp=bag.temperature || '--';
                         const method=bag.collection_method || bag.method || '--';
 
-                        const row=` <tr> <td class="text-center fw-bold" >Bag $ {
-                            bagNum
-                        }
-
-                        </td> <td>$ {
-                            time
-                        }
-
-                        </td> <td>$ {
-                            date
-                        }
-
-                        </td> <td> <div class="input-group input-group-sm" > <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]" class="form-control home-bag-volume-input" step="0.01" min="0.01" value="${volume}" placeholder="ml" required> <span class="input-group-text" >ml</span> </div> </td> <td>$ {
-                            storageLabel
-                        }
-
-                        </td> <td class="text-end" >$ {
-                            temp
-                        }
-
-                        </td> <td><small>$ {
-                            method
-                        }
-
-                        </small></td> </tr>`;
+                        const row=`<tr>
+                            <td class="text-center fw-bold">Bag ${bagNum}</td>
+                            <td>${time}</td>
+                            <td>${date}</td>
+                            <td>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]" 
+                                           class="form-control home-bag-volume-input" step="0.01" min="0.01" 
+                                           value="${volume}" placeholder="ml" required>
+                                    <span class="input-group-text">ml</span>
+                                </div>
+                            </td>
+                            <td>${storageLabel}</td>
+                            <td class="text-end">${temp}</td>
+                            <td><small>${method}</small></td>
+                        </tr>`;
 
                         tbody.append(row);
                         total +=parseFloat(volume) || 0;
@@ -612,6 +597,21 @@
             font-weight: 700;
             border-radius: 0.375rem;
         }
+        /* Assist option badge */
+        .assist-option-badge {
+            display:inline-block;
+            padding:0.25rem 0.5rem;
+            font-size:0.65rem;
+            line-height:1.1;
+            font-weight:600;
+            border-radius:0.35rem;
+            background:#6c757d;
+            color:#fff;
+            white-space:nowrap;
+        }
+        .assist-option-badge.option-direct { background:#0d6efd; }
+        .assist-option-badge.option-existing { background:#198754; }
+        .assist-option-badge.option-letting { background:#6610f2; }
 
         /* Assist button styling to match screenshot */
         .assist-btn {
@@ -1033,6 +1033,7 @@
                                             <th class="text-center">Address</th>
                                             <th class="text-center">Location</th>
                                             <th class="text-center">Date</th>
+                                            <th class="text-center">Time</th>
                                             <th class="text-center">Total volume</th>
                                             <th class="text-center">Action</th>
                                         </tr>
@@ -1145,6 +1146,8 @@
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
+                                            <th class="text-center">Assist Option</th>
+                                            <th class="text-center">Contact</th>
                                             <th class="text-center">Address</th>
                                             <th class="text-center">Total</th>
                                             <th class="text-center">Date</th>
@@ -1162,6 +1165,31 @@
                                             <tr>
                                                 <td data-label="Name" class="text-center">
                                                     {{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}
+                                                </td>
+                                                <td data-label="Assist Option" class="text-center">
+                                                    @php
+                                                        $assistMap = [
+                                                            'no_account_direct_record' => 'Direct Record',
+                                                            'record_to_existing_user' => 'Existing User',
+                                                            'milk_letting_activity' => 'Milk Letting Activity',
+                                                        ];
+                                                        $assistKey = $donation->assist_option ?? null;
+                                                        $assistLabel = $assistKey ? ($assistMap[$assistKey] ?? $assistKey) : null;
+                                                        $assistClass = match($assistKey) {
+                                                            'no_account_direct_record' => 'option-direct',
+                                                            'record_to_existing_user' => 'option-existing',
+                                                            'milk_letting_activity' => 'option-letting',
+                                                            default => ''
+                                                        };
+                                                    @endphp
+                                                    @if($assistLabel)
+                                                        <span class="assist-option-badge {{ $assistClass }}" title="Assist Option">{{ $assistLabel }}</span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td data-label="Contact" class="text-center">
+                                                    {{ data_get($donation, 'user.contact_number') ?: (data_get($donation, 'user.phone') ?: '-') }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
                                                     <small>{{ data_get($donation, 'user.address', 'Not provided') }}</small>
@@ -1224,6 +1252,7 @@
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
+                                            <th class="text-center">Contact</th>
                                             <th class="text-center">Address</th>
                                             <th class="text-center">Total volume</th>
                                             <th class="text-center">Date</th>
@@ -1241,6 +1270,9 @@
                                             <tr>
                                                 <td data-label="Name" class="text-center">
                                                     <strong>{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}</strong>
+                                                </td>
+                                                <td data-label="Contact" class="text-center">
+                                                    {{ data_get($donation, 'user.contact_number') ?: (data_get($donation, 'user.phone') ?: '-') }}
                                                 </td>
                                                 <td data-label="Address" class="text-center">
                                                     <small>{{ data_get($donation, 'user.address', 'Not provided') }}</small>
@@ -1414,9 +1446,8 @@
             </div>
         </div>
 
-        <!-- Schedule Pickup Modal -->
-        <div class="modal fade" id="schedulePickupModal" tabindex="-1" aria-labelledby="schedulePickupModalLabel"
-            aria-hidden="true">
+        <!-- Schedule Pickup Modal (Tabbed) -->
+        <div class="modal fade" id="schedulePickupModal" tabindex="-1" aria-labelledby="schedulePickupModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1426,103 +1457,89 @@
                     <form id="schedulePickupForm" method="POST">
                         @csrf
                         <div class="modal-body">
-                            <!-- Compact donor/schedule info: place labels and values side-by-side to save vertical space -->
-                            <style>
-                                /* Compact inline label:value look for schedule info */
-                                .schedule-info .info-item {
-                                    white-space: nowrap;
-                                    overflow: hidden;
-                                    text-overflow: ellipsis;
-                                }
-
-                                .schedule-info .info-item strong {
-                                    font-weight: 600;
-                                    margin-right: 0.35rem;
-                                }
-
-                                @media (max-width: 575.98px) {
-                                    .schedule-info .info-item {
-                                        white-space: normal;
-                                    }
-                                }
-                            </style>
-
-                            <div class="row gx-2 gy-2 align-items-center mb-3 schedule-info">
-                                <div class="col-6 col-md-3 info-item">
-                                    <strong>Donor:</strong>
-                                    <span id="schedule-donor-name">&nbsp;</span>
+                            <ul class="nav nav-tabs" id="schedulePickupTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="pickup-donor-tab" data-bs-toggle="tab" data-bs-target="#pickup-donor" type="button" role="tab" aria-controls="pickup-donor" aria-selected="true"><i class="fas fa-user me-1"></i> Donor Info</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="pickup-bags-tab" data-bs-toggle="tab" data-bs-target="#pickup-bags" type="button" role="tab" aria-controls="pickup-bags" aria-selected="false"><i class="fas fa-box-open me-1"></i> Bag Details</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="pickup-screening-tab" data-bs-toggle="tab" data-bs-target="#pickup-screening" type="button" role="tab" aria-controls="pickup-screening" aria-selected="false"><i class="fas fa-clipboard-list me-1"></i> Lifestyle Checklist</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="pickup-schedule-tab" data-bs-toggle="tab" data-bs-target="#pickup-schedule" type="button" role="tab" aria-controls="pickup-schedule" aria-selected="false"><i class="fas fa-calendar-alt me-1"></i> Schedule</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content pt-3" id="schedulePickupTabContent">
+                                <!-- Donor Info Tab -->
+                                <div class="tab-pane fade show active" id="pickup-donor" role="tabpanel" aria-labelledby="pickup-donor-tab">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="p-3 border rounded bg-light">
+                                                <h6 class="mb-2"><i class="fas fa-user me-1"></i> Donor</h6>
+                                                <p class="mb-1"><strong>Name:</strong> <span id="schedule-donor-name">&nbsp;</span></p>
+                                                <p class="mb-1"><strong>Address:</strong> <span id="schedule-donor-address">&nbsp;</span></p>
+                                                <p class="mb-1"><strong>Location:</strong> <span id="schedule-donor-location">-</span></p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="p-3 border rounded bg-light">
+                                                <h6 class="mb-2"><i class="fas fa-clock me-1"></i> Expression Dates</h6>
+                                                <p class="mb-1"><strong>First Expression:</strong> <span id="schedule-first-expression">&nbsp;</span></p>
+                                                <p class="mb-0"><strong>Last Expression:</strong> <span id="schedule-last-expression">&nbsp;</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-6 col-md-3 info-item">
-                                    <strong>Address:</strong>
-                                    <span id="schedule-donor-address">&nbsp;</span>
+                                <!-- Bag Details Tab -->
+                                <div class="tab-pane fade" id="pickup-bags" role="tabpanel" aria-labelledby="pickup-bags-tab">
+                                    <div class="mb-2 d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Bag Details</h6>
+                                        <span class="badge bg-info"><strong>Total Volume:</strong> <span id="schedule-total-volume">0</span> ml</span>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm" id="schedule-bag-details-table">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Bag #</th>
+                                                    <th>Time</th>
+                                                    <th>Date</th>
+                                                    <th style="width:150px;">Volume (ml)</th>
+                                                    <th>Storage</th>
+                                                    <th>Temp (°C)</th>
+                                                    <th>Collection Method</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="schedule-bag-details-body"></tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div class="col-6 col-md-3 info-item">
-                                    <strong>Location:</strong>
-                                    <span id="schedule-donor-location">-</span>
+                                <!-- Lifestyle Checklist Tab -->
+                                <div class="tab-pane fade" id="pickup-screening" role="tabpanel" aria-labelledby="pickup-screening-tab">
+                                    <div id="schedule-screening-loading" class="text-center text-muted py-3" style="display:none;">
+                                        <i class="fas fa-spinner fa-spin me-2"></i> Loading lifestyle checklist...
+                                    </div>
+                                    <div id="schedule-screening-content" style="max-height:380px; overflow:auto;"></div>
                                 </div>
-                                <div class="col-6 col-md-3 info-item">
-                                    <strong>First Expression Date:</strong>
-                                    <span id="schedule-first-expression">&nbsp;</span>
+                                <!-- Schedule Form Tab -->
+                                <div class="tab-pane fade" id="pickup-schedule" role="tabpanel" aria-labelledby="pickup-schedule-tab">
+                                    <h6 class="mb-3">Schedule Pickup</h6>
+                                    <div class="mb-3">
+                                        <label for="pickup-date" class="form-label">Pickup Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="pickup-date" name="scheduled_pickup_date" min="{{ date('Y-m-d') }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="pickup-time" class="form-label">Pickup Time <span class="text-danger">*</span></label>
+                                        <input type="time" class="form-control" id="pickup-time" name="scheduled_pickup_time" required>
+                                    </div>
                                 </div>
-                                <div class="col-6 col-md-3 info-item">
-                                    <strong>Last Expression Date:</strong>
-                                    <span id="schedule-last-expression">&nbsp;</span>
-                                </div>
-                            </div>
-
-                            <!-- Bag Details Table -->
-                            <div class="mb-3">
-                                <label class="form-label"><strong>Bag Details:</strong></label>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-sm" id="schedule-bag-details-table">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Bag #</th>
-                                                <th>Time</th>
-                                                <th>Date</th>
-                                                <th style="width: 150px;">Volume (ml)</th>
-                                                <th>Storage</th>
-                                                <th>Temp (°C)</th>
-                                                <th>Collection Method</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="schedule-bag-details-body">
-                                            <!-- Rows will be generated here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                            </div>
-
-                            <!-- Total Volume -->
-                            <div class="alert alert-info mb-3">
-                                <strong>Total Volume:</strong> <span id="schedule-total-volume">0</span> ml
-                            </div>
-
-                            <hr>
-
-                            <h6 class="mb-3">Schedule Pickup</h6>
-                            <div class="mb-3">
-                                <label for="pickup-date" class="form-label">Pickup Date <span
-                                        class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="pickup-date" name="scheduled_pickup_date"
-                                    min="{{ date('Y-m-d') }}" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="pickup-time" class="form-label">Pickup Time <span
-                                        class="text-danger">*</span></label>
-                                <input type="time" class="form-control" id="pickup-time" name="scheduled_pickup_time"
-                                    required>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-danger" id="schedule-decline-btn"
-                                onclick="declineDonation(currentDonationId)">
-                                <i class="fas fa-times me-1"></i> Decline
-                            </button>
-                            <button type="submit" class="btn btn-primary">Schedule Pickup</button>
+                            <button type="button" class="btn btn-danger" id="schedule-decline-btn" onclick="declineDonation(currentDonationId)"><i class="fas fa-times me-1"></i> Decline</button>
+                            <button type="submit" class="btn btn-primary">Save Schedule</button>
                         </div>
                     </form>
                 </div>
@@ -1554,10 +1571,7 @@
                                     <strong class="me-2">Address:</strong>
                                     <span id="view-donor-address" class="text-dark">&nbsp;</span>
                                 </div>
-                                <div class="col-12 mb-0">
-                                    <strong class="me-2">Location:</strong>
-                                    <span id="view-donor-location" class="text-dark">-</span>
-                                </div>
+                                <!-- Location removed per request -->
                             </div>
                         </div>
 
@@ -1576,9 +1590,6 @@
                                         <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Time</th>
                                         <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Date</th>
                                         <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Volume (ml)</th>
-                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Storage</th>
-                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Temp (°C)</th>
-                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Method</th>
                                     </tr>
                                 </thead>
                                 <tbody id="view-bag-details-body">
@@ -1711,6 +1722,22 @@
                     @csrf
                     <div class="modal-body">
                         <div id="assist-walkin-error" class="alert alert-danger" style="display:none;"></div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-tag me-1"></i> Assist Option <span class="text-danger">*</span></label>
+                            <select class="form-select" name="assist_option" required>
+                                <option value="">Select option</option>
+                                <option value="no_account_direct_record">No account or direct record</option>
+                                <option value="record_to_existing_user">Record to existing user</option>
+                                <option value="milk_letting_activity">Milk letting activity</option>
+                            </select>
+                        </div>
+                        <div id="assist-existing-user" class="mb-3" style="display:none;">
+                            <label class="form-label"><i class="fas fa-search me-1"></i> Find Existing User</label>
+                            <input type="text" class="form-control" id="assist_user_search" placeholder="Search by name or contact (min 2 chars)">
+                            <div id="assist_user_results" class="list-group mt-2" style="max-height:220px; overflow:auto;"></div>
+                            <input type="hidden" name="existing_user_id" id="assist_existing_user_id" value="">
+                            <small class="text-muted">When you select a user, their details will auto-fill below.</small>
+                        </div>
                         <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-user"></i> Donor Information</h6>
                         <div class="row mb-3">
                             <div class="col-md-4">
@@ -1905,6 +1932,70 @@
     <script>
         // Assist Walk-in dynamic fields and submit
         (function () {
+            const optionSelect = document.querySelector('#assistWalkInDonationForm select[name="assist_option"]');
+            const existingWrap = document.getElementById('assist-existing-user');
+            const searchInput = document.getElementById('assist_user_search');
+            const resultsBox = document.getElementById('assist_user_results');
+            const userIdInput = document.getElementById('assist_existing_user_id');
+            const donorFirst = document.querySelector('input[name="donor_first_name"]');
+            const donorLast = document.querySelector('input[name="donor_last_name"]');
+            const donorContact = document.querySelector('input[name="donor_contact"]');
+            const donorAddress = document.querySelector('input[name="donor_address"]');
+
+            function toggleExistingUser() {
+                const val = optionSelect ? optionSelect.value : '';
+                if (val === 'record_to_existing_user') {
+                    existingWrap.style.display = 'block';
+                } else {
+                    existingWrap.style.display = 'none';
+                    resultsBox.innerHTML = '';
+                    userIdInput.value = '';
+                }
+            }
+            if (optionSelect) {
+                optionSelect.addEventListener('change', toggleExistingUser);
+                toggleExistingUser();
+            }
+
+            let searchTimer = null;
+            function renderResults(items) {
+                resultsBox.innerHTML = '';
+                if (!items || items.length === 0) return;
+                items.forEach(u => {
+                    const a = document.createElement('button');
+                    a.type = 'button';
+                    a.className = 'list-group-item list-group-item-action';
+                    const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+                    a.innerHTML = `<div class="d-flex justify-content-between"><strong>${name || 'Unnamed user'}</strong><span class="badge bg-secondary">${u.user_type || ''}</span></div><div class="small text-muted">${u.contact_number || ''} • ${u.address || ''}</div>`;
+                    a.addEventListener('click', () => {
+                        userIdInput.value = u.user_id;
+                        if (donorFirst) donorFirst.value = u.first_name || '';
+                        if (donorLast) donorLast.value = u.last_name || '';
+                        if (donorContact) donorContact.value = u.contact_number || '';
+                        if (donorAddress) donorAddress.value = u.address || '';
+                        resultsBox.innerHTML = '';
+                        searchInput.value = name || u.contact_number || '';
+                    });
+                    resultsBox.appendChild(a);
+                });
+            }
+            async function doSearch() {
+                const q = (searchInput.value || '').trim();
+                if (q.length < 2) { resultsBox.innerHTML = ''; return; }
+                try {
+                    const resp = await fetch(`{{ route('admin.users.search') }}?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
+                    if (!resp.ok) return;
+                    const data = await resp.json();
+                    renderResults((data && data.data) || []);
+                } catch (e) { /* ignore */ }
+            }
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    if (searchTimer) clearTimeout(searchTimer);
+                    searchTimer = setTimeout(doSearch, 300);
+                });
+            }
+
             const bagsEl = document.getElementById('assist_bags');
             const container = document.getElementById('assist-volume-fields');
             const wrap = document.getElementById('assist-volumes-container');
@@ -2175,6 +2266,9 @@
 
                 $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/schedule-pickup`);
                 $('#schedulePickupModal').modal('show');
+
+                // Preload lifestyle checklist for this donation (Tab 3)
+                try { loadScheduleScreening(currentDonationId); } catch (e) { console.warn('Failed to load lifestyle checklist', e); }
             });
 
             // Reschedule existing pickup - show only date/time in the schedule modal
@@ -2441,7 +2535,7 @@
                             currentOriginalVolumes = [];
                             effectiveBags.forEach((bag, index) => {
                                 const bagNum = bag.bag_number || (index + 1);
-                                const time = formatTime12(bag.time) || '--';
+                                const time = formatTime12(bag.time) || '';
                                 const date = bag.date || '--';
                                 const volume = bag.volume || '';
                                 const storage = bag.storage_location || '--';
@@ -2456,7 +2550,7 @@
                                                                                                         <tr>
                                                                                                             <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${bagNum}</td>
                                                                                                             <td style="padding: 8px;">
-                                                                                                                <input type="text" name="bag_time[]" class="form-control" value="${bag.time || ''}" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                <input type="text" name="bag_time[]" class="form-control" value="${time}" placeholder="e.g. 4:49 PM" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                             </td>
                                                                                                             <td style="padding: 8px;">
                                                                                                                 <input type="text" name="bag_date[]" class="form-control" value="${bag.date || ''}" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
@@ -2937,22 +3031,32 @@
             $(this).find('button[type="submit"]').prop('disabled', false);
         });
 
-        // Reset schedule modal to default when closed (restore title, button text, action)
+        // Reset schedule modal (tabbed) when closed
         $('#schedulePickupModal').on('hidden.bs.modal', function () {
             $('#schedulePickupModalLabel').text('Schedule Home Collection Pickup');
-            $('#schedulePickupForm button[type="submit"]').text('Schedule Pickup');
+            $('#schedulePickupForm button[type="submit"]').text('Save Schedule');
             $('#schedulePickupForm').attr('action', '');
             $('#pickup-date').val('');
             $('#pickup-time').val('');
             $('#schedule-bag-details-body').empty();
             $('#schedule-total-volume').text('0');
-            // Ensure all sections are visible again (in case reschedule hid some)
-            $('#schedule-donor-name').closest('.row').show();
-            $('#schedule-first-expression').closest('.row').show();
-            $('#schedule-bag-details-body').closest('.table-responsive').closest('.mb-3').show();
-            $('#schedule-total-volume').closest('.alert').show();
-            $('#schedulePickupModal').find('hr').show();
-            $('#schedulePickupModal').find('h6.mb-3').show();
+            $('#schedule-donor-name').text('');
+            $('#schedule-donor-address').text('');
+            $('#schedule-first-expression').text('');
+            $('#schedule-last-expression').text('');
+            $('#schedule-donor-location').text('-');
+            $('#schedule-screening-content').empty();
+            $('#schedule-screening-loading').hide();
+            // Reset active tab to donor info
+            const donorTab = document.querySelector('#pickup-donor-tab');
+            if (donorTab) new bootstrap.Tab(donorTab).show();
+        });
+
+        // When Lifestyle Checklist tab is shown, always reload to ensure fresh data
+        document.getElementById('pickup-screening-tab')?.addEventListener('shown.bs.tab', function () {
+            if (currentDonationId) {
+                try { loadScheduleScreening(currentDonationId); } catch (e) { /* ignore */ }
+            }
         });
 
         $('#validateHomeCollectionModal').on('hidden.bs.modal', function () {
@@ -3159,8 +3263,7 @@
             const bDonorName = btn.data('donorName') || btn.data('donor') || btn.attr('data-donor-name') || '';
             const bContact = btn.data('donorContact') || btn.data('donorContact') || btn.attr('data-donor-contact') || '';
             const bAddress = btn.data('donorAddress') || btn.attr('data-donor-address') || '';
-            const bLat = btn.attr('data-latitude') || '';
-            const bLng = btn.attr('data-longitude') || '';
+            // Location removed per request (bLat/bLng omitted)
             const bBags = btn.attr('data-bags') || '';
             const bTotal = btn.attr('data-total') || '';
             const bBagDetailsRaw = btn.attr('data-bag-details') || '';
@@ -3196,17 +3299,17 @@
             $('#view-donor-name').text(bDonorName || 'Loading...');
             $('#view-donor-contact').text(bContact || '-');
             $('#view-donor-address').text(bAddress || 'Not provided');
-            $('#view-donor-location').text((bLat && bLng) ? `${bLat}, ${bLng}` : '-');
+            // Location display removed
             $('#view-total-bags').text('Loading...');
             $('#view-total-vol').text('Loading...');
             // show loading row for bag details until AJAX finishes
-            $('#view-bag-details-body').html('<tr><td colspan="7" class="text-center text-muted">Loading details&hellip;</td></tr>');
+            $('#view-bag-details-body').html('<tr><td colspan="4" class="text-center text-muted">Loading details&hellip;</td></tr>');
 
             // Render helper so we can reuse for server/fallback data
             function renderBagTableRows(bags) {
                 const tbody = $('#view-bag-details-body');
                 if (!Array.isArray(bags) || bags.length === 0) {
-                    tbody.html('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
+                    tbody.html('<tr><td colspan="4" class="text-center text-muted">No bag details available</td></tr>');
                     return;
                 }
 
@@ -3219,9 +3322,6 @@
                     const date = bag.date ?? bag.collection_date ?? bag.collected_at ?? '-';
                     const rawTime = bag.time ?? bag.collection_time ?? bag.collected_time ?? null;
                     const time = formatTimeDisplay(rawTime);
-                    const storage = bag.storage_location ?? bag.storage ?? '-';
-                    const temp = bag.temperature ?? bag.temp ?? '-';
-                    const method = bag.collection_method ?? bag.method ?? '-';
 
                     return `
                             <tr>
@@ -3229,9 +3329,6 @@
                                 <td style="text-align: center; padding: 12px;">${time}</td>
                                 <td style="text-align: center; padding: 12px;">${date || '-'}</td>
                                 <td style="text-align: center; padding: 12px;"><span style="color: #0d6efd; font-weight: 500;">${volume}</span> ml</td>
-                                <td style="text-align: center; padding: 12px;">${storage}</td>
-                                <td style="text-align: center; padding: 12px;">${temp}</td>
-                                <td style="text-align: center; padding: 12px;">${method}</td>
                             </tr>
                         `;
                 }).join('');
@@ -3281,17 +3378,7 @@
                     $('#view-donor-contact').text(donorContact);
                     $('#view-donor-address').text(donorAddress);
 
-                    // Location: render map icon button if coordinates available, otherwise dash
-                    const lat = donation.latitude ?? donation.user?.latitude ?? bLat ?? null;
-                    const lng = donation.longitude ?? donation.user?.longitude ?? bLng ?? null;
-                    if (lat !== null && lng !== null && lat !== '' && lng !== '') {
-                        // Use same .view-location handler already present in the page
-                        const safeName = (donation.user && (donation.user.first_name || donation.user.last_name)) ? `${donation.user.first_name || ''} ${donation.user.last_name || ''}`.trim() : (donation.donor_name || bDonorName || 'Donor');
-                        const safeAddress = donation.user?.address || donation.address || bAddress || '';
-                        $('#view-donor-location').html(`<button class="btn btn-info btn-sm view-location" title="View on Map" data-donor-name="${$('<div>').text(safeName).html()}" data-donor-address="${$('<div>').text(safeAddress).html()}" data-latitude="${lat}" data-longitude="${lng}"><i class="fas fa-map-marked-alt"></i></button>`);
-                    } else {
-                        $('#view-donor-location').text('-');
-                    }
+                    // Location logic removed
 
                     // Totals
                     const bagDetails = Array.isArray(donation.bag_details) ? donation.bag_details : (Array.isArray(donation.bags) ? donation.bags : []);
@@ -3541,5 +3628,70 @@
                     }
                 });
         })();
+    </script>
+    <script>
+        // Load and render 10-question Lifestyle Checklist for Schedule modal (Tab 3)
+        async function loadScheduleScreening(donationId) {
+            const loading = document.getElementById('schedule-screening-loading');
+            const box = document.getElementById('schedule-screening-content');
+            if (!box || !donationId) return;
+
+            // Clear any existing content first
+            box.innerHTML = '';
+            if (loading) loading.style.display = 'block';
+
+            try {
+                const resp = await fetch(`/admin/donations/${donationId}/screening`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!resp.ok) {
+                    let msg = 'Failed to load lifestyle checklist';
+                    if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
+                    if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
+                    box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
+                    return;
+                }
+                const data = await resp.json();
+                const questions = Array.isArray(data.questions) ? data.questions : [];
+
+                if (!questions.length) {
+                    box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
+                    return;
+                }
+
+                // Build HTML string instead of DOM manipulation to avoid duplication
+                let listHtml = '<div class="list-group">';
+                questions.forEach((q, idx) => {
+                    const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
+                    const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
+                    const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
+                    listHtml += `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                <span class="badge bg-${color}">${ans}</span>
+                            </div>
+                            ${detailsHtml}
+                        </div>`;
+                });
+                listHtml += '</div>';
+                
+                // Set innerHTML once to replace all content
+                box.innerHTML = listHtml;
+            } catch (e) {
+                box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Edit UI removed per request
     </script>
 @endsection

@@ -836,17 +836,43 @@
 
             if (continueBtn) {
                 continueBtn.onclick = function () {
-                    // After Q&A -> show location review step
+                    // After Q&A -> collect answers and show location review step
                     const names = [...new Set(radios.map(r => r.name))];
                     const anyNo = names.some(n => qaEl.querySelector(`input[name="${n}"]:checked`)?.value === 'no');
+
+                    // Map q1..q10 to donation field names and normalize to YES/NO
+                    const codeToField = {
+                        'q1': 'good_health',
+                        'q2': 'no_smoking',
+                        'q3': 'no_medication',
+                        'q4': 'no_alcohol',
+                        'q5': 'no_fever',
+                        'q6': 'no_cough_colds',
+                        'q7': 'no_breast_infection',
+                        'q8': 'followed_hygiene',
+                        'q9': 'followed_labeling',
+                        'q10': 'followed_storage'
+                    };
+                    const answers = {};
+                    Object.keys(codeToField).forEach(code => {
+                        const sel = qaEl.querySelector(`input[name="hcqa[${code}]"]:checked`);
+                        if (sel) {
+                            const fieldName = codeToField[code];
+                            const value = String(sel.value).toUpperCase() === 'YES' ? 'YES' : 'NO';
+                            answers[fieldName] = value;
+                            console.log(`Q&A: ${fieldName} = ${value}`);
+                        }
+                    });
+                    console.log('All lifestyle answers collected:', answers);
+
                     qaModal.hide();
-                    showLocationReviewModal(rowsCount, form, anyNo);
+                    showLocationReviewModal(rowsCount, form, anyNo, answers);
                 };
             }
         }
 
         // Location Review Modal with 'View/Edit Map' step
-        function showLocationReviewModal(rowsCount, form, anyNo) {
+        function showLocationReviewModal(rowsCount, form, anyNo, answers) {
             let locEl = document.getElementById('hcLocationModal');
             const latInput = document.getElementById('latitude');
             const lngInput = document.getElementById('longitude');
@@ -914,7 +940,7 @@
             }
 
             const allowCb = locEl.querySelector('#hcAllowLocation');
-            const contBtn = locEl.querySelector('#hcLocationContinueBtn');
+            let contBtn = locEl.querySelector('#hcLocationContinueBtn');
             const viewBtn = locEl.querySelector('#hcViewMapBtn');
             const recaptureBtn = locEl.querySelector('#hcRecaptureBtn');
 
@@ -991,7 +1017,12 @@
                 };
             }
 
+            // CRITICAL: Always reassign the onclick handler with fresh answers from this invocation
             if (contBtn) {
+                // Remove any old handler first
+                contBtn.replaceWith(contBtn.cloneNode(true));
+                contBtn = locEl.querySelector('#hcLocationContinueBtn');
+                
                 contBtn.onclick = async function () {
                     const confirm = await Swal.fire({
                         title: 'Confirm Home Collection Request?',
@@ -1014,7 +1045,41 @@
                         willOpen: () => { Swal.showLoading(); }
                     });
 
+                    // Inject lifestyle answers as hidden inputs before submission
+                    try {
+                        const fields = ['good_health','no_smoking','no_medication','no_alcohol','no_fever','no_cough_colds','no_breast_infection','followed_hygiene','followed_labeling','followed_storage'];
+                        // Remove any previous injected inputs to avoid duplicates
+                        fields.forEach(f => {
+                            form.querySelectorAll(`input[type="hidden"][name="${f}"]`).forEach(n => n.remove());
+                        });
+                        if (answers && typeof answers === 'object') {
+                            console.log('Injecting lifestyle answers:', answers);
+                            fields.forEach(f => {
+                                if (answers.hasOwnProperty(f) && answers[f]) {
+                                    const inp = document.createElement('input');
+                                    inp.type = 'hidden';
+                                    inp.name = f;
+                                    inp.value = answers[f]; // Already normalized to YES/NO
+                                    form.appendChild(inp);
+                                    console.log(`Injected ${f} = ${answers[f]}`);
+                                }
+                            });
+                        } else {
+                            console.error('Answers object is missing or invalid!', answers);
+                        }
+                    } catch (e) { console.error('Failed to inject lifestyle answers:', e); }
+
                     const formData = new FormData(form);
+                    console.log('Submitting FormData with entries:');
+                    for (let [key, value] of formData.entries()) {
+                        if (key.includes('health') || key.includes('smoking') || key.includes('medication') || 
+                            key.includes('alcohol') || key.includes('fever') || key.includes('cough') || 
+                            key.includes('infection') || key.includes('hygiene') || key.includes('labeling') || 
+                            key.includes('storage')) {
+                            console.log(`  ${key}: ${value}`);
+                        }
+                    }
+                    
                     fetch(form.action, {
                         method: 'POST',
                         body: formData,

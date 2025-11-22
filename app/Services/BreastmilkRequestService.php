@@ -85,9 +85,14 @@ class BreastmilkRequestService
         // This method will handle approval flow similar to previous controller code.
         DB::beginTransaction();
         try {
+            // Only allow pasteurized milk
+            $milkType = $payload['milk_type'];
+            if ($milkType !== 'pasteurized') {
+                throw new \RuntimeException('Only pasteurized breastmilk can be dispensed. Unpasteurized dispensing is not allowed for safety reasons.');
+            }
+            
             // Round requested volume to nearest 10 mL
             $volumeRequested = \App\Helpers\VolumeHelper::roundMl($payload['volume_requested']);
-            $milkType = $payload['milk_type'];
             // Round each selected item volume to nearest 10 mL
             $selectedItems = array_map(function($item){
                 if (isset($item['volume'])) {
@@ -101,28 +106,11 @@ class BreastmilkRequestService
                 throw new \RuntimeException('Selected volume is insufficient for requested volume.');
             }
 
-            // validate availability of each source
+            // validate availability of each pasteurized batch
             foreach ($selectedItems as $item) {
-                if ($milkType === 'unpasteurized') {
-                    $donation = Donation::findOrFail($item['id']);
-                    // If selection targets a specific bag, validate that bag's available volume
-                    if (isset($item['bag_index'])) {
-                        $bagIndex = (int)$item['bag_index'];
-                        $bagVolumes = $donation->individual_bag_volumes ?? [];
-                        $bagAvailable = isset($bagVolumes[$bagIndex]) ? (float)$bagVolumes[$bagIndex] : 0.0;
-                        if ($item['volume'] > $bagAvailable) {
-                            throw new \RuntimeException('Donation #' . $donation->breastmilk_donation_id . " bag " . $bagIndex . ' does not have sufficient volume.');
-                        }
-                    } else {
-                        if ($item['volume'] > $donation->available_volume) {
-                            throw new \RuntimeException('Donation #' . $donation->breastmilk_donation_id . ' does not have sufficient volume.');
-                        }
-                    }
-                } else {
-                    $batch = PasteurizationBatch::findOrFail($item['id']);
-                    if ($item['volume'] > $batch->available_volume) {
-                        throw new \RuntimeException('Batch ' . $batch->batch_number . ' does not have sufficient volume.');
-                    }
+                $batch = PasteurizationBatch::findOrFail($item['id']);
+                if ($item['volume'] > $batch->available_volume) {
+                    throw new \RuntimeException('Batch ' . $batch->batch_number . ' does not have sufficient volume.');
                 }
             }
 
@@ -137,12 +125,8 @@ class BreastmilkRequestService
                 'dispensing_notes' => $payload['admin_notes'] ?? null
             ]);
 
-            // Deduct inventory proportionally
-            if ($milkType === 'unpasteurized') {
-                $this->deductSelectedUnpasteurizedInventory($selectedItems, $dispensedMilk->dispensed_id, $volumeRequested);
-            } else {
-                $this->deductSelectedPasteurizedInventory($selectedItems, $dispensedMilk->dispensed_id, $volumeRequested);
-            }
+            // Deduct inventory (pasteurized only)
+            $this->deductSelectedPasteurizedInventory($selectedItems, $dispensedMilk->dispensed_id, $volumeRequested);
 
             $breastmilkRequest->update([
                 'status' => 'dispensed',
@@ -188,6 +172,17 @@ class BreastmilkRequestService
 
     public function dispense(BreastmilkRequest $breastmilkRequest, array $payload, int $adminId)
     {
+        // Only allow pasteurized milk dispensing
+        if (!isset($payload['sources']) || empty($payload['sources'])) {
+            throw new \RuntimeException("No sources provided for dispensing");
+        }
+        
+        foreach ($payload['sources'] as $source) {
+            if (isset($source['type']) && $source['type'] !== 'pasteurized') {
+                throw new \RuntimeException("Only pasteurized breastmilk can be dispensed. Unpasteurized dispensing is not allowed for safety reasons.");
+            }
+        }
+
         // Similar to approveAndDispense but supports flexible sources
         DB::beginTransaction();
         try {
@@ -212,44 +207,24 @@ class BreastmilkRequestService
             ]);
 
             foreach ($sources as $source) {
-                if ($source['type'] === 'pasteurized') {
-                    $batch = PasteurizationBatch::findOrFail($source['id']);
-                    if ($batch->available_volume < $source['volume']) {
-                        throw new \RuntimeException("Batch #{$batch->batch_number} does not have sufficient volume");
-                    }
-                    $batch->available_volume -= $source['volume'];
-                    $batch->save();
-                    DB::table('dispensed_milk_sources')->insert([
-                        'dispensed_id' => $dispensedMilk->dispensed_id,
-                        'source_type' => 'pasteurized',
-                        'source_id' => $batch->batch_id,
-                        'volume_used' => $source['volume'],
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
-                } else {
-                    $donation = Donation::findOrFail($source['id']);
-                    if ($donation->available_volume < $source['volume']) {
-                        throw new \RuntimeException("Donation #{$donation->breastmilk_donation_id} does not have sufficient volume");
-                    }
-                    // If frontend provided a specific bag_index, consume from that bag when possible
-                    if (isset($source['bag_index']) && is_numeric($source['bag_index'])) {
-                        $ok = $donation->consumeFromBag((int)$source['bag_index'], $source['volume']);
-                        if (!$ok) {
-                            throw new \RuntimeException("Donation #{$donation->breastmilk_donation_id} cannot provide the requested amount from bag index {$source['bag_index']}");
-                        }
-                    } else {
-                        $donation->reduceVolume($source['volume']);
-                    }
-                    DB::table('dispensed_milk_sources')->insert([
-                        'dispensed_id' => $dispensedMilk->dispensed_id,
-                        'source_type' => 'unpasteurized',
-                        'source_id' => $donation->breastmilk_donation_id,
-                        'volume_used' => $source['volume'],
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
+                if ($source['type'] !== 'pasteurized') {
+                    throw new \RuntimeException("Only pasteurized milk can be dispensed");
                 }
+                
+                $batch = PasteurizationBatch::findOrFail($source['id']);
+                if ($batch->available_volume < $source['volume']) {
+                    throw new \RuntimeException("Batch #{$batch->batch_number} does not have sufficient volume");
+                }
+                $batch->available_volume -= $source['volume'];
+                $batch->save();
+                DB::table('dispensed_milk_sources')->insert([
+                    'dispensed_id' => $dispensedMilk->dispensed_id,
+                    'source_type' => 'pasteurized',
+                    'source_id' => $batch->batch_id,
+                    'volume_used' => $source['volume'],
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
             }
 
             $breastmilkRequest->update([

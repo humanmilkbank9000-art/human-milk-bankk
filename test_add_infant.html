@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Add Infant</title>
+    <meta name="csrf-token" content="test-token">
+</head>
+<body>
+    <h1>Test Add Infant Endpoint</h1>
+    <button onclick="testAddInfant()">Test Add Infant</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAddInfant() {
+            console.log('Testing add infant...');
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+
+            const formData = new FormData();
+            formData.append('first_name', 'Test');
+            formData.append('last_name', 'Baby');
+            formData.append('infant_date_of_birth', '2025-01-01');
+            formData.append('infant_sex', 'Male');
+            formData.append('birth_weight', '3.5');
+
+            try {
+                const response = await fetch('/user/infants', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': 'test',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                console.log('Response:', response.status, data);
+                resultDiv.innerHTML = `<pre>Status: ${response.status}\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

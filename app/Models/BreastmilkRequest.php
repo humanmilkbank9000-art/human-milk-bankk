@@ -19,6 +19,7 @@ class BreastmilkRequest extends Model
         'availability_id',
         'admin_id',
         'assisted_by_admin',
+        'assist_option',
         'prescription_path',
         'prescription_filename',
         'prescription_mime_type',

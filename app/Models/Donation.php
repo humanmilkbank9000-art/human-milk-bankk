@@ -18,6 +18,7 @@ class Donation extends Model
         'user_id',
         'donation_method',
         'status',
+        'assist_option',
         'number_of_bags',
         'individual_bag_volumes',
         'total_volume',

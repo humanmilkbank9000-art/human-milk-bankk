@@ -13,6 +13,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\NutritionalGuideController;
+use App\Http\Controllers\UserController;
 
 Route::get('/user-register', [UserRegisterController::class, 'user_register'])->name('user.register');
 Route::post('/user-register/store', [UserRegisterController::class, 'store_user'])->name('user.store'); 
@@ -61,6 +62,10 @@ Route::get('/admin/donations/{id}', [DonationController::class, 'show'])->name('
 Route::post('/admin/donations/{id}/validate-walkin', [DonationController::class, 'validateWalkIn'])->name('admin.donation.validate-walkin');
 Route::post('/admin/donations/{id}/schedule-pickup', [DonationController::class, 'schedulePickup'])->name('admin.donation.schedule-pickup');
 Route::post('/admin/donations/{id}/reschedule-pickup', [DonationController::class, 'reschedulePickup'])->name('admin.donation.reschedule-pickup');
+// Lifestyle / screening answers for schedule pickup modal
+Route::get('/admin/donations/{id}/screening', [DonationController::class, 'screening'])->name('admin.donation.screening');
+// Update Lifestyle answers (admin repair/edit)
+Route::post('/admin/donations/{id}/lifestyle-update', [DonationController::class, 'updateLifestyle'])->name('admin.donation.lifestyle.update');
 // Assist Walk-in Donation (admin creates a walk-in donation and adds to inventory immediately)
 Route::post('/admin/donations/assist-walkin', [DonationController::class, 'assistWalkIn'])->name('admin.donation.assist-walkin');
 Route::post('/admin/donations/{id}/validate-pickup', [DonationController::class, 'validatePickup'])->name('admin.donation.validate-pickup');
@@ -90,6 +95,8 @@ Route::get('/user/breastmilk-request', [BreastmilkRequestController::class, 'ind
 Route::post('/user/breastmilk-request/store', [BreastmilkRequestController::class, 'store'])->name('user.breastmilk-request.store');
 Route::get('/user/breastmilk-request/infant/{infantId}', [BreastmilkRequestController::class, 'getInfantInfo'])->name('user.breastmilk-request.infant');
 Route::get('/user/my-breastmilk-requests', [BreastmilkRequestController::class, 'myRequests'])->name('user.my-breastmilk-requests');
+// Inline infant creation for logged-in users (AJAX)
+Route::post('/user/infants', [BreastmilkRequestController::class, 'addInfant'])->name('user.infants.store');
 
 Route::get('/admin/inventory', [InventoryController::class, 'index'])->name('admin.inventory');
 Route::post('/admin/inventory/pasteurize', [InventoryController::class, 'pasteurize'])->name('admin.inventory.pasteurize');
@@ -107,6 +114,10 @@ Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
 
 Route::get('/admin/settings', [App\Http\Controllers\LoginController::class, 'admin_settings'])->name('admin.settings');
 Route::post('/admin/settings/update', [App\Http\Controllers\LoginController::class, 'admin_settings_update'])->name('admin.settings.update');
+
+// Admin user search (for Assist flows)
+Route::get('/admin/users/search', [UserController::class, 'search'])->name('admin.users.search');
+Route::get('/admin/users/{id}/infants', [UserController::class, 'infants'])->name('admin.users.infants');
 
 Route::get('/user/pending-donation', [DonationController::class, 'user_pending_donation'])->name('user.pending');
 Route::get('/user/my-donation-history', [DonationController::class, 'user_my_donation_history'])->name('user.history');

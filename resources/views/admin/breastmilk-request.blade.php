@@ -43,6 +43,22 @@
             padding: 0.5em 0.8em;
             border-radius: 6px;
         }
+        /* Assist option badge (shared styling similar to donation view) */
+        .assist-option-badge {
+            display:inline-block;
+            padding:0.25rem 0.5rem;
+            font-size:0.6rem;
+            line-height:1.1;
+            font-weight:600;
+            border-radius:0.35rem;
+            background:#6c757d;
+            color:#fff;
+            white-space:nowrap;
+            letter-spacing:.3px;
+        }
+        .assist-option-badge.option-direct { background:#0d6efd; }
+        .assist-option-badge.option-existing { background:#198754; }
+        .assist-option-badge.option-letting { background:#6610f2; }
 
         /* Ensure milk type badges have a uniform appearance and width and are vertically centered */
         .milk-type-badge {
@@ -555,8 +571,8 @@
                                                         {{ $request->user->last_name ?? '' }}</strong>
                                                 </td>
                                                 <td class="align-middle" data-label="Infant">
-                                                    <strong>{{ $request->infant->first_name }}
-                                                        {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong>
+                                                    <strong>{{ $request->infant?->first_name ?? 'Unknown' }}
+                                                        {{ $request->infant?->last_name ?? '' }}{{ ($request->infant?->suffix) ? ' ' . $request->infant->suffix : '' }}</strong>
                                                     <br>
                                                     <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
@@ -615,6 +631,7 @@
                                     <thead class="table-success">
                                         <tr>
                                             <th class="text-center">Guardian</th>
+                                            <th class="text-center">Assist Option</th>
                                             <th class="text-center">Infant</th>
                                             <th class="text-center">Donor/Batch</th>
                                             <th class="text-center">Volume</th>
@@ -636,9 +653,31 @@
                                                     <strong>{{ $request->user->first_name ?? '' }}
                                                         {{ $request->user->last_name ?? '' }}</strong>
                                                 </td>
+                                                <td data-label="Assist Option" class="text-center">
+                                                    @php
+                                                        $assistMap = [
+                                                            'no_account_direct_record' => 'Direct Record',
+                                                            'record_to_existing_user' => 'Existing User',
+                                                            'milk_letting_activity' => 'Milk Letting Activity',
+                                                        ];
+                                                        $assistKey = $request->assist_option ?? null;
+                                                        $assistLabel = $assistKey ? ($assistMap[$assistKey] ?? $assistKey) : null;
+                                                        $assistClass = match($assistKey) {
+                                                            'no_account_direct_record' => 'option-direct',
+                                                            'record_to_existing_user' => 'option-existing',
+                                                            'milk_letting_activity' => 'option-letting',
+                                                            default => ''
+                                                        };
+                                                    @endphp
+                                                    @if($assistLabel)
+                                                        <span class="assist-option-badge {{ $assistClass }}">{{ $assistLabel }}</span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
                                                 <td data-label="Infant">
-                                                    <strong>{{ $request->infant->first_name }}
-                                                        {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
+                                                    <strong>{{ $request->infant?->first_name ?? 'Unknown' }}
+                                                        {{ $request->infant?->last_name ?? '' }}{{ ($request->infant?->suffix) ? ' ' . $request->infant->suffix : '' }}</strong><br>
                                                     <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
                                                 <td data-label="Donor/Batch">
@@ -733,8 +772,8 @@
                                                         {{ $request->user->last_name ?? '' }}</strong>
                                                 </td>
                                                 <td data-label="Infant">
-                                                    <strong>{{ $request->infant->first_name }}
-                                                        {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}</strong><br>
+                                                    <strong>{{ $request->infant?->first_name ?? 'Unknown' }}
+                                                        {{ $request->infant?->last_name ?? '' }}{{ ($request->infant?->suffix) ? ' ' . $request->infant->suffix : '' }}</strong><br>
                                                     <small class="text-muted">{{ $request->infant->getFormattedAge() }}</small>
                                                 </td>
                                                 <td data-label="Reason">
@@ -811,8 +850,8 @@
                                 <div class="col-md-6">
                                     <div class="card p-3">
                                         <h6 class="mb-2"><i class="fas fa-baby"></i> Infant Information</h6>
-                                        <p class="mb-1"><strong>Name:</strong> {{ $request->infant->first_name }}
-                                            {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}
+                                        <p class="mb-1"><strong>Name:</strong> {{ $request->infant?->first_name ?? 'Unknown' }}
+                                            {{ $request->infant?->last_name ?? '' }}{{ ($request->infant?->suffix) ? ' ' . $request->infant->suffix : '' }}
                                         </p>
                                         <p class="mb-1"><strong>Age:</strong> {{ $request->infant->getFormattedAge() }}</p>
                                         <p class="mb-0"><strong>Sex:</strong> {{ ucfirst($request->infant->sex) }}</p>
@@ -858,10 +897,9 @@
                                             <select class="form-select" id="milkTypeSelect{{ $request->breastmilk_request_id }}"
                                                 name="milk_type" required
                                                 onchange="handleMilkTypeChange({{ $request->breastmilk_request_id }})">
-                                                <option value="">Select milk type</option>
-                                                <option value="unpasteurized">Unpasteurized Breastmilk</option>
-                                                <option value="pasteurized">Pasteurized Breastmilk</option>
+                                                <option value="pasteurized" selected>Pasteurized Breastmilk</option>
                                             </select>
+                                            <small class="text-muted">Only pasteurized breastmilk can be dispensed for safety.</small>
                                         </div>
                                     </div>
 
@@ -972,8 +1010,8 @@
                         <div class="col-md-6 mb-3">
                             <div class="card p-3">
                                 <h6 class="mb-2"><i class="fas fa-baby"></i> Infant Information</h6>
-                                <p class="mb-1"><strong>Name:</strong> {{ $request->infant->first_name }}
-                                    {{ $request->infant->last_name }}{{ $request->infant->suffix ? ' ' . $request->infant->suffix : '' }}
+                                <p class="mb-1"><strong>Name:</strong> {{ $request->infant?->first_name ?? 'Unknown' }}
+                                    {{ $request->infant?->last_name ?? '' }}{{ ($request->infant?->suffix) ? ' ' . $request->infant->suffix : '' }}
                                 </p>
                                 <p class="mb-1"><strong>Age:</strong> {{ $request->infant->getFormattedAge() }}</p>
                                 <p class="mb-0"><strong>Sex:</strong> {{ ucfirst($request->infant->sex) }}</p>
@@ -1071,10 +1109,9 @@
                                     <select class="form-select" name="milk_type" required
                                         id="milkType{{ $request->breastmilk_request_id }}"
                                         onchange="loadInventory({{ $request->breastmilk_request_id }}); validateDispenseForm({{ $request->breastmilk_request_id }})">
-                                        <option value="">Select milk type</option>
-                                        <option value="unpasteurized">Unpasteurized Breastmilk</option>
-                                        <option value="pasteurized">Pasteurized Breastmilk</option>
+                                        <option value="pasteurized" selected>Pasteurized Breastmilk</option>
                                     </select>
+                                    <small class="text-muted">Only pasteurized breastmilk can be dispensed for safety.</small>
                                 </div>
                                 <div class="mb-3">
                                     <label for="admin_notes" class="form-label">Notes (Optional)</label>
@@ -1109,16 +1146,8 @@
                     @slot('slot')
                     <form action="{{ route('admin.request.decline', $request->breastmilk_request_id) }}" method="POST">
                         @csrf
-                        @if($request->admin_notes)
-                            <div class="mb-3">
-                                <label class="form-label">Previous Admin Note (readonly)</label>
-                                <div class="form-control" style="white-space:pre-wrap;">{{ $request->admin_notes }}</div>
-                            </div>
-                        @endif
-                        <div class="mb-3">
-                            <label for="admin_notes" class="form-label">Reason for Declining *</label>
-                            <textarea class="form-control" name="admin_notes" rows="4" required
-                                placeholder="Please provide a reason for declining this request..."></textarea>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Are you sure you want to decline this request? This action cannot be undone.
                         </div>
                     </form>
                     @endslot
@@ -1153,6 +1182,22 @@
                             <i class="fas fa-info-circle"></i> <strong>Note:</strong> Use this form to assist
                             mothers/guardians who do not have a device. Interview them and fill in their details below.
                         </div>
+                        <div class="mb-3">
+                            <label for="assist_option" class="form-label"><i class="fas fa-tag me-1"></i> Assist Option <span class="text-danger">*</span></label>
+                            <select class="form-select" id="assist_option" name="assist_option" required>
+                                <option value="">Select option</option>
+                                <option value="no_account_direct_record">No account or direct record</option>
+                                <option value="record_to_existing_user">Record to existing user</option>
+                                <option value="milk_letting_activity">Milk letting activity</option>
+                            </select>
+                        </div>
+                        <div id="assisted-existing-user" class="mb-3" style="display:none;">
+                            <label class="form-label"><i class="fas fa-search me-1"></i> Find Existing User</label>
+                            <input type="text" class="form-control" id="assisted_user_search" placeholder="Search by name or contact (min 2 chars)">
+                            <div id="assisted_user_results" class="list-group mt-2" style="max-height:220px; overflow:auto;"></div>
+                            <input type="hidden" name="existing_user_id" id="assisted_existing_user_id" value="">
+                            <small class="text-muted">Selecting a user will auto-fill Guardian fields below.</small>
+                        </div>
 
                         <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-user"></i> Guardian Information</h6>
                         <div class="row mb-3">
@@ -1179,6 +1224,12 @@
                         </div>
 
                         <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-baby"></i> Infant Information</h6>
+                        <!-- Existing infant selector (auto-fill when assisting existing user) -->
+                        <div id="assisted_infant_select_wrap" class="mb-3" style="display:none;">
+                            <label for="assisted_infant_select" class="form-label"><i class="fas fa-child me-1"></i> Select Existing Infant (optional)</label>
+                            <select id="assisted_infant_select" class="form-select"></select>
+                            <small class="text-muted">Choosing an infant will auto-fill the fields below. You can still edit any value before submitting.</small>
+                        </div>
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="infant_first_name" class="form-label">Infant First Name <span
@@ -1247,11 +1298,9 @@
                                 <label for="milk_type" class="form-label">Milk Type <span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="milk_type" name="milk_type" required>
-                                    <option value="">Select milk type</option>
-                                    <option value="unpasteurized" {{ old('milk_type') === 'unpasteurized' ? 'selected' : '' }}>Unpasteurized Breastmilk</option>
-                                    <option value="pasteurized" {{ old('milk_type') === 'pasteurized' ? 'selected' : '' }}>
-                                        Pasteurized Breastmilk</option>
+                                    <option value="pasteurized" selected>Pasteurized Breastmilk</option>
                                 </select>
+                                <small class="text-muted">Only pasteurized breastmilk can be dispensed for safety.</small>
                             </div>
                         </div>
 
@@ -1373,6 +1422,143 @@
                     }, 450);
                 });
             }
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            // Toggle and search for Assisted Request existing user
+            (function () {
+                const optionSel = document.getElementById('assist_option');
+                const wrap = document.getElementById('assisted-existing-user');
+                const search = document.getElementById('assisted_user_search');
+                const list = document.getElementById('assisted_user_results');
+                const hiddenId = document.getElementById('assisted_existing_user_id');
+                const gFirst = document.getElementById('guardian_first_name');
+                const gLast = document.getElementById('guardian_last_name');
+                const gContact = document.getElementById('guardian_contact');
+                // Infant auto-fill elements
+                const infantWrap = document.getElementById('assisted_infant_select_wrap');
+                const infantSelect = document.getElementById('assisted_infant_select');
+                const iFirst = document.getElementById('infant_first_name');
+                const iLast = document.getElementById('infant_last_name');
+                const iDob = document.getElementById('infant_date_of_birth');
+                const iSex = document.getElementById('infant_sex');
+                const iWeight = document.getElementById('infant_weight');
+
+                const infantsUrlBase = "{{ url('/admin/users') }}/"; // /admin/users/{id}/infants
+
+                function clearInfantSelector() {
+                    if (infantSelect) infantSelect.innerHTML = '';
+                    if (infantWrap) infantWrap.style.display = 'none';
+                }
+
+                function applyInfant(i) {
+                    if (!i) return;
+                    if (iFirst) iFirst.value = i.first_name || '';
+                    if (iLast) iLast.value = i.last_name || '';
+                    if (iDob) iDob.value = (i.date_of_birth || '').substring(0,10);
+                    if (iSex) {
+                        const val = String(i.sex || '').toLowerCase() === 'male' ? 'Male' : (String(i.sex || '').toLowerCase() === 'female' ? 'Female' : '');
+                        if (val) iSex.value = val;
+                    }
+                    if (iWeight) iWeight.value = i.birth_weight != null ? i.birth_weight : '';
+                }
+
+                async function loadInfantsForUser(userId) {
+                    clearInfantSelector();
+                    if (!userId) return;
+                    try {
+                        const r = await fetch(`${infantsUrlBase}${encodeURIComponent(userId)}/infants`, { headers: { 'Accept': 'application/json' } });
+                        if (!r.ok) return;
+                        const data = await r.json();
+                        const infants = Array.isArray(data) ? data : (data.data || []);
+                        if (!infants || infants.length === 0) {
+                            // nothing to select; keep fields as-is
+                            return;
+                        }
+                        if (infants.length === 1) {
+                            applyInfant(infants[0]);
+                            return; // no need to show selector
+                        }
+                        // Populate selector
+                        if (!infantSelect) return;
+                        infantSelect.innerHTML = '';
+                        const ph = document.createElement('option');
+                        ph.value = '';
+                        ph.textContent = 'Select an infant to auto-fill…';
+                        infantSelect.appendChild(ph);
+                        infants.forEach(i => {
+                            const opt = document.createElement('option');
+                            opt.value = i.infant_id;
+                            const name = `${i.first_name || ''} ${i.last_name || ''}`.trim() || 'Unnamed infant';
+                            const dob = (i.date_of_birth || '').substring(0,10);
+                            const sex = (String(i.sex || '')).toLowerCase();
+                            const sexLabel = sex === 'male' ? 'Male' : (sex === 'female' ? 'Female' : '');
+                            const wt = (i.birth_weight != null && i.birth_weight !== '') ? `${i.birth_weight} kg` : '';
+                            opt.textContent = [name, dob, sexLabel, wt].filter(Boolean).join(' • ');
+                            opt.dataset.payload = JSON.stringify(i);
+                            infantSelect.appendChild(opt);
+                        });
+                        if (infantWrap) infantWrap.style.display = 'block';
+                    } catch (e) {
+                        // fail silently
+                    }
+                }
+
+                if (infantSelect) {
+                    infantSelect.addEventListener('change', function () {
+                        const sel = infantSelect.options[infantSelect.selectedIndex];
+                        const payload = sel && sel.dataset && sel.dataset.payload ? JSON.parse(sel.dataset.payload) : null;
+                        if (payload) applyInfant(payload);
+                    });
+                }
+                function toggle() {
+                    if (!optionSel) return;
+                    wrap.style.display = optionSel.value === 'record_to_existing_user' ? 'block' : 'none';
+                    if (optionSel.value !== 'record_to_existing_user') {
+                        list.innerHTML = '';
+                        hiddenId.value = '';
+                        clearInfantSelector();
+                    }
+                }
+                if (optionSel) {
+                    optionSel.addEventListener('change', toggle);
+                    toggle();
+                }
+                function render(items) {
+                    list.innerHTML = '';
+                    (items || []).forEach(u => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'list-group-item list-group-item-action';
+                        const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+                        b.innerHTML = `<div class=\"d-flex justify-content-between\"><strong>${name || 'Unnamed user'}</strong><span class=\"badge bg-secondary\">${u.user_type || ''}</span></div><div class=\"small text-muted\">${u.contact_number || ''} • ${u.address || ''}</div>`;
+                        b.addEventListener('click', () => {
+                            hiddenId.value = u.user_id;
+                            if (gFirst) gFirst.value = u.first_name || '';
+                            if (gLast) gLast.value = u.last_name || '';
+                            if (gContact) gContact.value = u.contact_number || '';
+                            list.innerHTML = '';
+                            search.value = name || u.contact_number || '';
+                            // Load infants for this user and auto-fill when possible
+                            loadInfantsForUser(u.user_id);
+                        });
+                        list.appendChild(b);
+                    });
+                }
+                let t = null;
+                async function doFetch() {
+                    const q = (search.value || '').trim();
+                    if (q.length < 2) { list.innerHTML=''; return; }
+                    try {
+                        const r = await fetch(`{{ route('admin.users.search') }}?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
+                        if (!r.ok) return;
+                        const data = await r.json();
+                        render((data && data.data) || []);
+                    } catch (e) { /* ignore */ }
+                }
+                if (search) {
+                    search.addEventListener('input', () => { if (t) clearTimeout(t); t = setTimeout(doFetch, 300); });
+                }
+            })();
         });
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
@@ -2141,43 +2327,22 @@
          * Shows SweetAlert confirmation and processes the decline
          */
         function handleDeclineFromViewModal(requestId) {
-            const notesField = document.getElementById('viewModalNotes' + requestId);
-            const notes = notesField ? notesField.value.trim() : '';
-
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     title: 'Decline Request',
                     html: `
-                                                                                            <div class="text-start">
-                                                                                                <p>Are you sure you want to decline this request?</p>
-                                                                                                <div class="mb-3">
-                                                                                                    <label for="swalDeclineReason" class="form-label">Reason for Declining <span class="text-danger">*</span></label>
-                                                                                                    <textarea 
-                                                                                                        id="swalDeclineReason" 
-                                                                                                        class="form-control" 
-                                                                                                        rows="4" 
-                                                                                                        placeholder="Please provide a reason for declining this request...">${notes}</textarea>
-                                                                                                    <small class="text-muted">This reason will be sent to the guardian.</small>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        `,
+                        <div class="text-start">
+                            <p>Are you sure you want to decline this request?</p>
+                            <p class="text-muted">This action cannot be undone.</p>
+                        </div>
+                    `,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, Decline Request',
                     cancelButtonText: 'Cancel',
-                    reverseButtons: true,
-                    preConfirm: () => {
-                        const reason = document.getElementById('swalDeclineReason').value.trim();
-                        if (!reason) {
-                            Swal.showValidationMessage('Please provide a reason for declining');
-                            return false;
-                        }
-                        return reason;
-                    }
+                    reverseButtons: true
                 }).then((result) => {
-                    if (result.isConfirmed && result.value) {
-                        const reason = result.value;
-
+                    if (result.isConfirmed) {
                         // Show loading state
                         Swal.fire({
                             title: 'Processing...',
@@ -2189,14 +2354,14 @@
                             }
                         });
 
-                        // Submit the decline request
+                        // Submit the decline request without notes
                         fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/decline`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrfToken
                             },
-                            body: JSON.stringify({ admin_notes: reason })
+                            body: JSON.stringify({})
                         })
                             .then(response => response.json())
                             .then(data => {
@@ -2480,8 +2645,6 @@
 
                     if (milkType === 'pasteurized') {
                         displayPasteurizedInventory(requestId, data.batches || []);
-                    } else if (milkType === 'unpasteurized') {
-                        displayUnpasteurizedInventory(requestId, data.donations || []);
                     }
 
                     // Show volume tracker
@@ -2786,13 +2949,7 @@
             setTimeout(() => {
                 Swal.fire({
                     title: 'Reject Request',
-                    text: 'Please provide a reason for rejecting this request',
-                    input: 'textarea',
-                    inputPlaceholder: 'Enter your reason here...',
-                    inputAttributes: {
-                        'aria-label': 'Reason for rejection',
-                        'rows': 4
-                    },
+                    text: 'Are you sure you want to reject this request? This action cannot be undone.',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc3545',
@@ -2801,12 +2958,7 @@
                     cancelButtonText: '<i class="fas fa-times"></i> Cancel',
                     reverseButtons: true,
                     showLoaderOnConfirm: true,
-                    inputValidator: (value) => {
-                        if (!value || !value.trim()) {
-                            return 'You need to provide a reason for rejection!';
-                        }
-                    },
-                    preConfirm: (reason) => {
+                    preConfirm: () => {
                         return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/reject`, {
                             method: 'POST',
                             headers: {
@@ -2814,9 +2966,7 @@
                                 'X-CSRF-TOKEN': csrfToken,
                                 'Accept': 'application/json'
                             },
-                            body: JSON.stringify({
-                                admin_notes: reason.trim()
-                            })
+                            body: JSON.stringify({})
                         })
                             .then(response => {
                                 if (!response.ok) {

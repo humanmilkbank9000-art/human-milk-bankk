@@ -1026,13 +1026,21 @@
                                         @foreach($dispensedOrdered as $dispensed)
                                             <tr>
                                                 <td style="white-space: normal;" data-label="Guardian">
-                                                    <strong>{{ $dispensed->guardian->first_name }}
-                                                        {{ $dispensed->guardian->last_name }}</strong>
+                                                    @if($dispensed->guardian)
+                                                        <strong>{{ $dispensed->guardian->first_name }}
+                                                            {{ $dispensed->guardian->last_name }}</strong>
+                                                    @else
+                                                        <span class="text-muted">Unknown</span>
+                                                    @endif
                                                 </td>
                                                 <td style="white-space: normal;" data-label="Recipient">
-                                                    <strong>{{ $dispensed->recipient->first_name }}
-                                                        {{ $dispensed->recipient->last_name }}</strong><br>
-                                                    <small class="text-muted">{{ $dispensed->recipient->getFormattedAge() }}</small>
+                                                    @if($dispensed->recipient)
+                                                        <strong>{{ $dispensed->recipient->first_name }}
+                                                            {{ $dispensed->recipient->last_name }}</strong><br>
+                                                        <small class="text-muted">{{ $dispensed->recipient->getFormattedAge() }}</small>
+                                                    @else
+                                                        <span class="text-muted">Unknown</span>
+                                                    @endif
                                                 </td>
                                                 <td style="white-space: normal; font-size: 0.85rem;" data-label="Source">
                                                     @php

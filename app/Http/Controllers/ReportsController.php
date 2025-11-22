@@ -22,7 +22,25 @@ class ReportsController extends Controller
 
     public function admin_inventory()
     {
-        return view('admin.inventory');
+        // Load unpasteurized donations with user relationship
+        $unpasteurizedDonations = Donation::with('user')
+            ->where('status', 'in-inventory')
+            ->where('available_volume', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Load pasteurized batches
+        $pasteurizedBatches = PasteurizationBatch::where('available_volume', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Load dispensed milk records with guardian, recipient, and source relationships
+        $dispensedMilk = DispensedMilk::with(['guardian', 'recipient', 'sourceDonations.user', 'sourceBatches'])
+            ->orderBy('created_at', 'desc')
+            ->take(50) // Limit to recent 50 records for performance
+            ->get();
+        
+        return view('admin.inventory', compact('unpasteurizedDonations', 'pasteurizedBatches', 'dispensedMilk'));
     }
 
     public function admin_monthly_reports(Request $request)

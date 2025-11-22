@@ -423,24 +423,34 @@
                     <!-- Step 1: Infant Selection -->
                     <div class="tab-pane fade show active" id="infant-section" role="tabpanel">
                         <div class="card">
-                            <div class="card-header bg-primary text-white rounded-top">
+                            <div class="card-header bg-primary text-white rounded-top d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0"><i class="fas fa-baby"></i> Select Infant for Breastmilk Request</h5>
+                                <button type="button" class="btn btn-light btn-sm" id="addInfantBtn">
+                                    <i class="fas fa-plus"></i> Add New Infant
+                                </button>
                             </div>
                             <div class="card-body">
+                                <div id="infantAlertArea"></div>
                                 <div class="table-responsive">
                                     <table class="table table-standard table-bordered align-middle">
                                         <thead>
                                             <tr>
+                                                <th style="width: 90px;">Select</th>
                                                 <th>Name</th>
                                                 <th>Birth Date</th>
-                                                <th>Age (months)</th>
+                                                <th>Age</th>
                                                 <th>Sex</th>
                                                 <th>Birth Weight (kg)</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody id="infantsTableBody">
                                             @foreach($infants as $infant)
                                                 <tr>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input infant-radio" type="radio" name="infant_select" value="{{ $infant->infant_id }}" {{ $loop->first ? 'checked' : '' }}>
+                                                        </div>
+                                                    </td>
                                                     <td>{{ $infant->first_name }} {{ $infant->middle_name }}
                                                         {{ $infant->last_name }}{{ $infant->suffix ? ' ' . $infant->suffix : '' }}
                                                     </td>
@@ -564,6 +574,69 @@
             </form>
         @endif
     </div>
+
+    <!-- Add Infant Modal -->
+    <div class="modal fade" id="addInfantModal" tabindex="-1" aria-labelledby="addInfantModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="addInfantModalLabel">
+                        <i class="fas fa-baby"></i> Add New Infant
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="addInfantAlert" class="alert alert-danger" style="display:none;"></div>
+                    <form id="addInfantForm">
+                        @csrf
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="infant_first_name" name="first_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Middle Name</label>
+                                <input type="text" class="form-control" id="infant_middle_name" name="middle_name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="infant_last_name" name="last_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Suffix</label>
+                                <input type="text" class="form-control" id="infant_suffix" name="suffix" placeholder="Jr., Sr., III, etc.">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date of Birth *</label>
+                                <input type="date" class="form-control" id="infant_dob" name="infant_date_of_birth" max="{{ now()->toDateString() }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Sex *</label>
+                                <select class="form-select" id="infant_sex_select" name="infant_sex" required>
+                                    <option value="">Select Sex</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Birth Weight (kg) *</label>
+                                <input type="number" class="form-control" id="infant_weight" name="birth_weight" step="0.01" min="0.5" max="20" placeholder="e.g., 3.5" required>
+                                <small class="text-muted">Enter weight between 0.5 and 20 kg</small>
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="saveInfantBtn">
+                                <i class="fas fa-save"></i> Save Infant
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -582,12 +655,19 @@
             // Initialize the form
             initializeForm();
             generateCalendar();
+            setupAddInfantModal();
 
             function initializeForm() {
-                // Use first infant as the selected infant (non-editable table)
-                const firstInfantId = @json($infants->first()->infant_id);
-                selectedInfantId = firstInfantId;
-                document.getElementById('infant_id').value = firstInfantId;
+                // Use first infant as the selected infant by default (if any exist)
+                const firstInfantId = @json(optional($infants->first())->infant_id);
+                if (firstInfantId) {
+                    selectedInfantId = firstInfantId;
+                    const infantIdField = document.getElementById('infant_id');
+                    if (infantIdField) infantIdField.value = firstInfantId;
+                    // Ensure the matching radio is checked
+                    const firstRadio = document.querySelector('.infant-radio[value="' + firstInfantId + '"]');
+                    if (firstRadio) firstRadio.checked = true;
+                }
 
                 // Mark infant tab as completed immediately since infant is auto-selected
                 const infantTab = document.getElementById('infant-tab');
@@ -626,8 +706,193 @@
                     updateStepIndicators(2);
                 });
 
+                // Infant selection change handler
+                const infantsTbody = document.getElementById('infantsTableBody');
+                if (infantsTbody) {
+                    infantsTbody.addEventListener('change', function (e) {
+                        if (e.target && e.target.classList.contains('infant-radio')) {
+                            selectedInfantId = e.target.value;
+                            document.getElementById('infant_id').value = selectedInfantId;
+                        }
+                    });
+                }
+
                 // File upload handlers
                 setupFileUpload();
+            }
+
+            // Add Infant modal handlers - Simple and working implementation
+            function setupAddInfantModal() {
+                console.log('Setting up Add Infant modal...');
+                
+                const addBtn = document.getElementById('addInfantBtn');
+                const modalEl = document.getElementById('addInfantModal');
+                const alertDiv = document.getElementById('addInfantAlert');
+                const form = document.getElementById('addInfantForm');
+                const saveBtn = document.getElementById('saveInfantBtn');
+                
+                console.log('Elements found:', { addBtn: !!addBtn, modalEl: !!modalEl, alertDiv: !!alertDiv, form: !!form, saveBtn: !!saveBtn });
+                
+                if (!addBtn || !modalEl || !form) {
+                    console.error('Add Infant elements not found!', { addBtn, modalEl, form });
+                    return;
+                }
+
+                const modal = new bootstrap.Modal(modalEl);
+
+                // Open modal button
+                addBtn.addEventListener('click', function() {
+                    console.log('Add Infant button clicked');
+                    form.reset();
+                    if (alertDiv) {
+                        alertDiv.style.display = 'none';
+                        alertDiv.innerHTML = '';
+                    }
+                    modal.show();
+                });
+                
+                console.log('Add Infant modal setup complete');
+
+                // Form submission
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('============ FORM SUBMIT EVENT TRIGGERED ============');
+                    console.log('Event:', e);
+                    console.log('Form:', form);
+                    console.log('Save button:', saveBtn);
+                    
+                    // Disable save button
+                    if (saveBtn) {
+                        saveBtn.disabled = true;
+                        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                        console.log('Save button disabled and text changed');
+                    }
+                    
+                    // Hide previous alerts
+                    if (alertDiv) {
+                        alertDiv.style.display = 'none';
+                        console.log('Alert hidden');
+                    }
+                    
+                    try {
+                        // Get CSRF token
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+                                        document.querySelector('input[name="_token"]')?.value;
+                        
+                        // Prepare form data
+                        const formData = new FormData(form);
+                        
+                        console.log('Submitting infant data:', Object.fromEntries(formData));
+                        
+                        // Send request
+                        const response = await fetch('{{ route("user.infants.store") }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        console.log('Server response:', data);
+                        
+                        if (!response.ok) {
+                            // Handle errors
+                            let errorMsg = 'Failed to add infant';
+                            if (data.errors) {
+                                errorMsg = Object.values(data.errors).flat().join('<br>');
+                            } else if (data.error) {
+                                errorMsg = data.error;
+                            }
+                            throw new Error(errorMsg);
+                        }
+                        
+                        if (data.success && data.infant) {
+                            // Add new row to table
+                            const tbody = document.getElementById('infantsTableBody');
+                            if (tbody) {
+                                const newRow = `
+                                    <tr>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input infant-radio" type="radio" 
+                                                       name="infant_select" value="${data.infant.infant_id}" checked>
+                                            </div>
+                                        </td>
+                                        <td>${data.infant.name}</td>
+                                        <td>${data.infant.date_of_birth}</td>
+                                        <td>${data.infant.age_text}</td>
+                                        <td>${data.infant.sex}</td>
+                                        <td>${data.infant.birth_weight}</td>
+                                    </tr>
+                                `;
+                                tbody.insertAdjacentHTML('beforeend', newRow);
+                            }
+                            
+                            // Update selected infant
+                            selectedInfantId = data.infant.infant_id;
+                            const infantIdInput = document.getElementById('infant_id');
+                            if (infantIdInput) {
+                                infantIdInput.value = data.infant.infant_id;
+                            }
+                            
+                            // Show success message
+                            const alertArea = document.getElementById('infantAlertArea');
+                            if (alertArea) {
+                                alertArea.innerHTML = `
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-check-circle"></i> <strong>Success!</strong> 
+                                        Infant <strong>${data.infant.name}</strong> has been added and selected.
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                `;
+                            }
+                            
+                            // Close modal
+                            modal.hide();
+                            
+                            // Show SweetAlert success
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Infant Added!',
+                                    text: data.infant.name + ' has been added successfully.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            }
+                        } else {
+                            throw new Error('Invalid response from server');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Add infant error:', error);
+                        if (alertDiv) {
+                            alertDiv.style.display = 'block';
+                            alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + error.message;
+                        }
+                        // Also show alert to user
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: error.message,
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            alert('Error: ' + error.message);
+                        }
+                    } finally {
+                        // Re-enable save button
+                        if (saveBtn) {
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Infant';
+                        }
+                    }
+                });
             }
 
             // Infant details and selection removed: using first infant by default (hidden input)
@@ -706,7 +971,7 @@
                         return selectedDate !== null && selectedAvailabilityId !== null;
                     case 'prescription-tab':
                         // Check if prescription file is uploaded
-                        const fileInput = document.getElementById('prescription_image');
+                        const fileInput = document.getElementById('prescription');
                         return fileInput && fileInput.files.length > 0;
                     default:
                         return false;

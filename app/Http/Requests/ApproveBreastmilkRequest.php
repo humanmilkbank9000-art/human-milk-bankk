@@ -15,7 +15,7 @@ class ApproveBreastmilkRequest extends FormRequest
     {
         return [
             'volume_requested' => 'required|numeric|min:0.01',
-            'milk_type' => 'required|in:unpasteurized,pasteurized',
+            'milk_type' => 'required|in:pasteurized',
             'admin_notes' => 'nullable|string|max:1000',
             'selected_items' => 'required|array|min:1',
             'selected_items.*.id' => 'required|integer',
