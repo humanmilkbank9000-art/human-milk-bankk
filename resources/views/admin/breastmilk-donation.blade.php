@@ -1793,13 +1793,6 @@
                                     <i class="fas fa-box me-1"></i> Bag Details
                                 </button>
                             </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="view-screening-tab" data-bs-toggle="tab"
-                                    data-bs-target="#view-screening" type="button" role="tab" aria-controls="view-screening"
-                                    aria-selected="false">
-                                    <i class="fas fa-clipboard-check me-1"></i> Lifestyle Checklist
-                                </button>
-                            </li>
                         </ul>
 
                         <!-- Tabs Content -->
@@ -1858,18 +1851,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-                            </div>
-
-                            <!-- Lifestyle Checklist Tab -->
-                            <div class="tab-pane fade" id="view-screening" role="tabpanel"
-                                aria-labelledby="view-screening-tab">
-                                <div id="view-screening-loading" class="text-center py-4">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading lifestyle questions...</span>
-                                    </div>
-                                    <p class="text-muted mt-2">Loading lifestyle questions...</p>
-                                </div>
-                                <div id="view-screening-content"></div>
                             </div>
                         </div>
                     </div>
