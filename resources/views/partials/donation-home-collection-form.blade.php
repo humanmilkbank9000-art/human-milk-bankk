@@ -1269,7 +1269,7 @@
                                         <div class="modal-body">
                                             <div id="hcMap"></div>
                                             <div class="mt-3 alert alert-info py-2">
-                                                <small><i class="bi bi-info-circle me-1"></i> <strong>Tip:</strong> Drag the red pin to your exact location. The map will center on your current position when opened. Ensure the pin is placed accurately at your home address.</small>
+                                                <small><i class="bi bi-info-circle me-1"></i> <strong>Tip:</strong> Drag the blue pin to your exact location. The map will center on your current position when opened. Ensure the pin is placed accurately at your home address.</small>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
