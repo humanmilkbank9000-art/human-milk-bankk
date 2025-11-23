@@ -661,15 +661,35 @@
         flex-direction: column;
         align-items: flex-start;
         margin-bottom: 0.75rem;
+        gap: 0.5rem;
+      }
+
+      .chart-header > div:first-child {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+      }
+
+      .chart-legend {
+        width: 100%;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
       }
 
       .chart-title {
         font-size: 1rem;
+        width: 100%;
       }
 
       .year-selector {
         padding: 0.35rem 0.6rem;
         font-size: 0.85rem;
+        width: auto;
+        min-width: 100px;
       }
 
       #yearTimelineChart {
