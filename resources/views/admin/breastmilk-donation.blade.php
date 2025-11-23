@@ -618,6 +618,42 @@
             border-radius: 0.375rem;
         }
 
+        /* Add grid lines to donation tables (scoped to this admin page)
+           to match the `report-table` appearance used in reports. */
+        .page-container-standard .table {
+            border-collapse: collapse !important;
+            width: 100%;
+        }
+
+        .page-container-standard .table thead th {
+            background: #f3f4f6;
+            color: #111827;
+            font-weight: 700;
+            border: 1px solid #9ca3af;
+            padding: 8px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .page-container-standard .table tbody td {
+            border: 1px solid #d1d5db;
+            padding: 7px 6px;
+            vertical-align: middle;
+        }
+
+        .page-container-standard .table tfoot td {
+            font-weight: 700;
+            border: 1px solid #9ca3af;
+            background: #f3f4f6;
+            padding: 8px 6px;
+        }
+
+        /* Slightly tighter padding for compact tables (small screens) */
+        .page-container-standard .table.table-sm thead th,
+        .page-container-standard .table.table-sm tbody td {
+            padding: 6px 4px;
+        }
+
         /* Assist option badge */
         .assist-option-badge {
             display: inline-block;
