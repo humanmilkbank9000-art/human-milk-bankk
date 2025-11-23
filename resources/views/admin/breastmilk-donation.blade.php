@@ -1140,8 +1140,8 @@
             <div class="tab-pane fade {{ $tabStatus == 'scheduled' ? 'show active' : '' }}" id="scheduled-home"
                 role="tabpanel">
                 <div class="card card-standard" style="margin-top: 30px;">
-                    <div class="card-header bg-primary text-white">
-                        <h5>Scheduled Home Collection</h5>
+                    <div class="card-header bg-primary text-white" style="padding: 0.6rem 1rem;">
+                        <h5 style="margin: 0;">Scheduled Home Collection</h5>
                     </div>
                     <div class="card-body">
                         @if($scheduledHomeCollection->count() > 0)
@@ -1268,8 +1268,8 @@
             <div class="tab-pane fade {{ $tabStatus == 'success_walk_in' ? 'show active' : '' }}" id="success-walk-in"
                 role="tabpanel">
                 <div class="card card-standard" style="margin-top: 30px;">
-                    <div class="card-header bg-success text-white">
-                        <h5>Completed Walk-in Donations</h5>
+                    <div class="card-header bg-success text-white" style="padding: 0.6rem 1rem;">
+                        <h5 style="margin: 0;">Completed Walk-in Donations</h5>
                     </div>
                     <div class="card-body">
                         @if($successWalkIn->count() > 0)
@@ -1380,8 +1380,8 @@
             <div class="tab-pane fade {{ $tabStatus == 'success_home_collection' ? 'show active' : '' }}" id="success-home"
                 role="tabpanel">
                 <div class="card card-standard" style="margin-top: 30px;">
-                    <div class="card-header bg-success text-white">
-                        <h5>Completed Home Collection</h5>
+                    <div class="card-header bg-success text-white" style="padding: 0.6rem 1rem;">
+                        <h5 style="margin: 0;">Completed Home Collection</h5>
                     </div>
                     <div class="card-body">
                         @if($successHomeCollection->count() > 0)
@@ -1473,8 +1473,8 @@
             <div class="tab-pane fade {{ $tabStatus == 'declined' ? 'show active' : '' }}" id="declined-donations"
                 role="tabpanel">
                 <div class="card card-standard" style="margin-top: 30px;">
-                    <div class="card-header text-white" style="background: linear-gradient(90deg,#ff7eb6,#ff65a3);">
-                        <h5>Declined Donations</h5>
+                    <div class="card-header text-white" style="background: linear-gradient(90deg,#ff7eb6,#ff65a3); padding: 0.6rem 1rem;">
+                        <h5 style="margin: 0;">Declined Donations</h5>
                     </div>
                     @php
                         $declinedOrdered = $declinedDonations instanceof \Illuminate\Pagination\LengthAwarePaginator
