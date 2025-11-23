@@ -202,60 +202,63 @@
 
         body.pdf-output footer.report-footer {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
+            bottom: 0.15in;
+            left: 0.75in;
+            right: 0.75in;
+            width: auto;
             padding-left: 0;
             padding-right: 0;
-            padding-bottom: 0.2in;
+            padding-bottom: 0.15in;
+            padding-top: 0.15in;
             background: white;
         }
 
         footer.report-footer .footer-grid {
             width: 100%;
-        }
-
-        body.screen-preview footer.report-footer .footer-grid {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        body.screen-preview footer.report-footer .footer-grid {
             gap: 8px;
         }
 
         body.pdf-output footer.report-footer .footer-grid {
-            display: block;
-            padding-left: 0;
+            gap: 10px;
+        }
+
+        footer.report-footer .footer-grid>div {
+            flex: 1 1 33.33%;
+            white-space: nowrap;
+        }
+
+        footer.report-footer .footer-left {
             text-align: left;
+            flex: 1 1 40%;
         }
 
-        footer.report-footer .footer-grid>span {
-            vertical-align: middle;
+        footer.report-footer .footer-center {
+            text-align: center;
+            flex: 0 0 20%;
         }
 
-        body.screen-preview footer.report-footer .footer-grid>span {
-            display: inline;
+        footer.report-footer .footer-right {
+            text-align: right;
+            flex: 1 1 40%;
         }
 
-        body.pdf-output footer.report-footer .footer-grid>span {
-            display: inline;
-            margin-right: 15px;
-        }
-
-        body.pdf-output footer.report-footer .footer-grid>span:first-child {
-            text-align: left;
-        }
-
-        body.pdf-output footer.report-footer .footer-grid>span:nth-child(2) {
-            text-align: left;
-        }
-
-        body.pdf-output footer.report-footer .footer-grid>span:last-child {
-            text-align: left;
+        body {
+            counter-reset: page 1;
         }
 
         .page-number:after {
             content: counter(page);
+        }
+
+        @page {
+            counter-increment: page;
         }
 
         main {
@@ -538,24 +541,24 @@
             @endunless
 
             <section>
-                
+
                 @include($view, $data ?? [])
             </section>
         </main>
 
         <footer class="report-footer">
-    <div class="footer-grid">
-        <div class="footer-left">
-            Development of Web App for Breastmilk Request and Donation
-        </div>
-        <div class="footer-center">
-            Page <span class="page-number"></span>
-        </div>
-        <div class="footer-right">
-            Generated: {{ $generatedAt->timezone('Asia/Manila')->format('M d, Y h:i A') }} PHT
-        </div>
-    </div>
-</footer>
+            <div class="footer-grid">
+                <div class="footer-left">
+                    Development of Web App for Breastmilk Request and Donation
+                </div>
+                <div class="footer-center">
+                    Page <span class="page-number"></span>
+                </div>
+                <div class="footer-right">
+                    Generated: {{ $generatedAt->timezone('Asia/Manila')->format('M d, Y h:i A') }} PHT
+                </div>
+            </div>
+        </footer>
 
     </div>
 </body>
