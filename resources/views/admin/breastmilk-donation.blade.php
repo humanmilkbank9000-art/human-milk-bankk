@@ -314,9 +314,9 @@
             }
 
             /* Keep table headers aligned on a single horizontal line
-                                                                                                                       - prevent wrapping of header labels
-                                                                                                                       - use ellipsis when a header is too long
-                                                                                                                       - ensure consistent vertical alignment and padding */
+                                                                                                                                       - prevent wrapping of header labels
+                                                                                                                                       - use ellipsis when a header is too long
+                                                                                                                                       - ensure consistent vertical alignment and padding */
             #pending-donations .table thead th {
                 white-space: nowrap;
                 overflow: hidden;
@@ -585,7 +585,7 @@
                 }
 
                 /* Permanently style the Decline button in the Schedule Pickup modal to
-                                                                                                                                                                                                                                                                                                   match the hovered look of the Cancel (.btn-secondary:hover) button */
+                                                                                                                                                                                                                                                                                                                   match the hovered look of the Cancel (.btn-secondary:hover) button */
                 #schedule-decline-btn {
                     background-color: #5c636a !important;
                     /* darkened secondary */
@@ -933,8 +933,9 @@
                             }
                         </style>
                         @if($pendingDonations->count() > 0)
-                            <div class="table-responsive d-none d-md-block">
-                                <table class="table table-hover" style="min-width: 900px; width:100%;">
+                            <div class="table-container-standard">
+                                <table
+                                    class="table table-standard table-bordered table-striped align-middle table-standard-min-width">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
@@ -1145,8 +1146,9 @@
                     </div>
                     <div class="card-body">
                         @if($scheduledHomeCollection->count() > 0)
-                            <div class="table-container table-wide">
-                                <table class="table table-hover">
+                            <div class="table-container-standard">
+                                <table
+                                    class="table table-standard table-bordered table-striped align-middle table-standard-min-width">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
@@ -1273,8 +1275,9 @@
                     </div>
                     <div class="card-body">
                         @if($successWalkIn->count() > 0)
-                            <div class="table-container table-wide">
-                                <table class="table table-striped table-hover">
+                            <div class="table-container-standard">
+                                <table
+                                    class="table table-standard table-bordered table-striped align-middle table-standard-min-width">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
@@ -1385,8 +1388,9 @@
                     </div>
                     <div class="card-body">
                         @if($successHomeCollection->count() > 0)
-                            <div class="table-container table-wide">
-                                <table class="table table-striped table-hover">
+                            <div class="table-container-standard">
+                                <table
+                                    class="table table-standard table-bordered table-striped align-middle table-standard-min-width">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
@@ -1484,8 +1488,9 @@
                     @endphp
                     <div class="card-body">
                         @if($declinedOrdered->count())
-                            <div class="table-container table-wide">
-                                <table class="table table-striped table-hover align-middle mb-0">
+                            <div class="table-container-standard">
+                                <table
+                                    class="table table-standard table-bordered table-striped align-middle table-standard-min-width">
                                     <thead>
                                         <tr>
                                             <th class="text-center">Name</th>
@@ -2097,469 +2102,282 @@
     </div>
     {{-- Real-time Search Functionality (improved) --}}
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('searchInput');
-            const clearBtn = document.getElementById('clearSearch');
+            document.addEventListener('DOMContentLoaded', function              () {
+                const searchInput = document.getElementById('searchInput');
+                const clearBtn = document.getElementById('clearSearch');
 
-            if (!searchInput) return;
+                if (!searchInput) return;
 
-            // Debounce timer
-            let searchTimer = null;
+                // Debounce timer
+                let searchTimer = null;
 
-            // Submit search to server
-            function submitSearch() {
-                const url = new URL(window.location.href);
-                const searchValue = searchInput.value.trim();
+                // Submit search to server
+                function submitSearch() {
+                    const url = new URL(window.location.href);
+                    const searchValue = searchInput.value.trim();
 
-                if (searchValue) {
-                    url.searchParams.set('q', searchValue);
-                    clearBtn.style.display = 'inline-block';
-                } else {
-                    url.searchParams.delete('q');
-                    clearBtn.style.display = 'none';
+                    if (searchValue) {
+                        url.searchParams.set('q', searchValue);
+                        clearBtn.style.display = 'inline-block';
+                    } else {
+                        url.searchParams.delete('q');
+                        clearBtn.style.display = 'none';
+                    }
+
+                    window.location.href = url.toString();
                 }
 
-                window.location.href = url.toString();
-            }
-
-            // Debounced search on input
-            searchInput.addEventListener('input', function () {
-                clearTimeout(searchTimer);
-                searchTimer = setTimeout(submitSearch, 500);
-            });
-
-            // Search on Enter key
-            searchInput.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
+                // Debounced search on input
+                searchInput.addEventListener('input', function () {
                     clearTimeout(searchTimer);
-                    submitSearch();
-                }
-            });
+                    searchTimer = setTimeout(submitSearch, 500);
+                });
 
-            // Clear search
-            clearBtn.addEventListener('click', function () {
-                searchInput.value = '';
-                const url = new URL(window.location.href);
-                url.searchParams.delete('q');
-                window.location.href = url.toString();
-            });
-        });
-    </script>
-
-    <script>
-        // Assist Walk-in dynamic fields and submit
-        (function () {
-            const optionSelect = document.querySelector('#assistWalkInDonationForm select[name="assist_option"]');
-            const existingWrap = document.getElementById('assist-existing-user');
-            const searchInput = document.getElementById('assist_user_search');
-            const resultsBox = document.getElementById('assist_user_results');
-            const userIdInput = document.getElementById('assist_existing_user_id');
-            const donorFirst = document.querySelector('input[name="donor_first_name"]');
-            const donorLast = document.querySelector('input[name="donor_last_name"]');
-            const donorContact = document.querySelector('input[name="donor_contact"]');
-            const donorAddress = document.querySelector('input[name="donor_address"]');
-
-            function setDonorFieldsReadonly(readonly) {
-                const fields = [donorFirst, donorLast, donorContact, donorAddress];
-                fields.forEach(field => {
-                    if (field) {
-                        if (readonly) {
-                            field.setAttribute('readonly', 'readonly');
-                            field.style.backgroundColor = '#e9ecef';
-                            field.style.cursor = 'not-allowed';
-                        } else {
-                            field.removeAttribute('readonly');
-                            field.style.backgroundColor = '';
-                            field.style.cursor = '';
-                        }
+                // Search on Enter key
+                searchInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        clearTimeout(searchTimer);
+                        submitSearch();
                     }
                 });
-            }
 
-            function toggleExistingUser() {
-                const val = optionSelect ? optionSelect.value : '';
-                if (val === 'record_to_existing_user') {
-                    existingWrap.style.display = 'block';
-                } else {
-                    existingWrap.style.display = 'none';
-                    resultsBox.innerHTML = '';
-                    userIdInput.value = '';
-                    setDonorFieldsReadonly(false); // Enable fields when switching away from existing user
-                }
-            }
-            if (optionSelect) {
-                optionSelect.addEventListener('change', toggleExistingUser);
-                toggleExistingUser();
-            }
-
-            let searchTimer = null;
-            function renderResults(items) {
-                resultsBox.innerHTML = '';
-                if (!items || items.length === 0) return;
-                items.forEach(u => {
-                    const a = document.createElement('button');
-                    a.type = 'button';
-                    a.className = 'list-group-item list-group-item-action';
-                    const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
-                    a.innerHTML = `<div class="d-flex justify-content-between"><strong>${name || 'Unnamed user'}</strong><span class="badge bg-secondary">${u.user_type || ''}</span></div><div class="small text-muted">${u.contact_number || ''} • ${u.address || ''}</div>`;
-                    a.addEventListener('click', () => {
-                        userIdInput.value = u.user_id;
-                        if (donorFirst) donorFirst.value = u.first_name || '';
-                        if (donorLast) donorLast.value = u.last_name || '';
-                        if (donorContact) donorContact.value = u.contact_number || '';
-                        if (donorAddress) donorAddress.value = u.address || '';
-                        resultsBox.innerHTML = '';
-                        searchInput.value = name || u.contact_number || '';
-                        // Make donor fields readonly when existing user is selected
-                        setDonorFieldsReadonly(true);
-                    });
-                    resultsBox.appendChild(a);
+                // Clear search
+                clearBtn.addEventListener('click', function () {
+                    searchInput.value = '';
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('q');
+                    window.location.href = url.toString();
                 });
-            }
-            async function doSearch() {
-                const q = (searchInput.value || '').trim();
-                if (q.length < 2) { resultsBox.innerHTML = ''; return; }
-                try {
-                    const resp = await fetch(`{{ route('admin.users.search') }}?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
-                    if (!resp.ok) return;
-                    const data = await resp.json();
-                    renderResults((data && data.data) || []);
-                } catch (e) { /* ignore */ }
-            }
-            if (searchInput) {
-                searchInput.addEventListener('input', () => {
-                    if (searchTimer) clearTimeout(searchTimer);
-                    searchTimer = setTimeout(doSearch, 300);
-                });
-            }
+            });
+        </script>
 
-            const bagsEl = document.getElementById('assist_bags');
-            const container = document.getElementById('assist-volume-fields');
-            const wrap = document.getElementById('assist-volumes-container');
-            const totalBox = document.getElementById('assist-total-display');
-            const totalEl = document.getElementById('assist-total');
-            function renderFields() {
-                const n = parseInt(bagsEl.value || '0', 10);
-                if (!n || n < 1) { wrap.style.display = 'none'; totalBox.style.display = 'none'; container.innerHTML = ''; return; }
-                wrap.style.display = 'block'; totalBox.style.display = 'block';
-                let html = '<div class="row">';
-                for (let i = 1; i <= n; i++) {
-                    html += `
-                                                                                                                                                                <div class="col-md-6 mb-2">
-                                                                                                                                                                    <label class="form-label">Bag ${i} (ml)</label>
-                                                                                                                                                                    <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
-                                                                                                                                                                </div>`;
-                }
-                html += '</div>';
-                container.innerHTML = html;
-                updateTotal();
-            }
-            function updateTotal() {
-                const inputs = container.querySelectorAll('.assist-bag-volume');
-                let t = 0; inputs.forEach(inp => { const v = parseFloat(inp.value || '0'); if (!isNaN(v)) t += v; });
-                totalEl.textContent = (t % 1 === 0 ? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, ''));
-            }
-            if (bagsEl) { bagsEl.addEventListener('input', renderFields); }
-            container?.addEventListener('input', function (e) { if (e.target && e.target.classList.contains('assist-bag-volume')) updateTotal(); });
+        <script>
+            // Assist Walk-in dynamic fields and submit
+            (function () {
+                const optionSelect = document.querySelector('#assistWalkInDonationForm select[name="assist_option"]');
+                const existingWrap = document.getElementById('assist-existing-user');
+                const searchInput = document.getElementById('assist_user_search');
+                const resultsBox = document.getElementById('assist_user_results');
+                const userIdInput = document.getElementById('assist_existing_user_id');
+                const donorFirst = document.querySelector('input[name="donor_first_name"]');
+                const donorLast = document.querySelector('input[name="donor_last_name"]');
+                const donorContact = document.querySelector('input[name="donor_contact"]');
+                const donorAddress = document.querySelector('input[name="donor_address"]');
 
-            // Submit via AJAX
-            const form = document.getElementById('assistWalkInDonationForm');
-            if (form) {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const spinner = document.getElementById('assist-spinner');
-                    const text = document.getElementById('assist-submit-text');
-                    const err = document.getElementById('assist-walkin-error');
-                    err.style.display = 'none'; err.textContent = '';
-                    spinner.style.display = 'inline-block'; text.textContent = 'Recording...';
-                    const formData = new FormData(form);
-                    fetch(form.action, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }, body: formData })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data && data.success) {
-                                const modal = bootstrap.Modal.getInstance(document.getElementById('assistWalkInDonationModal'));
-                                if (modal) modal.hide();
-                                setTimeout(() => {
-                                    Swal.fire({ icon: 'success', title: 'Recorded', text: data.message || 'Walk-in donation recorded.', timer: 1400, showConfirmButton: false })
-                                        .then(() => {
-                                            const url = new URL(window.location.href); url.searchParams.set('status', 'success_walk_in'); window.location.href = url.toString();
-                                        });
-                                }, 200);
+                function setDonorFieldsReadonly(readonly) {
+                    const fields = [donorFirst, donorLast, donorContact, donorAddress];
+                    fields.forEach(field => {
+                        if (field) {
+                            if (readonly) {
+                                field.setAttribute('readonly', 'readonly');
+                                field.style.backgroundColor = '#e9ecef';
+                                field.style.cursor = 'not-allowed';
                             } else {
-                                err.textContent = (data && data.message) ? data.message : 'Failed to record walk-in donation.';
-                                err.style.display = 'block';
+                                field.removeAttribute('readonly');
+                                field.style.backgroundColor = '';
+                                field.style.cursor = '';
                             }
-                        })
-                        .catch(() => { err.textContent = 'Failed to record walk-in donation.'; err.style.display = 'block'; })
-                        .finally(() => { spinner.style.display = 'none'; text.textContent = 'Record Donation'; });
-                });
-            }
-
-            // Reset donor fields to editable when modal is closed
-            const assistModal = document.getElementById('assistWalkInDonationModal');
-            if (assistModal) {
-                assistModal.addEventListener('hidden.bs.modal', function () {
-                    setDonorFieldsReadonly(false);
-                    // Also clear the hidden user ID and search results
-                    if (userIdInput) userIdInput.value = '';
-                    if (resultsBox) resultsBox.innerHTML = '';
-                    if (searchInput) searchInput.value = '';
-                });
-            }
-        })();
-    </script>
-    <script>
-        let currentDonationId = null;
-        let currentOriginalVolumes = []; // Store original volumes globally
-
-        // Initialize modal triggers
-        $(document).ready(function () {
-            // Donation type filter for pending donations tab
-            $('#donation-type-filter').on('change', function () {
-                const selectedType = $(this).val();
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('status', 'pending');
-                currentUrl.searchParams.set('donation_type', selectedType);
-                window.location.href = currentUrl.toString();
-            });
-
-            // Walk-in validation modal (handles both .validate-walkin and .validate-walk-in)
-            $(document).on('click', '.validate-walkin, .validate-walk-in', function () {
-                currentDonationId = $(this).data('id');
-                const donorName = $(this).data('donor');
-
-                $('#walkin-donor-name').text(donorName);
-                $('#walkin-donation-id').val(currentDonationId);
-                $('#validateWalkInForm').attr('action', `/admin/donations/${currentDonationId}/validate-walkin`);
-                // reset form state
-                $('#walkin-form-error').hide().text('');
-                $('#walkin-volume-fields').html('');
-                $('#walkin-bags').val('');
-                $('#walkin-total').text('0 ml');
-                $('#validateWalkInModal').modal('show');
-            });
-
-            // Schedule pickup modal  
-            $(document).on('click', '.schedule-pickup', function () {
-                currentDonationId = $(this).data('id');
-                const donorName = $(this).data('donor');
-                const donorAddress = $(this).data('address') || 'Not provided';
-                const lat = $(this).data('latitude');
-                const lng = $(this).data('longitude');
-                const firstExpression = $(this).data('first-expression') || '--';
-                const lastExpression = $(this).data('last-expression') || '--';
-                const bagDetailsRaw = $(this).attr('data-bag-details');
-                const totalVolume = $(this).data('total') || 0;
-
-                // Populate donor info
-                $('#schedule-donor-name').text(donorName);
-                $('#schedule-donor-address').text(donorAddress);
-                $('#schedule-first-expression').text(firstExpression);
-                $('#schedule-last-expression').text(lastExpression);
-
-                // Inject location button into modal if coordinates are present
-                (function setScheduleLocation() {
-                    const hasLat = (lat !== undefined && lat !== null && String(lat) !== '');
-                    const hasLng = (lng !== undefined && lng !== null && String(lng) !== '');
-                    if (hasLat && hasLng) {
-                        const safeName = donorName || '';
-                        const safeAddress = donorAddress || '';
-                        $('#schedule-donor-location').html(
-                            `<button class="btn btn-info btn-sm view-location" title="View on Map" data-donor-name="${$('<div>').text(safeName).html()}" data-donor-address="${$('<div>').text(safeAddress).html()}" data-latitude="${lat}" data-longitude="${lng}"><i class="fas fa-map-marked-alt"></i></button>`
-                        );
-                    } else {
-                        $('#schedule-donor-location').text('-');
-                    }
-                })();
-
-                // Robust bag details parser (local copy) to handle HTML-encoded attributes
-                function safeParseBagDetails_local(raw) {
-                    if (!raw) return [];
-                    if (Array.isArray(raw)) return raw;
-                    if (typeof raw !== 'string') return [];
-                    const s = raw.trim();
-                    if (s === '' || s === 'null') return [];
-                    try { return JSON.parse(s); } catch (e) { }
-                    try {
-                        const txt = document.createElement('textarea');
-                        txt.innerHTML = s;
-                        const decoded = txt.value;
-                        if (decoded && decoded !== s) {
-                            try { return JSON.parse(decoded); } catch (e) { }
                         }
-                    } catch (e) { }
-                    try {
-                        const replaced = s.replace(/&quot;/g, '"').replace(/&apos;|&#039;/g, "'").replace(/&amp;/g, '&');
-                        return JSON.parse(replaced);
-                    } catch (e) { }
-                    try {
-                        const unescaped = s.replace(/\\\"/g, '"').replace(/\\'/g, "'");
-                        return JSON.parse(unescaped);
-                    } catch (e) { }
-                    return [];
-                }
-
-                const bagDetails = safeParseBagDetails_local(bagDetailsRaw);
-
-                console.log('Parsed bag details:', bagDetails);
-
-                // Populate bag details table (with editable Volume inputs)
-                const tbody = $('#schedule-bag-details-body');
-                tbody.empty();
-
-                // Helper function to format time
-                function formatTime12(t) {
-                    if (!t) return '--';
-                    if (/\b(am|pm)\b/i.test(t)) return t;
-                    const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-                    if (!m) return t;
-                    let hh = parseInt(m[1], 10);
-                    const mm = m[2];
-                    const ampm = hh >= 12 ? 'PM' : 'AM';
-                    hh = hh % 12; if (hh === 0) hh = 12;
-                    return hh + ':' + mm + ' ' + ampm;
-                }
-
-                // Map storage keys to readable labels
-                function mapStorage(s) {
-                    if (!s || s === '--' || s === '-') return s || '--';
-                    const key = String(s).toLowerCase().trim();
-
-                    // common short codes used in home collection form
-                    if (key === 'ref' || key === 'refr' || key === 'fridge' || key === 'refrigerator' || key.indexOf('refrig') !== -1) return 'Refrigerator';
-                    if (key === 'frz' || key === 'fridge_freeze' || key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1) return 'Freezer';
-
-                    if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1 || key.indexOf('room_temp') !== -1 || key === 'roomtemp') return 'Room temperature';
-
-                    // fallback: title case the token and replace underscores
-                    return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                }
-
-                let total = 0;
-                const numberOfBags = parseInt($(this).data('bags')) || (Array.isArray(bagDetails) ? bagDetails.length : 0) || 0;
-                if (bagDetails && bagDetails.length > 0) {
-                    bagDetails.forEach((bag, index) => {
-                        const bagNum = bag.bag_number || (index + 1);
-                        const time = formatTime12(bag.time) || '--';
-                        const date = bag.date || '--';
-                        const volume = bag.volume || '';
-                        const storage = bag.storage_location || '--';
-                        const storageLabel = mapStorage(storage);
-                        const temp = bag.temperature || '--';
-                        const method = bag.collection_method || '--';
-
-                        const row = `
-                                                                                                                                                                    <tr>
-                                                                                                                                                                        <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                                                                                                                                                        <td>${time}</td>
-                                                                                                                                                                        <td>${date}</td>
-                                                                                                                                                                        <td>
-                                                                                                                                                                            <div class="input-group input-group-sm">
-                                                                                                                                                                                <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
-                                                                                                                                                                                <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
-                                                                                                                                                                                <span class="input-group-text">ml</span>
-                                                                                                                                                                            </div>
-                                                                                                                                                                        </td>
-                                                                                                                                                                        <td>${storageLabel}</td>
-                                                                                                                                                                        <td class="text-end">${temp}</td>
-                                                                                                                                                                        <td><small>${method}</small></td>
-                                                                                                                                                                    </tr>
-                                                                                                                                                                `;
-                        tbody.append(row);
-                        const v = parseFloat(volume); if (!isNaN(v)) total += v;
                     });
-                } else if (numberOfBags > 0) {
-                    for (let i = 0; i < numberOfBags; i++) {
-                        const row = `
-                                                                                                                                                                    <tr>
-                                                                                                                                                                        <td class="text-center fw-bold">Bag ${i + 1}</td>
-                                                                                                                                                                        <td>--</td>
-                                                                                                                                                                        <td>--</td>
-                                                                                                                                                                        <td>
-                                                                                                                                                                            <div class="input-group input-group-sm">
-                                                                                                                                                                                <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
-                                                                                                                                                                                <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
-                                                                                                                                                                                <span class="input-group-text">ml</span>
-                                                                                                                                                                            </div>
-                                                                                                                                                                        </td>
-                                                                                                                                                                        <td>--</td>
-                                                                                                                                                                        <td class="text-end">--</td>
-                                                                                                                                                                        <td><small>--</small></td>
-                                                                                                                                                                    </tr>
-                                                                                                                                                                `;
-                        tbody.append(row);
-                    }
-                } else {
-                    tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
                 }
 
-                function updateScheduleTotal() {
-                    let sum = 0;
-                    $('#schedule-bag-details-body .schedule-bag-volume').each(function () {
-                        const v = parseFloat($(this).val());
-                        if (!isNaN(v)) sum += v;
-                    });
-                    $('#schedule-total-volume').text(sum.toFixed(2));
-                }
-                // Initial total
-                if (total > 0) {
-                    $('#schedule-total-volume').text(total.toFixed(2));
-                } else {
-                    // fallback to server-provided total
-                    const displayTotal = (parseFloat(totalVolume) || 0);
-                    $('#schedule-total-volume').text(displayTotal.toFixed(2));
-                }
-                // Live updating: keep function available but volumes are rendered as hidden inputs
-                // so updates won't be triggered by user input here.
-                $('#schedule-bag-details-body').off('input.scheduleVol').on('input.scheduleVol', '.schedule-bag-volume', updateScheduleTotal);
-
-                $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/schedule-pickup`);
-                $('#schedulePickupModal').modal('show');
-
-                // Preload lifestyle checklist for this donation (Tab 3)
-                try { loadScheduleScreening(currentDonationId); } catch (e) { console.warn('Failed to load lifestyle checklist', e); }
-            });
-
-            // Reschedule existing pickup - show only date/time in the schedule modal
-            $(document).on('click', '.reschedule-pickup', function () {
-                currentDonationId = $(this).data('id');
-                const dateIso = $(this).data('date-iso') || '';
-                const timeRaw = $(this).data('time') || '';
-
-                // Also populate donor and bag details so tabs have content (even if hidden initially)
-                const donorName = $(this).data('donor') || '';
-                const donorAddress = $(this).data('address') || 'Not provided';
-                const lat = $(this).data('latitude');
-                const lng = $(this).data('longitude');
-                const firstExpression = $(this).data('first-expression') || '--';
-                const lastExpression = $(this).data('last-expression') || '--';
-                const bagDetailsRaw = $(this).attr('data-bag-details');
-                const totalVolume = $(this).data('total') || 0;
-                const numberOfBags = $(this).data('bags') || 0;
-
-                // Populate donor info (so Donor Info tab is populated)
-                $('#schedule-donor-name').text(donorName);
-                $('#schedule-donor-address').text(donorAddress);
-                $('#schedule-first-expression').text(firstExpression);
-                $('#schedule-last-expression').text(lastExpression);
-
-                // Inject location button into modal if coordinates are present
-                (function setScheduleLocation() {
-                    const hasLat = (lat !== undefined && lat !== null && String(lat) !== '');
-                    const hasLng = (lng !== undefined && lng !== null && String(lng) !== '');
-                    if (hasLat && hasLng) {
-                        const safeName = donorName || '';
-                        const safeAddress = donorAddress || '';
-                        $('#schedule-donor-location').html(
-                            `<button class="btn btn-info btn-sm view-location" title="View on Map" data-donor-name="${$('<div>').text(safeName).html()}" data-donor-address="${$('<div>').text(safeAddress).html()}" data-latitude="${lat}" data-longitude="${lng}"><i class="fas fa-map-marked-alt"></i></button>`
-                        );
+                function toggleExistingUser() {
+                    const val = optionSelect ? optionSelect.value : '';
+                    if (val === 'record_to_existing_user') {
+                        existingWrap.style.display = 'block';
                     } else {
-                        $('#schedule-donor-location').text('-');
+                        existingWrap.style.display = 'none';
+                        resultsBox.innerHTML = '';
+                        userIdInput.value = '';
+                        setDonorFieldsReadonly(false); // Enable fields when switching away from existing user
                     }
-                })();
+                }
+                if (optionSelect) {
+                    optionSelect.addEventListener('change', toggleExistingUser);
+                    toggleExistingUser();
+                }
 
-                // Parse and render bag details into the Bag Details tab
-                (function populateScheduleBagDetails(raw, totalVol, numBags) {
+                let searchTimer = null;
+                function renderResults(items) {
+                    resultsBox.innerHTML = '';
+                    if (!items || items.length === 0) return;
+                    items.forEach(u => {
+                        const a = document.createElement('button');
+                        a.type = 'button';
+                        a.className = 'list-group-item list-group-item-action';
+                        const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+                        a.innerHTML = `<div class="d-flex justify-content-between"><strong>${name || 'Unnamed user'}</strong><span class="badge bg-secondary">${u.user_type || ''}</span></div><div class="small text-muted">${u.contact_number || ''} • ${u.address || ''}</div>`;
+                        a.addEventListener('click', () => {
+                            userIdInput.value = u.user_id;
+                            if (donorFirst) donorFirst.value = u.first_name || '';
+                            if (donorLast) donorLast.value = u.last_name || '';
+                            if (donorContact) donorContact.value = u.contact_number || '';
+                            if (donorAddress) donorAddress.value = u.address || '';
+                            resultsBox.innerHTML = '';
+                            searchInput.value = name || u.contact_number || '';
+                            // Make donor fields readonly when existing user is selected
+                            setDonorFieldsReadonly(true);
+                        });
+                        resultsBox.appendChild(a);
+                    });
+                }
+                async function doSearch() {
+                    const q = (searchInput.value || '').trim();
+                    if (q.length < 2) { resultsBox.innerHTML = ''; return; }
+                    try {
+                        const resp = await fetch(`{{ route('admin.users.search') }}?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
+                        if (!resp.ok) return;
+                        const data = await resp.json();
+                        renderResults((data && data.data) || []);
+                    } catch (e) { /* ignore */ }
+                }
+                if (searchInput) {
+                    searchInput.addEventListener('input', () => {
+                        if (searchTimer) clearTimeout(searchTimer);
+                        searchTimer = setTimeout(doSearch, 300);
+                    });
+                }
+
+                const bagsEl = document.getElementById('assist_bags');
+                const container = document.getElementById('assist-volume-fields');
+                const wrap = document.getElementById('assist-volumes-container');
+                const totalBox = document.getElementById('assist-total-display');
+                const totalEl = document.getElementById('assist-total');
+                function renderFields() {
+                    const n = parseInt(bagsEl.value || '0', 10);
+                    if (!n || n < 1) { wrap.style.display = 'none'; totalBox.style.display = 'none'; container.innerHTML = ''; return; }
+                    wrap.style.display = 'block'; totalBox.style.display = 'block';
+                    let html = '<div class="row">';
+                    for (let i = 1; i <= n; i++) {
+                        html += `
+                                                                                                                                                                        <div class="col-md-6 mb-2">
+                                                                                                                                                                            <label class="form-label">Bag ${i} (ml)</label>
+                                                                                                                                                                            <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
+                                                                                                                                                                        </div>`;
+                    }
+                    html += '</div>';
+                    container.innerHTML = html;
+                    updateTotal();
+                }
+                function updateTotal() {
+                    const inputs = container.querySelectorAll('.assist-bag-volume');
+                    let t = 0; inputs.forEach(inp => { const v = parseFloat(inp.value || '0'); if (!isNaN(v)) t += v; });
+                    totalEl.textContent = (t % 1 === 0 ? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, ''));
+                }
+                if (bagsEl) { bagsEl.addEventListener('input', renderFields); }
+                container?.addEventListener('input', function (e) { if (e.target && e.target.classList.contains('assist-bag-volume')) updateTotal(); });
+
+                // Submit via AJAX
+                const form = document.getElementById('assistWalkInDonationForm');
+                if (form) {
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const spinner = document.getElementById('assist-spinner');
+                        const text = document.getElementById('assist-submit-text');
+                        const err = document.getElementById('assist-walkin-error');
+                        err.style.display = 'none'; err.textContent = '';
+                        spinner.style.display = 'inline-block'; text.textContent = 'Recording...';
+                        const formData = new FormData(form);
+                        fetch(form.action, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }, body: formData })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data && data.success) {
+                                    const modal = bootstrap.Modal.getInstance(document.getElementById('assistWalkInDonationModal'));
+                                    if (modal) modal.hide();
+                                    setTimeout(() => {
+                                        Swal.fire({ icon: 'success', title: 'Recorded', text: data.message || 'Walk-in donation recorded.', timer: 1400, showConfirmButton: false })
+                                            .then(() => {
+                                                const url = new URL(window.location.href); url.searchParams.set('status', 'success_walk_in'); window.location.href = url.toString();
+                                            });
+                                    }, 200);
+                                } else {
+                                    err.textContent = (data && data.message) ? data.message : 'Failed to record walk-in donation.';
+                                    err.style.display = 'block';
+                                }
+                            })
+                            .catch(() => { err.textContent = 'Failed to record walk-in donation.'; err.style.display = 'block'; })
+                            .finally(() => { spinner.style.display = 'none'; text.textContent = 'Record Donation'; });
+                    });
+                }
+
+                // Reset donor fields to editable when modal is closed
+                const assistModal = document.getElementById('assistWalkInDonationModal');
+                if (assistModal) {
+                    assistModal.addEventListener('hidden.bs.modal', function () {
+                        setDonorFieldsReadonly(false);
+                        // Also clear the hidden user ID and search results
+                        if (userIdInput) userIdInput.value = '';
+                        if (resultsBox) resultsBox.innerHTML = '';
+                        if (searchInput) searchInput.value = '';
+                    });
+                }
+            })();
+        </script>
+        <script>
+            let currentDonationId = null;
+            let currentOriginalVolumes = []; // Store original volumes globally
+
+            // Initialize modal triggers
+            $(document).ready(function () {
+                // Donation type filter for pending donations tab
+                $('#donation-type-filter').on('change', function () {
+                    const selectedType = $(this).val();
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('status', 'pending');
+                    currentUrl.searchParams.set('donation_type', selectedType);
+                    window.location.href = currentUrl.toString();
+                });
+
+                // Walk-in validation modal (handles both .validate-walkin and .validate-walk-in)
+                $(document).on('click', '.validate-walkin, .validate-walk-in', function () {
+                    currentDonationId = $(this).data('id');
+                    const donorName = $(this).data('donor');
+
+                    $('#walkin-donor-name').text(donorName);
+                    $('#walkin-donation-id').val(currentDonationId);
+                    $('#validateWalkInForm').attr('action', `/admin/donations/${currentDonationId}/validate-walkin`);
+                    // reset form state
+                    $('#walkin-form-error').hide().text('');
+                    $('#walkin-volume-fields').html('');
+                    $('#walkin-bags').val('');
+                    $('#walkin-total').text('0 ml');
+                    $('#validateWalkInModal').modal('show');
+                });
+
+                // Schedule pickup modal  
+                $(document).on('click', '.schedule-pickup', function () {
+                    currentDonationId = $(this).data('id');
+                    const donorName = $(this).data('donor');
+                    const donorAddress = $(this).data('address') || 'Not provided';
+                    const lat = $(this).data('latitude');
+                    const lng = $(this).data('longitude');
+                    const firstExpression = $(this).data('first-expression') || '--';
+                    const lastExpression = $(this).data('last-expression') || '--';
+                    const bagDetailsRaw = $(this).attr('data-bag-details');
+                    const totalVolume = $(this).data('total') || 0;
+
+                    // Populate donor info
+                    $('#schedule-donor-name').text(donorName);
+                    $('#schedule-donor-address').text(donorAddress);
+                    $('#schedule-first-expression').text(firstExpression);
+                    $('#schedule-last-expression').text(lastExpression);
+
+                    // Inject location button into modal if coordinates are present
+                    (function setScheduleLocation() {
+                        const hasLat = (lat !== undefined && lat !== null && String(lat) !== '');
+                        const hasLng = (lng !== undefined && lng !== null && String(lng) !== '');
+                        if (hasLat && hasLng) {
+                            const safeName = donorName || '';
+                            const safeAddress = donorAddress || '';
+                            $('#schedule-donor-location').html(
+                                `<button class="btn btn-info btn-sm view-location" title="View on Map" data-donor-name="${$('<div>').text(safeName).html()}" data-donor-address="${$('<div>').text(safeAddress).html()}" data-latitude="${lat}" data-longitude="${lng}"><i class="fas fa-map-marked-alt"></i></button>`
+                            );
+                        } else {
+                            $('#schedule-donor-location').text('-');
+                        }
+                    })();
+
+                    // Robust bag details parser (local copy) to handle HTML-encoded attributes
                     function safeParseBagDetails_local(raw) {
                         if (!raw) return [];
                         if (Array.isArray(raw)) return raw;
@@ -2586,9 +2404,15 @@
                         return [];
                     }
 
-                    const bagDetails = safeParseBagDetails_local(raw);
+                    const bagDetails = safeParseBagDetails_local(bagDetailsRaw);
+
+                    console.log('Parsed bag details:', bagDetails);
+
+                    // Populate bag details table (with editable Volume inputs)
                     const tbody = $('#schedule-bag-details-body');
                     tbody.empty();
+
+                    // Helper function to format time
                     function formatTime12(t) {
                         if (!t) return '--';
                         if (/\b(am|pm)\b/i.test(t)) return t;
@@ -2600,16 +2424,24 @@
                         hh = hh % 12; if (hh === 0) hh = 12;
                         return hh + ':' + mm + ' ' + ampm;
                     }
+
+                    // Map storage keys to readable labels
                     function mapStorage(s) {
                         if (!s || s === '--' || s === '-') return s || '--';
                         const key = String(s).toLowerCase().trim();
+
+                        // common short codes used in home collection form
                         if (key === 'ref' || key === 'refr' || key === 'fridge' || key === 'refrigerator' || key.indexOf('refrig') !== -1) return 'Refrigerator';
                         if (key === 'frz' || key === 'fridge_freeze' || key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1) return 'Freezer';
+
                         if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1 || key.indexOf('room_temp') !== -1 || key === 'roomtemp') return 'Room temperature';
+
+                        // fallback: title case the token and replace underscores
                         return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                     }
 
                     let total = 0;
+                    const numberOfBags = parseInt($(this).data('bags')) || (Array.isArray(bagDetails) ? bagDetails.length : 0) || 0;
                     if (bagDetails && bagDetails.length > 0) {
                         bagDetails.forEach((bag, index) => {
                             const bagNum = bag.bag_number || (index + 1);
@@ -2622,312 +2454,171 @@
                             const method = bag.collection_method || '--';
 
                             const row = `
-                                                            <tr>
-                                                                <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                                                <td>${time}</td>
-                                                                <td>${date}</td>
-                                                                <td>
-                                                                    <div class="input-group input-group-sm">
-                                                                        <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
-                                                                        <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
-                                                                        <span class="input-group-text">ml</span>
-                                                                    </div>
-                                                                </td>
-                                                                <td>${storageLabel}</td>
-                                                                <td class="text-end">${temp}</td>
-                                                                <td><small>${method}</small></td>
-                                                            </tr>
-                                                        `;
+                                                                                                                                                                            <tr>
+                                                                                                                                                                                <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                                                                                                                                <td>${time}</td>
+                                                                                                                                                                                <td>${date}</td>
+                                                                                                                                                                                <td>
+                                                                                                                                                                                    <div class="input-group input-group-sm">
+                                                                                                                                                                                        <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
+                                                                                                                                                                                        <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
+                                                                                                                                                                                        <span class="input-group-text">ml</span>
+                                                                                                                                                                                    </div>
+                                                                                                                                                                                </td>
+                                                                                                                                                                                <td>${storageLabel}</td>
+                                                                                                                                                                                <td class="text-end">${temp}</td>
+                                                                                                                                                                                <td><small>${method}</small></td>
+                                                                                                                                                                            </tr>
+                                                                                                                                                                        `;
                             tbody.append(row);
                             const v = parseFloat(volume); if (!isNaN(v)) total += v;
                         });
-                    } else if (numBags > 0) {
-                        for (let i = 0; i < numBags; i++) {
+                    } else if (numberOfBags > 0) {
+                        for (let i = 0; i < numberOfBags; i++) {
                             const row = `
-                                                            <tr>
-                                                                <td class="text-center fw-bold">Bag ${i + 1}</td>
-                                                                <td>--</td>
-                                                                <td>--</td>
-                                                                <td>
-                                                                    <div class="input-group input-group-sm">
-                                                                        <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
-                                                                        <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
-                                                                        <span class="input-group-text">ml</span>
-                                                                    </div>
-                                                                </td>
-                                                                <td>--</td>
-                                                                <td class="text-end">--</td>
-                                                                <td><small>--</small></td>
-                                                            </tr>
-                                                        `;
+                                                                                                                                                                            <tr>
+                                                                                                                                                                                <td class="text-center fw-bold">Bag ${i + 1}</td>
+                                                                                                                                                                                <td>--</td>
+                                                                                                                                                                                <td>--</td>
+                                                                                                                                                                                <td>
+                                                                                                                                                                                    <div class="input-group input-group-sm">
+                                                                                                                                                                                        <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
+                                                                                                                                                                                        <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
+                                                                                                                                                                                        <span class="input-group-text">ml</span>
+                                                                                                                                                                                    </div>
+                                                                                                                                                                                </td>
+                                                                                                                                                                                <td>--</td>
+                                                                                                                                                                                <td class="text-end">--</td>
+                                                                                                                                                                                <td><small>--</small></td>
+                                                                                                                                                                            </tr>
+                                                                                                                                                                        `;
                             tbody.append(row);
                         }
                     } else {
                         tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
                     }
 
-                    // set total volume display
+                    function updateScheduleTotal() {
+                        let sum = 0;
+                        $('#schedule-bag-details-body .schedule-bag-volume').each(function () {
+                            const v = parseFloat($(this).val());
+                            if (!isNaN(v)) sum += v;
+                        });
+                        $('#schedule-total-volume').text(sum.toFixed(2));
+                    }
+                    // Initial total
                     if (total > 0) {
                         $('#schedule-total-volume').text(total.toFixed(2));
                     } else {
-                        const displayTotal = (parseFloat(totalVol) || 0);
+                        // fallback to server-provided total
+                        const displayTotal = (parseFloat(totalVolume) || 0);
                         $('#schedule-total-volume').text(displayTotal.toFixed(2));
                     }
-                })(bagDetailsRaw, totalVolume, numberOfBags);
+                    // Live updating: keep function available but volumes are rendered as hidden inputs
+                    // so updates won't be triggered by user input here.
+                    $('#schedule-bag-details-body').off('input.scheduleVol').on('input.scheduleVol', '.schedule-bag-volume', updateScheduleTotal);
 
-                // Prefill date/time inputs; #pickup-date expects ISO yyyy-mm-dd, #pickup-time expects 24hr HH:MM
-                $('#pickup-date').val(dateIso || '');
+                    $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/schedule-pickup`);
+                    $('#schedulePickupModal').modal('show');
 
-                // Convert timeRaw (possibly 'g:i A') to 24-hour HH:MM for input if necessary
-                function to24Hour(t) {
-                    if (!t) return '';
-                    if (/^\d{2}:\d{2}$/.test(t)) return t;
-                    const m = t.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
-                    if (!m) return '';
-                    let hh = parseInt(m[1], 10);
-                    const mm = m[2];
-                    const ampm = m[3].toLowerCase();
-                    if (ampm === 'pm' && hh < 12) hh += 12;
-                    if (ampm === 'am' && hh === 12) hh = 0;
-                    return (hh < 10 ? '0' + hh : hh) + ':' + mm;
-                }
-
-                $('#pickup-time').val(to24Hour(timeRaw));
-
-                // Don't hide donor info and bag details tabs - they should remain visible and populated
-                // The tabs allow users to review donation details while rescheduling
-                // Only hide unnecessary elements if needed (currently keeping all tabs visible)
-
-                // Set form action to reschedule endpoint and update modal title/button
-                $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/reschedule-pickup`);
-                $('#schedulePickupModalLabel').text('Reschedule Home Collection Pickup');
-                $('#schedulePickupForm button[type="submit"]').text('Reschedule Pickup');
-
-                $('#schedulePickupModal').modal('show');
-            });
-
-            // Home collection validation modal - Use Bootstrap's modal show event
-            $('#validateHomeCollectionModal').on('show.bs.modal', function (event) {
-                // Button that triggered the modal
-                const button = $(event.relatedTarget);
-
-                currentDonationId = button.data('id');
-                const donorName = button.data('donor');
-                const numberOfBags = button.data('bags');
-                const bagDetailsRaw = button.attr('data-bag-details');
-                const totalVolume = button.data('total');
-
-                // Optional fields sent via data-attributes
-                const donorAddress = button.data('address') || '';
-                const scheduledDate = button.data('date') || '';
-                const scheduledTimeRaw = button.data('time') || '';
-                // first/last expression may be present on some buttons (from earlier flows)
-                const firstExpression = button.data('first-expression') || button.data('first_expression') || '';
-                const lastExpression = button.data('last-expression') || button.data('last_expression') || '';
-
-                console.log('Button Data:', {
-                    id: currentDonationId,
-                    donorName: donorName,
-                    donorAddress: donorAddress,
-                    scheduledDate: scheduledDate,
-                    scheduledTimeRaw: scheduledTimeRaw,
-                    numberOfBags: numberOfBags,
-                    totalVolume: totalVolume
+                    // Preload lifestyle checklist for this donation (Tab 3)
+                    try { loadScheduleScreening(currentDonationId); } catch (e) { console.warn('Failed to load lifestyle checklist', e); }
                 });
 
-                // Robust bag details parser: handles JSON, HTML-encoded attributes, and hex-escaped JSON
-                function safeParseBagDetails(raw) {
-                    if (!raw) return [];
-                    if (Array.isArray(raw)) return raw;
-                    if (typeof raw !== 'string') return [];
+                // Reschedule existing pickup - show only date/time in the schedule modal
+                $(document).on('click', '.reschedule-pickup', function () {
+                    currentDonationId = $(this).data('id');
+                    const dateIso = $(this).data('date-iso') || '';
+                    const timeRaw = $(this).data('time') || '';
 
-                    const s = raw.trim();
-                    if (s === '' || s === 'null') return [];
+                    // Also populate donor and bag details so tabs have content (even if hidden initially)
+                    const donorName = $(this).data('donor') || '';
+                    const donorAddress = $(this).data('address') || 'Not provided';
+                    const lat = $(this).data('latitude');
+                    const lng = $(this).data('longitude');
+                    const firstExpression = $(this).data('first-expression') || '--';
+                    const lastExpression = $(this).data('last-expression') || '--';
+                    const bagDetailsRaw = $(this).attr('data-bag-details');
+                    const totalVolume = $(this).data('total') || 0;
+                    const numberOfBags = $(this).data('bags') || 0;
 
-                    // 1) Try direct JSON.parse
-                    try {
-                        return JSON.parse(s);
-                    } catch (e) {
-                        // continue to fallbacks
-                    }
+                    // Populate donor info (so Donor Info tab is populated)
+                    $('#schedule-donor-name').text(donorName);
+                    $('#schedule-donor-address').text(donorAddress);
+                    $('#schedule-first-expression').text(firstExpression);
+                    $('#schedule-last-expression').text(lastExpression);
 
-                    // 2) Try decoding HTML entities (e.g. &quot;) using a textarea
-                    try {
-                        const txt = document.createElement('textarea');
-                        txt.innerHTML = s;
-                        const decoded = txt.value;
-                        if (decoded && decoded !== s) {
-                            try { return JSON.parse(decoded); } catch (e) { }
-                        }
-                    } catch (e) { }
-
-                    // 3) Replace common HTML entities and attempt parse
-                    try {
-                        const replaced = s.replace(/&quot;/g, '"').replace(/&apos;|&#039;/g, "'")
-                            .replace(/&amp;/g, '&');
-                        return JSON.parse(replaced);
-                    } catch (e) { }
-
-                    // 4) If the string looks like a PHP-encoded JSON with escaped quotes (\"), unescape and parse
-                    try {
-                        const unescaped = s.replace(/\\\"/g, '"').replace(/\\'/g, "'");
-                        return JSON.parse(unescaped);
-                    } catch (e) { }
-
-                    // Give up
-                    return [];
-                }
-
-                const bagDetails = safeParseBagDetails(bagDetailsRaw);
-
-                console.log('Validate modal - Parsed bag details:', bagDetails);
-                // Pre-render parsed bag details (button data) immediately for snappy UI
-                try {
-                    if (bagDetails && bagDetails.length > 0) {
-                        renderBagTables(bagDetails);
-                    }
-                } catch (e) {
-                    console.warn('renderBagTables failed during pre-render:', e);
-                }
-                // Debug panel suppressed in production. To enable, set window.VALIDATE_HOME_DEBUG = true
-                if (window.VALIDATE_HOME_DEBUG) {
-                    try {
-                        const dbg = $('#validate-home-debug');
-                        const dump = {
-                            buttonData: {
-                                id: currentDonationId,
-                                donorName: donorName,
-                                donorAddress: donorAddress,
-                                scheduledDate: scheduledDate,
-                                scheduledTimeRaw: scheduledTimeRaw,
-                                numberOfBags: numberOfBags,
-                                totalVolume: totalVolume,
-                                rawBagDetailsAttr: bagDetailsRaw
-                            },
-                            parsedBagDetails: bagDetails
-                        };
-                        dbg.text(JSON.stringify(dump, null, 2));
-                        dbg.show();
-                    } catch (e) {
-                        console.warn('Failed to populate validate debug panel', e);
-                    }
-                }
-
-                // Set donation id and number of bags
-                $('#home-donation-id').val(currentDonationId);
-                $('#home-bags').val(numberOfBags || '');
-
-                // Format time to 12-hour with AM/PM if possible
-                function formatTime12(t) {
-                    if (!t) return '';
-                    // If already contains AM/PM, leave as-is
-                    if (/\b(am|pm)\b/i.test(t)) return t;
-                    // Match HH:MM or HH:MM:SS
-                    const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-                    if (!m) return t;
-                    let hh = parseInt(m[1], 10);
-                    const mm = m[2];
-                    const ampm = hh >= 12 ? 'PM' : 'AM';
-                    hh = hh % 12; if (hh === 0) hh = 12;
-                    return hh + ':' + mm + ' ' + ampm;
-                }
-
-                // Populate donor info immediately with data attributes (will be updated by AJAX if available)
-                $('#validate-home-donor-name').text(donorName || '');
-                $('#validate-home-donor-address').text(donorAddress || 'Not provided');
-                $('#validate-home-date').text(scheduledDate || '');
-                $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || '');
-                // populate first/last expression if available from button data (AJAX will override if server provides)
-                function formatDateShort(d) {
-                    if (!d) return '';
-                    try {
-                        const dt = new Date(d);
-                        if (isNaN(dt)) return d;
-                        return dt.toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' });
-                    } catch (e) { return d; }
-                }
-                $('#validate-home-first-expression').text(formatDateShort(firstExpression) || '--');
-                $('#validate-home-last-expression').text(formatDateShort(lastExpression) || '--');
-
-                // Map storage keys to readable labels
-                function mapStorage(s) {
-                    if (!s || s === '--' || s === '-') return s || '--';
-                    const key = String(s).toLowerCase().trim();
-
-                    // common short codes used in home collection form
-                    if (key === 'ref' || key === 'refr' || key === 'fridge' || key === 'refrigerator' || key.indexOf('refrig') !== -1) return 'Refrigerator';
-                    if (key === 'frz' || key === 'fridge_freeze' || key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1) return 'Freezer';
-
-                    if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1 || key.indexOf('room_temp') !== -1 || key === 'roomtemp') return 'Room temperature';
-
-                    // fallback: title case the token and replace underscores
-                    return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                }
-
-                // Set form action
-                $('#validateHomeCollectionForm').attr('action', `/admin/donations/${currentDonationId}/validate-pickup`);
-
-                // Fetch full donation details from server (prefer fresh source)
-                const tbody = $('#home-bag-details-body');
-                tbody.empty();
-
-                let totalVol = 0;
-                const volumeFieldsContainer = $('#home-volume-fields'); // legacy container, keep empty
-                volumeFieldsContainer.empty();
-
-                // Request donation details from server to populate both original (readonly) and editable tables
-                $.ajax({
-                    url: `/admin/donations/${currentDonationId}`,
-                    method: 'GET',
-                    success: function (response) {
-                        console.log('AJAX Response:', response);
-                        console.log('Number of Bags from button:', numberOfBags);
-                        console.log('Bag Details from button:', bagDetails);
-
-                        const donationData = (response && response.donation) ? response.donation : null;
-                        console.log('Donation Data:', donationData);
-
-                        // Populate donor info - prioritize server data, fallback to button data
-                        if (donationData) {
-                            $('#validate-home-donor-name').text(donationData.donor_name || donorName || 'N/A');
-                            $('#validate-home-donor-address').text(donationData.address || donorAddress || 'Not provided');
-                            $('#validate-home-date').text(donationData.donation_date || scheduledDate || 'N/A');
-                            $('#validate-home-time').text(donationData.donation_time || formatTime12(scheduledTimeRaw) || 'N/A');
-                            // Set first/last expression if present on the returned donation
-                            try {
-                                const f = donationData.first_expression_date || donationData.first_expression || null;
-                                const l = donationData.last_expression_date || donationData.last_expression || null;
-                                const fmt = function (d) {
-                                    if (!d) return '';
-                                    try { const dt = new Date(d); if (isNaN(dt)) return d; return dt.toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' }); } catch (e) { return d; }
-                                };
-                                $('#validate-home-first-expression').text(fmt(f) || '--');
-                                $('#validate-home-last-expression').text(fmt(l) || '--');
-                            } catch (e) { console.warn('Failed to set first/last expression dates', e); }
+                    // Inject location button into modal if coordinates are present
+                    (function setScheduleLocation() {
+                        const hasLat = (lat !== undefined && lat !== null && String(lat) !== '');
+                        const hasLng = (lng !== undefined && lng !== null && String(lng) !== '');
+                        if (hasLat && hasLng) {
+                            const safeName = donorName || '';
+                            const safeAddress = donorAddress || '';
+                            $('#schedule-donor-location').html(
+                                `<button class="btn btn-info btn-sm view-location" title="View on Map" data-donor-name="${$('<div>').text(safeName).html()}" data-donor-address="${$('<div>').text(safeAddress).html()}" data-latitude="${lat}" data-longitude="${lng}"><i class="fas fa-map-marked-alt"></i></button>`
+                            );
                         } else {
-                            console.warn('No donation data from server, using button data');
-                            $('#validate-home-donor-name').text(donorName || 'N/A');
-                            $('#validate-home-donor-address').text(donorAddress || 'Not provided');
-                            $('#validate-home-date').text(scheduledDate || 'N/A');
-                            $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || 'N/A');
+                            $('#schedule-donor-location').text('-');
+                        }
+                    })();
+
+                    // Parse and render bag details into the Bag Details tab
+                    (function populateScheduleBagDetails(raw, totalVol, numBags) {
+                        function safeParseBagDetails_local(raw) {
+                            if (!raw) return [];
+                            if (Array.isArray(raw)) return raw;
+                            if (typeof raw !== 'string') return [];
+                            const s = raw.trim();
+                            if (s === '' || s === 'null') return [];
+                            try { return JSON.parse(s); } catch (e) { }
+                            try {
+                                const txt = document.createElement('textarea');
+                                txt.innerHTML = s;
+                                const decoded = txt.value;
+                                if (decoded && decoded !== s) {
+                                    try { return JSON.parse(decoded); } catch (e) { }
+                                }
+                            } catch (e) { }
+                            try {
+                                const replaced = s.replace(/&quot;/g, '"').replace(/&apos;|&#039;/g, "'").replace(/&amp;/g, '&');
+                                return JSON.parse(replaced);
+                            } catch (e) { }
+                            try {
+                                const unescaped = s.replace(/\\\"/g, '"').replace(/\\'/g, "'");
+                                return JSON.parse(unescaped);
+                            } catch (e) { }
+                            return [];
                         }
 
-                        const effectiveBags = donationData?.bag_details && donationData.bag_details.length > 0
-                            ? donationData.bag_details
-                            : (bagDetails && bagDetails.length > 0 ? bagDetails : []);
+                        const bagDetails = safeParseBagDetails_local(raw);
+                        const tbody = $('#schedule-bag-details-body');
+                        tbody.empty();
+                        function formatTime12(t) {
+                            if (!t) return '--';
+                            if (/\b(am|pm)\b/i.test(t)) return t;
+                            const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+                            if (!m) return t;
+                            let hh = parseInt(m[1], 10);
+                            const mm = m[2];
+                            const ampm = hh >= 12 ? 'PM' : 'AM';
+                            hh = hh % 12; if (hh === 0) hh = 12;
+                            return hh + ':' + mm + ' ' + ampm;
+                        }
+                        function mapStorage(s) {
+                            if (!s || s === '--' || s === '-') return s || '--';
+                            const key = String(s).toLowerCase().trim();
+                            if (key === 'ref' || key === 'refr' || key === 'fridge' || key === 'refrigerator' || key.indexOf('refrig') !== -1) return 'Refrigerator';
+                            if (key === 'frz' || key === 'fridge_freeze' || key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1) return 'Freezer';
+                            if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1 || key.indexOf('room_temp') !== -1 || key === 'roomtemp') return 'Room temperature';
+                            return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                        }
 
-                        console.log('Effective Bags:', effectiveBags);
-                        console.log('Effective Bags Length:', effectiveBags.length);
-
-                        // We no longer show a separate original (read-only) table.
-                        // The editable table below will be populated using effectiveBags (server-preferred) or button data fallback.
-
-                        // Build editable table (use effectiveBags or numberOfBags)
-                        if (effectiveBags && effectiveBags.length > 0) {
-                            currentOriginalVolumes = [];
-                            effectiveBags.forEach((bag, index) => {
+                        let total = 0;
+                        if (bagDetails && bagDetails.length > 0) {
+                            bagDetails.forEach((bag, index) => {
                                 const bagNum = bag.bag_number || (index + 1);
-                                const time = formatTime12(bag.time) || '';
+                                const time = formatTime12(bag.time) || '--';
                                 const date = bag.date || '--';
                                 const volume = bag.volume || '';
                                 const storage = bag.storage_location || '--';
@@ -2935,177 +2626,444 @@
                                 const temp = bag.temperature || '--';
                                 const method = bag.collection_method || '--';
 
-                                currentOriginalVolumes.push(volume || '');
-                                totalVol += parseFloat(volume) || 0;
-
                                 const row = `
-                                                                                                                                            <tr>
-                                                                                                                                                <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${bagNum}</td>
-                                                                                                                                                <td style="padding: 8px;">
-                                                                                                                                                    <input type="text" name="bag_time[]" class="form-control" value="${time}" placeholder="e.g. 4:49 PM" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                </td>
-                                                                                                                                                <td style="padding: 8px;">
-                                                                                                                                                    <input type="text" name="bag_date[]" class="form-control" value="${bag.date || ''}" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                </td>
-                                                                                                                                                <td style="padding: 8px;">
-                                                                                                                                                    <div class="input-group">
-                                                                                                                                                        <input type="number"
-                                                                                                                                                               id="home_bag_volume_${index + 1}"
-                                                                                                                                                               name="bag_volumes[]"
-                                                                                                                                                               class="form-control home-bag-volume-input"
-                                                                                                                                                               step="0.01"
-                                                                                                                                                               min="0.01"
-                                                                                                                                                               value="${volume}"
-                                                                                                                                                               placeholder="400"
-                                                                                                                                                               style="border: 1px solid #dee2e6; padding: 8px; text-align: right;"
-                                                                                                                                                               required>
-                                                                                                                                                        <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
-                                                                                                                                                    </div>
-                                                                                                                                                </td>
-                                                                                                                                                <td style="padding: 8px;">
-                                                                                                                                                    <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                        ${(() => {
-                                        const raw = bag.storage_location || '';
-                                        const key = String(raw).toLowerCase();
-                                        if (key.indexOf('ref') !== -1 || key.indexOf('refrig') !== -1 || key.indexOf('fridge') !== -1) return `
-                                                                                                                                                                <option value="Refrigerator" selected>Refrigerator</option>
-                                                                                                                                                                <option value="Freezer">Freezer</option>
-                                                                                                                                                                <option value="Room temperature">Room temperature</option>
-                                                                                                                                                                <option value="Other">Other</option>
-                                                                                                                                                            `;
-                                        if (key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1 || key.indexOf('frz') !== -1) return `
-                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                                <option value="Freezer" selected>Freezer</option>
-                                                                                                                                                                <option value="Room temperature">Room temperature</option>
-                                                                                                                                                                <option value="Other">Other</option>
-                                                                                                                                                            `;
-                                        if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1) return `
-                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                                <option value="Freezer">Freezer</option>
-                                                                                                                                                                <option value="Room temperature" selected>Room temperature</option>
-                                                                                                                                                                <option value="Other">Other</option>
-                                                                                                                                                            `;
-                                        if (raw && raw !== '') return `
-                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                                <option value="Freezer">Freezer</option>
-                                                                                                                                                                <option value="Room temperature">Room temperature</option>
-                                                                                                                                                                <option value="Other" selected>Other</option>
-                                                                                                                                                            `;
-                                        return `
-                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                                <option value="Freezer">Freezer</option>
-                                                                                                                                                                <option value="Room temperature">Room temperature</option>
-                                                                                                                                                                <option value="Other">Other</option>
-                                                                                                                                                            `;
-                                    })()}
-                                                                                                                                                    </select>
-                                                                                                                                                </td>
-                                                                                                                                                <td style="padding: 8px;">
-                                                                                                                                                    <input type="text" name="bag_temp[]" class="form-control" value="${bag.temperature || ''}" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
-                                                                                                                                                </td>
-                                                                                                                                                <td style="padding: 8px;">
-                                                                                                                                                    <input type="text" name="bag_method[]" class="form-control" value="${bag.collection_method || ''}" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                </td>
-                                                                                                                                            </tr>`;
+                                                                    <tr>
+                                                                        <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                        <td>${time}</td>
+                                                                        <td>${date}</td>
+                                                                        <td>
+                                                                            <div class="input-group input-group-sm">
+                                                                                <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
+                                                                                <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
+                                                                                <span class="input-group-text">ml</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>${storageLabel}</td>
+                                                                        <td class="text-end">${temp}</td>
+                                                                        <td><small>${method}</small></td>
+                                                                    </tr>
+                                                                `;
                                 tbody.append(row);
-                                tbody.closest('.table-responsive').show();
+                                const v = parseFloat(volume); if (!isNaN(v)) total += v;
                             });
-                        } else {
-                            // No bag details array: generate editable rows based on numberOfBags
-                            const n = parseInt(numberOfBags) || 0;
-                            if (n > 0) {
-                                for (let i = 1; i <= n; i++) {
-                                    const row = `
-                                                                                                                                                        <tr>
-                                                                                                                                                            <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${i}</td>
-                                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                                <input type="text" name="bag_time[]" class="form-control" value="" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                            </td>
-                                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                                <input type="text" name="bag_date[]" class="form-control" value="" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                            </td>
-                                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                                <div class="input-group">
-                                                                                                                                                                    <input type="number"
-                                                                                                                                                                           id="home_bag_volume_${i}"
-                                                                                                                                                                           name="bag_volumes[]"
-                                                                                                                                                                           class="form-control home-bag-volume-input"
-                                                                                                                                                                           step="0.01" min="0.01" placeholder="400" style="border: 1px solid #dee2e6; padding: 8px; text-align: right;" required>
-                                                                                                                                                                    <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
-                                                                                                                                                                </div>
-                                                                                                                                                            </td>
-                                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                                <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                                    <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                                    <option value="Freezer">Freezer</option>
-                                                                                                                                                                    <option value="Room temperature">Room temperature</option>
-                                                                                                                                                                    <option value="Other">Other</option>
-                                                                                                                                                                </select>
-                                                                                                                                                            </td>
-                                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                                <input type="text" name="bag_temp[]" class="form-control" value="" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
-                                                                                                                                                            </td>
-                                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                                <input type="text" name="bag_method[]" class="form-control" value="" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                            </td>
-                                                                                                                                                        </tr>`;
-                                    tbody.append(row);
-                                }
-                                totalVol = 0;
-                            } else {
-                                tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
-                                totalVol = parseFloat(totalVolume) || 0;
+                        } else if (numBags > 0) {
+                            for (let i = 0; i < numBags; i++) {
+                                const row = `
+                                                                    <tr>
+                                                                        <td class="text-center fw-bold">Bag ${i + 1}</td>
+                                                                        <td>--</td>
+                                                                        <td>--</td>
+                                                                        <td>
+                                                                            <div class="input-group input-group-sm">
+                                                                                <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
+                                                                                <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
+                                                                                <span class="input-group-text">ml</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>--</td>
+                                                                        <td class="text-end">--</td>
+                                                                        <td><small>--</small></td>
+                                                                    </tr>
+                                                                `;
+                                tbody.append(row);
                             }
+                        } else {
+                            tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
                         }
 
-                        // Update total display
-                        $('#home-total').text(totalVol.toFixed(2) + ' ml');
+                        // set total volume display
+                        if (total > 0) {
+                            $('#schedule-total-volume').text(total.toFixed(2));
+                        } else {
+                            const displayTotal = (parseFloat(totalVol) || 0);
+                            $('#schedule-total-volume').text(displayTotal.toFixed(2));
+                        }
+                    })(bagDetailsRaw, totalVolume, numberOfBags);
 
-                        // Live update total when editing volumes
-                        $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function () {
-                            let sum = 0;
-                            $('#home-bag-details-body .home-bag-volume-input').each(function () {
-                                const v = parseFloat($(this).val());
-                                if (!isNaN(v)) sum += v;
-                            });
-                            $('#home-total').text(sum.toFixed(2) + ' ml');
-                        });
+                    // Prefill date/time inputs; #pickup-date expects ISO yyyy-mm-dd, #pickup-time expects 24hr HH:MM
+                    $('#pickup-date').val(dateIso || '');
 
-                        $('#home-form-error').hide().text('');
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Failed to fetch donation for validation:', error);
+                    // Convert timeRaw (possibly 'g:i A') to 24-hour HH:MM for input if necessary
+                    function to24Hour(t) {
+                        if (!t) return '';
+                        if (/^\d{2}:\d{2}$/.test(t)) return t;
+                        const m = t.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+                        if (!m) return '';
+                        let hh = parseInt(m[1], 10);
+                        const mm = m[2];
+                        const ampm = m[3].toLowerCase();
+                        if (ampm === 'pm' && hh < 12) hh += 12;
+                        if (ampm === 'am' && hh === 12) hh = 0;
+                        return (hh < 10 ? '0' + hh : hh) + ':' + mm;
+                    }
 
-                        // Populate donor info with fallback data attributes
-                        $('#validate-home-donor-name').text(donorName || '');
-                        $('#validate-home-donor-address').text(donorAddress || 'Not provided');
-                        $('#validate-home-date').text(scheduledDate || '');
-                        $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || '');
-                        // fallback for first/last expression (use pre-read values if available)
+                    $('#pickup-time').val(to24Hour(timeRaw));
+
+                    // Don't hide donor info and bag details tabs - they should remain visible and populated
+                    // The tabs allow users to review donation details while rescheduling
+                    // Only hide unnecessary elements if needed (currently keeping all tabs visible)
+
+                    // Set form action to reschedule endpoint and update modal title/button
+                    $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/reschedule-pickup`);
+                    $('#schedulePickupModalLabel').text('Reschedule Home Collection Pickup');
+                    $('#schedulePickupForm button[type="submit"]').text('Reschedule Pickup');
+
+                    $('#schedulePickupModal').modal('show');
+                });
+
+                // Home collection validation modal - Use Bootstrap's modal show event
+                $('#validateHomeCollectionModal').on('show.bs.modal', function (event) {
+                    // Button that triggered the modal
+                    const button = $(event.relatedTarget);
+
+                    currentDonationId = button.data('id');
+                    const donorName = button.data('donor');
+                    const numberOfBags = button.data('bags');
+                    const bagDetailsRaw = button.attr('data-bag-details');
+                    const totalVolume = button.data('total');
+
+                    // Optional fields sent via data-attributes
+                    const donorAddress = button.data('address') || '';
+                    const scheduledDate = button.data('date') || '';
+                    const scheduledTimeRaw = button.data('time') || '';
+                    // first/last expression may be present on some buttons (from earlier flows)
+                    const firstExpression = button.data('first-expression') || button.data('first_expression') || '';
+                    const lastExpression = button.data('last-expression') || button.data('last_expression') || '';
+
+                    console.log('Button Data:', {
+                        id: currentDonationId,
+                        donorName: donorName,
+                        donorAddress: donorAddress,
+                        scheduledDate: scheduledDate,
+                        scheduledTimeRaw: scheduledTimeRaw,
+                        numberOfBags: numberOfBags,
+                        totalVolume: totalVolume
+                    });
+
+                    // Robust bag details parser: handles JSON, HTML-encoded attributes, and hex-escaped JSON
+                    function safeParseBagDetails(raw) {
+                        if (!raw) return [];
+                        if (Array.isArray(raw)) return raw;
+                        if (typeof raw !== 'string') return [];
+
+                        const s = raw.trim();
+                        if (s === '' || s === 'null') return [];
+
+                        // 1) Try direct JSON.parse
                         try {
-                            $('#validate-home-first-expression').text(formatDateShort(firstExpression) || '--');
-                            $('#validate-home-last-expression').text(formatDateShort(lastExpression) || '--');
-                        } catch (e) { console.warn('No first/last expression available'); }
+                            return JSON.parse(s);
+                        } catch (e) {
+                            // continue to fallbacks
+                        }
 
-                        // Fallback: use parsed data-bag-details already available
+                        // 2) Try decoding HTML entities (e.g. &quot;) using a textarea
+                        try {
+                            const txt = document.createElement('textarea');
+                            txt.innerHTML = s;
+                            const decoded = txt.value;
+                            if (decoded && decoded !== s) {
+                                try { return JSON.parse(decoded); } catch (e) { }
+                            }
+                        } catch (e) { }
+
+                        // 3) Replace common HTML entities and attempt parse
+                        try {
+                            const replaced = s.replace(/&quot;/g, '"').replace(/&apos;|&#039;/g, "'")
+                                .replace(/&amp;/g, '&');
+                            return JSON.parse(replaced);
+                        } catch (e) { }
+
+                        // 4) If the string looks like a PHP-encoded JSON with escaped quotes (\"), unescape and parse
+                        try {
+                            const unescaped = s.replace(/\\\"/g, '"').replace(/\\'/g, "'");
+                            return JSON.parse(unescaped);
+                        } catch (e) { }
+
+                        // Give up
+                        return [];
+                    }
+
+                    const bagDetails = safeParseBagDetails(bagDetailsRaw);
+
+                    console.log('Validate modal - Parsed bag details:', bagDetails);
+                    // Pre-render parsed bag details (button data) immediately for snappy UI
+                    try {
                         if (bagDetails && bagDetails.length > 0) {
-                            bagDetails.forEach((bag, index) => {
-                                const bagNum = bag.bag_number || (index + 1);
-                                const time = formatTime12(bag.time) || '--';
-                                const date = bag.date || '--';
-                                const volume = bag.volume || 0;
-                                const storageLabel = mapStorage(bag.storage_location || '--');
-                                const temp = bag.temperature || '--';
-                                const method = bag.collection_method || '--';
+                            renderBagTables(bagDetails);
+                        }
+                    } catch (e) {
+                        console.warn('renderBagTables failed during pre-render:', e);
+                    }
+                    // Debug panel suppressed in production. To enable, set window.VALIDATE_HOME_DEBUG = true
+                    if (window.VALIDATE_HOME_DEBUG) {
+                        try {
+                            const dbg = $('#validate-home-debug');
+                            const dump = {
+                                buttonData: {
+                                    id: currentDonationId,
+                                    donorName: donorName,
+                                    donorAddress: donorAddress,
+                                    scheduledDate: scheduledDate,
+                                    scheduledTimeRaw: scheduledTimeRaw,
+                                    numberOfBags: numberOfBags,
+                                    totalVolume: totalVolume,
+                                    rawBagDetailsAttr: bagDetailsRaw
+                                },
+                                parsedBagDetails: bagDetails
+                            };
+                            dbg.text(JSON.stringify(dump, null, 2));
+                            dbg.show();
+                        } catch (e) {
+                            console.warn('Failed to populate validate debug panel', e);
+                        }
+                    }
 
-                                const originalRow = `\n                                    <tr class="text-center">\n                                        <td>Bag ${bagNum}</td>\n                                        <td>${time}</td>\n                                        <td>${date}</td>\n                                        <td>${volume}</td>\n                                        <td>${storageLabel}</td>\n                                        <td class="text-end">${temp}</td>\n                                        <td><small>${method}</small></td>\n                                    </tr>`;
-                                originalTbody.append(originalRow);
+                    // Set donation id and number of bags
+                    $('#home-donation-id').val(currentDonationId);
+                    $('#home-bags').val(numberOfBags || '');
 
-                                const row = `\n                                    <tr>\n                                        <td class="text-center fw-bold">Bag ${bagNum}</td>\n                                        <td>${time}</td>\n                                        <td>${date}</td>\n                                        <td>\n                                            <div class="input-group input-group-sm">\n                                                <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]" class="form-control home-bag-volume-input" step="0.01" min="0.01" value="${volume}" placeholder="ml" required>\n                                                <span class="input-group-text">ml</span>\n                                            </div>\n                                        </td>\n                                        <td>${storageLabel}</td>\n                                        <td class="text-end">${temp}</td>\n                                        <td><small>${method}</small></td>\n                                    </tr>`;
-                                tbody.append(row);
-                                tbody.closest('.table-responsive').show();
-                                totalVol += parseFloat(volume) || 0;
-                            });
+                    // Format time to 12-hour with AM/PM if possible
+                    function formatTime12(t) {
+                        if (!t) return '';
+                        // If already contains AM/PM, leave as-is
+                        if (/\b(am|pm)\b/i.test(t)) return t;
+                        // Match HH:MM or HH:MM:SS
+                        const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+                        if (!m) return t;
+                        let hh = parseInt(m[1], 10);
+                        const mm = m[2];
+                        const ampm = hh >= 12 ? 'PM' : 'AM';
+                        hh = hh % 12; if (hh === 0) hh = 12;
+                        return hh + ':' + mm + ' ' + ampm;
+                    }
+
+                    // Populate donor info immediately with data attributes (will be updated by AJAX if available)
+                    $('#validate-home-donor-name').text(donorName || '');
+                    $('#validate-home-donor-address').text(donorAddress || 'Not provided');
+                    $('#validate-home-date').text(scheduledDate || '');
+                    $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || '');
+                    // populate first/last expression if available from button data (AJAX will override if server provides)
+                    function formatDateShort(d) {
+                        if (!d) return '';
+                        try {
+                            const dt = new Date(d);
+                            if (isNaN(dt)) return d;
+                            return dt.toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' });
+                        } catch (e) { return d; }
+                    }
+                    $('#validate-home-first-expression').text(formatDateShort(firstExpression) || '--');
+                    $('#validate-home-last-expression').text(formatDateShort(lastExpression) || '--');
+
+                    // Map storage keys to readable labels
+                    function mapStorage(s) {
+                        if (!s || s === '--' || s === '-') return s || '--';
+                        const key = String(s).toLowerCase().trim();
+
+                        // common short codes used in home collection form
+                        if (key === 'ref' || key === 'refr' || key === 'fridge' || key === 'refrigerator' || key.indexOf('refrig') !== -1) return 'Refrigerator';
+                        if (key === 'frz' || key === 'fridge_freeze' || key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1) return 'Freezer';
+
+                        if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1 || key.indexOf('room_temp') !== -1 || key === 'roomtemp') return 'Room temperature';
+
+                        // fallback: title case the token and replace underscores
+                        return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    }
+
+                    // Set form action
+                    $('#validateHomeCollectionForm').attr('action', `/admin/donations/${currentDonationId}/validate-pickup`);
+
+                    // Fetch full donation details from server (prefer fresh source)
+                    const tbody = $('#home-bag-details-body');
+                    tbody.empty();
+
+                    let totalVol = 0;
+                    const volumeFieldsContainer = $('#home-volume-fields'); // legacy container, keep empty
+                    volumeFieldsContainer.empty();
+
+                    // Request donation details from server to populate both original (readonly) and editable tables
+                    $.ajax({
+                        url: `/admin/donations/${currentDonationId}`,
+                        method: 'GET',
+                        success: function (response) {
+                            console.log('AJAX Response:', response);
+                            console.log('Number of Bags from button:', numberOfBags);
+                            console.log('Bag Details from button:', bagDetails);
+
+                            const donationData = (response && response.donation) ? response.donation : null;
+                            console.log('Donation Data:', donationData);
+
+                            // Populate donor info - prioritize server data, fallback to button data
+                            if (donationData) {
+                                $('#validate-home-donor-name').text(donationData.donor_name || donorName || 'N/A');
+                                $('#validate-home-donor-address').text(donationData.address || donorAddress || 'Not provided');
+                                $('#validate-home-date').text(donationData.donation_date || scheduledDate || 'N/A');
+                                $('#validate-home-time').text(donationData.donation_time || formatTime12(scheduledTimeRaw) || 'N/A');
+                                // Set first/last expression if present on the returned donation
+                                try {
+                                    const f = donationData.first_expression_date || donationData.first_expression || null;
+                                    const l = donationData.last_expression_date || donationData.last_expression || null;
+                                    const fmt = function (d) {
+                                        if (!d) return '';
+                                        try { const dt = new Date(d); if (isNaN(dt)) return d; return dt.toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' }); } catch (e) { return d; }
+                                    };
+                                    $('#validate-home-first-expression').text(fmt(f) || '--');
+                                    $('#validate-home-last-expression').text(fmt(l) || '--');
+                                } catch (e) { console.warn('Failed to set first/last expression dates', e); }
+                            } else {
+                                console.warn('No donation data from server, using button data');
+                                $('#validate-home-donor-name').text(donorName || 'N/A');
+                                $('#validate-home-donor-address').text(donorAddress || 'Not provided');
+                                $('#validate-home-date').text(scheduledDate || 'N/A');
+                                $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || 'N/A');
+                            }
+
+                            const effectiveBags = donationData?.bag_details && donationData.bag_details.length > 0
+                                ? donationData.bag_details
+                                : (bagDetails && bagDetails.length > 0 ? bagDetails : []);
+
+                            console.log('Effective Bags:', effectiveBags);
+                            console.log('Effective Bags Length:', effectiveBags.length);
+
+                            // We no longer show a separate original (read-only) table.
+                            // The editable table below will be populated using effectiveBags (server-preferred) or button data fallback.
+
+                            // Build editable table (use effectiveBags or numberOfBags)
+                            if (effectiveBags && effectiveBags.length > 0) {
+                                currentOriginalVolumes = [];
+                                effectiveBags.forEach((bag, index) => {
+                                    const bagNum = bag.bag_number || (index + 1);
+                                    const time = formatTime12(bag.time) || '';
+                                    const date = bag.date || '--';
+                                    const volume = bag.volume || '';
+                                    const storage = bag.storage_location || '--';
+                                    const storageLabel = mapStorage(storage);
+                                    const temp = bag.temperature || '--';
+                                    const method = bag.collection_method || '--';
+
+                                    currentOriginalVolumes.push(volume || '');
+                                    totalVol += parseFloat(volume) || 0;
+
+                                    const row = `
+                                                                                                                                                    <tr>
+                                                                                                                                                        <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${bagNum}</td>
+                                                                                                                                                        <td style="padding: 8px;">
+                                                                                                                                                            <input type="text" name="bag_time[]" class="form-control" value="${time}" placeholder="e.g. 4:49 PM" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                        </td>
+                                                                                                                                                        <td style="padding: 8px;">
+                                                                                                                                                            <input type="text" name="bag_date[]" class="form-control" value="${bag.date || ''}" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                        </td>
+                                                                                                                                                        <td style="padding: 8px;">
+                                                                                                                                                            <div class="input-group">
+                                                                                                                                                                <input type="number"
+                                                                                                                                                                       id="home_bag_volume_${index + 1}"
+                                                                                                                                                                       name="bag_volumes[]"
+                                                                                                                                                                       class="form-control home-bag-volume-input"
+                                                                                                                                                                       step="0.01"
+                                                                                                                                                                       min="0.01"
+                                                                                                                                                                       value="${volume}"
+                                                                                                                                                                       placeholder="400"
+                                                                                                                                                                       style="border: 1px solid #dee2e6; padding: 8px; text-align: right;"
+                                                                                                                                                                       required>
+                                                                                                                                                                <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
+                                                                                                                                                            </div>
+                                                                                                                                                        </td>
+                                                                                                                                                        <td style="padding: 8px;">
+                                                                                                                                                            <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                                ${(() => {
+                                            const raw = bag.storage_location || '';
+                                            const key = String(raw).toLowerCase();
+                                            if (key.indexOf('ref') !== -1 || key.indexOf('refrig') !== -1 || key.indexOf('fridge') !== -1) return `
+                                                                                                                                                                        <option value="Refrigerator" selected>Refrigerator</option>
+                                                                                                                                                                        <option value="Freezer">Freezer</option>
+                                                                                                                                                                        <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                        <option value="Other">Other</option>
+                                                                                                                                                                    `;
+                                            if (key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1 || key.indexOf('frz') !== -1) return `
+                                                                                                                                                                        <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                        <option value="Freezer" selected>Freezer</option>
+                                                                                                                                                                        <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                        <option value="Other">Other</option>
+                                                                                                                                                                    `;
+                                            if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1) return `
+                                                                                                                                                                        <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                        <option value="Freezer">Freezer</option>
+                                                                                                                                                                        <option value="Room temperature" selected>Room temperature</option>
+                                                                                                                                                                        <option value="Other">Other</option>
+                                                                                                                                                                    `;
+                                            if (raw && raw !== '') return `
+                                                                                                                                                                        <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                        <option value="Freezer">Freezer</option>
+                                                                                                                                                                        <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                        <option value="Other" selected>Other</option>
+                                                                                                                                                                    `;
+                                            return `
+                                                                                                                                                                        <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                        <option value="Freezer">Freezer</option>
+                                                                                                                                                                        <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                        <option value="Other">Other</option>
+                                                                                                                                                                    `;
+                                        })()}
+                                                                                                                                                            </select>
+                                                                                                                                                        </td>
+                                                                                                                                                        <td style="padding: 8px;">
+                                                                                                                                                            <input type="text" name="bag_temp[]" class="form-control" value="${bag.temperature || ''}" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                                                                                                                                                        </td>
+                                                                                                                                                        <td style="padding: 8px;">
+                                                                                                                                                            <input type="text" name="bag_method[]" class="form-control" value="${bag.collection_method || ''}" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                        </td>
+                                                                                                                                                    </tr>`;
+                                    tbody.append(row);
+                                    tbody.closest('.table-responsive').show();
+                                });
+                            } else {
+                                // No bag details array: generate editable rows based on numberOfBags
+                                const n = parseInt(numberOfBags) || 0;
+                                if (n > 0) {
+                                    for (let i = 1; i <= n; i++) {
+                                        const row = `
+                                                                                                                                                                <tr>
+                                                                                                                                                                    <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${i}</td>
+                                                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                                                        <input type="text" name="bag_time[]" class="form-control" value="" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                                    </td>
+                                                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                                                        <input type="text" name="bag_date[]" class="form-control" value="" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                                    </td>
+                                                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                                                        <div class="input-group">
+                                                                                                                                                                            <input type="number"
+                                                                                                                                                                                   id="home_bag_volume_${i}"
+                                                                                                                                                                                   name="bag_volumes[]"
+                                                                                                                                                                                   class="form-control home-bag-volume-input"
+                                                                                                                                                                                   step="0.01" min="0.01" placeholder="400" style="border: 1px solid #dee2e6; padding: 8px; text-align: right;" required>
+                                                                                                                                                                            <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
+                                                                                                                                                                        </div>
+                                                                                                                                                                    </td>
+                                                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                                                        <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                                            <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                            <option value="Freezer">Freezer</option>
+                                                                                                                                                                            <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                            <option value="Other">Other</option>
+                                                                                                                                                                        </select>
+                                                                                                                                                                    </td>
+                                                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                                                        <input type="text" name="bag_temp[]" class="form-control" value="" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                                                                                                                                                                    </td>
+                                                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                                                        <input type="text" name="bag_method[]" class="form-control" value="" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                                    </td>
+                                                                                                                                                                </tr>`;
+                                        tbody.append(row);
+                                    }
+                                    totalVol = 0;
+                                } else {
+                                    tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
+                                    totalVol = parseFloat(totalVolume) || 0;
+                                }
+                            }
+
+                            // Update total display
                             $('#home-total').text(totalVol.toFixed(2) + ' ml');
 
                             // Live update total when editing volumes
@@ -3119,29 +3077,431 @@
                             });
 
                             $('#home-form-error').hide().text('');
-                        } else {
-                            $('#home-bag-details-body').append('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
-                            $('#home-total').text(parseFloat(totalVolume || 0).toFixed(2) + ' ml');
-                            $('#home-form-error').hide().text('');
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Failed to fetch donation for validation:', error);
+
+                            // Populate donor info with fallback data attributes
+                            $('#validate-home-donor-name').text(donorName || '');
+                            $('#validate-home-donor-address').text(donorAddress || 'Not provided');
+                            $('#validate-home-date').text(scheduledDate || '');
+                            $('#validate-home-time').text(formatTime12(scheduledTimeRaw) || '');
+                            // fallback for first/last expression (use pre-read values if available)
+                            try {
+                                $('#validate-home-first-expression').text(formatDateShort(firstExpression) || '--');
+                                $('#validate-home-last-expression').text(formatDateShort(lastExpression) || '--');
+                            } catch (e) { console.warn('No first/last expression available'); }
+
+                            // Fallback: use parsed data-bag-details already available
+                            if (bagDetails && bagDetails.length > 0) {
+                                bagDetails.forEach((bag, index) => {
+                                    const bagNum = bag.bag_number || (index + 1);
+                                    const time = formatTime12(bag.time) || '--';
+                                    const date = bag.date || '--';
+                                    const volume = bag.volume || 0;
+                                    const storageLabel = mapStorage(bag.storage_location || '--');
+                                    const temp = bag.temperature || '--';
+                                    const method = bag.collection_method || '--';
+
+                                    const originalRow = `\n                                    <tr class="text-center">\n                                        <td>Bag ${bagNum}</td>\n                                        <td>${time}</td>\n                                        <td>${date}</td>\n                                        <td>${volume}</td>\n                                        <td>${storageLabel}</td>\n                                        <td class="text-end">${temp}</td>\n                                        <td><small>${method}</small></td>\n                                    </tr>`;
+                                    originalTbody.append(originalRow);
+
+                                    const row = `\n                                    <tr>\n                                        <td class="text-center fw-bold">Bag ${bagNum}</td>\n                                        <td>${time}</td>\n                                        <td>${date}</td>\n                                        <td>\n                                            <div class="input-group input-group-sm">\n                                                <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]" class="form-control home-bag-volume-input" step="0.01" min="0.01" value="${volume}" placeholder="ml" required>\n                                                <span class="input-group-text">ml</span>\n                                            </div>\n                                        </td>\n                                        <td>${storageLabel}</td>\n                                        <td class="text-end">${temp}</td>\n                                        <td><small>${method}</small></td>\n                                    </tr>`;
+                                    tbody.append(row);
+                                    tbody.closest('.table-responsive').show();
+                                    totalVol += parseFloat(volume) || 0;
+                                });
+                                $('#home-total').text(totalVol.toFixed(2) + ' ml');
+
+                                // Live update total when editing volumes
+                                $('#home-bag-details-body').off('input.homeVol').on('input.homeVol', '.home-bag-volume-input', function () {
+                                    let sum = 0;
+                                    $('#home-bag-details-body .home-bag-volume-input').each(function () {
+                                        const v = parseFloat($(this).val());
+                                        if (!isNaN(v)) sum += v;
+                                    });
+                                    $('#home-total').text(sum.toFixed(2) + ' ml');
+                                });
+
+                                $('#home-form-error').hide().text('');
+                            } else {
+                                $('#home-bag-details-body').append('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
+                                $('#home-total').text(parseFloat(totalVolume || 0).toFixed(2) + ' ml');
+                                $('#home-form-error').hide().text('');
+                            }
+                        }
+                    });
+                });
+
+                // Calculate total volume for walk-in (will be updated to use individual volumes)
+                $('#walkin-bags').on('input', function () {
+                    generateWalkinBagFields();
+                });
+
+                // Calculate total volume for home collection when bag count changes
+                $('#home-bags').on('input change', function () {
+                    generateHomeBagFields();
+                });
+
+
+
+                // Generate individual bag volume fields for walk-in validation
+                function generateWalkinBagFields() {
+                    const bagCount = parseInt($('#walkin-bags').val()) || 0;
+                    const container = $('#walkin-volume-fields');
+                    const volumesContainer = $('#walkin-volumes-container');
+                    const totalDisplay = $('#walkin-total-display');
+
+                    if (bagCount <= 0) {
+                        volumesContainer.hide();
+                        totalDisplay.hide();
+                        container.html('');
+                        return;
+                    }
+
+                    volumesContainer.show();
+                    totalDisplay.show();
+
+                    let fieldsHTML = '<div class="row">';
+                    for (let i = 1; i <= bagCount; i++) {
+                        fieldsHTML += `
+                                                                                                                                <div class="col-md-6 mb-2">
+                                                                                                                                                                                                                                                                                        <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                                                                                        <input type="number" 
+                                                                                                                                                                                                                                                                                               id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                                                                               name="bag_volumes[]" 
+                                                                                                                                                                                                                                                                                               class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                                                                               step="0.01" 
+                                                                                                                                                                                                                                                                                               min="0.01" 
+                                                                                                                                                                                                                                                                                               required>
+                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                            `;
+                    }
+                    fieldsHTML += '</div>';
+
+                    container.html(fieldsHTML);
+                    calculateWalkinTotal();
+                }
+
+
+
+                // Calculate total from individual bag volumes for walk-in
+                function calculateWalkinTotal() {
+                    const bagCount = parseInt($('#walkin-bags').val()) || 0;
+                    let total = 0;
+
+                    for (let i = 1; i <= bagCount; i++) {
+                        const volumeInput = $(`#walkin_bag_volume_${i}`);
+                        if (volumeInput.length && volumeInput.val()) {
+                            // use parseFloat but guard against commas and spaces
+                            const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
+                            total += isNaN(parsed) ? 0 : parsed;
                         }
                     }
+
+                    // Remove .00 from whole numbers
+                    const displayTotal = total % 1 === 0 ? Math.round(total) : total.toFixed(2).replace(/\.?0+$/, '');
+                    $('#walkin-total').text(displayTotal + ' ml');
+                }
+
+                // Handle form submissions with loading states
+                $('#validateWalkInForm').submit(function (e) {
+                    e.preventDefault();
+                    const submitBtn = $(this).find('button[type="submit"]');
+                    const spinner = $('#walkin-validate-spinner');
+                    const text = $('#walkin-validate-text');
+                    $('#walkin-form-error').hide().text('');
+
+                    // Basic front-end validation: ensure at least one bag volume entered when bags > 0
+                    const bagCount = parseInt($('#walkin-bags').val()) || 0;
+                    if (bagCount <= 0) {
+                        $('#walkin-form-error').text('Please enter the number of bags.').show();
+                        return;
+                    }
+                    if (bagCount > 0) {
+                        let hasValue = false;
+                        for (let i = 1; i <= bagCount; i++) {
+                            const v = $(`#walkin_bag_volume_${i}`).val();
+                            if (v && parseFloat(v) > 0) { hasValue = true; break; }
+                        }
+                        if (!hasValue) {
+                            $('#walkin-form-error').text('Please provide volumes for the bags.').show();
+                            return;
+                        }
+                    }
+
+                    submitBtn.prop('disabled', true);
+                    spinner.show();
+                    text.text('Validating...');
+
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        success: function (response) {
+                            if (response && response.success) {
+                                // Close modal first, then show SweetAlert
+                                $('#validateWalkInModal').modal('hide');
+                                setTimeout(() => {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Donation validated',
+                                        text: response.message || 'Walk-in donation validated successfully.',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        // Navigate directly to Walk-in Success tab for clarity
+                                        const url = new URL(window.location.href);
+                                        url.searchParams.set('status', 'success_walk_in');
+                                        window.location.href = url.toString();
+                                    });
+                                }, 300);
+                            } else {
+                                const msg = response && response.message ? response.message : 'An error occurred.';
+                                $('#walkin-form-error').text(msg).show();
+                                submitBtn.prop('disabled', false);
+                                spinner.hide();
+                                text.text('Validate Donation');
+                            }
+                        },
+                        error: function (xhr) {
+                            const msg = xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
+                            $('#walkin-form-error').text(msg).show();
+                            submitBtn.prop('disabled', false);
+                            spinner.hide();
+                            text.text('Validate Donation');
+                        }
+                    });
                 });
+
+                $('#schedulePickupForm').submit(function (e) {
+                    e.preventDefault();
+                    const submitBtn = $(this).find('button[type="submit"]');
+
+                    const action = $(this).attr('action') || '';
+                    const isReschedule = action.indexOf('/reschedule-pickup') !== -1;
+
+                    // Use different texts depending on scheduling vs rescheduling
+                    const busyText = isReschedule ? 'Rescheduling...' : 'Scheduling...';
+                    const idleText = isReschedule ? 'Reschedule Pickup' : 'Schedule Pickup';
+                    const successTitle = isReschedule ? 'Pickup rescheduled' : 'Pickup scheduled';
+                    const successDefault = isReschedule ? 'Pickup rescheduled successfully.' : 'Pickup scheduled successfully.';
+
+                    // Validate bag volumes (hidden inputs are used for read-only display)
+                    const volumeInputs = $('#schedule-bag-details-body .schedule-bag-volume');
+                    if (volumeInputs.length > 0) {
+                        let allValid = true;
+                        volumeInputs.each(function () {
+                            const v = parseFloat($(this).val());
+                            if (isNaN(v) || v <= 0) { allValid = false; return false; }
+                        });
+                        if (!allValid) {
+                            Swal.fire({ icon: 'error', title: 'Invalid volumes', text: 'Please enter a valid volume (> 0) for each bag.' });
+                            return;
+                        }
+                    }
+
+                    submitBtn.prop('disabled', true).text(busyText);
+
+                    $.ajax({
+                        url: action,
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        success: function (response) {
+                            if (response && response.success) {
+                                $('#schedulePickupModal').modal('hide');
+                                setTimeout(() => {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: successTitle,
+                                        text: response.message || successDefault,
+                                        timer: 1400,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                }, 300);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: (response && response.message) ? response.message : 'An error occurred.'
+                                });
+                                submitBtn.prop('disabled', false).text(idleText);
+                            }
+                        },
+                        error: function (xhr) {
+                            const msg = xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: msg
+                            });
+                            submitBtn.prop('disabled', false).text(idleText);
+                        }
+                    });
+                });
+
+                $('#validateHomeCollectionForm').submit(function (e) {
+                    e.preventDefault();
+                    const submitBtn = $(this).find('button[type="submit"]');
+                    const spinner = $('#home-validate-spinner');
+                    const text = $('#home-validate-text');
+                    $('#home-form-error').hide().text('');
+
+                    // Basic front-end validation
+                    const bagCount = parseInt($('#home-bags').val()) || 0;
+                    if (bagCount <= 0) {
+                        $('#home-form-error').text('No bags to validate.').show();
+                        return;
+                    }
+
+                    // Validate that all bag volumes are entered
+                    let hasAllVolumes = true;
+                    for (let i = 1; i <= bagCount; i++) {
+                        const volumeInput = $(`#home_bag_volume_${i}`);
+                        if (!volumeInput.val() || parseFloat(volumeInput.val()) <= 0) {
+                            hasAllVolumes = false;
+                            break;
+                        }
+                    }
+
+                    if (!hasAllVolumes) {
+                        $('#home-form-error').text('Please enter valid volumes for all bags.').show();
+                        return;
+                    }
+
+                    submitBtn.prop('disabled', true);
+                    spinner.show();
+                    text.text('Validating...');
+
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        success: function (response) {
+                            if (response && response.success) {
+                                // Close modal first, then show SweetAlert
+                                $('#validateHomeCollectionModal').modal('hide');
+                                setTimeout(() => {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Collection validated',
+                                        text: response.message || 'Home collection validated successfully.',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                }, 300);
+                            } else {
+                                const msg = response && response.message ? response.message : 'An error occurred.';
+                                $('#home-form-error').text(msg).show();
+                                submitBtn.prop('disabled', false);
+                                spinner.hide();
+                                text.text('Complete Collection');
+                            }
+                        },
+                        error: function (xhr) {
+                            const msg = xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
+                            $('#home-form-error').text(msg).show();
+                            submitBtn.prop('disabled', false);
+                            spinner.hide();
+                            text.text('Complete Collection');
+                        }
+                    });
+                });
+
+
             });
 
-            // Calculate total volume for walk-in (will be updated to use individual volumes)
-            $('#walkin-bags').on('input', function () {
-                generateWalkinBagFields();
+            // Reset modals when closed to avoid stale state
+            $('#validateWalkInModal').on('hidden.bs.modal', function () {
+                $('#validateWalkInForm')[0].reset();
+                $('#walkin-volume-fields').html('');
+                $('#walkin-total').text('0 ml');
+                $('#walkin-form-error').hide().text('');
+                $('#walkin-validate-spinner').hide();
+                $('#walkin-validate-text').text('Validate Donation');
+                $('#walkin-donation-id').val('');
+                $('#validateWalkInForm').attr('action', '');
+                $(this).find('button[type="submit"]').prop('disabled', false);
             });
 
-            // Calculate total volume for home collection when bag count changes
-            $('#home-bags').on('input change', function () {
-                generateHomeBagFields();
+            // Reset schedule modal (tabbed) when closed
+            $('#schedulePickupModal').on('hidden.bs.modal', function () {
+                $('#schedulePickupModalLabel').text('Schedule Home Collection Pickup');
+                $('#schedulePickupForm button[type="submit"]').text('Save Schedule');
+                $('#schedulePickupForm').attr('action', '');
+                $('#pickup-date').val('');
+                $('#pickup-time').val('');
+                $('#schedule-bag-details-body').empty();
+                $('#schedule-total-volume').text('0');
+                $('#schedule-donor-name').text('');
+                $('#schedule-donor-address').text('');
+                $('#schedule-first-expression').text('');
+                $('#schedule-last-expression').text('');
+                $('#schedule-donor-location').text('-');
+                $('#schedule-screening-content').empty();
+                $('#schedule-screening-loading').hide();
+                // Reset active tab to donor info
+                const donorTab = document.querySelector('#pickup-donor-tab');
+                if (donorTab) new bootstrap.Tab(donorTab).show();
             });
 
+            // When Lifestyle Checklist tab is shown, always reload to ensure fresh data
+            document.getElementById('pickup-screening-tab')?.addEventListener('shown.bs.tab', function () {
+                if (currentDonationId) {
+                    try { loadScheduleScreening(currentDonationId); } catch (e) { /* ignore */ }
+                }
+            });
 
+            // When Validate modal's Lifestyle Checklist tab is shown, load screening
+            document.getElementById('validate-screening-tab')?.addEventListener('shown.bs.tab', function () {
+                if (currentDonationId) {
+                    try { loadValidateScreening(currentDonationId); } catch (e) { /* ignore */ }
+                }
+            });
 
-            // Generate individual bag volume fields for walk-in validation
-            function generateWalkinBagFields() {
+            // When View modal's Lifestyle Checklist tab is shown, load screening
+            document.getElementById('view-screening-tab')?.addEventListener('shown.bs.tab', function () {
+                if (currentDonationId) {
+                    try { loadViewScreening(currentDonationId); } catch (e) { /* ignore */ }
+                }
+            });
+
+            $('#validateHomeCollectionModal').on('hidden.bs.modal', function () {
+                $('#validateHomeCollectionForm')[0].reset();
+                $('#home-volume-fields').html('');
+                $('#home-total').text('0 ml');
+                $('#home-form-error').hide().text('');
+                $('#home-validate-spinner').hide();
+                $('#home-validate-text').text('Validate Collection');
+                $('#home-donation-id').val('');
+                $('#home-bags').val('');
+                $('#validateHomeCollectionForm').attr('action', '');
+                $(this).find('button[type="submit"]').prop('disabled', false);
+                currentOriginalVolumes = [];
+                // Clear donor and schedule details to avoid stale info
+                $('#validate-home-donor-name').text('');
+                $('#validate-home-donor-address').text('');
+                $('#validate-home-date').text('');
+                $('#validate-home-time').text('');
+                // Clear original and editable bag tables
+                $('#home-bag-details-body').empty();
+                $('#home-bag-original-body').empty();
+                // Clear lifestyle screening content
+                $('#validate-screening-content').html('');
+                $('#validate-screening-loading').show();
+            });
+
+            $('#viewHomeDonationModal').on('hidden.bs.modal', function () {
+                // Clear lifestyle screening content
+                $('#view-screening-content').html('');
+                $('#view-screening-loading').show();
+                currentDonationId = null;
+            });            // Global functions for individual bag volume management
+            window.generateWalkinBagFields = function () {
                 const bagCount = parseInt($('#walkin-bags').val()) || 0;
                 const container = $('#walkin-volume-fields');
                 const volumesContainer = $('#walkin-volumes-container');
@@ -3154,41 +3514,52 @@
                     return;
                 }
 
+                // Store existing values before regenerating
+                const existingValues = {};
+                for (let i = 1; i <= 100; i++) { // Check up to 100 to capture any existing values
+                    const input = $(`#walkin_bag_volume_${i}`);
+                    if (input.length && input.val()) {
+                        existingValues[i] = input.val();
+                    }
+                }
+
                 volumesContainer.show();
                 totalDisplay.show();
 
                 let fieldsHTML = '<div class="row">';
                 for (let i = 1; i <= bagCount; i++) {
+                    // Restore existing value if it exists
+                    const existingValue = existingValues[i] || '';
                     fieldsHTML += `
-                                                                                                                        <div class="col-md-6 mb-2">
-                                                                                                                                                                                                                                                                                <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                                                                                                                                                                <input type="number" 
-                                                                                                                                                                                                                                                                                       id="walkin_bag_volume_${i}" 
-                                                                                                                                                                                                                                                                                       name="bag_volumes[]" 
-                                                                                                                                                                                                                                                                                       class="form-control walkin-bag-volume-input" 
-                                                                                                                                                                                                                                                                                       step="0.01" 
-                                                                                                                                                                                                                                                                                       min="0.01" 
-                                                                                                                                                                                                                                                                                       required>
-                                                                                                                                                                                                                                                                            </div>
-                                                                                                                    `;
+                                                                                                                                <div class="col-md-6 mb-2">
+                                                                                                                                                                                                                                                                                        <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                                                                                        <input type="number" 
+                                                                                                                                                                                                                                                                                               id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                                                                               name="bag_volumes[]" 
+                                                                                                                                                                                                                                                                                               class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                                                                               step="0.01" 
+                                                                                                                                                                                                                                                                                               min="0.01" 
+                                                                                                                                                                                                                                                                                               value="${existingValue}"
+                                                                                                                                                                                                                                                                                               placeholder="Enter volume"
+                                                                                                                                                                                                                                                                                               required>
+                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                            `;
                 }
                 fieldsHTML += '</div>';
 
                 container.html(fieldsHTML);
                 calculateWalkinTotal();
-            }
+            };
 
 
 
-            // Calculate total from individual bag volumes for walk-in
-            function calculateWalkinTotal() {
+            window.calculateWalkinTotal = function () {
                 const bagCount = parseInt($('#walkin-bags').val()) || 0;
                 let total = 0;
 
                 for (let i = 1; i <= bagCount; i++) {
                     const volumeInput = $(`#walkin_bag_volume_${i}`);
                     if (volumeInput.length && volumeInput.val()) {
-                        // use parseFloat but guard against commas and spaces
                         const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
                         total += isNaN(parsed) ? 0 : parsed;
                     }
@@ -3197,579 +3568,270 @@
                 // Remove .00 from whole numbers
                 const displayTotal = total % 1 === 0 ? Math.round(total) : total.toFixed(2).replace(/\.?0+$/, '');
                 $('#walkin-total').text(displayTotal + ' ml');
-            }
+            };
 
-            // Handle form submissions with loading states
-            $('#validateWalkInForm').submit(function (e) {
-                e.preventDefault();
-                const submitBtn = $(this).find('button[type="submit"]');
-                const spinner = $('#walkin-validate-spinner');
-                const text = $('#walkin-validate-text');
-                $('#walkin-form-error').hide().text('');
-
-                // Basic front-end validation: ensure at least one bag volume entered when bags > 0
-                const bagCount = parseInt($('#walkin-bags').val()) || 0;
-                if (bagCount <= 0) {
-                    $('#walkin-form-error').text('Please enter the number of bags.').show();
-                    return;
-                }
-                if (bagCount > 0) {
-                    let hasValue = false;
-                    for (let i = 1; i <= bagCount; i++) {
-                        const v = $(`#walkin_bag_volume_${i}`).val();
-                        if (v && parseFloat(v) > 0) { hasValue = true; break; }
-                    }
-                    if (!hasValue) {
-                        $('#walkin-form-error').text('Please provide volumes for the bags.').show();
-                        return;
-                    }
-                }
-
-                submitBtn.prop('disabled', true);
-                spinner.show();
-                text.text('Validating...');
-
-                $.ajax({
-                    url: $(this).attr('action'),
-                    method: 'POST',
-                    data: $(this).serialize(),
-                    success: function (response) {
-                        if (response && response.success) {
-                            // Close modal first, then show SweetAlert
-                            $('#validateWalkInModal').modal('hide');
-                            setTimeout(() => {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Donation validated',
-                                    text: response.message || 'Walk-in donation validated successfully.',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    // Navigate directly to Walk-in Success tab for clarity
-                                    const url = new URL(window.location.href);
-                                    url.searchParams.set('status', 'success_walk_in');
-                                    window.location.href = url.toString();
-                                });
-                            }, 300);
-                        } else {
-                            const msg = response && response.message ? response.message : 'An error occurred.';
-                            $('#walkin-form-error').text(msg).show();
-                            submitBtn.prop('disabled', false);
-                            spinner.hide();
-                            text.text('Validate Donation');
-                        }
-                    },
-                    error: function (xhr) {
-                        const msg = xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
-                        $('#walkin-form-error').text(msg).show();
-                        submitBtn.prop('disabled', false);
-                        spinner.hide();
-                        text.text('Validate Donation');
-                    }
-                });
+            // Delegated input listener for walkin volume inputs to update total in real-time
+            $('#walkin-volume-fields').on('input', '.walkin-bag-volume-input', function () {
+                calculateWalkinTotal();
             });
 
-            $('#schedulePickupForm').submit(function (e) {
-                e.preventDefault();
-                const submitBtn = $(this).find('button[type="submit"]');
-
-                const action = $(this).attr('action') || '';
-                const isReschedule = action.indexOf('/reschedule-pickup') !== -1;
-
-                // Use different texts depending on scheduling vs rescheduling
-                const busyText = isReschedule ? 'Rescheduling...' : 'Scheduling...';
-                const idleText = isReschedule ? 'Reschedule Pickup' : 'Schedule Pickup';
-                const successTitle = isReschedule ? 'Pickup rescheduled' : 'Pickup scheduled';
-                const successDefault = isReschedule ? 'Pickup rescheduled successfully.' : 'Pickup scheduled successfully.';
-
-                // Validate bag volumes (hidden inputs are used for read-only display)
-                const volumeInputs = $('#schedule-bag-details-body .schedule-bag-volume');
-                if (volumeInputs.length > 0) {
-                    let allValid = true;
-                    volumeInputs.each(function () {
-                        const v = parseFloat($(this).val());
-                        if (isNaN(v) || v <= 0) { allValid = false; return false; }
-                    });
-                    if (!allValid) {
-                        Swal.fire({ icon: 'error', title: 'Invalid volumes', text: 'Please enter a valid volume (> 0) for each bag.' });
-                        return;
-                    }
-                }
-
-                submitBtn.prop('disabled', true).text(busyText);
-
-                $.ajax({
-                    url: action,
-                    method: 'POST',
-                    data: $(this).serialize(),
-                    success: function (response) {
-                        if (response && response.success) {
-                            $('#schedulePickupModal').modal('hide');
-                            setTimeout(() => {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: successTitle,
-                                    text: response.message || successDefault,
-                                    timer: 1400,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            }, 300);
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: (response && response.message) ? response.message : 'An error occurred.'
-                            });
-                            submitBtn.prop('disabled', false).text(idleText);
-                        }
-                    },
-                    error: function (xhr) {
-                        const msg = xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: msg
-                        });
-                        submitBtn.prop('disabled', false).text(idleText);
-                    }
-                });
-            });
-
-            $('#validateHomeCollectionForm').submit(function (e) {
-                e.preventDefault();
-                const submitBtn = $(this).find('button[type="submit"]');
-                const spinner = $('#home-validate-spinner');
-                const text = $('#home-validate-text');
-                $('#home-form-error').hide().text('');
-
-                // Basic front-end validation
+            // Global functions for home collection validation
+            window.generateHomeBagFields = function () {
                 const bagCount = parseInt($('#home-bags').val()) || 0;
+                const container = $('#home-volume-fields');
+
                 if (bagCount <= 0) {
-                    $('#home-form-error').text('No bags to validate.').show();
+                    container.html('');
+                    $('#home-total').text('0 ml');
                     return;
                 }
 
-                // Validate that all bag volumes are entered
-                let hasAllVolumes = true;
+                // Store existing values before regenerating
+                const existingValues = {};
+                for (let i = 1; i <= 100; i++) { // Check up to 100 to capture any existing values
+                    const input = $(`#home_bag_volume_${i}`);
+                    if (input.length && input.val()) {
+                        existingValues[i] = input.val();
+                    }
+                }
+
+                let fieldsHTML = '<div class="row g-3">';
+                for (let i = 1; i <= bagCount; i++) {
+                    // Pre-populate with existing values if available, or use original values from data
+                    let existingValue = existingValues[i] || '';
+                    if (!existingValue && currentOriginalVolumes && currentOriginalVolumes[i - 1]) {
+                        existingValue = currentOriginalVolumes[i - 1];
+                    }
+
+                    fieldsHTML += `
+                                                                                                                                <div class="col-md-6">
+                                                                                                                                    <div class="input-group input-group-lg">
+                                                                                                                                        <span class="input-group-text bg-primary text-white fw-bold">
+                                                                                                                                            <i class="fas fa-flask me-2"></i>Bag ${i}
+                                                                                                                                        </span>
+                                                                                                                                        <input type="number"
+                                                                                                                                            id="home_bag_volume_${i}"
+                                                                                                                                            name="bag_volumes[]"
+                                                                                                                                            class="form-control home-bag-volume-input"
+                                                                                                                                            step="0.01"
+                                                                                                                                            min="0.01"
+                                                                                                                                            value="${existingValue}"
+                                                                                                                                            placeholder="Enter volume"
+                                                                                                                                            required>
+                                                                                                                                            <span class="input-group-text">ml</span>
+                                                                                                                                    </div>
+                                                                                                                                                                                                                                                        </div>
+                                                                                                                                `;
+                }
+                fieldsHTML += '</div>';
+
+                container.html(fieldsHTML);
+                calculateHomeTotal();
+            }; window.calculateHomeTotal = function () {
+                const bagCount = parseInt($('#home-bags').val()) || 0;
+                let total = 0;
+
                 for (let i = 1; i <= bagCount; i++) {
                     const volumeInput = $(`#home_bag_volume_${i}`);
-                    if (!volumeInput.val() || parseFloat(volumeInput.val()) <= 0) {
-                        hasAllVolumes = false;
-                        break;
+                    if (volumeInput.length && volumeInput.val()) {
+                        const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
+                        total += isNaN(parsed) ? 0 : parsed;
                     }
                 }
 
-                if (!hasAllVolumes) {
-                    $('#home-form-error').text('Please enter valid volumes for all bags.').show();
-                    return;
-                }
+                // Remove .00 from whole numbers
+                const displayTotal = total % 1 === 0 ? Math.round(total) : total.toFixed(2).replace(/\.?0+$/, '');
+                $('#home-total').text(displayTotal + ' ml');
+            };
 
-                submitBtn.prop('disabled', true);
-                spinner.show();
-                text.text('Validating...');
-
-                $.ajax({
-                    url: $(this).attr('action'),
-                    method: 'POST',
-                    data: $(this).serialize(),
-                    success: function (response) {
-                        if (response && response.success) {
-                            // Close modal first, then show SweetAlert
-                            $('#validateHomeCollectionModal').modal('hide');
-                            setTimeout(() => {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Collection validated',
-                                    text: response.message || 'Home collection validated successfully.',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            }, 300);
-                        } else {
-                            const msg = response && response.message ? response.message : 'An error occurred.';
-                            $('#home-form-error').text(msg).show();
-                            submitBtn.prop('disabled', false);
-                            spinner.hide();
-                            text.text('Complete Collection');
-                        }
-                    },
-                    error: function (xhr) {
-                        const msg = xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'An error occurred. Please try again.';
-                        $('#home-form-error').text(msg).show();
-                        submitBtn.prop('disabled', false);
-                        spinner.hide();
-                        text.text('Complete Collection');
-                    }
-                });
+            // Delegated input listener for home volume inputs to update total in real-time
+            $('#home-volume-fields').on('input', '.home-bag-volume-input', function () {
+                calculateHomeTotal();
             });
 
+            // View Location button handler
+            $(document).on('click', '.view-location', function () {
+                const donorName = $(this).data('donor-name');
+                const donorAddress = $(this).data('donor-address');
+                const latitude = parseFloat($(this).data('latitude'));
+                const longitude = parseFloat($(this).data('longitude'));
 
-        });
-
-        // Reset modals when closed to avoid stale state
-        $('#validateWalkInModal').on('hidden.bs.modal', function () {
-            $('#validateWalkInForm')[0].reset();
-            $('#walkin-volume-fields').html('');
-            $('#walkin-total').text('0 ml');
-            $('#walkin-form-error').hide().text('');
-            $('#walkin-validate-spinner').hide();
-            $('#walkin-validate-text').text('Validate Donation');
-            $('#walkin-donation-id').val('');
-            $('#validateWalkInForm').attr('action', '');
-            $(this).find('button[type="submit"]').prop('disabled', false);
-        });
-
-        // Reset schedule modal (tabbed) when closed
-        $('#schedulePickupModal').on('hidden.bs.modal', function () {
-            $('#schedulePickupModalLabel').text('Schedule Home Collection Pickup');
-            $('#schedulePickupForm button[type="submit"]').text('Save Schedule');
-            $('#schedulePickupForm').attr('action', '');
-            $('#pickup-date').val('');
-            $('#pickup-time').val('');
-            $('#schedule-bag-details-body').empty();
-            $('#schedule-total-volume').text('0');
-            $('#schedule-donor-name').text('');
-            $('#schedule-donor-address').text('');
-            $('#schedule-first-expression').text('');
-            $('#schedule-last-expression').text('');
-            $('#schedule-donor-location').text('-');
-            $('#schedule-screening-content').empty();
-            $('#schedule-screening-loading').hide();
-            // Reset active tab to donor info
-            const donorTab = document.querySelector('#pickup-donor-tab');
-            if (donorTab) new bootstrap.Tab(donorTab).show();
-        });
-
-        // When Lifestyle Checklist tab is shown, always reload to ensure fresh data
-        document.getElementById('pickup-screening-tab')?.addEventListener('shown.bs.tab', function () {
-            if (currentDonationId) {
-                try { loadScheduleScreening(currentDonationId); } catch (e) { /* ignore */ }
-            }
-        });
-
-        // When Validate modal's Lifestyle Checklist tab is shown, load screening
-        document.getElementById('validate-screening-tab')?.addEventListener('shown.bs.tab', function () {
-            if (currentDonationId) {
-                try { loadValidateScreening(currentDonationId); } catch (e) { /* ignore */ }
-            }
-        });
-
-        // When View modal's Lifestyle Checklist tab is shown, load screening
-        document.getElementById('view-screening-tab')?.addEventListener('shown.bs.tab', function () {
-            if (currentDonationId) {
-                try { loadViewScreening(currentDonationId); } catch (e) { /* ignore */ }
-            }
-        });
-
-        $('#validateHomeCollectionModal').on('hidden.bs.modal', function () {
-            $('#validateHomeCollectionForm')[0].reset();
-            $('#home-volume-fields').html('');
-            $('#home-total').text('0 ml');
-            $('#home-form-error').hide().text('');
-            $('#home-validate-spinner').hide();
-            $('#home-validate-text').text('Validate Collection');
-            $('#home-donation-id').val('');
-            $('#home-bags').val('');
-            $('#validateHomeCollectionForm').attr('action', '');
-            $(this).find('button[type="submit"]').prop('disabled', false);
-            currentOriginalVolumes = [];
-            // Clear donor and schedule details to avoid stale info
-            $('#validate-home-donor-name').text('');
-            $('#validate-home-donor-address').text('');
-            $('#validate-home-date').text('');
-            $('#validate-home-time').text('');
-            // Clear original and editable bag tables
-            $('#home-bag-details-body').empty();
-            $('#home-bag-original-body').empty();
-            // Clear lifestyle screening content
-            $('#validate-screening-content').html('');
-            $('#validate-screening-loading').show();
-        });
-
-        $('#viewHomeDonationModal').on('hidden.bs.modal', function () {
-            // Clear lifestyle screening content
-            $('#view-screening-content').html('');
-            $('#view-screening-loading').show();
-            currentDonationId = null;
-        });            // Global functions for individual bag volume management
-        window.generateWalkinBagFields = function () {
-            const bagCount = parseInt($('#walkin-bags').val()) || 0;
-            const container = $('#walkin-volume-fields');
-            const volumesContainer = $('#walkin-volumes-container');
-            const totalDisplay = $('#walkin-total-display');
-
-            if (bagCount <= 0) {
-                volumesContainer.hide();
-                totalDisplay.hide();
-                container.html('');
-                return;
-            }
-
-            // Store existing values before regenerating
-            const existingValues = {};
-            for (let i = 1; i <= 100; i++) { // Check up to 100 to capture any existing values
-                const input = $(`#walkin_bag_volume_${i}`);
-                if (input.length && input.val()) {
-                    existingValues[i] = input.val();
-                }
-            }
-
-            volumesContainer.show();
-            totalDisplay.show();
-
-            let fieldsHTML = '<div class="row">';
-            for (let i = 1; i <= bagCount; i++) {
-                // Restore existing value if it exists
-                const existingValue = existingValues[i] || '';
-                fieldsHTML += `
-                                                                                                                        <div class="col-md-6 mb-2">
-                                                                                                                                                                                                                                                                                <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                                                                                                                                                                <input type="number" 
-                                                                                                                                                                                                                                                                                       id="walkin_bag_volume_${i}" 
-                                                                                                                                                                                                                                                                                       name="bag_volumes[]" 
-                                                                                                                                                                                                                                                                                       class="form-control walkin-bag-volume-input" 
-                                                                                                                                                                                                                                                                                       step="0.01" 
-                                                                                                                                                                                                                                                                                       min="0.01" 
-                                                                                                                                                                                                                                                                                       value="${existingValue}"
-                                                                                                                                                                                                                                                                                       placeholder="Enter volume"
-                                                                                                                                                                                                                                                                                       required>
-                                                                                                                                                                                                                                                                            </div>
-                                                                                                                    `;
-            }
-            fieldsHTML += '</div>';
-
-            container.html(fieldsHTML);
-            calculateWalkinTotal();
-        };
-
-
-
-        window.calculateWalkinTotal = function () {
-            const bagCount = parseInt($('#walkin-bags').val()) || 0;
-            let total = 0;
-
-            for (let i = 1; i <= bagCount; i++) {
-                const volumeInput = $(`#walkin_bag_volume_${i}`);
-                if (volumeInput.length && volumeInput.val()) {
-                    const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
-                    total += isNaN(parsed) ? 0 : parsed;
-                }
-            }
-
-            // Remove .00 from whole numbers
-            const displayTotal = total % 1 === 0 ? Math.round(total) : total.toFixed(2).replace(/\.?0+$/, '');
-            $('#walkin-total').text(displayTotal + ' ml');
-        };
-
-        // Delegated input listener for walkin volume inputs to update total in real-time
-        $('#walkin-volume-fields').on('input', '.walkin-bag-volume-input', function () {
-            calculateWalkinTotal();
-        });
-
-        // Global functions for home collection validation
-        window.generateHomeBagFields = function () {
-            const bagCount = parseInt($('#home-bags').val()) || 0;
-            const container = $('#home-volume-fields');
-
-            if (bagCount <= 0) {
-                container.html('');
-                $('#home-total').text('0 ml');
-                return;
-            }
-
-            // Store existing values before regenerating
-            const existingValues = {};
-            for (let i = 1; i <= 100; i++) { // Check up to 100 to capture any existing values
-                const input = $(`#home_bag_volume_${i}`);
-                if (input.length && input.val()) {
-                    existingValues[i] = input.val();
-                }
-            }
-
-            let fieldsHTML = '<div class="row g-3">';
-            for (let i = 1; i <= bagCount; i++) {
-                // Pre-populate with existing values if available, or use original values from data
-                let existingValue = existingValues[i] || '';
-                if (!existingValue && currentOriginalVolumes && currentOriginalVolumes[i - 1]) {
-                    existingValue = currentOriginalVolumes[i - 1];
-                }
-
-                fieldsHTML += `
-                                                                                                                        <div class="col-md-6">
-                                                                                                                            <div class="input-group input-group-lg">
-                                                                                                                                <span class="input-group-text bg-primary text-white fw-bold">
-                                                                                                                                    <i class="fas fa-flask me-2"></i>Bag ${i}
-                                                                                                                                </span>
-                                                                                                                                <input type="number"
-                                                                                                                                    id="home_bag_volume_${i}"
-                                                                                                                                    name="bag_volumes[]"
-                                                                                                                                    class="form-control home-bag-volume-input"
-                                                                                                                                    step="0.01"
-                                                                                                                                    min="0.01"
-                                                                                                                                    value="${existingValue}"
-                                                                                                                                    placeholder="Enter volume"
-                                                                                                                                    required>
-                                                                                                                                    <span class="input-group-text">ml</span>
-                                                                                                                            </div>
-                                                                                                                                                                                                                                                </div>
-                                                                                                                        `;
-            }
-            fieldsHTML += '</div>';
-
-            container.html(fieldsHTML);
-            calculateHomeTotal();
-        }; window.calculateHomeTotal = function () {
-            const bagCount = parseInt($('#home-bags').val()) || 0;
-            let total = 0;
-
-            for (let i = 1; i <= bagCount; i++) {
-                const volumeInput = $(`#home_bag_volume_${i}`);
-                if (volumeInput.length && volumeInput.val()) {
-                    const parsed = parseFloat(String(volumeInput.val()).replace(/,/g, '').trim());
-                    total += isNaN(parsed) ? 0 : parsed;
-                }
-            }
-
-            // Remove .00 from whole numbers
-            const displayTotal = total % 1 === 0 ? Math.round(total) : total.toFixed(2).replace(/\.?0+$/, '');
-            $('#home-total').text(displayTotal + ' ml');
-        };
-
-        // Delegated input listener for home volume inputs to update total in real-time
-        $('#home-volume-fields').on('input', '.home-bag-volume-input', function () {
-            calculateHomeTotal();
-        });
-
-        // View Location button handler
-        $(document).on('click', '.view-location', function () {
-            const donorName = $(this).data('donor-name');
-            const donorAddress = $(this).data('donor-address');
-            const latitude = parseFloat($(this).data('latitude'));
-            const longitude = parseFloat($(this).data('longitude'));
-
-            // Use numeric validation to allow 0 coordinates
-            if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-                showLocationModal(donorName, donorAddress, latitude, longitude);
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Location Unavailable',
-                    text: 'No location data available for this donor.'
-                });
-            }
-        });
-    </script>
-
-    <!-- Include Location Modal -->
-    @include('partials.location-modal')
-
-    <script>
-        // View donation modal script - fetch donation details and populate modal
-        $(document).on('click', '.view-donation', function (e) {
-            e.preventDefault();
-            const btn = $(this);
-            const id = btn.data('id');
-            if (!id) return;
-
-            // Use button-provided data attributes as immediate fallback/display
-            const bDonorName = btn.data('donorName') || btn.data('donor') || btn.attr('data-donor-name') || '';
-            const bContact = btn.data('donorContact') || btn.data('donorContact') || btn.attr('data-donor-contact') || '';
-            const bAddress = btn.data('donorAddress') || btn.attr('data-donor-address') || '';
-            // Location removed per request (bLat/bLng omitted)
-            const bBags = btn.attr('data-bags') || '';
-            const bTotal = btn.attr('data-total') || '';
-            const bBagDetailsRaw = btn.attr('data-bag-details') || '';
-            const donationMethodAttr = (btn.data('donationMethod') || btn.attr('data-donation-method') || '').toString().toLowerCase();
-
-            const fallbackBagDetails = (function parseBagDetails(raw) {
-                if (!raw) return [];
-                try {
-                    const parsed = JSON.parse(raw);
-                    return Array.isArray(parsed) ? parsed : [];
-                } catch (err) {
-                    console.warn('Unable to parse fallback bag details', err);
-                    return [];
-                }
-            })(bBagDetailsRaw);
-
-            function setModalTitle(method) {
-                const normalized = (method || '').toString().toLowerCase();
-                const titleEl = $('#viewHomeDonationModalLabel');
-                if (!titleEl.length) return;
-                if (normalized === 'walk_in') {
-                    titleEl.text('Walk-in Success');
-                } else if (normalized === 'home_collection') {
-                    titleEl.text('Home Collection Success');
+                // Use numeric validation to allow 0 coordinates
+                if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+                    showLocationModal(donorName, donorAddress, latitude, longitude);
                 } else {
-                    titleEl.text('Donation Details');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Location Unavailable',
+                        text: 'No location data available for this donor.'
+                    });
                 }
-            }
+            });
+        </script>
 
-            setModalTitle(donationMethodAttr);
+        <!-- Include Location Modal -->
+        @include('partials.location-modal')
 
-            // Clear previous content then set immediate donor info fallbacks only (we'll render bag details from server)
-            $('#view-donor-name').text(bDonorName || 'Loading...');
-            $('#view-donor-contact').text(bContact || '-');
-            $('#view-donor-address').text(bAddress || 'Not provided');
-            // Location display removed
-            $('#view-total-bags').text('Loading...');
-            $('#view-total-vol').text('Loading...');
-            // show loading row for bag details until AJAX finishes
-            $('#view-bag-details-body').html('<tr><td colspan="4" class="text-center text-muted">Loading details&hellip;</td></tr>');
+        <script>
+            // View donation modal script - fetch donation details and populate modal
+            $(document).on('click', '.view-donation', function (e) {
+                e.preventDefault();
+                const btn = $(this);
+                const id = btn.data('id');
+                if (!id) return;
 
-            // Render helper so we can reuse for server/fallback data
-            function renderBagTableRows(bags) {
-                const tbody = $('#view-bag-details-body');
-                if (!Array.isArray(bags) || bags.length === 0) {
-                    tbody.html('<tr><td colspan="4" class="text-center text-muted">No bag details available</td></tr>');
-                    return;
+                // Use button-provided data attributes as immediate fallback/display
+                const bDonorName = btn.data('donorName') || btn.data('donor') || btn.attr('data-donor-name') || '';
+                const bContact = btn.data('donorContact') || btn.data('donorContact') || btn.attr('data-donor-contact') || '';
+                const bAddress = btn.data('donorAddress') || btn.attr('data-donor-address') || '';
+                // Location removed per request (bLat/bLng omitted)
+                const bBags = btn.attr('data-bags') || '';
+                const bTotal = btn.attr('data-total') || '';
+                const bBagDetailsRaw = btn.attr('data-bag-details') || '';
+                const donationMethodAttr = (btn.data('donationMethod') || btn.attr('data-donation-method') || '').toString().toLowerCase();
+
+                const fallbackBagDetails = (function parseBagDetails(raw) {
+                    if (!raw) return [];
+                    try {
+                        const parsed = JSON.parse(raw);
+                        return Array.isArray(parsed) ? parsed : [];
+                    } catch (err) {
+                        console.warn('Unable to parse fallback bag details', err);
+                        return [];
+                    }
+                })(bBagDetailsRaw);
+
+                function setModalTitle(method) {
+                    const normalized = (method || '').toString().toLowerCase();
+                    const titleEl = $('#viewHomeDonationModalLabel');
+                    if (!titleEl.length) return;
+                    if (normalized === 'walk_in') {
+                        titleEl.text('Walk-in Success');
+                    } else if (normalized === 'home_collection') {
+                        titleEl.text('Home Collection Success');
+                    } else {
+                        titleEl.text('Donation Details');
+                    }
                 }
 
-                const rows = bags.map((bag, i) => {
-                    const bagNum = bag.bag_number ?? bag.bagNumber ?? (i + 1);
-                    const volumeRaw = bag.volume ?? bag.vol ?? bag.amount ?? '-';
-                    const volume = (volumeRaw || volumeRaw === 0)
-                        ? String(volumeRaw)
-                        : '-';
-                    const date = bag.date ?? bag.collection_date ?? bag.collected_at ?? '-';
-                    const rawTime = bag.time ?? bag.collection_time ?? bag.collected_time ?? null;
-                    const time = formatTimeDisplay(rawTime);
+                setModalTitle(donationMethodAttr);
 
-                    return `
-                                                                <tr>
-                                                                    <td style="text-align: center; padding: 12px; font-weight: 600;">${bagNum ?? '-'}</td>
-                                                                    <td style="text-align: center; padding: 12px;">${time}</td>
-                                                                    <td style="text-align: center; padding: 12px;">${date || '-'}</td>
-                                                                    <td style="text-align: center; padding: 12px;"><span style="color: #0d6efd; font-weight: 500;">${volume}</span> ml</td>
-                                                                </tr>
-                                                            `;
-                }).join('');
+                // Clear previous content then set immediate donor info fallbacks only (we'll render bag details from server)
+                $('#view-donor-name').text(bDonorName || 'Loading...');
+                $('#view-donor-contact').text(bContact || '-');
+                $('#view-donor-address').text(bAddress || 'Not provided');
+                // Location display removed
+                $('#view-total-bags').text('Loading...');
+                $('#view-total-vol').text('Loading...');
+                // show loading row for bag details until AJAX finishes
+                $('#view-bag-details-body').html('<tr><td colspan="4" class="text-center text-muted">Loading details&hellip;</td></tr>');
 
-                tbody.html(rows);
-            }
+                // Render helper so we can reuse for server/fallback data
+                function renderBagTableRows(bags) {
+                    const tbody = $('#view-bag-details-body');
+                    if (!Array.isArray(bags) || bags.length === 0) {
+                        tbody.html('<tr><td colspan="4" class="text-center text-muted">No bag details available</td></tr>');
+                        return;
+                    }
 
-            // Show modal immediately for snappy UI, we'll fill content after fetch
-            const modalEl = document.getElementById('viewHomeDonationModal');
-            const bsModal = new bootstrap.Modal(modalEl, { keyboard: true });
-            bsModal.show();
+                    const rows = bags.map((bag, i) => {
+                        const bagNum = bag.bag_number ?? bag.bagNumber ?? (i + 1);
+                        const volumeRaw = bag.volume ?? bag.vol ?? bag.amount ?? '-';
+                        const volume = (volumeRaw || volumeRaw === 0)
+                            ? String(volumeRaw)
+                            : '-';
+                        const date = bag.date ?? bag.collection_date ?? bag.collected_at ?? '-';
+                        const rawTime = bag.time ?? bag.collection_time ?? bag.collected_time ?? null;
+                        const time = formatTimeDisplay(rawTime);
 
-            // Store donation ID for lifestyle screening tab
-            currentDonationId = id;
+                        return `
+                                                                        <tr>
+                                                                            <td style="text-align: center; padding: 12px; font-weight: 600;">${bagNum ?? '-'}</td>
+                                                                            <td style="text-align: center; padding: 12px;">${time}</td>
+                                                                            <td style="text-align: center; padding: 12px;">${date || '-'}</td>
+                                                                            <td style="text-align: center; padding: 12px;"><span style="color: #0d6efd; font-weight: 500;">${volume}</span> ml</td>
+                                                                        </tr>
+                                                                    `;
+                    }).join('');
 
-            // Fetch fresh details and overwrite fallbacks when available
-            $.ajax({
-                url: `/admin/donations/${id}`,
-                method: 'GET',
-                dataType: 'json',
-                success: function (resp) {
-                    const donation = resp && resp.donation ? resp.donation : null;
-                    if (!donation) {
-                        $('#view-donor-name').text(bDonorName || 'N/A');
+                    tbody.html(rows);
+                }
+
+                // Show modal immediately for snappy UI, we'll fill content after fetch
+                const modalEl = document.getElementById('viewHomeDonationModal');
+                const bsModal = new bootstrap.Modal(modalEl, { keyboard: true });
+                bsModal.show();
+
+                // Store donation ID for lifestyle screening tab
+                currentDonationId = id;
+
+                // Fetch fresh details and overwrite fallbacks when available
+                $.ajax({
+                    url: `/admin/donations/${id}`,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (resp) {
+                        const donation = resp && resp.donation ? resp.donation : null;
+                        if (!donation) {
+                            $('#view-donor-name').text(bDonorName || 'N/A');
+                            renderBagTableRows(fallbackBagDetails);
+                            if (fallbackBagDetails.length) {
+                                $('#view-total-bags').text(fallbackBagDetails.length);
+                                const fallbackTotal = fallbackBagDetails.reduce((acc, bag) => {
+                                    const val = parseFloat(bag.volume ?? bag.vol ?? bag.amount ?? 0);
+                                    return acc + (isNaN(val) ? 0 : val);
+                                }, 0);
+                                if (fallbackTotal || fallbackTotal === 0) {
+                                    const fallbackDisplay = fallbackTotal % 1 === 0 ? Math.round(fallbackTotal) : fallbackTotal.toFixed(2);
+                                    const normalizedFallback = normalizeVolumeValue(fallbackDisplay);
+                                    $('#view-total-vol').text(normalizedFallback !== '' ? `${normalizedFallback} ml` : '-');
+                                } else {
+                                    $('#view-total-vol').text('-');
+                                }
+                            }
+                            return;
+                        }
+
+                        setModalTitle(donation.donation_method || donationMethodAttr);
+
+                        // Donor info
+                        const donorName = (donation.user && donation.user.first_name && donation.user.last_name) ? `${donation.user.first_name} ${donation.user.last_name}` : (donation.donor_name || bDonorName || 'N/A');
+                        const donorContact = donation.user?.contact_number || donation.user?.phone || donation.contact_number || bContact || '-';
+                        const donorAddress = donation.user?.address || donation.address || bAddress || 'Not provided';
+                        $('#view-donor-name').text(donorName);
+                        $('#view-donor-contact').text(donorContact);
+                        $('#view-donor-address').text(donorAddress);
+
+                        // Location logic removed
+
+                        // Totals
+                        const bagDetails = Array.isArray(donation.bag_details) ? donation.bag_details : (Array.isArray(donation.bags) ? donation.bags : []);
+                        const resolvedBagDetails = bagDetails.length ? bagDetails : fallbackBagDetails;
+                        renderBagTableRows(resolvedBagDetails);
+
+                        let bagCount = donation.number_of_bags ?? (bagDetails.length ? bagDetails.length : (fallbackBagDetails.length || bBags || '-'));
+                        let totalVol = donation.total_volume ?? donation.formatted_total_volume ?? bTotal ?? '';
+
+                        if ((!totalVol || totalVol === '-') && Array.isArray(resolvedBagDetails) && resolvedBagDetails.length) {
+                            const computedTotal = resolvedBagDetails.reduce((acc, bag) => {
+                                const val = parseFloat(bag.volume ?? bag.vol ?? bag.amount ?? 0);
+                                return acc + (isNaN(val) ? 0 : val);
+                            }, 0);
+                            if (computedTotal || computedTotal === 0) {
+                                totalVol = computedTotal % 1 === 0 ? Math.round(computedTotal) : computedTotal.toFixed(2);
+                            }
+                        }
+
+                        $('#view-total-bags').text(bagCount || (bagCount === 0 ? 0 : '-'));
+                        const normalizedTotal = normalizeVolumeValue(totalVol);
+                        $('#view-total-vol').text(normalizedTotal !== '' ? `${normalizedTotal} ml` : '-');
+                    },
+                    error: function () {
+                        // keep any fallback values already rendered from button data
                         renderBagTableRows(fallbackBagDetails);
+                        if (!fallbackBagDetails.length) {
+                            $('#view-bag-details-body').empty().append('<tr><td colspan="7" class="text-center text-danger">Failed to load details</td></tr>');
+                        }
                         if (fallbackBagDetails.length) {
                             $('#view-total-bags').text(fallbackBagDetails.length);
                             const fallbackTotal = fallbackBagDetails.reduce((acc, bag) => {
@@ -3783,462 +3845,405 @@
                             } else {
                                 $('#view-total-vol').text('-');
                             }
-                        }
-                        return;
-                    }
-
-                    setModalTitle(donation.donation_method || donationMethodAttr);
-
-                    // Donor info
-                    const donorName = (donation.user && donation.user.first_name && donation.user.last_name) ? `${donation.user.first_name} ${donation.user.last_name}` : (donation.donor_name || bDonorName || 'N/A');
-                    const donorContact = donation.user?.contact_number || donation.user?.phone || donation.contact_number || bContact || '-';
-                    const donorAddress = donation.user?.address || donation.address || bAddress || 'Not provided';
-                    $('#view-donor-name').text(donorName);
-                    $('#view-donor-contact').text(donorContact);
-                    $('#view-donor-address').text(donorAddress);
-
-                    // Location logic removed
-
-                    // Totals
-                    const bagDetails = Array.isArray(donation.bag_details) ? donation.bag_details : (Array.isArray(donation.bags) ? donation.bags : []);
-                    const resolvedBagDetails = bagDetails.length ? bagDetails : fallbackBagDetails;
-                    renderBagTableRows(resolvedBagDetails);
-
-                    let bagCount = donation.number_of_bags ?? (bagDetails.length ? bagDetails.length : (fallbackBagDetails.length || bBags || '-'));
-                    let totalVol = donation.total_volume ?? donation.formatted_total_volume ?? bTotal ?? '';
-
-                    if ((!totalVol || totalVol === '-') && Array.isArray(resolvedBagDetails) && resolvedBagDetails.length) {
-                        const computedTotal = resolvedBagDetails.reduce((acc, bag) => {
-                            const val = parseFloat(bag.volume ?? bag.vol ?? bag.amount ?? 0);
-                            return acc + (isNaN(val) ? 0 : val);
-                        }, 0);
-                        if (computedTotal || computedTotal === 0) {
-                            totalVol = computedTotal % 1 === 0 ? Math.round(computedTotal) : computedTotal.toFixed(2);
-                        }
-                    }
-
-                    $('#view-total-bags').text(bagCount || (bagCount === 0 ? 0 : '-'));
-                    const normalizedTotal = normalizeVolumeValue(totalVol);
-                    $('#view-total-vol').text(normalizedTotal !== '' ? `${normalizedTotal} ml` : '-');
-                },
-                error: function () {
-                    // keep any fallback values already rendered from button data
-                    renderBagTableRows(fallbackBagDetails);
-                    if (!fallbackBagDetails.length) {
-                        $('#view-bag-details-body').empty().append('<tr><td colspan="7" class="text-center text-danger">Failed to load details</td></tr>');
-                    }
-                    if (fallbackBagDetails.length) {
-                        $('#view-total-bags').text(fallbackBagDetails.length);
-                        const fallbackTotal = fallbackBagDetails.reduce((acc, bag) => {
-                            const val = parseFloat(bag.volume ?? bag.vol ?? bag.amount ?? 0);
-                            return acc + (isNaN(val) ? 0 : val);
-                        }, 0);
-                        if (fallbackTotal || fallbackTotal === 0) {
-                            const fallbackDisplay = fallbackTotal % 1 === 0 ? Math.round(fallbackTotal) : fallbackTotal.toFixed(2);
-                            const normalizedFallback = normalizeVolumeValue(fallbackDisplay);
-                            $('#view-total-vol').text(normalizedFallback !== '' ? `${normalizedFallback} ml` : '-');
                         } else {
-                            $('#view-total-vol').text('-');
+                            $('#view-total-bags').text(bBags || '-');
+                            const normalizedFallback = normalizeVolumeValue(bTotal);
+                            $('#view-total-vol').text(normalizedFallback !== '' ? `${normalizedFallback} ml` : '-');
                         }
-                    } else {
-                        $('#view-total-bags').text(bBags || '-');
-                        const normalizedFallback = normalizeVolumeValue(bTotal);
-                        $('#view-total-vol').text(normalizedFallback !== '' ? `${normalizedFallback} ml` : '-');
                     }
-                }
+                });
             });
-        });
 
-        // Helper: format various time strings into a user-friendly 12-hour format
-        function formatTimeDisplay(t) {
-            if (t === null || t === undefined) return '-';
-            const s = String(t).trim();
-            if (s === '') return '-';
-            // If already contains am/pm, normalize spacing and uppercase
-            if (/\b(am|pm)\b/i.test(s)) return s.replace(/\s+/g, ' ').toUpperCase();
+            // Helper: format various time strings into a user-friendly 12-hour format
+            function formatTimeDisplay(t) {
+                if (t === null || t === undefined) return '-';
+                const s = String(t).trim();
+                if (s === '') return '-';
+                // If already contains am/pm, normalize spacing and uppercase
+                if (/\b(am|pm)\b/i.test(s)) return s.replace(/\s+/g, ' ').toUpperCase();
 
-            // Match HH:MM or HH:MM:SS (24-hour)
-            const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-            if (m) {
-                let hh = parseInt(m[1], 10);
-                const mm = m[2];
-                const ampm = hh >= 12 ? 'PM' : 'AM';
-                hh = hh % 12; if (hh === 0) hh = 12;
-                return hh + ':' + mm + ' ' + ampm;
-            }
-
-            // Try parsing as ISO datetime and extract time portion
-            const asDate = new Date(s);
-            if (!isNaN(asDate.getTime())) {
-                let hh = asDate.getHours();
-                const mm = String(asDate.getMinutes()).padStart(2, '0');
-                const ampm = hh >= 12 ? 'PM' : 'AM';
-                hh = hh % 12; if (hh === 0) hh = 12;
-                return hh + ':' + mm + ' ' + ampm;
-            }
-
-            // Fallback: return original string
-            return s;
-        }
-
-        function normalizeVolumeValue(val) {
-            if (val === null || val === undefined) return '';
-            const str = String(val).trim();
-            if (!str) return '';
-            return str.replace(/\s*ml$/i, '');
-        }
-    </script>
-
-    <!-- Archive/restore functionality removed per requirements -->
-    <script>
-        function declineDonation(id) {
-            // Close any open Bootstrap modals first to prevent focus trap blocking textarea typing
-            try {
-                if (typeof bootstrap !== 'undefined') {
-                    document.querySelectorAll('.modal.show').forEach(m => {
-                        const inst = bootstrap.Modal.getInstance(m);
-                        if (inst) inst.hide(); else m.classList.remove('show');
-                    });
-                } else if (window.$) {
-                    $('.modal.show').modal('hide');
+                // Match HH:MM or HH:MM:SS (24-hour)
+                const m = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+                if (m) {
+                    let hh = parseInt(m[1], 10);
+                    const mm = m[2];
+                    const ampm = hh >= 12 ? 'PM' : 'AM';
+                    hh = hh % 12; if (hh === 0) hh = 12;
+                    return hh + ':' + mm + ' ' + ampm;
                 }
-            } catch (e) { /* ignore */ }
 
-            if (typeof Swal !== 'undefined') {
-                // Slight delay to allow modal backdrop removal before SweetAlert opens
-                setTimeout(() => {
-                    Swal.fire({
-                        title: 'Decline Donation',
-                        input: 'textarea',
-                        inputLabel: 'Reason for decline',
-                        inputPlaceholder: 'Enter reason/notes...',
-                        inputAttributes: {
-                            'aria-label': 'Reason for decline',
-                            'style': 'min-height:110px;resize:vertical;'
-                        },
-                        didOpen: (el) => {
-                            const ta = el.querySelector('textarea.swal2-textarea');
-                            if (ta) { ta.focus(); ta.select(); }
-                        },
-                        inputValidator: (value) => {
-                            if (!value || value.trim() === '') {
-                                return 'Please enter a reason.';
-                            }
-                            if (value.trim().length < 3) {
-                                return 'Reason must be at least 3 characters.';
-                            }
-                            return undefined;
-                        },
-                        showCancelButton: true,
-                        confirmButtonText: 'Decline',
-                        confirmButtonColor: '#dc2626'
-                    }).then(result => {
-                        if (result.isConfirmed) {
-                            const reason = (result.value || '').trim();
-                            fetch(`/admin/donations/${id}/decline`, {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Accept': 'application/json',
-                                    'Content-Type': 'application/json',
-                                    'X-Requested-With': 'XMLHttpRequest'
-                                },
-                                body: JSON.stringify({ reason })
-                            })
-                                .then(r => r.json())
-                                .then(data => {
-                                    if (data && data.success) {
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: 'Declined',
-                                            text: data.message || 'Donation declined successfully.'
-                                        }).then(() => location.reload());
-                                    } else {
-                                        Swal.fire('Error', (data && data.message) || 'Failed to decline donation', 'error');
-                                    }
+                // Try parsing as ISO datetime and extract time portion
+                const asDate = new Date(s);
+                if (!isNaN(asDate.getTime())) {
+                    let hh = asDate.getHours();
+                    const mm = String(asDate.getMinutes()).padStart(2, '0');
+                    const ampm = hh >= 12 ? 'PM' : 'AM';
+                    hh = hh % 12; if (hh === 0) hh = 12;
+                    return hh + ':' + mm + ' ' + ampm;
+                }
+
+                // Fallback: return original string
+                return s;
+            }
+
+            function normalizeVolumeValue(val) {
+                if (val === null || val === undefined) return '';
+                const str = String(val).trim();
+                if (!str) return '';
+                return str.replace(/\s*ml$/i, '');
+            }
+        </script>
+
+        <!-- Archive/restore functionality removed per requirements -->
+        <script>
+            function declineDonation(id) {
+                // Close any open Bootstrap modals first to prevent focus trap blocking textarea typing
+                try {
+                    if (typeof bootstrap !== 'undefined') {
+                        document.querySelectorAll('.modal.show').forEach(m => {
+                            const inst = bootstrap.Modal.getInstance(m);
+                            if (inst) inst.hide(); else m.classList.remove('show');
+                        });
+                    } else if (window.$) {
+                        $('.modal.show').modal('hide');
+                    }
+                } catch (e) { /* ignore */ }
+
+                if (typeof Swal !== 'undefined') {
+                    // Slight delay to allow modal backdrop removal before SweetAlert opens
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: 'Decline Donation',
+                            input: 'textarea',
+                            inputLabel: 'Reason for decline',
+                            inputPlaceholder: 'Enter reason/notes...',
+                            inputAttributes: {
+                                'aria-label': 'Reason for decline',
+                                'style': 'min-height:110px;resize:vertical;'
+                            },
+                            didOpen: (el) => {
+                                const ta = el.querySelector('textarea.swal2-textarea');
+                                if (ta) { ta.focus(); ta.select(); }
+                            },
+                            inputValidator: (value) => {
+                                if (!value || value.trim() === '') {
+                                    return 'Please enter a reason.';
+                                }
+                                if (value.trim().length < 3) {
+                                    return 'Reason must be at least 3 characters.';
+                                }
+                                return undefined;
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Decline',
+                            confirmButtonColor: '#dc2626'
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                const reason = (result.value || '').trim();
+                                fetch(`/admin/donations/${id}/decline`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    },
+                                    body: JSON.stringify({ reason })
                                 })
-                                .catch(() => Swal.fire('Error', 'Failed to decline donation', 'error'));
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        if (data && data.success) {
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Declined',
+                                                text: data.message || 'Donation declined successfully.'
+                                            }).then(() => location.reload());
+                                        } else {
+                                            Swal.fire('Error', (data && data.message) || 'Failed to decline donation', 'error');
+                                        }
+                                    })
+                                    .catch(() => Swal.fire('Error', 'Failed to decline donation', 'error'));
+                            }
+                        });
+                    }, 50);
+                } else {
+                    const reason = prompt('Enter reason for declining:');
+                    if (!reason || reason.trim() === '') return;
+                    fetch(`/admin/donations/${id}/decline`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reason: reason.trim() })
+                    })
+                        .then(() => location.reload())
+                        .catch(() => alert('Failed to decline donation'));
+                }
+            }
+        </script>
+        <script>
+            // Client-side rounding: snap all ml inputs to nearest 10 on blur/change
+            (function () {
+                function round10(val) {
+                    const n = parseFloat(val);
+                    if (isNaN(n)) return '';
+                    if (n < 10) return n; // avoid snapping tiny entries to 0
+                    return Math.round(n / 10) * 10;
+                }
+
+                // Walk-in validation individual bag volumes
+                $('#walkin-volume-fields')
+                    .on('change', '.walkin-bag-volume-input', function () {
+                        const r = round10(this.value);
+                        if (r !== '' && String(r) !== String(this.value)) {
+                            this.value = r;
+                        }
+                        if (typeof window.calculateWalkinTotal === 'function') window.calculateWalkinTotal();
+                    })
+                    .on('focusout', '.walkin-bag-volume-input', function () {
+                        const r = round10(this.value);
+                        if (r !== '' && String(r) !== String(this.value)) {
+                            this.value = r;
+                            if (typeof window.calculateWalkinTotal === 'function') window.calculateWalkinTotal();
                         }
                     });
-                }, 50);
-            } else {
-                const reason = prompt('Enter reason for declining:');
-                if (!reason || reason.trim() === '') return;
-                fetch(`/admin/donations/${id}/decline`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ reason: reason.trim() })
-                })
-                    .then(() => location.reload())
-                    .catch(() => alert('Failed to decline donation'));
-            }
-        }
-    </script>
-    <script>
-        // Client-side rounding: snap all ml inputs to nearest 10 on blur/change
-        (function () {
-            function round10(val) {
-                const n = parseFloat(val);
-                if (isNaN(n)) return '';
-                if (n < 10) return n; // avoid snapping tiny entries to 0
-                return Math.round(n / 10) * 10;
-            }
 
-            // Walk-in validation individual bag volumes
-            $('#walkin-volume-fields')
-                .on('change', '.walkin-bag-volume-input', function () {
-                    const r = round10(this.value);
-                    if (r !== '' && String(r) !== String(this.value)) {
-                        this.value = r;
-                    }
-                    if (typeof window.calculateWalkinTotal === 'function') window.calculateWalkinTotal();
-                })
-                .on('focusout', '.walkin-bag-volume-input', function () {
-                    const r = round10(this.value);
-                    if (r !== '' && String(r) !== String(this.value)) {
-                        this.value = r;
-                        if (typeof window.calculateWalkinTotal === 'function') window.calculateWalkinTotal();
-                    }
-                });
-
-            // Home collection validation bag volumes (both dynamic containers)
-            $('#home-bag-details-body, #home-volume-fields')
-                .on('change', '.home-bag-volume-input', function () {
-                    const r = round10(this.value);
-                    if (r !== '' && String(r) !== String(this.value)) {
-                        this.value = r;
-                    }
-                    if (typeof window.calculateHomeTotal === 'function') window.calculateHomeTotal();
-                })
-                .on('focusout', '.home-bag-volume-input', function () {
-                    const r = round10(this.value);
-                    if (r !== '' && String(r) !== String(this.value)) {
-                        this.value = r;
+                // Home collection validation bag volumes (both dynamic containers)
+                $('#home-bag-details-body, #home-volume-fields')
+                    .on('change', '.home-bag-volume-input', function () {
+                        const r = round10(this.value);
+                        if (r !== '' && String(r) !== String(this.value)) {
+                            this.value = r;
+                        }
                         if (typeof window.calculateHomeTotal === 'function') window.calculateHomeTotal();
-                    }
-                });
-
-            // Assist Walk-in modal bag volumes
-            $('#assist-volume-fields')
-                .on('change', '.assist-bag-volume', function () {
-                    const r = round10(this.value);
-                    if (r !== '' && String(r) !== String(this.value)) {
-                        this.value = r;
-                    }
-                    // Recompute total locally
-                    let t = 0; $('#assist-volume-fields .assist-bag-volume').each(function () {
-                        const v = parseFloat(this.value || ''); if (!isNaN(v)) t += v;
+                    })
+                    .on('focusout', '.home-bag-volume-input', function () {
+                        const r = round10(this.value);
+                        if (r !== '' && String(r) !== String(this.value)) {
+                            this.value = r;
+                            if (typeof window.calculateHomeTotal === 'function') window.calculateHomeTotal();
+                        }
                     });
-                    const disp = (t % 1 === 0) ? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, '');
-                    $('#assist-total').text(disp);
-                })
-                .on('focusout', '.assist-bag-volume', function () {
-                    const r = round10(this.value);
-                    if (r !== '' && String(r) !== String(this.value)) {
-                        this.value = r;
+
+                // Assist Walk-in modal bag volumes
+                $('#assist-volume-fields')
+                    .on('change', '.assist-bag-volume', function () {
+                        const r = round10(this.value);
+                        if (r !== '' && String(r) !== String(this.value)) {
+                            this.value = r;
+                        }
+                        // Recompute total locally
                         let t = 0; $('#assist-volume-fields .assist-bag-volume').each(function () {
                             const v = parseFloat(this.value || ''); if (!isNaN(v)) t += v;
                         });
                         const disp = (t % 1 === 0) ? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, '');
                         $('#assist-total').text(disp);
-                    }
-                });
-        })();
-    </script>
-    <script>
-        // Load and render 10-question Lifestyle Checklist for Schedule modal (Tab 3)
-        async function loadScheduleScreening(donationId) {
-            const loading = document.getElementById('schedule-screening-loading');
-            const box = document.getElementById('schedule-screening-content');
-            if (!box || !donationId) return;
-
-            // Clear any existing content first
-            box.innerHTML = '';
-            if (loading) loading.style.display = 'block';
-
-            try {
-                const resp = await fetch(`/admin/donations/${donationId}/screening`, {
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (!resp.ok) {
-                    let msg = 'Failed to load lifestyle checklist';
-                    if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
-                    if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
-                    box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
-                    return;
-                }
-                const data = await resp.json();
-                const questions = Array.isArray(data.questions) ? data.questions : [];
-
-                if (!questions.length) {
-                    box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
-                    return;
-                }
-
-                // Build HTML string instead of DOM manipulation to avoid duplication
-                let listHtml = '<div class="list-group">';
-                questions.forEach((q, idx) => {
-                    const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
-                    const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
-                    const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
-                    listHtml += `
-                                                            <div class="list-group-item">
-                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                    <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
-                                                                    <span class="badge bg-${color}">${ans}</span>
-                                                                </div>
-                                                                ${detailsHtml}
-                                                            </div>`;
-                });
-                listHtml += '</div>';
-
-                // Set innerHTML once to replace all content
-                box.innerHTML = listHtml;
-            } catch (e) {
-                box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
-            } finally {
-                if (loading) loading.style.display = 'none';
-            }
-        }
-
-        // Helper function to escape HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Load and render lifestyle checklist for Validate Home Collection modal
-        async function loadValidateScreening(donationId) {
-            const loading = document.getElementById('validate-screening-loading');
-            const box = document.getElementById('validate-screening-content');
-            if (!box || !donationId) return;
-
-            // Clear any existing content first
-            box.innerHTML = '';
-            if (loading) loading.style.display = 'block';
-
-            try {
-                const resp = await fetch(`/admin/donations/${donationId}/screening`, {
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (!resp.ok) {
-                    let msg = 'Failed to load lifestyle checklist';
-                    if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
-                    if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
-                    box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
-                    return;
-                }
-                const data = await resp.json();
-                const questions = Array.isArray(data.questions) ? data.questions : [];
-
-                if (!questions.length) {
-                    box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
-                    return;
-                }
-
-                // Build HTML string
-                let listHtml = '<div class="list-group">';
-                questions.forEach((q, idx) => {
-                    const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
-                    const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
-                    const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
-                    listHtml += `
-                                                            <div class="list-group-item">
-                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                    <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
-                                                                    <span class="badge bg-${color}">${ans}</span>
-                                                                </div>
-                                                                ${detailsHtml}
-                                                            </div>`;
-                });
-                listHtml += '</div>';
-
-                box.innerHTML = listHtml;
-            } catch (e) {
-                box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
-            } finally {
-                if (loading) loading.style.display = 'none';
-            }
-        }
-
-        // Load and render lifestyle checklist for View Donation Details modal
-        async function loadViewScreening(donationId) {
-            const loading = document.getElementById('view-screening-loading');
-            const box = document.getElementById('view-screening-content');
-            if (!box || !donationId) return;
-
-            // Clear any existing content first
-            box.innerHTML = '';
-            if (loading) loading.style.display = 'block';
-
-            try {
-                const resp = await fetch(`/admin/donations/${donationId}/screening`, {
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (!resp.ok) {
-                    let msg = 'Failed to load lifestyle checklist';
-                    if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
-                    if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
-                    box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
-                    return;
-                }
-                const data = await resp.json();
-                const questions = Array.isArray(data.questions) ? data.questions : [];
-
-                if (!questions.length) {
-                    box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
-                    return;
-                }
-
-                // Build HTML string
-                let listHtml = '<div class="list-group">';
-                questions.forEach((q, idx) => {
-                    const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
-                    const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
-                    const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
-                    listHtml += `
-                                                            <div class="list-group-item">
-                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                    <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
-                                                                    <span class="badge bg-${color}">${ans}</span>
-                                                                </div>
-                                                                ${detailsHtml}
-                                                            </div>`;
-                });
-                listHtml += '</div>';
-
-                box.innerHTML = listHtml;
-            } catch (e) {
-                box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
-            } finally {
-                if (loading) loading.style.display = 'none';
-            }
-        }
-
-        // Auto-capitalize first letter of each word
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.auto-capitalize-words').forEach(function (input) {
-                input.addEventListener('input', function (e) {
-                    const cursorPosition = e.target.selectionStart;
-                    const originalLength = e.target.value.length;
-
-                    // Capitalize first letter of each word
-                    e.target.value = e.target.value.replace(/\b\w/g, function (char) {
-                        return char.toUpperCase();
+                    })
+                    .on('focusout', '.assist-bag-volume', function () {
+                        const r = round10(this.value);
+                        if (r !== '' && String(r) !== String(this.value)) {
+                            this.value = r;
+                            let t = 0; $('#assist-volume-fields .assist-bag-volume').each(function () {
+                                const v = parseFloat(this.value || ''); if (!isNaN(v)) t += v;
+                            });
+                            const disp = (t % 1 === 0) ? Math.round(t) : t.toFixed(2).replace(/\.?0+$/, '');
+                            $('#assist-total').text(disp);
+                        }
                     });
+            })();
+        </script>
+        <script>
+            // Load and render 10-question Lifestyle Checklist for Schedule modal (Tab 3)
+            async function loadScheduleScreening(donationId) {
+                const loading = document.getElementById('schedule-screening-loading');
+                const box = document.getElementById('schedule-screening-content');
+                if (!box || !donationId) return;
 
-                    // Restore cursor position
-                    const newLength = e.target.value.length;
-                    const newPosition = cursorPosition + (newLength - originalLength);
-                    e.target.setSelectionRange(newPosition, newPosition);
+                // Clear any existing content first
+                box.innerHTML = '';
+                if (loading) loading.style.display = 'block';
+
+                try {
+                    const resp = await fetch(`/admin/donations/${donationId}/screening`, {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!resp.ok) {
+                        let msg = 'Failed to load lifestyle checklist';
+                        if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
+                        if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
+                        box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
+                        return;
+                    }
+                    const data = await resp.json();
+                    const questions = Array.isArray(data.questions) ? data.questions : [];
+
+                    if (!questions.length) {
+                        box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
+                        return;
+                    }
+
+                    // Build HTML string instead of DOM manipulation to avoid duplication
+                    let listHtml = '<div class="list-group">';
+                    questions.forEach((q, idx) => {
+                        const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
+                        const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
+                        const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
+                        listHtml += `
+                                                                    <div class="list-group-item">
+                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                            <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                                            <span class="badge bg-${color}">${ans}</span>
+                                                                        </div>
+                                                                        ${detailsHtml}
+                                                                    </div>`;
+                    });
+                    listHtml += '</div>';
+
+                    // Set innerHTML once to replace all content
+                    box.innerHTML = listHtml;
+                } catch (e) {
+                    box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
+                } finally {
+                    if (loading) loading.style.display = 'none';
+                }
+            }
+
+            // Helper function to escape HTML
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Load and render lifestyle checklist for Validate Home Collection modal
+            async function loadValidateScreening(donationId) {
+                const loading = document.getElementById('validate-screening-loading');
+                const box = document.getElementById('validate-screening-content');
+                if (!box || !donationId) return;
+
+                // Clear any existing content first
+                box.innerHTML = '';
+                if (loading) loading.style.display = 'block';
+
+                try {
+                    const resp = await fetch(`/admin/donations/${donationId}/screening`, {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!resp.ok) {
+                        let msg = 'Failed to load lifestyle checklist';
+                        if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
+                        if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
+                        box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
+                        return;
+                    }
+                    const data = await resp.json();
+                    const questions = Array.isArray(data.questions) ? data.questions : [];
+
+                    if (!questions.length) {
+                        box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
+                        return;
+                    }
+
+                    // Build HTML string
+                    let listHtml = '<div class="list-group">';
+                    questions.forEach((q, idx) => {
+                        const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
+                        const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
+                        const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
+                        listHtml += `
+                                                                    <div class="list-group-item">
+                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                            <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                                            <span class="badge bg-${color}">${ans}</span>
+                                                                        </div>
+                                                                        ${detailsHtml}
+                                                                    </div>`;
+                    });
+                    listHtml += '</div>';
+
+                    box.innerHTML = listHtml;
+                } catch (e) {
+                    box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
+                } finally {
+                    if (loading) loading.style.display = 'none';
+                }
+            }
+
+            // Load and render lifestyle checklist for View Donation Details modal
+            async function loadViewScreening(donationId) {
+                const loading = document.getElementById('view-screening-loading');
+                const box = document.getElementById('view-screening-content');
+                if (!box || !donationId) return;
+
+                // Clear any existing content first
+                box.innerHTML = '';
+                if (loading) loading.style.display = 'block';
+
+                try {
+                    const resp = await fetch(`/admin/donations/${donationId}/screening`, {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!resp.ok) {
+                        let msg = 'Failed to load lifestyle checklist';
+                        if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
+                        if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
+                        box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
+                        return;
+                    }
+                    const data = await resp.json();
+                    const questions = Array.isArray(data.questions) ? data.questions : [];
+
+                    if (!questions.length) {
+                        box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
+                        return;
+                    }
+
+                    // Build HTML string
+                    let listHtml = '<div class="list-group">';
+                    questions.forEach((q, idx) => {
+                        const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
+                        const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
+                        const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
+                        listHtml += `
+                                                                    <div class="list-group-item">
+                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                            <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                                            <span class="badge bg-${color}">${ans}</span>
+                                                                        </div>
+                                                                        ${detailsHtml}
+                                                                    </div>`;
+                    });
+                    listHtml += '</div>';
+
+                    box.innerHTML = listHtml;
+                } catch (e) {
+                    box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
+                } finally {
+                    if (loading) loading.style.display = 'none';
+                }
+            }
+
+            // Auto-capitalize first letter of each word
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.auto-capitalize-words').forEach(function (input) {
+                    input.addEventListener('input', function (e) {
+                        const cursorPosition = e.target.selectionStart;
+                        const originalLength = e.target.value.length;
+
+                        // Capitalize first letter of each word
+                        e.target.value = e.target.value.replace(/\b\w/g, function (char) {
+                            return char.toUpperCase();
+                        });
+
+                        // Restore cursor position
+                        const newLength = e.target.value.length;
+                        const newPosition = cursorPosition + (newLength - originalLength);
+                        e.target.setSelectionRange(newPosition, newPosition);
+                    });
                 });
             });
-        });
 
-        // Edit UI removed per request
-    </script>
+            // Edit UI removed per request
+        </script>
 @endsection
