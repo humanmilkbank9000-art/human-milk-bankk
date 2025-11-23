@@ -283,30 +283,49 @@ class BreastmilkRequestController extends Controller
         }
 
         $status = request()->query('status', 'pending');
+        $search = request()->query('q');
 
-        $pendingRequests = BreastmilkRequest::where('status', 'pending')
+        // Helper function to apply search filter
+        $applySearch = function($query) use ($search) {
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->whereHas('user', function($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'LIKE', "%{$search}%")
+                            ->orWhere('last_name', 'LIKE', "%{$search}%")
+                            ->orWhere('contact_number', 'LIKE', "%{$search}%");
+                    });
+                });
+            }
+            return $query;
+        };
+
+        $pendingQuery = BreastmilkRequest::where('status', 'pending')
             ->with(['user', 'infant', 'availability'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'desc');
+        $pendingRequests = $applySearch($pendingQuery)
             ->paginate(10, ['*'], 'pending_page')
-            ->appends(['status' => $status]);
+            ->appends(['status' => $status, 'q' => $search]);
 
-        $approvedRequests = BreastmilkRequest::where('status', 'approved')
+        $approvedQuery = BreastmilkRequest::where('status', 'approved')
             ->with(['user', 'infant', 'availability'])
-            ->orderBy('approved_at', 'desc')
+            ->orderBy('approved_at', 'desc');
+        $approvedRequests = $applySearch($approvedQuery)
             ->paginate(10, ['*'], 'approved_page')
-            ->appends(['status' => $status]);
+            ->appends(['status' => $status, 'q' => $search]);
 
-        $dispensedRequests = BreastmilkRequest::where('status', 'dispensed')
+        $dispensedQuery = BreastmilkRequest::where('status', 'dispensed')
             ->with(['user', 'infant', 'availability', 'dispensedMilk.sourceDonations.user', 'dispensedMilk.sourceBatches'])
-            ->orderBy('dispensed_at', 'desc')
+            ->orderBy('dispensed_at', 'desc');
+        $dispensedRequests = $applySearch($dispensedQuery)
             ->paginate(10, ['*'], 'dispensed_page')
-            ->appends(['status' => $status]);
+            ->appends(['status' => $status, 'q' => $search]);
 
-        $declinedRequests = BreastmilkRequest::where('status', 'declined')
+        $declinedQuery = BreastmilkRequest::where('status', 'declined')
             ->with(['user', 'infant', 'availability'])
-            ->orderBy('declined_at', 'desc')
+            ->orderBy('declined_at', 'desc');
+        $declinedRequests = $applySearch($declinedQuery)
             ->paginate(10, ['*'], 'declined_page')
-            ->appends(['status' => $status]);
+            ->appends(['status' => $status, 'q' => $search]);
 
         return view('admin.breastmilk-request', compact('pendingRequests', 'approvedRequests', 'dispensedRequests', 'declinedRequests'));
     }

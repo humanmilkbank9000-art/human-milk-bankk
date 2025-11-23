@@ -562,14 +562,15 @@
         <div class="mb-3">
             <form method="GET" action="{{ route('admin.request') }}" class="d-flex align-items-stretch search-assist-row">
                 <input type="hidden" name="status" value="{{ request()->get('status', 'pending') }}">
-                <div class="input-group input-group-sm">
+                <div class="input-group input-group-sm" role="search" aria-label="Search breastmilk requests">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="bi bi-search"></i>
                     </span>
                     <input type="text" class="form-control form-control-sm border-start-0 ps-0" id="searchInput" name="q"
-                        placeholder="Search guardian, infant, or contact" aria-label="Search requests"
-                        value="{{ request('q') }}">
-                    <button class="btn btn-sm btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                        placeholder="Search guardian, infant, or contact" aria-label="Search breastmilk requests"
+                        value="{{ request('q') }}" autocomplete="off">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" id="clearSearch" aria-label="Clear search"
+                            style="display: {{ request('q') ? 'inline-block' : 'none' }};">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -918,6 +919,20 @@
                                 </div>
                             </div>
 
+                            <!-- Medical Condition / Reason for Request -->
+                            @if(!empty($request->medical_condition))
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <h6 class="text-primary border-bottom pb-2 mb-2">
+                                            <i class="fas fa-notes-medical"></i> Medical Condition / Reason for Request
+                                        </h6>
+                                        <div class="alert alert-info mb-0">
+                                            <p class="mb-0">{{ $request->medical_condition }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             <!-- Prescription -->
                             @if($request->hasPrescription())
                                 <div class="row mb-3">
@@ -1079,6 +1094,19 @@
                             </div>
                         </div>
                     </div>
+
+                    @if(!empty($request->medical_condition))
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-2">
+                                    <i class="fas fa-notes-medical"></i> Medical Condition / Reason for Request
+                                </h6>
+                                <div class="alert alert-info mb-0">
+                                    <p class="mb-0">{{ $request->medical_condition }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
                     @if($request->hasPrescription())
                         <div class="row mt-2">
@@ -1689,145 +1717,41 @@
                 document.addEventListener('DOMContentLoaded', function () {
                     const searchInput = document.getElementById('searchInput');
                     const clearBtn = document.getElementById('clearSearch');
-                    const searchResults = document.getElementById('searchResults');
 
                     if (!searchInput) return;
 
-                    // Helpers: extract searchable text from rows (guardian-only for exact), and full haystack for partial
-                    function getGuardianText(row) {
-                        const guardianCell = row.querySelector('[data-label="Guardian"], td:nth-child(1)');
-                        const guardian = guardianCell ? guardianCell.textContent : '';
-                        return (guardian || '').replace(/\s+/g, ' ').trim().toLowerCase();
-                    }
-                    function extractRowFields(row) {
-                        // Guardian + Infant + Contact for partial matching fallback
-                        const guardianCell = row.querySelector('[data-label="Guardian"], td:nth-child(1)');
-                        const infantCell = row.querySelector('[data-label="Infant"], td:nth-child(2)');
-                        const contactCell = row.querySelector('[data-label="Contact"], td:nth-child(3)');
-                        const guardian = guardianCell ? guardianCell.textContent.trim() : '';
-                        const infant = infantCell ? infantCell.textContent.trim() : '';
-                        const contact = contactCell ? contactCell.textContent.trim() : '';
-                        return (guardian + ' ' + infant + ' ' + contact).toLowerCase();
-                    }
-
-                    function extractCardFields(card) {
-                        // If a mobile card layout exists in the future, adapt selectors here
-                        // Currently, return empty string so no cards are matched
-                        return '';
-                    }
-
-                    function getActivePane() {
-                        return document.querySelector('.tab-pane.show.active') || document.querySelector('.tab-pane.active') || document.querySelector('.tab-pane');
-                    }
-
-                    function isVisible(el) {
-                        if (!el) return false;
-                        return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
-                    }
-
-                    function getAllTableRowsInActivePane() {
-                        const pane = getActivePane();
-                        if (!pane) return [];
-                        const rows = [];
-                        pane.querySelectorAll('table tbody tr').forEach(r => rows.push(r));
-                        return rows;
-                    }
-
-                    function getAllCardsInActivePane() {
-                        const pane = getActivePane();
-                        if (!pane) return [];
-                        // No dedicated card layout currently; return empty array
-                        return [];
-                    }
-
-                    function performSearch() {
-                        const term = (searchInput.value || '').trim().toLowerCase();
-                        let totalCount = 0;
-                        let visibleCount = 0;
-
-                        const rows = getAllTableRowsInActivePane();
-                        const cards = getAllCardsInActivePane();
-
-                        if (!term) {
-                            rows.forEach(row => { row.hidden = false; row.style.display = ''; });
-                            cards.forEach(card => { card.style.display = ''; });
-                            const visibleRows = rows.filter(r => isVisible(r));
-                            const visibleCards = cards.filter(c => isVisible(c));
-                            totalCount = visibleRows.length + visibleCards.length;
-                            visibleCount = totalCount;
-                            clearBtn.style.display = 'none';
-                            searchResults.textContent = '';
-                            searchResults.classList.remove('text-danger');
-                            return;
-                        }
-
-                        const visibleRows = rows.filter(r => isVisible(r));
-                        const visibleCards = cards.filter(c => isVisible(c));
-                        totalCount = visibleRows.length + visibleCards.length;
-
-                        // Exact-first by guardian, then fallback to partial across guardian+infant+contact
-                        const exactRows = [];
-                        const partialRows = [];
-                        visibleRows.forEach(row => {
-                            const g = getGuardianText(row);
-                            if (g && g === term) {
-                                exactRows.push(row);
-                                return;
-                            }
-                            const hay = extractRowFields(row);
-                            if (hay.indexOf(term) !== -1) partialRows.push(row);
-                        });
-
-                        const showRows = exactRows.length > 0 ? exactRows : partialRows;
-                        const hideRows = new Set(visibleRows);
-                        showRows.forEach(r => hideRows.delete(r));
-
-                        // Force hide using !important to beat any table-row styles
-                        showRows.forEach(row => {
-                            row.removeAttribute('hidden');
-                            row.style.removeProperty('display');
-                            row.style.setProperty('display', 'table-row');
-                            visibleCount++;
-                        });
-                        hideRows.forEach(row => {
-                            row.setAttribute('hidden', 'hidden');
-                            row.style.setProperty('display', 'none', 'important');
-                        });
-
-                        visibleCards.forEach(card => {
-                            const hay = extractCardFields(card);
-                            if (hay.indexOf(term) !== -1) {
-                                card.style.display = '';
-                                visibleCount++;
-                            } else {
-                                card.style.display = 'none';
-                            }
-                        });
-
-                        if (!term) {
-                            clearBtn.style.display = 'none';
-                            searchResults.textContent = '';
-                            searchResults.classList.remove('text-danger');
+                    // Immediate submit (no debounce) so results load after every keystroke
+                    function submitSearchImmediate() {
+                        const url = new URL(window.location.href);
+                        const term = searchInput.value.trim();
+                        if (term.length) {
+                            url.searchParams.set('q', term);
                         } else {
-                            clearBtn.style.display = 'inline-block';
-                            searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                            if (visibleCount === 0) {
-                                searchResults.textContent = 'No results found';
-                                searchResults.classList.add('text-danger');
-                            } else {
-                                searchResults.classList.remove('text-danger');
-                            }
+                            url.searchParams.delete('q');
                         }
+                        window.location.replace(url.toString());
                     }
 
-                    searchInput.addEventListener('input', performSearch);
-                    clearBtn.addEventListener('click', function () {
-                        searchInput.value = '';
-                        performSearch();
-                        searchInput.focus();
+                    searchInput.addEventListener('input', function() {
+                        const term = searchInput.value.trim();
+                        clearBtn.style.display = term ? 'inline-block' : 'none';
+                        // Submit on every input change (including clear)
+                        submitSearchImmediate();
                     });
 
-                    performSearch();
+                    // Enter key still works (prevent form submission side-effects)
+                    searchInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            submitSearchImmediate();
+                        }
+                    });
+
+                    clearBtn.addEventListener('click', function() {
+                        searchInput.value = '';
+                        clearBtn.style.display = 'none';
+                        submitSearchImmediate();
+                    });
                 });
             </script>
 

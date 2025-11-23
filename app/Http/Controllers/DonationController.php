@@ -28,19 +28,36 @@ class DonationController extends Controller
         // Get donation type filter for pending donations
         $donationType = $request->get('donation_type', 'all');
         $status = $request->query('status', 'pending');
+        $search = $request->query('q');
+        
+        // Helper function to apply search filter
+        $applySearch = function($query) use ($search) {
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->whereHas('user', function($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'LIKE', "%{$search}%")
+                            ->orWhere('last_name', 'LIKE', "%{$search}%")
+                            ->orWhere('contact_number', 'LIKE', "%{$search}%");
+                    });
+                });
+            }
+            return $query;
+        };
         
         // Get donations by status for different sections with pagination
-        $pendingWalkIn = Donation::pendingWalkIn()
+        $pendingWalkInQuery = Donation::pendingWalkIn()
             ->with(['user', 'availability'])
-            ->orderBy('donation_date')
+            ->orderBy('donation_date');
+        $pendingWalkIn = $applySearch($pendingWalkInQuery)
             ->paginate(10, ['*'], 'pending_walkin_page')
-            ->appends(['status' => $status, 'donation_type' => $donationType]);
+            ->appends(['status' => $status, 'donation_type' => $donationType, 'q' => $search]);
             
-        $pendingHomeCollection = Donation::pendingHomeCollection()
+        $pendingHomeCollectionQuery = Donation::pendingHomeCollection()
             ->with(['user'])
-            ->orderBy('created_at')
+            ->orderBy('created_at');
+        $pendingHomeCollection = $applySearch($pendingHomeCollectionQuery)
             ->paginate(10, ['*'], 'pending_home_page')
-            ->appends(['status' => $status, 'donation_type' => $donationType]);
+            ->appends(['status' => $status, 'donation_type' => $donationType, 'q' => $search]);
             
         // For unified pending view, we'll use collection pagination
         $allPendingQuery = Donation::whereIn('status', ['pending', 'pending_walk_in', 'pending_home_collection'])
@@ -53,35 +70,40 @@ class DonationController extends Controller
             $allPendingQuery->where('donation_method', 'home_collection');
         }
         
+        $allPendingQuery = $applySearch($allPendingQuery);
         $pendingDonations = $allPendingQuery
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'pending_page')
-            ->appends(['status' => $status, 'donation_type' => $donationType]);
+            ->appends(['status' => $status, 'donation_type' => $donationType, 'q' => $search]);
             
-        $successWalkIn = Donation::successWalkIn()
+        $successWalkInQuery = Donation::successWalkIn()
             ->with(['user'])
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('updated_at', 'desc');
+        $successWalkIn = $applySearch($successWalkInQuery)
             ->paginate(10, ['*'], 'success_walkin_page')
-            ->appends(['status' => $status]);
+            ->appends(['status' => $status, 'q' => $search]);
             
-        $scheduledHomeCollection = Donation::scheduledHomeCollection()
+        $scheduledHomeCollectionQuery = Donation::scheduledHomeCollection()
             ->with(['user'])
-            ->orderBy('scheduled_pickup_date')
+            ->orderBy('scheduled_pickup_date');
+        $scheduledHomeCollection = $applySearch($scheduledHomeCollectionQuery)
             ->paginate(10, ['*'], 'scheduled_page')
-            ->appends(['status' => $status]);
+            ->appends(['status' => $status, 'q' => $search]);
             
-        $successHomeCollection = Donation::successHomeCollection()
+        $successHomeCollectionQuery = Donation::successHomeCollection()
             ->with(['user'])
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('updated_at', 'desc');
+        $successHomeCollection = $applySearch($successHomeCollectionQuery)
             ->paginate(10, ['*'], 'success_home_page')
-            ->appends(['status' => $status]);
+            ->appends(['status' => $status, 'q' => $search]);
 
         // Declined donations for the Declined tab
-        $declinedDonations = Donation::where('status', 'declined')
+        $declinedDonationsQuery = Donation::where('status', 'declined')
             ->with(['user'])
-            ->orderByDesc('declined_at')
+            ->orderByDesc('declined_at');
+        $declinedDonations = $applySearch($declinedDonationsQuery)
             ->paginate(10, ['*'], 'declined_page')
-            ->appends(['status' => $status]);
+            ->appends(['status' => $status, 'q' => $search]);
         $declinedCount = Donation::where('status', 'declined')->count();
 
         return view('admin.breastmilk-donation', compact(

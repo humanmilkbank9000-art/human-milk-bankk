@@ -77,15 +77,30 @@ class HealthScreeningController extends Controller
     public function admin_health_screening(Request $request)
     {
         $status = $request->query('status', 'pending');
+        $search = $request->query('q');
 
-        // Counts
+        // Base query with status filter
+        $query = HealthScreening::where('status', $status)
+            ->with('user', 'infant');
+
+        // Apply search filter if present
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($userQuery) use ($search) {
+                    $userQuery->where('first_name', 'LIKE', "%{$search}%")
+                        ->orWhere('last_name', 'LIKE', "%{$search}%")
+                        ->orWhere('contact_number', 'LIKE', "%{$search}%");
+                });
+            });
+        }
+
+        // Counts (not affected by search)
         $pendingCount = HealthScreening::where('status', 'pending')->count();
         $acceptedCount = HealthScreening::where('status', 'accepted')->count();
         $declinedCount = HealthScreening::where('status', 'declined')->count();
-        $healthScreenings = HealthScreening::where('status', $status)
-            ->with('user', 'infant')
-            ->paginate(10)
-            ->appends(['status' => $status]);
+        
+        $healthScreenings = $query->paginate(10)
+            ->appends(['status' => $status, 'q' => $search]);
 
         return view('admin.health-screening', compact('healthScreenings', 'status', 'pendingCount', 'acceptedCount', 'declinedCount'));
     }

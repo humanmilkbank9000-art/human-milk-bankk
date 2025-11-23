@@ -23,6 +23,7 @@ class BreastmilkRequest extends Model
         'prescription_path',
         'prescription_filename',
         'prescription_mime_type',
+        'medical_condition',
         'volume_requested',
         'milk_type',
         'request_date',

@@ -834,7 +834,7 @@
                         placeholder="Search by name, contact number..." aria-describedby="searchResults"
                         value="{{ request('q') }}" autocomplete="off">
                     <button type="button" class="donation-search-clear" id="clearSearch" aria-label="Clear search"
-                        style="display:none;">
+                        style="display:{{ request('q') ? 'inline-block' : 'none' }};">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
@@ -1022,13 +1022,6 @@
                                 </table>
                             </div>
 
-                            {{-- Pagination --}}
-                            @if($pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                                <div class="d-flex justify-content-center mt-4">
-                                    {{ $pendingDonations->links() }}
-                                </div>
-                            @endif
-
                             {{-- Card Layout for Smaller Screens --}}
                             @foreach($pendingOrdered as $donation)
                                 <div class="donation-card d-block d-md-none">
@@ -1122,6 +1115,13 @@
                                     </div>
                                 </div>
                             @endforeach
+
+                            {{-- Pagination --}}
+                            @if($pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $pendingDonations->links() }}
+                                </div>
+                            @endif
                         @else
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-inbox fa-3x mb-3"></i>
@@ -2095,139 +2095,49 @@
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearch');
-            const searchResults = document.getElementById('searchResults');
 
             if (!searchInput) return;
 
-            // Helpers to extract searchable text from table rows and donation cards
-            function extractRowFields(row) {
-                // Include donor Name, Address, and Contact cells for searching
-                const nameCell = row.querySelector('[data-label="Name"]');
-                const addressCell = row.querySelector('[data-label="Address"]');
-                const contactCell = row.querySelector('[data-label="Contact"]');
-                const nameText = nameCell ? nameCell.textContent.trim() : '';
-                const addressText = addressCell ? addressCell.textContent.trim() : '';
-                const contactText = contactCell ? contactCell.textContent.trim() : '';
-                return (nameText + ' ' + addressText + ' ' + contactText).toLowerCase();
-            }
+            // Debounce timer
+            let searchTimer = null;
 
-            function extractCardFields(card) {
-                // Mobile card: pull Name, Address, and Contact rows
-                const nameEl = card.querySelector('.card-header-row strong') || card.querySelector('strong');
-                const findRow = (label) => Array.from(card.querySelectorAll('.card-row')).find(r => (r.querySelector('.card-label') || {}).textContent?.toLowerCase().includes(label));
-                const addressValEl = (findRow('address') || {}).querySelector ? findRow('address').querySelector('.card-value') : null;
-                const contactValEl = (findRow('contact') || {}).querySelector ? findRow('contact').querySelector('.card-value') : null;
-                const nameText = nameEl ? nameEl.textContent.trim() : '';
-                const addressText = addressValEl ? addressValEl.textContent.trim() : '';
-                const contactText = contactValEl ? contactValEl.textContent.trim() : '';
-                return (nameText + ' ' + addressText + ' ' + contactText).toLowerCase();
-            }
-
-
-            // Gather targets only within the active tab to avoid duplicates
-            function getActivePane() {
-                return document.querySelector('.tab-pane.show.active') || document.querySelector('.tab-pane.active') || document.querySelector('.tab-pane');
-            }
-
-            function isVisible(el) {
-                if (!el) return false;
-                // offsetParent is null for display:none; getClientRects ensures visibility for elements with no size
-                return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
-            }
-
-            function getAllTableRowsInActivePane() {
-                const pane = getActivePane();
-                if (!pane) return [];
-                const rows = [];
-                pane.querySelectorAll('table tbody tr').forEach(r => rows.push(r));
-                return rows;
-            }
-
-            function getAllCardsInActivePane() {
-                const pane = getActivePane();
-                if (!pane) return [];
-                return Array.from(pane.querySelectorAll('.donation-card'));
-            }
-
-            function performSearch() {
-                const term = searchInput.value.trim().toLowerCase();
-                let totalCount = 0;
-                let visibleCount = 0;
-
-                const rows = getAllTableRowsInActivePane();
-                const cards = getAllCardsInActivePane();
-
-                // If no term, restore all rows/cards (remove inline display overrides)
-                if (!term) {
-                    rows.forEach(row => { row.style.display = ''; });
-                    cards.forEach(card => { card.style.display = ''; });
-
-                    // Count only those that are actually visible in the current layout
-                    const visibleRows = rows.filter(r => isVisible(r));
-                    const visibleCards = cards.filter(c => isVisible(c));
-                    totalCount = visibleRows.length + visibleCards.length;
-                    visibleCount = totalCount;
-
-                    // Clear UI
-                    clearBtn.style.display = 'none';
-                    searchResults.textContent = '';
-                    searchResults.classList.remove('text-danger');
-                    return;
-                }
-
-                // With a search term: limit targets to currently visible elements
-                const visibleRows = rows.filter(r => isVisible(r));
-                const visibleCards = cards.filter(c => isVisible(c));
-                totalCount = visibleRows.length + visibleCards.length;
-
-                // Handle table rows (desktop): match substring on Name or Address
-                visibleRows.forEach(row => {
-                    const hay = extractRowFields(row);
-                    if (hay.indexOf(term) !== -1) {
-                        row.style.display = '';
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                // Handle donation-card blocks (mobile view) (Name + Address)
-                visibleCards.forEach(card => {
-                    const hay = extractCardFields(card);
-                    if (hay.indexOf(term) !== -1) {
-                        card.style.display = '';
-                        visibleCount++;
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-
-                // Update UI
-                if (!term) {
-                    clearBtn.style.display = 'none';
-                    searchResults.textContent = '';
-                    searchResults.classList.remove('text-danger');
-                } else {
+            // Submit search to server
+            function submitSearch() {
+                const url = new URL(window.location.href);
+                const searchValue = searchInput.value.trim();
+                
+                if (searchValue) {
+                    url.searchParams.set('q', searchValue);
                     clearBtn.style.display = 'inline-block';
-                    searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                    if (visibleCount === 0) {
-                        searchResults.textContent = 'No results found';
-                        searchResults.classList.add('text-danger');
-                    } else {
-                        searchResults.classList.remove('text-danger');
-                    }
+                } else {
+                    url.searchParams.delete('q');
+                    clearBtn.style.display = 'none';
                 }
+                
+                window.location.href = url.toString();
             }
 
-            searchInput.addEventListener('input', performSearch);
-            clearBtn.addEventListener('click', function () {
-                searchInput.value = '';
-                performSearch();
-                searchInput.focus();
+            // Debounced search on input
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(submitSearch, 500);
             });
 
-            // Initial run to ensure correct state
-            performSearch();
+            // Search on Enter key
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimer);
+                    submitSearch();
+                }
+            });
+
+            // Clear search
+            clearBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                const url = new URL(window.location.href);
+                url.searchParams.delete('q');
+                window.location.href = url.toString();
+            });
         });
     </script>
 
