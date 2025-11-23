@@ -48,16 +48,16 @@ class DonationController extends Controller
         $pendingWalkInQuery = Donation::pendingWalkIn()
             ->with(['user', 'availability'])
             ->orderBy('donation_date');
+        // Show all for pending walk-in (no pagination)
         $pendingWalkIn = $applySearch($pendingWalkInQuery)
-            ->paginate(10, ['*'], 'pending_walkin_page')
-            ->appends(['status' => $status, 'donation_type' => $donationType, 'q' => $search]);
+            ->get();
             
         $pendingHomeCollectionQuery = Donation::pendingHomeCollection()
             ->with(['user'])
             ->orderBy('created_at');
+        // Show all for pending home collection (no pagination)
         $pendingHomeCollection = $applySearch($pendingHomeCollectionQuery)
-            ->paginate(10, ['*'], 'pending_home_page')
-            ->appends(['status' => $status, 'donation_type' => $donationType, 'q' => $search]);
+            ->get();
             
         // For unified pending view, we'll use collection pagination
         $allPendingQuery = Donation::whereIn('status', ['pending', 'pending_walk_in', 'pending_home_collection'])
@@ -73,8 +73,7 @@ class DonationController extends Controller
         $allPendingQuery = $applySearch($allPendingQuery);
         $pendingDonations = $allPendingQuery
             ->orderBy('created_at', 'desc')
-            ->paginate(10, ['*'], 'pending_page')
-            ->appends(['status' => $status, 'donation_type' => $donationType, 'q' => $search]);
+            ->get();
             
         $successWalkInQuery = Donation::successWalkIn()
             ->with(['user'])
@@ -86,9 +85,9 @@ class DonationController extends Controller
         $scheduledHomeCollectionQuery = Donation::scheduledHomeCollection()
             ->with(['user'])
             ->orderBy('scheduled_pickup_date');
+        // Show all scheduled donations (no pagination)
         $scheduledHomeCollection = $applySearch($scheduledHomeCollectionQuery)
-            ->paginate(10, ['*'], 'scheduled_page')
-            ->appends(['status' => $status, 'q' => $search]);
+            ->get();
             
         $successHomeCollectionQuery = Donation::successHomeCollection()
             ->with(['user'])

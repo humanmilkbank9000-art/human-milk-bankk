@@ -303,8 +303,7 @@ class BreastmilkRequestController extends Controller
             ->with(['user', 'infant', 'availability'])
             ->orderBy('created_at', 'desc');
         $pendingRequests = $applySearch($pendingQuery)
-            ->paginate(10, ['*'], 'pending_page')
-            ->appends(['status' => $status, 'q' => $search]);
+            ->get();
 
         $approvedQuery = BreastmilkRequest::where('status', 'approved')
             ->with(['user', 'infant', 'availability'])
