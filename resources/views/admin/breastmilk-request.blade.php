@@ -796,7 +796,8 @@
                     <div class="card-body">
                         @if($declinedRequests->count() > 0)
                             <div class="table-container-standard">
-                                <table class="table table-standard table-striped">
+                                <table
+                                    class="table table-standard table-bordered table-striped align-middle table-standard-min-width">
                                     <thead class="table-success">
                                         <tr>
                                             <th class="text-center">Guardian</th>
@@ -1632,15 +1633,15 @@
                                                                 container.id = 'volumeNotice' + requestId;
                                                                 container.className = 'mt-2';
                                                                 container.innerHTML = `
-                                                                                                <div class="alert alert-info d-flex align-items-center justify-content-between">
-                                                                                                    <div>
-                                                                                                        You entered <strong>${original}</strong> ml — recorded as <strong>${roundedDown}</strong> ml.
+                                                                                                    <div class="alert alert-info d-flex align-items-center justify-content-between">
+                                                                                                        <div>
+                                                                                                            You entered <strong>${original}</strong> ml — recorded as <strong>${roundedDown}</strong> ml.
+                                                                                                        </div>
+                                                                                                        <div class="ms-3">
+                                                                                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('volumeNotice${requestId}').remove()">Dismiss</button>
+                                                                                                        </div>
                                                                                                     </div>
-                                                                                                    <div class="ms-3">
-                                                                                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('volumeNotice${requestId}').remove()">Dismiss</button>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            `;
+                                                                                                `;
 
                                                                 const parent = input.parentElement || input.closest('.mb-3');
                                                                 if (parent) parent.appendChild(container);
@@ -1745,14 +1746,14 @@
                                                                                 container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
                                                                             } else {
                                                                                 container.innerHTML = `
-                                                                                                                                                                                                                                                    <div class="d-flex flex-column align-items-center justify-content-center">
-                                                                                                                                                                                                                                                        <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                                                                                                                                                                                                                                        <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                                                                                                                                                                                                                                            <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
-                                                                                                                                                                                                                                                                style="max-width:100%; max-height:70vh; object-fit:contain;">
+                                                                                                                                                                                                                                                        <div class="d-flex flex-column align-items-center justify-content-center">
+                                                                                                                                                                                                                                                            <h6 class="mb-3">Prescription: ${data.filename}</h6>
+                                                                                                                                                                                                                                                            <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                                                                                                                                                                                                                                                <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
+                                                                                                                                                                                                                                                                    style="max-width:100%; max-height:70vh; object-fit:contain;">
+                                                                                                                                                                                                                                                            </div>
                                                                                                                                                                                                                                                         </div>
-                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                `;
+                                                                                                                                                                                                                                                    `;
                                                                             }
                                                                         })
                                                                         .catch(error => {
@@ -1796,13 +1797,13 @@
                                                                         let userHtml = '';
                                                                         if (user) {
                                                                             userHtml = `
-                                                                                                            <div class="card p-3 mb-3" style="min-width:250px;">
-                                                                                                                <h6 class="mb-2"><i class="fas fa-user"></i> Requester</h6>
-                                                                                                                <p class="mb-1"><strong>Name:</strong> ${escapeHtml(user.full_name || '-')}</p>
-                                                                                                                <p class="mb-1"><strong>Contact:</strong> ${escapeHtml(user.contact_number || '-')}</p>
-                                                                                                                <p class="mb-0"><strong>Address:</strong> ${escapeHtml(user.address || '-')}</p>
-                                                                                                            </div>
-                                                                                                        `;
+                                                                                                                <div class="card p-3 mb-3" style="min-width:250px;">
+                                                                                                                    <h6 class="mb-2"><i class="fas fa-user"></i> Requester</h6>
+                                                                                                                    <p class="mb-1"><strong>Name:</strong> ${escapeHtml(user.full_name || '-')}</p>
+                                                                                                                    <p class="mb-1"><strong>Contact:</strong> ${escapeHtml(user.contact_number || '-')}</p>
+                                                                                                                    <p class="mb-0"><strong>Address:</strong> ${escapeHtml(user.address || '-')}</p>
+                                                                                                                </div>
+                                                                                                            `;
                                                                         }
 
                                                                         const isPdf = typeof data.image === 'string' && /^data:application\/pdf/i.test(data.image);
@@ -1810,35 +1811,35 @@
                                                                         let viewerHtml = '';
                                                                         if (isPdf) {
                                                                             viewerHtml = `
-                                                                                                            <div class="ratio ratio-16x9 w-100">
-                                                                                                                <iframe src="${data.image}" title="${filenameSafe}" style="border:1px solid #dee2e6; border-radius: .25rem;"></iframe>
-                                                                                                            </div>
-                                                                                                            <div class="mt-2 text-center">
-                                                                                                                <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download PDF</a>
-                                                                                                            </div>
-                                                                                                        `;
+                                                                                                                <div class="ratio ratio-16x9 w-100">
+                                                                                                                    <iframe src="${data.image}" title="${filenameSafe}" style="border:1px solid #dee2e6; border-radius: .25rem;"></iframe>
+                                                                                                                </div>
+                                                                                                                <div class="mt-2 text-center">
+                                                                                                                    <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download PDF</a>
+                                                                                                                </div>
+                                                                                                            `;
                                                                         } else {
                                                                             viewerHtml = `
-                                                                                                            <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
-                                                                                                                <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
-                                                                                                            </div>
-                                                                                                            <div class="mt-2 text-center">
-                                                                                                                <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download</a>
-                                                                                                            </div>
-                                                                                                        `;
+                                                                                                                <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
+                                                                                                                    <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                                                                                                </div>
+                                                                                                                <div class="mt-2 text-center">
+                                                                                                                    <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download</a>
+                                                                                                                </div>
+                                                                                                            `;
                                                                         }
 
                                                                         container.innerHTML = `
-                                                                                                        <div class="row">
-                                                                                                            <div class="col-md-4 d-flex justify-content-center align-items-start">
-                                                                                                                ${userHtml}
+                                                                                                            <div class="row">
+                                                                                                                <div class="col-md-4 d-flex justify-content-center align-items-start">
+                                                                                                                    ${userHtml}
+                                                                                                                </div>
+                                                                                                                <div class="col-md-8 d-flex flex-column align-items-center">
+                                                                                                                    <h6 class="mb-3">Prescription: ${filenameSafe}</h6>
+                                                                                                                    ${viewerHtml}
+                                                                                                                </div>
                                                                                                             </div>
-                                                                                                            <div class="col-md-8 d-flex flex-column align-items-center">
-                                                                                                                <h6 class="mb-3">Prescription: ${filenameSafe}</h6>
-                                                                                                                ${viewerHtml}
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                    `;
+                                                                                                        `;
                                                                     })
                                                                     .catch(err => {
                                                                         container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';
@@ -1882,36 +1883,36 @@
                                                                         data.inventory.forEach(item => {
                                                                             const itemId = milkType === 'unpasteurized' ? item.id : item.id;
                                                                             html += `
-                                                                                                                                                                                                                                                <div class="card mb-2">
-                                                                                                                                                                                                                                                    <div class="card-body p-2">
-                                                                                                                                                                                                                                                        <div class="form-check">
-                                                                                                                                                                                                                                                            <input class="form-check-input" type="checkbox" 
-                                                                                                                                                                                                                                                                id="item_${requestId}_${itemId}" 
-                                                                                                                                                                                                                                                                onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
-                                                                                                                                                                                                                                                            <label class="form-check-label" for="item_${requestId}_${itemId}">
-                                                                                                                                                                                                                                                                <small>
-                                                                                                                                                                                                                                                                    ${milkType === 'unpasteurized' ?
+                                                                                                                                                                                                                                                    <div class="card mb-2">
+                                                                                                                                                                                                                                                        <div class="card-body p-2">
+                                                                                                                                                                                                                                                            <div class="form-check">
+                                                                                                                                                                                                                                                                <input class="form-check-input" type="checkbox" 
+                                                                                                                                                                                                                                                                    id="item_${requestId}_${itemId}" 
+                                                                                                                                                                                                                                                                    onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
+                                                                                                                                                                                                                                                                <label class="form-check-label" for="item_${requestId}_${itemId}">
+                                                                                                                                                                                                                                                                    <small>
+                                                                                                                                                                                                                                                                        ${milkType === 'unpasteurized' ?
                                                                                     `<strong>Donation #${item.id}</strong><br>
-                                                                                                                                                                                                                                                                         ${item.donor_name} - ${item.donation_type}<br>
-                                                                                                                                                                                                                                                                         <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
+                                                                                                                                                                                                                                                                             ${item.donor_name} - ${item.donation_type}<br>
+                                                                                                                                                                                                                                                                             <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
                                                                                     `<strong>Batch ${item.batch_number}</strong><br>
-                                                                                                                                                                                                                                                                         Pasteurized by: ${item.admin_name}<br>
-                                                                                                                                                                                                                                                                         <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
+                                                                                                                                                                                                                                                                             Pasteurized by: ${item.admin_name}<br>
+                                                                                                                                                                                                                                                                             <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
                                                                                 }
-                                                                                                                                                                                                                                                                </small>
-                                                                                                                                                                                                                                                            </label>
-                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                        <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
-                                                                                                                                                                                                                                                            <label class="form-label">Volume to deduct (ml):</label>
-                                                                                                                                                                                                                                                            <input type="number" class="form-control form-control-sm" 
-                                                                                                                                                                                                                                                                id="volume_${requestId}_${itemId}" 
-                                                                                                                                                                                                                                                                step="0.01" min="0.01" max="${item.volume}" 
-                                                                                                                                                                                                                                                                value="${item.volume}"
-                                                                                                                                                                                                                                                                onchange="updateSelectedVolume(${requestId})">
+                                                                                                                                                                                                                                                                    </small>
+                                                                                                                                                                                                                                                                </label>
+                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                            <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
+                                                                                                                                                                                                                                                                <label class="form-label">Volume to deduct (ml):</label>
+                                                                                                                                                                                                                                                                <input type="number" class="form-control form-control-sm" 
+                                                                                                                                                                                                                                                                    id="volume_${requestId}_${itemId}" 
+                                                                                                                                                                                                                                                                    step="0.01" min="0.01" max="${item.volume}" 
+                                                                                                                                                                                                                                                                    value="${item.volume}"
+                                                                                                                                                                                                                                                                    onchange="updateSelectedVolume(${requestId})">
+                                                                                                                                                                                                                                                            </div>
                                                                                                                                                                                                                                                         </div>
                                                                                                                                                                                                                                                     </div>
-                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                            `;
+                                                                                                                                                                                                                                                `;
                                                                         });
 
                                                                         inventoryList.innerHTML = html;
@@ -2032,9 +2033,9 @@
                                                                     Swal.fire({
                                                                         title: 'Accept Request',
                                                                         html: `
-                                                                                                                                                                    <p>To accept this request, you need to specify the dispensing details.</p>
-                                                                                                                                                                    <p class="text-muted">Click "Continue" to open the dispensing form.</p>
-                                                                                                                                                                `,
+                                                                                                                                                                        <p>To accept this request, you need to specify the dispensing details.</p>
+                                                                                                                                                                        <p class="text-muted">Click "Continue" to open the dispensing form.</p>
+                                                                                                                                                                    `,
                                                                         icon: 'info',
                                                                         showCancelButton: true,
                                                                         confirmButtonText: 'Continue to Dispense Form',
@@ -2085,13 +2086,13 @@
                                                                     Swal.fire({
                                                                         title: 'Decline Request',
                                                                         html: `
-                                                                <div class="text-start">
-                                                                    <p>Are you sure you want to decline this request?</p>
-                                                                    <p class="text-muted mb-3">This action cannot be undone.</p>
-                                                                    <label for="decline-reason" class="form-label"><strong>Reason for Declining <span class="text-danger">*</span></strong></label>
-                                                                    <textarea id="decline-reason" class="form-control" rows="3" placeholder="Please provide a reason for declining this request..." required></textarea>
-                                                                </div>
-                                                            `,
+                                                                    <div class="text-start">
+                                                                        <p>Are you sure you want to decline this request?</p>
+                                                                        <p class="text-muted mb-3">This action cannot be undone.</p>
+                                                                        <label for="decline-reason" class="form-label"><strong>Reason for Declining <span class="text-danger">*</span></strong></label>
+                                                                        <textarea id="decline-reason" class="form-control" rows="3" placeholder="Please provide a reason for declining this request..." required></textarea>
+                                                                    </div>
+                                                                `,
                                                                         icon: 'warning',
                                                                         showCancelButton: true,
                                                                         confirmButtonText: 'Yes, Decline Request',
@@ -2437,25 +2438,25 @@
                                                                 let html = '';
                                                                 batches.forEach(batch => {
                                                                     html += `
-                                                                                            <div class="card mb-2">
-                                                                                                <div class="card-body p-2">
-                                                                                                    <div class="form-check">
-                                                                                                        <input class="form-check-input" type="checkbox" 
-                                                                                                            id="batch_${requestId}_${batch.batch_id}" 
-                                                                                                            value="${batch.batch_id}"
-                                                                                                            data-volume="${batch.available_volume}"
-                                                                                                            onchange="updateSelectedVolume(${requestId})">
-                                                                                                        <label class="form-check-label" for="batch_${requestId}_${batch.batch_id}">
-                                                                                                            <small>
-                                                                                                                <strong>Batch #${batch.batch_number}</strong><br>
-                                                                                                                <span class="text-primary">${batch.available_volume} ml available</span><br>
-                                                                                                                <span class="text-muted">Date: ${batch.date_pasteurized}</span>
-                                                                                                            </small>
-                                                                                                        </label>
+                                                                                                <div class="card mb-2">
+                                                                                                    <div class="card-body p-2">
+                                                                                                        <div class="form-check">
+                                                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                                                id="batch_${requestId}_${batch.batch_id}" 
+                                                                                                                value="${batch.batch_id}"
+                                                                                                                data-volume="${batch.available_volume}"
+                                                                                                                onchange="updateSelectedVolume(${requestId})">
+                                                                                                            <label class="form-check-label" for="batch_${requestId}_${batch.batch_id}">
+                                                                                                                <small>
+                                                                                                                    <strong>Batch #${batch.batch_number}</strong><br>
+                                                                                                                    <span class="text-primary">${batch.available_volume} ml available</span><br>
+                                                                                                                    <span class="text-muted">Date: ${batch.date_pasteurized}</span>
+                                                                                                                </small>
+                                                                                                            </label>
+                                                                                                        </div>
                                                                                                     </div>
                                                                                                 </div>
-                                                                                            </div>
-                                                                                        `;
+                                                                                            `;
                                                                 });
                                                                 html += '<div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle"></i> Select batches in order. Volume will be automatically deducted based on your input above.</small></div>';
                                                                 inventoryList.innerHTML = html;
@@ -2476,26 +2477,26 @@
                                                                 donations.forEach(donation => {
                                                                     const donorName = donation.donor_name || 'Anonymous';
                                                                     html += `
-                                                                                            <div class="card mb-2">
-                                                                                                <div class="card-body p-2">
-                                                                                                    <div class="form-check">
-                                                                                                        <input class="form-check-input" type="checkbox" 
-                                                                                                            id="donation_${requestId}_${donation.breastmilk_donation_id}" 
-                                                                                                            value="${donation.breastmilk_donation_id}"
-                                                                                                            data-volume="${donation.available_volume}"
-                                                                                                            onchange="updateSelectedVolume(${requestId})">
-                                                                                                        <label class="form-check-label" for="donation_${requestId}_${donation.breastmilk_donation_id}">
-                                                                                                            <small>
-                                                                                                                <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
-                                                                                                                <span class="text-muted">Donor: ${donorName}</span><br>
-                                                                                                                <span class="text-primary">${donation.available_volume} ml available</span><br>
-                                                                                                                <span class="text-muted">Date: ${donation.donation_date}</span>
-                                                                                                            </small>
-                                                                                                        </label>
+                                                                                                <div class="card mb-2">
+                                                                                                    <div class="card-body p-2">
+                                                                                                        <div class="form-check">
+                                                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                                                id="donation_${requestId}_${donation.breastmilk_donation_id}" 
+                                                                                                                value="${donation.breastmilk_donation_id}"
+                                                                                                                data-volume="${donation.available_volume}"
+                                                                                                                onchange="updateSelectedVolume(${requestId})">
+                                                                                                            <label class="form-check-label" for="donation_${requestId}_${donation.breastmilk_donation_id}">
+                                                                                                                <small>
+                                                                                                                    <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
+                                                                                                                    <span class="text-muted">Donor: ${donorName}</span><br>
+                                                                                                                    <span class="text-primary">${donation.available_volume} ml available</span><br>
+                                                                                                                    <span class="text-muted">Date: ${donation.donation_date}</span>
+                                                                                                                </small>
+                                                                                                            </label>
+                                                                                                        </div>
                                                                                                     </div>
                                                                                                 </div>
-                                                                                            </div>
-                                                                                        `;
+                                                                                            `;
                                                                 });
                                                                 html += '<div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle"></i> Select donations in order. Volume will be automatically deducted based on your input above.</small></div>';
                                                                 inventoryList.innerHTML = html;
@@ -2643,9 +2644,9 @@
                                                                 Swal.fire({
                                                                     title: 'Confirm Dispensing',
                                                                     html: `
-                                                                                                                                                        <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
-                                                                                                                                                        <p class="text-muted mb-0">This action cannot be undone.</p>
-                                                                                                                                                    `,
+                                                                                                                                                            <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
+                                                                                                                                                            <p class="text-muted mb-0">This action cannot be undone.</p>
+                                                                                                                                                        `,
                                                                     icon: 'question',
                                                                     showCancelButton: true,
                                                                     confirmButtonColor: '#28a745',
@@ -2718,13 +2719,13 @@
                                                                     Swal.fire({
                                                                         title: 'Reject Request',
                                                                         html: `
-                                                                <div class="text-start">
-                                                                    <p>Are you sure you want to reject this request?</p>
-                                                                    <p class="text-muted mb-3">This action cannot be undone.</p>
-                                                                    <label for="reject-reason" class="form-label"><strong>Reason for Rejection <span class="text-danger">*</span></strong></label>
-                                                                    <textarea id="reject-reason" class="form-control" rows="3" placeholder="Please provide a reason for rejecting this request..." required></textarea>
-                                                                </div>
-                                                            `,
+                                                                    <div class="text-start">
+                                                                        <p>Are you sure you want to reject this request?</p>
+                                                                        <p class="text-muted mb-3">This action cannot be undone.</p>
+                                                                        <label for="reject-reason" class="form-label"><strong>Reason for Rejection <span class="text-danger">*</span></strong></label>
+                                                                        <textarea id="reject-reason" class="form-control" rows="3" placeholder="Please provide a reason for rejecting this request..." required></textarea>
+                                                                    </div>
+                                                                `,
                                                                         icon: 'warning',
                                                                         showCancelButton: true,
                                                                         confirmButtonColor: '#dc3545',
@@ -2953,20 +2954,20 @@
                                                                             donations.forEach(d => {
                                                                                 const avail = d.available_volume || 0;
                                                                                 html += `
-                                                                                                        <div class="card mb-2">
-                                                                                                            <div class="card-body p-2">
-                                                                                                                <div class="form-check">
-                                                                                                                    <input class="form-check-input" type="checkbox" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
-                                                                                                                    <label class="form-check-label" for="assisted_donation_${d.breastmilk_donation_id}">
-                                                                                                                        <small>
-                                                                                                                            <strong>Donation #${d.breastmilk_donation_id}</strong><br>
-                                                                                                                            <span class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</span><br>
-                                                                                                                            <span class="text-primary">${avail} ml available</span>
-                                                                                                                        </small>
-                                                                                                                    </label>
+                                                                                                            <div class="card mb-2">
+                                                                                                                <div class="card-body p-2">
+                                                                                                                    <div class="form-check">
+                                                                                                                        <input class="form-check-input" type="checkbox" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                                                                                                        <label class="form-check-label" for="assisted_donation_${d.breastmilk_donation_id}">
+                                                                                                                            <small>
+                                                                                                                                <strong>Donation #${d.breastmilk_donation_id}</strong><br>
+                                                                                                                                <span class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</span><br>
+                                                                                                                                <span class="text-primary">${avail} ml available</span>
+                                                                                                                            </small>
+                                                                                                                        </label>
+                                                                                                                    </div>
                                                                                                                 </div>
-                                                                                                            </div>
-                                                                                                        </div>`;
+                                                                                                            </div>`;
                                                                             });
                                                                             list.innerHTML = html;
                                                                         } else {
@@ -2979,20 +2980,20 @@
                                                                             batches.forEach(b => {
                                                                                 const avail = b.available_volume || 0;
                                                                                 html += `
-                                                                                                        <div class="card mb-2">
-                                                                                                            <div class="card-body p-2">
-                                                                                                                <div class="form-check">
-                                                                                                                    <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
-                                                                                                                    <label class="form-check-label" for="assisted_batch_${b.batch_id}">
-                                                                                                                        <small>
-                                                                                                                            <strong>Batch #${b.batch_number}</strong><br>
-                                                                                                                            <span class="text-primary">${avail} ml available</span><br>
-                                                                                                                            <span class="text-muted">Date: ${b.date_pasteurized}</span>
-                                                                                                                        </small>
-                                                                                                                    </label>
+                                                                                                            <div class="card mb-2">
+                                                                                                                <div class="card-body p-2">
+                                                                                                                    <div class="form-check">
+                                                                                                                        <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                                                                                                        <label class="form-check-label" for="assisted_batch_${b.batch_id}">
+                                                                                                                            <small>
+                                                                                                                                <strong>Batch #${b.batch_number}</strong><br>
+                                                                                                                                <span class="text-primary">${avail} ml available</span><br>
+                                                                                                                                <span class="text-muted">Date: ${b.date_pasteurized}</span>
+                                                                                                                            </small>
+                                                                                                                        </label>
+                                                                                                                    </div>
                                                                                                                 </div>
-                                                                                                            </div>
-                                                                                                        </div>`;
+                                                                                                            </div>`;
                                                                             });
                                                                             list.innerHTML = html;
                                                                         }
