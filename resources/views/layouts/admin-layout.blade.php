@@ -41,6 +41,8 @@
     <link href="{{ asset('css/responsive.css') }}?v={{ time() }}" rel="stylesheet">
     <!-- Global Tab Styles - Horizontal Alignment -->
     <link href="{{ asset('css/global-tabs.css') }}" rel="stylesheet">
+    <!-- Pagination Styles -->
+    <link href="{{ asset('css/pagination.css') }}" rel="stylesheet">
     <style>
         /* Design system typography */
         :root{

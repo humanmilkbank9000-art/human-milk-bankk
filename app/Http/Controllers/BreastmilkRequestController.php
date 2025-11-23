@@ -287,22 +287,26 @@ class BreastmilkRequestController extends Controller
         $pendingRequests = BreastmilkRequest::where('status', 'pending')
             ->with(['user', 'infant', 'availability'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'pending_page')
+            ->appends(['status' => $status]);
 
         $approvedRequests = BreastmilkRequest::where('status', 'approved')
             ->with(['user', 'infant', 'availability'])
             ->orderBy('approved_at', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'approved_page')
+            ->appends(['status' => $status]);
 
         $dispensedRequests = BreastmilkRequest::where('status', 'dispensed')
             ->with(['user', 'infant', 'availability', 'dispensedMilk.sourceDonations.user', 'dispensedMilk.sourceBatches'])
             ->orderBy('dispensed_at', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'dispensed_page')
+            ->appends(['status' => $status]);
 
         $declinedRequests = BreastmilkRequest::where('status', 'declined')
             ->with(['user', 'infant', 'availability'])
             ->orderBy('declined_at', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'declined_page')
+            ->appends(['status' => $status]);
 
         return view('admin.breastmilk-request', compact('pendingRequests', 'approvedRequests', 'dispensedRequests', 'declinedRequests'));
     }

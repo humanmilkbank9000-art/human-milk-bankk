@@ -894,6 +894,11 @@
                             </table>
                         </div>
 
+                        {{-- Pagination --}}
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ $healthScreenings->links() }}
+                        </div>
+
                         {{-- Card Layout for Smaller Screens --}}
                         @foreach($screeningsOrdered as $index => $screening)
                             <div class="responsive-card" style="display: none;">

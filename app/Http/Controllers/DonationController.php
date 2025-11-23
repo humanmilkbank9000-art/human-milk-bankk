@@ -29,55 +29,60 @@ class DonationController extends Controller
         $donationType = $request->get('donation_type', 'all');
         $status = $request->query('status', 'pending');
         
-        // Get donations by status for different sections
+        // Get donations by status for different sections with pagination
         $pendingWalkIn = Donation::pendingWalkIn()
             ->with(['user', 'availability'])
             ->orderBy('donation_date')
-            ->get();
+            ->paginate(10, ['*'], 'pending_walkin_page')
+            ->appends(['status' => $status, 'donation_type' => $donationType]);
             
         $pendingHomeCollection = Donation::pendingHomeCollection()
             ->with(['user'])
             ->orderBy('created_at')
-            ->get();
+            ->paginate(10, ['*'], 'pending_home_page')
+            ->appends(['status' => $status, 'donation_type' => $donationType]);
             
-        // Combine pending donations for unified view
-        $allPendingDonations = $pendingWalkIn->concat($pendingHomeCollection)
-            ->sortBy('created_at');
+        // For unified pending view, we'll use collection pagination
+        $allPendingQuery = Donation::whereIn('status', ['pending', 'pending_walk_in', 'pending_home_collection'])
+            ->with(['user', 'availability']);
         
         // Filter pending donations based on donation type
         if ($donationType === 'walk_in') {
-            $pendingDonations = $allPendingDonations->filter(function($donation) {
-                return $donation->donation_method === 'walk_in';
-            });
+            $allPendingQuery->where('donation_method', 'walk_in');
         } elseif ($donationType === 'home_collection') {
-            $pendingDonations = $allPendingDonations->filter(function($donation) {
-                return $donation->donation_method === 'home_collection';
-            });
-        } else {
-            $pendingDonations = $allPendingDonations;
+            $allPendingQuery->where('donation_method', 'home_collection');
         }
+        
+        $pendingDonations = $allPendingQuery
+            ->orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'pending_page')
+            ->appends(['status' => $status, 'donation_type' => $donationType]);
             
         $successWalkIn = Donation::successWalkIn()
             ->with(['user'])
             ->orderBy('updated_at', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'success_walkin_page')
+            ->appends(['status' => $status]);
             
         $scheduledHomeCollection = Donation::scheduledHomeCollection()
             ->with(['user'])
             ->orderBy('scheduled_pickup_date')
-            ->get();
+            ->paginate(10, ['*'], 'scheduled_page')
+            ->appends(['status' => $status]);
             
         $successHomeCollection = Donation::successHomeCollection()
             ->with(['user'])
             ->orderBy('updated_at', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'success_home_page')
+            ->appends(['status' => $status]);
 
         // Declined donations for the Declined tab
         $declinedDonations = Donation::where('status', 'declined')
             ->with(['user'])
             ->orderByDesc('declined_at')
-            ->get();
-        $declinedCount = $declinedDonations->count();
+            ->paginate(10, ['*'], 'declined_page')
+            ->appends(['status' => $status]);
+        $declinedCount = Donation::where('status', 'declined')->count();
 
         return view('admin.breastmilk-donation', compact(
             'pendingWalkIn',
