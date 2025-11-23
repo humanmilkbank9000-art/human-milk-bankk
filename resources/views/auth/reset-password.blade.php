@@ -5,6 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Password - Human Milk Bank</title>
+    @if (file_exists(public_path('hmblsc-logo-circle.png')))
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('hmblsc-logo-circle.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('hmblsc-logo-circle.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo-circle.png') }}">
+        <link rel="shortcut icon" href="{{ asset('hmblsc-logo-circle.png') }}">
+    @elseif (file_exists(public_path('hmblsc-logo.png')))
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('hmblsc-logo.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('hmblsc-logo.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo.png') }}">
+        <link rel="shortcut icon" href="{{ asset('hmblsc-logo.png') }}">
+    @else
+        <link rel="icon" type="image/jpeg" sizes="32x32" href="{{ asset('hmblsc-logo.jpg') }}">
+        <link rel="icon" type="image/jpeg" sizes="16x16" href="{{ asset('hmblsc-logo.jpg') }}">
+        <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo.jpg') }}">
+        <link rel="shortcut icon" href="{{ asset('hmblsc-logo.jpg') }}">
+    @endif
     <link
     href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap"
         rel="stylesheet">
