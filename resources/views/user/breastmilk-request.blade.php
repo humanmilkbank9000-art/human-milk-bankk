@@ -202,9 +202,11 @@
 
         /* Make the card headers pink on this page (flat color, no gradient) */
         .card-header.bg-primary {
-            background: #ff93c1 !important; /* solid pink */
-            border-bottom: 1px solid rgba(255,111,166,0.2) !important;
-            color: #ffffff !important; /* white text for contrast */
+            background: #ff93c1 !important;
+            /* solid pink */
+            border-bottom: 1px solid rgba(255, 111, 166, 0.2) !important;
+            color: #ffffff !important;
+            /* white text for contrast */
         }
 
         /* Table header should match card header (flat pink, white text) */
@@ -423,7 +425,8 @@
                     <!-- Step 1: Infant Selection -->
                     <div class="tab-pane fade show active" id="infant-section" role="tabpanel">
                         <div class="card">
-                            <div class="card-header bg-primary text-white rounded-top d-flex justify-content-between align-items-center">
+                            <div
+                                class="card-header bg-primary text-white rounded-top d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0"><i class="fas fa-baby"></i> Select Infant for Breastmilk Request</h5>
                                 <button type="button" class="btn btn-light btn-sm" id="addInfantBtn">
                                     <i class="fas fa-plus"></i> Add New Infant
@@ -448,7 +451,8 @@
                                                 <tr>
                                                     <td>
                                                         <div class="form-check">
-                                                            <input class="form-check-input infant-radio" type="radio" name="infant_select" value="{{ $infant->infant_id }}" {{ $loop->first ? 'checked' : '' }}>
+                                                            <input class="form-check-input infant-radio" type="radio"
+                                                                name="infant_select" value="{{ $infant->infant_id }}" {{ $loop->first ? 'checked' : '' }}>
                                                         </div>
                                                     </td>
                                                     <td>{{ $infant->first_name }} {{ $infant->middle_name }}
@@ -497,12 +501,12 @@
                                             <!-- Calendar will be generated here -->
                                         </div>
                                         <input type="hidden" name="availability_id" id="selected_availability_id">
-                                            <div id="time-slots-container" style="display: none;">
-                                                <label class="form-label">Available Time Slots:</label>
-                                                <div id="available-slots">
-                                                    <!-- Time slots will be loaded here -->
-                                                </div>
+                                        <div id="time-slots-container" style="display: none;">
+                                            <label class="form-label">Available Time Slots:</label>
+                                            <div id="available-slots">
+                                                <!-- Time slots will be loaded here -->
                                             </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -583,7 +587,8 @@
                     <h5 class="modal-title" id="addInfantModalLabel">
                         <i class="fas fa-baby"></i> Add New Infant
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="addInfantAlert" class="alert alert-danger" style="display:none;"></div>
@@ -592,23 +597,28 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">First Name *</label>
-                                <input type="text" class="form-control" id="infant_first_name" name="first_name" required>
+                                <input type="text" class="form-control auto-capitalize-words" id="infant_first_name"
+                                    name="first_name" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Middle Name</label>
-                                <input type="text" class="form-control" id="infant_middle_name" name="middle_name">
+                                <input type="text" class="form-control auto-capitalize-words" id="infant_middle_name"
+                                    name="middle_name">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Last Name *</label>
-                                <input type="text" class="form-control" id="infant_last_name" name="last_name" required>
+                                <input type="text" class="form-control auto-capitalize-words" id="infant_last_name"
+                                    name="last_name" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Suffix</label>
-                                <input type="text" class="form-control" id="infant_suffix" name="suffix" placeholder="Jr., Sr., III, etc.">
+                                <input type="text" class="form-control auto-capitalize-words" id="infant_suffix"
+                                    name="suffix" placeholder="Jr., Sr., III, etc.">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Date of Birth *</label>
-                                <input type="date" class="form-control" id="infant_dob" name="infant_date_of_birth" max="{{ now()->toDateString() }}" required>
+                                <input type="date" class="form-control" id="infant_dob" name="infant_date_of_birth"
+                                    max="{{ now()->toDateString() }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Sex *</label>
@@ -620,7 +630,8 @@
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Birth Weight (kg) *</label>
-                                <input type="number" class="form-control" id="infant_weight" name="birth_weight" step="0.01" min="0.5" max="20" placeholder="e.g., 3.5" required>
+                                <input type="number" class="form-control" id="infant_weight" name="birth_weight" step="0.01"
+                                    min="0.5" max="20" placeholder="e.g., 3.5" required>
                                 <small class="text-muted">Enter weight between 0.5 and 20 kg</small>
                             </div>
                         </div>
@@ -724,15 +735,15 @@
             // Add Infant modal handlers - Simple and working implementation
             function setupAddInfantModal() {
                 console.log('Setting up Add Infant modal...');
-                
+
                 const addBtn = document.getElementById('addInfantBtn');
                 const modalEl = document.getElementById('addInfantModal');
                 const alertDiv = document.getElementById('addInfantAlert');
                 const form = document.getElementById('addInfantForm');
                 const saveBtn = document.getElementById('saveInfantBtn');
-                
+
                 console.log('Elements found:', { addBtn: !!addBtn, modalEl: !!modalEl, alertDiv: !!alertDiv, form: !!form, saveBtn: !!saveBtn });
-                
+
                 if (!addBtn || !modalEl || !form) {
                     console.error('Add Infant elements not found!', { addBtn, modalEl, form });
                     return;
@@ -740,8 +751,36 @@
 
                 const modal = new bootstrap.Modal(modalEl);
 
+                // Auto-capitalize words for inputs inside the Add Infant modal
+                (function attachAutoCapitalize() {
+                    try {
+                        const inputs = modalEl.querySelectorAll('.auto-capitalize-words');
+                        if (!inputs || inputs.length === 0) return;
+
+                        inputs.forEach(function (input) {
+                            input.addEventListener('input', function (e) {
+                                const el = e.target;
+                                if (!el) return;
+                                const start = el.selectionStart;
+                                const end = el.selectionEnd;
+                                // Capitalize first letter of each word, lowercase the rest
+                                const transformed = (el.value || '').replace(/\b\w+/g, function (w) {
+                                    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+                                });
+                                if (transformed !== el.value) {
+                                    el.value = transformed;
+                                    // restore caret position as best-effort
+                                    try { el.setSelectionRange(start, end); } catch (_) { }
+                                }
+                            });
+                        });
+                    } catch (err) {
+                        // fail silently
+                    }
+                })();
+
                 // Open modal button
-                addBtn.addEventListener('click', function() {
+                addBtn.addEventListener('click', function () {
                     console.log('Add Infant button clicked');
                     form.reset();
                     if (alertDiv) {
@@ -750,41 +789,41 @@
                     }
                     modal.show();
                 });
-                
+
                 console.log('Add Infant modal setup complete');
 
                 // Form submission
-                form.addEventListener('submit', async function(e) {
+                form.addEventListener('submit', async function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('============ FORM SUBMIT EVENT TRIGGERED ============');
                     console.log('Event:', e);
                     console.log('Form:', form);
                     console.log('Save button:', saveBtn);
-                    
+
                     // Disable save button
                     if (saveBtn) {
                         saveBtn.disabled = true;
                         saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
                         console.log('Save button disabled and text changed');
                     }
-                    
+
                     // Hide previous alerts
                     if (alertDiv) {
                         alertDiv.style.display = 'none';
                         console.log('Alert hidden');
                     }
-                    
+
                     try {
                         // Get CSRF token
-                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
-                                        document.querySelector('input[name="_token"]')?.value;
-                        
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ||
+                            document.querySelector('input[name="_token"]')?.value;
+
                         // Prepare form data
                         const formData = new FormData(form);
-                        
+
                         console.log('Submitting infant data:', Object.fromEntries(formData));
-                        
+
                         // Send request
                         const response = await fetch('{{ route("user.infants.store") }}', {
                             method: 'POST',
@@ -795,10 +834,10 @@
                             },
                             body: formData
                         });
-                        
+
                         const data = await response.json();
                         console.log('Server response:', data);
-                        
+
                         if (!response.ok) {
                             // Handle errors
                             let errorMsg = 'Failed to add infant';
@@ -809,51 +848,51 @@
                             }
                             throw new Error(errorMsg);
                         }
-                        
+
                         if (data.success && data.infant) {
                             // Add new row to table
                             const tbody = document.getElementById('infantsTableBody');
                             if (tbody) {
                                 const newRow = `
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input infant-radio" type="radio" 
-                                                       name="infant_select" value="${data.infant.infant_id}" checked>
-                                            </div>
-                                        </td>
-                                        <td>${data.infant.name}</td>
-                                        <td>${data.infant.date_of_birth}</td>
-                                        <td>${data.infant.age_text}</td>
-                                        <td>${data.infant.sex}</td>
-                                        <td>${data.infant.birth_weight}</td>
-                                    </tr>
-                                `;
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input infant-radio" type="radio" 
+                                                           name="infant_select" value="${data.infant.infant_id}" checked>
+                                                </div>
+                                            </td>
+                                            <td>${data.infant.name}</td>
+                                            <td>${data.infant.date_of_birth}</td>
+                                            <td>${data.infant.age_text}</td>
+                                            <td>${data.infant.sex}</td>
+                                            <td>${data.infant.birth_weight}</td>
+                                        </tr>
+                                    `;
                                 tbody.insertAdjacentHTML('beforeend', newRow);
                             }
-                            
+
                             // Update selected infant
                             selectedInfantId = data.infant.infant_id;
                             const infantIdInput = document.getElementById('infant_id');
                             if (infantIdInput) {
                                 infantIdInput.value = data.infant.infant_id;
                             }
-                            
+
                             // Show success message
                             const alertArea = document.getElementById('infantAlertArea');
                             if (alertArea) {
                                 alertArea.innerHTML = `
-                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        <i class="fas fa-check-circle"></i> <strong>Success!</strong> 
-                                        Infant <strong>${data.infant.name}</strong> has been added and selected.
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                `;
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-check-circle"></i> <strong>Success!</strong> 
+                                            Infant <strong>${data.infant.name}</strong> has been added and selected.
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    `;
                             }
-                            
+
                             // Close modal
                             modal.hide();
-                            
+
                             // Show SweetAlert success
                             if (typeof Swal !== 'undefined') {
                                 Swal.fire({
@@ -867,7 +906,7 @@
                         } else {
                             throw new Error('Invalid response from server');
                         }
-                        
+
                     } catch (error) {
                         console.error('Add infant error:', error);
                         if (alertDiv) {
@@ -1000,13 +1039,13 @@
                 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
                 let calendarHTML = `
-                                            <div class="calendar-header">
-                                                <button type="button" class="calendar-nav-btn" onclick="navigateMonth(-1)">&lt;</button>
-                                                <div class="calendar-month-year">${monthNames[currentMonth]} ${currentYear}</div>
-                                                <button type="button" class="calendar-nav-btn" onclick="navigateMonth(1)">&gt;</button>
-                                            </div>
-                                            <div class="calendar-grid">
-                                        `;
+                                                <div class="calendar-header">
+                                                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth(-1)">&lt;</button>
+                                                    <div class="calendar-month-year">${monthNames[currentMonth]} ${currentYear}</div>
+                                                    <button type="button" class="calendar-nav-btn" onclick="navigateMonth(1)">&gt;</button>
+                                                </div>
+                                                <div class="calendar-grid">
+                                            `;
 
                 // Day headers
                 dayNames.forEach(day => {
@@ -1065,31 +1104,31 @@
             window.selectDate = function (dateString) {
                 selectedDate = dateString;
                 generateCalendar();
-                    fetch(`/admin/availability/slots?date=${dateString}`)
-                        .then(response => response.json())
-                        .then(data => {
-                                if (data.available_slots && data.available_slots.length > 0) {
-                                    selectedAvailabilityId = data.available_slots[0].id;
-                                    document.getElementById('selected_availability_id').value = selectedAvailabilityId;
-                                    const appointmentDetails = document.getElementById('appointment-details');
-                                    const parsed = parseYMD(dateString);
-                                    appointmentDetails.innerHTML = `<strong>Date:</strong> ${parsed.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
-                                    document.getElementById('selected-appointment-info').style.display = 'block';
-                                    document.getElementById('nextToPrescription').disabled = false;
-                                } else {
-                                selectedAvailabilityId = null;
-                                document.getElementById('selected_availability_id').value = '';
-                                document.getElementById('selected-appointment-info').style.display = 'none';
-                                document.getElementById('nextToPrescription').disabled = true;
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Error fetching availability:', err);
-                        });
+                fetch(`/admin/availability/slots?date=${dateString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available_slots && data.available_slots.length > 0) {
+                            selectedAvailabilityId = data.available_slots[0].id;
+                            document.getElementById('selected_availability_id').value = selectedAvailabilityId;
+                            const appointmentDetails = document.getElementById('appointment-details');
+                            const parsed = parseYMD(dateString);
+                            appointmentDetails.innerHTML = `<strong>Date:</strong> ${parsed.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+                            document.getElementById('selected-appointment-info').style.display = 'block';
+                            document.getElementById('nextToPrescription').disabled = false;
+                        } else {
+                            selectedAvailabilityId = null;
+                            document.getElementById('selected_availability_id').value = '';
+                            document.getElementById('selected-appointment-info').style.display = 'none';
+                            document.getElementById('nextToPrescription').disabled = true;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error fetching availability:', err);
+                    });
             };
 
 
-                // No time slots: selecting a date picks the availability record if present. Handled in selectDate above.
+            // No time slots: selecting a date picks the availability record if present. Handled in selectDate above.
             function selectTimeSlot(slotId, formattedTime, date) {
                 selectedAvailabilityId = slotId;
                 document.getElementById('selected_availability_id').value = slotId;
@@ -1107,9 +1146,9 @@
                 const appointmentDetails = document.getElementById('appointment-details');
                 const parsed = parseYMD(date);
                 appointmentDetails.innerHTML = `
-                                                                <strong>Date:</strong> ${parsed.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
-                                                                <strong>Time:</strong> ${formattedTime}
-                                                            `;
+                                                                    <strong>Date:</strong> ${parsed.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+                                                                    <strong>Time:</strong> ${formattedTime}
+                                                                `;
                 document.getElementById('selected-appointment-info').style.display = 'block';
 
                 // Enable next button

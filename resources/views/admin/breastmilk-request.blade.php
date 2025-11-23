@@ -43,22 +43,32 @@
             padding: 0.5em 0.8em;
             border-radius: 6px;
         }
+
         /* Assist option badge (shared styling similar to donation view) */
         .assist-option-badge {
-            display:inline-block;
-            padding:0.25rem 0.5rem;
-            font-size:0.6rem;
-            line-height:1.1;
-            font-weight:600;
-            border-radius:0.35rem;
-            background:#6c757d;
-            color:#fff;
-            white-space:nowrap;
-            letter-spacing:.3px;
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6rem;
+            line-height: 1.1;
+            font-weight: 600;
+            border-radius: 0.35rem;
+            background: #6c757d;
+            color: #fff;
+            white-space: nowrap;
+            letter-spacing: .3px;
         }
-        .assist-option-badge.option-direct { background:#0d6efd; }
-        .assist-option-badge.option-existing { background:#198754; }
-        .assist-option-badge.option-letting { background:#6610f2; }
+
+        .assist-option-badge.option-direct {
+            background: #0d6efd;
+        }
+
+        .assist-option-badge.option-existing {
+            background: #198754;
+        }
+
+        .assist-option-badge.option-letting {
+            background: #6610f2;
+        }
 
         /* Ensure milk type badges have a uniform appearance and width and are vertically centered */
         .milk-type-badge {
@@ -233,35 +243,72 @@
                 line-height: 1.3;
             }
 
-        /* Assist button + search layout (reused from donation view) */
-        .assist-btn {
-            background: linear-gradient(90deg,#ff7eb6,#ff65a3) !important;
-            color: #fff !important;
-            border: none !important;
-            border-radius: 10px !important;
-            padding: 0.35rem 0.9rem !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            white-space: nowrap;
-        }
-        .assist-btn:hover, .assist-btn:focus {
-            filter: brightness(0.96);
-            color: #fff !important;
-        }
+            /* Assist button + search layout (reused from donation view) */
+            .assist-btn {
+                background: linear-gradient(90deg, #ff7eb6, #ff65a3) !important;
+                color: #fff !important;
+                border: none !important;
+                border-radius: 10px !important;
+                padding: 0.35rem 0.9rem !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                white-space: nowrap;
+            }
 
-        .search-assist-row { width:100%; gap:0; }
-        .search-assist-row .input-group { flex:1; min-width:260px; }
-        .search-assist-row .assist-btn { flex-shrink:0; height:32px; line-height:1; }
-        .search-assist-row .assist-btn i { font-size:0.9rem; }
-        .search-assist-row .assist-btn span { font-size:0.78rem; font-weight:600; }
-        .search-assist-row .input-group .form-control { height:32px; }
-        .search-assist-row .input-group-text { height:32px; display:flex; align-items:center; }
-        @media (max-width: 576px) {
-            .search-assist-row { flex-direction:column; }
-            .search-assist-row .assist-btn { width:100%; margin-left:0 !important; margin-top:6px; }
-        }
+            .assist-btn:hover,
+            .assist-btn:focus {
+                filter: brightness(0.96);
+                color: #fff !important;
+            }
+
+            .search-assist-row {
+                width: 100%;
+                gap: 0;
+            }
+
+            .search-assist-row .input-group {
+                flex: 1;
+                min-width: 260px;
+            }
+
+            .search-assist-row .assist-btn {
+                flex-shrink: 0;
+                height: 32px;
+                line-height: 1;
+            }
+
+            .search-assist-row .assist-btn i {
+                font-size: 0.9rem;
+            }
+
+            .search-assist-row .assist-btn span {
+                font-size: 0.78rem;
+                font-weight: 600;
+            }
+
+            .search-assist-row .input-group .form-control {
+                height: 32px;
+            }
+
+            .search-assist-row .input-group-text {
+                height: 32px;
+                display: flex;
+                align-items: center;
+            }
+
+            @media (max-width: 576px) {
+                .search-assist-row {
+                    flex-direction: column;
+                }
+
+                .search-assist-row .assist-btn {
+                    width: 100%;
+                    margin-left: 0 !important;
+                    margin-top: 6px;
+                }
+            }
 
             /* Compact tabs for mobile while keeping them horizontal */
             .nav-tabs {
@@ -519,13 +566,16 @@
                     <span class="input-group-text bg-white border-end-0">
                         <i class="bi bi-search"></i>
                     </span>
-                    <input type="text" class="form-control form-control-sm border-start-0 ps-0" id="searchInput"
-                        name="q" placeholder="Search guardian, infant, or contact" aria-label="Search requests" value="{{ request('q') }}">
+                    <input type="text" class="form-control form-control-sm border-start-0 ps-0" id="searchInput" name="q"
+                        placeholder="Search guardian, infant, or contact" aria-label="Search requests"
+                        value="{{ request('q') }}">
                     <button class="btn btn-sm btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
-                <button type="button" class="btn btn-sm assist-btn ms-2" data-bs-toggle="modal" data-bs-target="#assistedRequestModal" style="background: linear-gradient(90deg,#ff7eb6,#ff65a3) !important; color:#fff !important; border:none !important;">
+                <button type="button" class="btn btn-sm assist-btn ms-2" data-bs-toggle="modal"
+                    data-bs-target="#assistedRequestModal"
+                    style="background: linear-gradient(90deg,#ff7eb6,#ff65a3) !important; color:#fff !important; border:none !important;">
                     <i class="fas fa-user-plus"></i>
                     <span>Assist Walk-in Request</span>
                 </button>
@@ -560,9 +610,10 @@
                                     </thead>
                                     <tbody>
                                         @php
+                                            // Show oldest-first (first-to-submit on top) for pending requests
                                             $pendingOrdered = $pendingRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $pendingRequests->getCollection()->sortByDesc('created_at')
-                                                : collect($pendingRequests)->sortByDesc('created_at');
+                                                ? $pendingRequests->getCollection()->sortBy('created_at')
+                                                : collect($pendingRequests)->sortBy('created_at');
                                         @endphp
                                         @foreach($pendingOrdered as $request)
                                             <tr>
@@ -585,11 +636,8 @@
                                                 <td class="align-middle text-center" data-label="Schedule date">
                                                     @if($request->availability)
                                                         {{ $request->availability->formatted_date }}
-                                                        @if(!empty($request->availability->formatted_time))
-                                                        {{ $request->availability->formatted_time }}@endif
                                                     @else
                                                         {{ Carbon\Carbon::parse($request->request_date)->format('M d, Y') }}
-                                                        {{ Carbon\Carbon::parse($request->request_time)->format('g:i A') }}
                                                     @endif
                                                 </td>
                                                 <td class="align-middle text-center" data-label="Action">
@@ -643,9 +691,10 @@
                                     </thead>
                                     <tbody>
                                         @php
+                                            // Show earliest dispensed requests first (oldest dispensed on top)
                                             $dispensedOrdered = $dispensedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $dispensedRequests->getCollection()->sortByDesc('created_at')
-                                                : collect($dispensedRequests)->sortByDesc('created_at');
+                                                ? $dispensedRequests->getCollection()->sortBy('dispensed_at')
+                                                : collect($dispensedRequests)->sortBy('dispensed_at');
                                         @endphp
                                         @foreach($dispensedOrdered as $request)
                                             <tr>
@@ -658,14 +707,12 @@
                                                         $assistMap = [
                                                             'no_account_direct_record' => 'Direct Record',
                                                             'record_to_existing_user' => 'Existing User',
-                                                            'milk_letting_activity' => 'Milk Letting Activity',
                                                         ];
                                                         $assistKey = $request->assist_option ?? null;
                                                         $assistLabel = $assistKey ? ($assistMap[$assistKey] ?? $assistKey) : null;
-                                                        $assistClass = match($assistKey) {
+                                                        $assistClass = match ($assistKey) {
                                                             'no_account_direct_record' => 'option-direct',
                                                             'record_to_existing_user' => 'option-existing',
-                                                            'milk_letting_activity' => 'option-letting',
                                                             default => ''
                                                         };
                                                     @endphp
@@ -682,12 +729,8 @@
                                                 </td>
                                                 <td data-label="Donor/Batch">
                                                     @if($request->dispensedMilk)
-                                                        @php
-                                                            $sd = $request->dispensedMilk->source_display ?? '-';
-                                                            // remove trailing volume in parentheses like " (200.00ml)"
-                                                            $sd_clean = preg_replace('/\s*\(\d+(?:\.\d+)?ml\)$/', '', $sd);
-                                                        @endphp
-                                                        {{ $sd_clean }}
+                                                        {{-- Display batch/donor names WITH volume breakdown for each --}}
+                                                        {{ $request->dispensedMilk->source_display ?? '-' }}
                                                     @else
                                                         <span class="text-muted">-</span>
                                                     @endif
@@ -814,11 +857,12 @@
         <!-- Dispensing Modals for Pending Requests -->
         @php
             // Ensure $pendingOrdered is available for modal generation regardless of tab rendering order
+            // Use oldest-first ordering for pending items
             $pendingOrdered = isset($pendingOrdered)
                 ? $pendingOrdered
                 : (($pendingRequests instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                    ? $pendingRequests->getCollection()->sortByDesc('created_at')
-                    : collect($pendingRequests)->sortByDesc('created_at'));
+                    ? $pendingRequests->getCollection()->sortBy('created_at')
+                    : collect($pendingRequests)->sortBy('created_at'));
         @endphp
         @foreach($pendingOrdered as $request)
             <!-- Dispensing Modal -->
@@ -863,8 +907,7 @@
                             @if($request->hasPrescription())
                                 <div class="row mb-3">
                                     <div class="col-12">
-                                        <button type="button" class="admin-review-btn btn-sm force-blue" data-bs-toggle="modal"
-                                            data-bs-target="#prescriptionModal{{ $request->breastmilk_request_id }}"
+                                        <button type="button" class="admin-review-btn btn-sm force-blue"
                                             onclick="viewPrescriptionModal({{ $request->breastmilk_request_id }})">
                                             Review Prescription
                                         </button>
@@ -899,7 +942,8 @@
                                                 onchange="handleMilkTypeChange({{ $request->breastmilk_request_id }})">
                                                 <option value="pasteurized" selected>Pasteurized Breastmilk</option>
                                             </select>
-                                            <small class="text-muted">Only pasteurized breastmilk can be dispensed for safety.</small>
+                                            <small class="text-muted">Only pasteurized breastmilk can be dispensed for
+                                                safety.</small>
                                         </div>
                                     </div>
 
@@ -1024,8 +1068,7 @@
                     @if($request->hasPrescription())
                         <div class="row mt-2">
                             <div class="col-12">
-                                <button type="button" class="admin-review-btn btn-sm force-blue" data-bs-toggle="modal"
-                                    data-bs-target="#prescriptionModal{{ $request->breastmilk_request_id }}"
+                                <button type="button" class="admin-review-btn btn-sm force-blue"
                                     onclick="viewPrescriptionModal({{ $request->breastmilk_request_id }})">
                                     Review Prescription
                                 </button>
@@ -1106,8 +1149,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="milk_type" class="form-label">Milk Type *</label>
-                                    <select class="form-select" name="milk_type"
-                                        id="milkType{{ $request->breastmilk_request_id }}"
+                                    <select class="form-select" name="milk_type" id="milkType{{ $request->breastmilk_request_id }}"
                                         onchange="loadInventory({{ $request->breastmilk_request_id }}); validateDispenseForm({{ $request->breastmilk_request_id }})">
                                         <option value="pasteurized" selected>Pasteurized Breastmilk</option>
                                     </select>
@@ -1147,7 +1189,8 @@
                     <form action="{{ route('admin.request.decline', $request->breastmilk_request_id) }}" method="POST">
                         @csrf
                         <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i> Are you sure you want to decline this request? This action cannot be undone.
+                            <i class="fas fa-exclamation-triangle"></i> Are you sure you want to decline this request? This action
+                            cannot be undone.
                         </div>
                     </form>
                     @endslot
@@ -1160,7 +1203,7 @@
         @endforeach
     </div>{{-- Close container-fluid --}}
 
-    
+
 
     <!-- Assisted Walk-in Request Modal -->
     <div class="modal fade" id="assistedRequestModal" tabindex="-1" aria-labelledby="assistedRequestModalLabel"
@@ -1183,18 +1226,20 @@
                             mothers/guardians who do not have a device. Interview them and fill in their details below.
                         </div>
                         <div class="mb-3">
-                            <label for="assist_option" class="form-label"><i class="fas fa-tag me-1"></i> Assist Option <span class="text-danger">*</span></label>
+                            <label for="assist_option" class="form-label"><i class="fas fa-tag me-1"></i> Assist Option
+                                <span class="text-danger">*</span></label>
                             <select class="form-select" id="assist_option" name="assist_option">
                                 <option value="">Select option</option>
                                 <option value="no_account_direct_record">No account or direct record</option>
                                 <option value="record_to_existing_user">Record to existing user</option>
-                                <option value="milk_letting_activity">Milk letting activity</option>
                             </select>
                         </div>
                         <div id="assisted-existing-user" class="mb-3" style="display:none;">
                             <label class="form-label"><i class="fas fa-search me-1"></i> Find Existing User</label>
-                            <input type="text" class="form-control" id="assisted_user_search" placeholder="Search by name or contact (min 2 chars)">
-                            <div id="assisted_user_results" class="list-group mt-2" style="max-height:220px; overflow:auto;"></div>
+                            <input type="text" class="form-control" id="assisted_user_search"
+                                placeholder="Search by name or contact (min 2 chars)">
+                            <div id="assisted_user_results" class="list-group mt-2"
+                                style="max-height:220px; overflow:auto;"></div>
                             <input type="hidden" name="existing_user_id" id="assisted_existing_user_id" value="">
                             <small class="text-muted">Selecting a user will auto-fill Guardian fields below.</small>
                         </div>
@@ -1204,14 +1249,14 @@
                             <div class="col-md-4">
                                 <label for="guardian_first_name" class="form-label">First Name <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control auto-capitalize-words" id="guardian_first_name" name="guardian_first_name"
-                                    value="{{ old('guardian_first_name') }}">
+                                <input type="text" class="form-control auto-capitalize-words" id="guardian_first_name"
+                                    name="guardian_first_name" value="{{ old('guardian_first_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="guardian_last_name" class="form-label">Last Name <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control auto-capitalize-words" id="guardian_last_name" name="guardian_last_name"
-                                    value="{{ old('guardian_last_name') }}">
+                                <input type="text" class="form-control auto-capitalize-words" id="guardian_last_name"
+                                    name="guardian_last_name" value="{{ old('guardian_last_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="guardian_contact" class="form-label">Contact Number <span
@@ -1226,22 +1271,24 @@
                         <h6 class="border-bottom pb-2 mb-3 mt-4"><i class="fas fa-baby"></i> Infant Information</h6>
                         <!-- Existing infant selector (auto-fill when assisting existing user) -->
                         <div id="assisted_infant_select_wrap" class="mb-3" style="display:none;">
-                            <label for="assisted_infant_select" class="form-label"><i class="fas fa-child me-1"></i> Select Existing Infant (optional)</label>
+                            <label for="assisted_infant_select" class="form-label"><i class="fas fa-child me-1"></i> Select
+                                Existing Infant (optional)</label>
                             <select id="assisted_infant_select" class="form-select"></select>
-                            <small class="text-muted">Choosing an infant will auto-fill the fields below. You can still edit any value before submitting.</small>
+                            <small class="text-muted">Choosing an infant will auto-fill the fields below. You can still edit
+                                any value before submitting.</small>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="infant_first_name" class="form-label">Infant First Name <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control auto-capitalize-words" id="infant_first_name" name="infant_first_name"
-                                    value="{{ old('infant_first_name') }}">
+                                <input type="text" class="form-control auto-capitalize-words" id="infant_first_name"
+                                    name="infant_first_name" value="{{ old('infant_first_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="infant_last_name" class="form-label">Infant Last Name <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control auto-capitalize-words" id="infant_last_name" name="infant_last_name"
-                                    value="{{ old('infant_last_name') }}">
+                                <input type="text" class="form-control auto-capitalize-words" id="infant_last_name"
+                                    name="infant_last_name" value="{{ old('infant_last_name') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="infant_date_of_birth" class="form-label">Date of Birth <span
@@ -1345,7 +1392,8 @@
                                     <h6 class="card-title mt-2"><i class="fas fa-warehouse"></i> Available Inventory</h6>
                                     <div id="assistedInventoryLoading" style="display:none">Loading inventory...</div>
                                     <div id="assistedInventoryList" style="max-height:300px; overflow-y:auto;"></div>
-                                    <small class="text-muted d-block mt-2">Select bags in order. Volume will be automatically deducted based on your input above.</small>
+                                    <small class="text-muted d-block mt-2">Select bags in order. Volume will be
+                                        automatically deducted based on your input above.</small>
                                 </div>
                             </div>
                         </div>
@@ -1375,1004 +1423,1032 @@
     <!-- JavaScript for prescription viewing and inventory selection -->
     {{-- Real-time Search Functionality --}}
     <script>
-        // Assisted form: check for duplicate guardian contact numbers
-        document.addEventListener('DOMContentLoaded', function () {
-            const contactEl = document.getElementById('guardian_contact');
-            const feedbackEl = document.getElementById('guardian_contact_feedback');
-            const submitBtn = document.querySelector('#assistedRequestForm button[type="submit"]');
+           // Assisted form: check for duplicate guardian contact number      s         document.addEventListener('DOMContentLoaded', function                  () {
+                    const contactEl = document.getElementById('guardian_contact');
+                    const feedbackEl = document.getElementById('guardian_contact_feedback');
+                    const submitBtn = document.querySelector('#assistedRequestForm button[type="submit"]');
 
-            if (contactEl) {
-                let timeout = null;
-                contactEl.addEventListener('input', function () {
-                    // clear feedback while typing
-                    if (feedbackEl) {
-                        feedbackEl.style.display = 'none';
-                        feedbackEl.textContent = '';
+                    if (contactEl) {
+                        let timeout = null;
+                        contactEl.addEventListener('input', function () {
+                            // clear feedback while typing
+                            if (feedbackEl) {
+                                feedbackEl.style.display = 'none';
+                                feedbackEl.textContent = '';
+                            }
+                            if (submitBtn) submitBtn.disabled = false;
+                            // debounce
+                            if (timeout) clearTimeout(timeout);
+                            timeout = setTimeout(() => {
+                                const val = (contactEl.value || '').trim();
+                                if (!val) return;
+                                // Simple format normalization (remove spaces)
+                                const normalized = val.replace(/\s+/g, '');
+                                fetch(`{{ route('admin.request.check-contact') }}?contact=${encodeURIComponent(normalized)}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } })
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        if (data && data.exists) {
+                                            // Show warning and disable submit to prevent accidental duplicate
+                                            if (feedbackEl) {
+                                                feedbackEl.style.display = 'block';
+                                                feedbackEl.textContent = 'This contact number already exists for user: ' + (data.user.first_name || '') + ' ' + (data.user.last_name || '') + ' — leave as is to link to existing user, or change the number to create a new walk-in user.';
+                                            }
+                                            if (submitBtn) submitBtn.disabled = false; // still allow submit; admin may intend to link to existing user
+                                        } else {
+                                            if (feedbackEl) {
+                                                feedbackEl.style.display = 'none';
+                                                feedbackEl.textContent = '';
+                                            }
+                                            if (submitBtn) submitBtn.disabled = false;
+                                        }
+                                    })
+                                    .catch(err => {
+                                        // ignore errors silently
+                                    });
+                            }, 450);
+                        });
                     }
-                    if (submitBtn) submitBtn.disabled = false;
-                    // debounce
-                    if (timeout) clearTimeout(timeout);
-                    timeout = setTimeout(() => {
-                        const val = (contactEl.value || '').trim();
-                        if (!val) return;
-                        // Simple format normalization (remove spaces)
-                        const normalized = val.replace(/\s+/g, '');
-                        fetch(`{{ route('admin.request.check-contact') }}?contact=${encodeURIComponent(normalized)}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } })
-                            .then(r => r.json())
-                            .then(data => {
-                                if (data && data.exists) {
-                                    // Show warning and disable submit to prevent accidental duplicate
-                                    if (feedbackEl) {
-                                        feedbackEl.style.display = 'block';
-                                        feedbackEl.textContent = 'This contact number already exists for user: ' + (data.user.first_name || '') + ' ' + (data.user.last_name || '') + ' — leave as is to link to existing user, or change the number to create a new walk-in user.';
-                                    }
-                                    if (submitBtn) submitBtn.disabled = false; // still allow submit; admin may intend to link to existing user
-                                } else {
-                                    if (feedbackEl) {
-                                        feedbackEl.style.display = 'none';
-                                        feedbackEl.textContent = '';
-                                    }
-                                    if (submitBtn) submitBtn.disabled = false;
-                                }
-                            })
-                            .catch(err => {
-                                // ignore errors silently
-                            });
-                    }, 450);
                 });
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function () {
-            // Toggle and search for Assisted Request existing user
-            (function () {
-                const optionSel = document.getElementById('assist_option');
-                const wrap = document.getElementById('assisted-existing-user');
-                const search = document.getElementById('assisted_user_search');
-                const list = document.getElementById('assisted_user_results');
-                const hiddenId = document.getElementById('assisted_existing_user_id');
-                const gFirst = document.getElementById('guardian_first_name');
-                const gLast = document.getElementById('guardian_last_name');
-                const gContact = document.getElementById('guardian_contact');
-                // Infant auto-fill elements
-                const infantWrap = document.getElementById('assisted_infant_select_wrap');
-                const infantSelect = document.getElementById('assisted_infant_select');
-                const iFirst = document.getElementById('infant_first_name');
-                const iLast = document.getElementById('infant_last_name');
-                const iDob = document.getElementById('infant_date_of_birth');
-                const iSex = document.getElementById('infant_sex');
-                const iWeight = document.getElementById('infant_weight');
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Toggle and search for Assisted Request existing user
+                    (function () {
+                        const optionSel = document.getElementById('assist_option');
+                        const wrap = document.getElementById('assisted-existing-user');
+                        const search = document.getElementById('assisted_user_search');
+                        const list = document.getElementById('assisted_user_results');
+                        const hiddenId = document.getElementById('assisted_existing_user_id');
+                        const gFirst = document.getElementById('guardian_first_name');
+                        const gLast = document.getElementById('guardian_last_name');
+                        const gContact = document.getElementById('guardian_contact');
+                        // Infant auto-fill elements
+                        const infantWrap = document.getElementById('assisted_infant_select_wrap');
+                        const infantSelect = document.getElementById('assisted_infant_select');
+                        const iFirst = document.getElementById('infant_first_name');
+                        const iLast = document.getElementById('infant_last_name');
+                        const iDob = document.getElementById('infant_date_of_birth');
+                        const iSex = document.getElementById('infant_sex');
+                        const iWeight = document.getElementById('infant_weight');
 
-                const infantsUrlBase = "{{ url('/admin/users') }}/"; // /admin/users/{id}/infants
+                        const infantsUrlBase = "{{ url('/admin/users') }}/"; // /admin/users/{id}/infants
 
-                function clearInfantSelector() {
-                    if (infantSelect) infantSelect.innerHTML = '';
-                    if (infantWrap) infantWrap.style.display = 'none';
-                }
+                        function clearInfantSelector() {
+                            if (infantSelect) infantSelect.innerHTML = '';
+                            if (infantWrap) infantWrap.style.display = 'none';
+                        }
 
-                function setGuardianFieldsReadonly(readonly) {
-                    const fields = [gFirst, gLast, gContact];
-                    fields.forEach(field => {
-                        if (field) {
-                            if (readonly) {
-                                field.setAttribute('readonly', 'readonly');
-                                field.style.backgroundColor = '#e9ecef';
-                                field.style.cursor = 'not-allowed';
-                            } else {
-                                field.removeAttribute('readonly');
-                                field.style.backgroundColor = '';
-                                field.style.cursor = '';
+                        function setGuardianFieldsReadonly(readonly) {
+                            const fields = [gFirst, gLast, gContact];
+                            fields.forEach(field => {
+                                if (field) {
+                                    if (readonly) {
+                                        field.setAttribute('readonly', 'readonly');
+                                        field.style.backgroundColor = '#e9ecef';
+                                        field.style.cursor = 'not-allowed';
+                                    } else {
+                                        field.removeAttribute('readonly');
+                                        field.style.backgroundColor = '';
+                                        field.style.cursor = '';
+                                    }
+                                }
+                            });
+                        }
+
+                        function setInfantFieldsReadonly(readonly) {
+                            const fields = [iFirst, iLast, iDob, iSex, iWeight];
+                            fields.forEach(field => {
+                                if (field) {
+                                    if (readonly) {
+                                        field.setAttribute('readonly', 'readonly');
+                                        if (field.tagName === 'SELECT') {
+                                            field.setAttribute('disabled', 'disabled');
+                                        }
+                                        field.style.backgroundColor = '#e9ecef';
+                                        field.style.cursor = 'not-allowed';
+                                    } else {
+                                        field.removeAttribute('readonly');
+                                        if (field.tagName === 'SELECT') {
+                                            field.removeAttribute('disabled');
+                                        }
+                                        field.style.backgroundColor = '';
+                                        field.style.cursor = '';
+                                    }
+                                }
+                            });
+                        }
+
+                        function applyInfant(i, makeReadonly = false) {
+                            if (!i) return;
+                            if (iFirst) iFirst.value = i.first_name || '';
+                            if (iLast) iLast.value = i.last_name || '';
+                            if (iDob) iDob.value = (i.date_of_birth || '').substring(0, 10);
+                            if (iSex) {
+                                const val = String(i.sex || '').toLowerCase() === 'male' ? 'Male' : (String(i.sex || '').toLowerCase() === 'female' ? 'Female' : '');
+                                if (val) iSex.value = val;
+                            }
+                            if (iWeight) iWeight.value = i.birth_weight != null ? i.birth_weight : '';
+                            if (makeReadonly) {
+                                setInfantFieldsReadonly(true);
                             }
                         }
-                    });
-                }
 
-                function setInfantFieldsReadonly(readonly) {
-                    const fields = [iFirst, iLast, iDob, iSex, iWeight];
-                    fields.forEach(field => {
-                        if (field) {
-                            if (readonly) {
-                                field.setAttribute('readonly', 'readonly');
-                                if (field.tagName === 'SELECT') {
-                                    field.setAttribute('disabled', 'disabled');
+                        async function loadInfantsForUser(userId) {
+                            clearInfantSelector();
+                            if (!userId) return;
+                            try {
+                                const r = await fetch(`${infantsUrlBase}${encodeURIComponent(userId)}/infants`, { headers: { 'Accept': 'application/json' } });
+                                if (!r.ok) return;
+                                const data = await r.json();
+                                const infants = Array.isArray(data) ? data : (data.data || []);
+                                if (!infants || infants.length === 0) {
+                                    // nothing to select; keep fields as-is
+                                    return;
                                 }
-                                field.style.backgroundColor = '#e9ecef';
-                                field.style.cursor = 'not-allowed';
-                            } else {
-                                field.removeAttribute('readonly');
-                                if (field.tagName === 'SELECT') {
-                                    field.removeAttribute('disabled');
+                                // Always show selector to allow user to see and switch between infants
+                                if (!infantSelect) return;
+                                infantSelect.innerHTML = '';
+                                const ph = document.createElement('option');
+                                ph.value = '';
+                                ph.textContent = infants.length === 1 ? 'Infant selected (you can view details below)' : 'Select an infant to auto-fill…';
+                                infantSelect.appendChild(ph);
+                                infants.forEach(i => {
+                                    const opt = document.createElement('option');
+                                    opt.value = i.infant_id;
+                                    const name = `${i.first_name || ''} ${i.last_name || ''}`.trim() || 'Unnamed infant';
+                                    const dob = (i.date_of_birth || '').substring(0, 10);
+                                    const sex = (String(i.sex || '')).toLowerCase();
+                                    const sexLabel = sex === 'male' ? 'Male' : (sex === 'female' ? 'Female' : '');
+                                    const wt = (i.birth_weight != null && i.birth_weight !== '') ? `${i.birth_weight} kg` : '';
+                                    opt.textContent = [name, dob, sexLabel, wt].filter(Boolean).join(' • ');
+                                    opt.dataset.payload = JSON.stringify(i);
+                                    infantSelect.appendChild(opt);
+                                });
+                                if (infantWrap) infantWrap.style.display = 'block';
+                                // Auto-select first infant
+                                if (infants.length > 0) {
+                                    infantSelect.value = infants[0].infant_id;
+                                    applyInfant(infants[0], true);
                                 }
-                                field.style.backgroundColor = '';
-                                field.style.cursor = '';
+                            } catch (e) {
+                                // fail silently
                             }
                         }
-                    });
-                }
 
-                function applyInfant(i, makeReadonly = false) {
-                    if (!i) return;
-                    if (iFirst) iFirst.value = i.first_name || '';
-                    if (iLast) iLast.value = i.last_name || '';
-                    if (iDob) iDob.value = (i.date_of_birth || '').substring(0,10);
-                    if (iSex) {
-                        const val = String(i.sex || '').toLowerCase() === 'male' ? 'Male' : (String(i.sex || '').toLowerCase() === 'female' ? 'Female' : '');
-                        if (val) iSex.value = val;
-                    }
-                    if (iWeight) iWeight.value = i.birth_weight != null ? i.birth_weight : '';
-                    if (makeReadonly) {
-                        setInfantFieldsReadonly(true);
-                    }
-                }
+                        if (infantSelect) {
+                            infantSelect.addEventListener('change', function () {
+                                const sel = infantSelect.options[infantSelect.selectedIndex];
+                                const payload = sel && sel.dataset && sel.dataset.payload ? JSON.parse(sel.dataset.payload) : null;
+                                if (payload) {
+                                    // When user is selected from existing user, keep fields readonly when switching infants
+                                    const isExistingUser = hiddenId && hiddenId.value;
+                                    applyInfant(payload, isExistingUser);
+                                }
+                            });
+                        }
+                        function toggle() {
+                            if (!optionSel) return;
+                            wrap.style.display = optionSel.value === 'record_to_existing_user' ? 'block' : 'none';
+                            if (optionSel.value !== 'record_to_existing_user') {
+                                list.innerHTML = '';
+                                hiddenId.value = '';
+                                clearInfantSelector();
+                                setGuardianFieldsReadonly(false); // Enable fields when switching away from existing user
+                                setInfantFieldsReadonly(false); // Enable infant fields when switching away from existing user
+                            }
+                        }
+                        if (optionSel) {
+                            optionSel.addEventListener('change', toggle);
+                            toggle();
+                        }
+                        function render(items) {
+                            list.innerHTML = '';
+                            (items || []).forEach(u => {
+                                const b = document.createElement('button');
+                                b.type = 'button';
+                                b.className = 'list-group-item list-group-item-action';
+                                const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+                                b.innerHTML = `<div class=\"d-flex justify-content-between\"><strong>${name || 'Unnamed user'}</strong><span class=\"badge bg-secondary\">${u.user_type || ''}</span></div><div class=\"small text-muted\">${u.contact_number || ''} • ${u.address || ''}</div>`;
+                                b.addEventListener('click', () => {
+                                    hiddenId.value = u.user_id;
+                                    if (gFirst) gFirst.value = u.first_name || '';
+                                    if (gLast) gLast.value = u.last_name || '';
+                                    if (gContact) gContact.value = u.contact_number || '';
+                                    list.innerHTML = '';
+                                    search.value = name || u.contact_number || '';
+                                    // Make guardian fields readonly when existing user is selected
+                                    setGuardianFieldsReadonly(true);
+                                    // Load infants for this user and auto-fill when possible
+                                    loadInfantsForUser(u.user_id);
+                                });
+                                list.appendChild(b);
+                            });
+                        }
+                        let t = null;
+                        async function doFetch() {
+                            const q = (search.value || '').trim();
+                            if (q.length < 2) { list.innerHTML = ''; return; }
+                            try {
+                                const r = await fetch(`{{ route('admin.users.search') }}?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
+                                if (!r.ok) return;
+                                const data = await r.json();
+                                render((data && data.data) || []);
+                            } catch (e) { /* ignore */ }
+                        }
+                        if (search) {
+                            search.addEventListener('input', () => { if (t) clearTimeout(t); t = setTimeout(doFetch, 300); });
+                        }
 
-                async function loadInfantsForUser(userId) {
-                    clearInfantSelector();
-                    if (!userId) return;
-                    try {
-                        const r = await fetch(`${infantsUrlBase}${encodeURIComponent(userId)}/infants`, { headers: { 'Accept': 'application/json' } });
-                        if (!r.ok) return;
-                        const data = await r.json();
-                        const infants = Array.isArray(data) ? data : (data.data || []);
-                        if (!infants || infants.length === 0) {
-                            // nothing to select; keep fields as-is
+                        // Reset guardian and infant fields to editable when modal is closed
+                        const assistModal = document.getElementById('assistedRequestModal');
+                        if (assistModal) {
+                            assistModal.addEventListener('hidden.bs.modal', function () {
+                                setGuardianFieldsReadonly(false);
+                                setInfantFieldsReadonly(false);
+                                // Also clear the hidden user ID and search results
+                                if (hiddenId) hiddenId.value = '';
+                                if (list) list.innerHTML = '';
+                                if (search) search.value = '';
+                            });
+                        }
+                    })();
+                });
+                document.addEventListener('DOMContentLoaded', function () {
+                    const searchInput = document.getElementById('searchInput');
+                    const clearBtn = document.getElementById('clearSearch');
+                    const searchResults = document.getElementById('searchResults');
+
+                    if (!searchInput) return;
+
+                    // Helpers: extract searchable text from rows (guardian-only for exact), and full haystack for partial
+                    function getGuardianText(row) {
+                        const guardianCell = row.querySelector('[data-label="Guardian"], td:nth-child(1)');
+                        const guardian = guardianCell ? guardianCell.textContent : '';
+                        return (guardian || '').replace(/\s+/g, ' ').trim().toLowerCase();
+                    }
+                    function extractRowFields(row) {
+                        // Guardian + Infant + Contact for partial matching fallback
+                        const guardianCell = row.querySelector('[data-label="Guardian"], td:nth-child(1)');
+                        const infantCell = row.querySelector('[data-label="Infant"], td:nth-child(2)');
+                        const contactCell = row.querySelector('[data-label="Contact"], td:nth-child(3)');
+                        const guardian = guardianCell ? guardianCell.textContent.trim() : '';
+                        const infant = infantCell ? infantCell.textContent.trim() : '';
+                        const contact = contactCell ? contactCell.textContent.trim() : '';
+                        return (guardian + ' ' + infant + ' ' + contact).toLowerCase();
+                    }
+
+                    function extractCardFields(card) {
+                        // If a mobile card layout exists in the future, adapt selectors here
+                        // Currently, return empty string so no cards are matched
+                        return '';
+                    }
+
+                    function getActivePane() {
+                        return document.querySelector('.tab-pane.show.active') || document.querySelector('.tab-pane.active') || document.querySelector('.tab-pane');
+                    }
+
+                    function isVisible(el) {
+                        if (!el) return false;
+                        return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+                    }
+
+                    function getAllTableRowsInActivePane() {
+                        const pane = getActivePane();
+                        if (!pane) return [];
+                        const rows = [];
+                        pane.querySelectorAll('table tbody tr').forEach(r => rows.push(r));
+                        return rows;
+                    }
+
+                    function getAllCardsInActivePane() {
+                        const pane = getActivePane();
+                        if (!pane) return [];
+                        // No dedicated card layout currently; return empty array
+                        return [];
+                    }
+
+                    function performSearch() {
+                        const term = (searchInput.value || '').trim().toLowerCase();
+                        let totalCount = 0;
+                        let visibleCount = 0;
+
+                        const rows = getAllTableRowsInActivePane();
+                        const cards = getAllCardsInActivePane();
+
+                        if (!term) {
+                            rows.forEach(row => { row.hidden = false; row.style.display = ''; });
+                            cards.forEach(card => { card.style.display = ''; });
+                            const visibleRows = rows.filter(r => isVisible(r));
+                            const visibleCards = cards.filter(c => isVisible(c));
+                            totalCount = visibleRows.length + visibleCards.length;
+                            visibleCount = totalCount;
+                            clearBtn.style.display = 'none';
+                            searchResults.textContent = '';
+                            searchResults.classList.remove('text-danger');
                             return;
                         }
-                        // Always show selector to allow user to see and switch between infants
-                        if (!infantSelect) return;
-                        infantSelect.innerHTML = '';
-                        const ph = document.createElement('option');
-                        ph.value = '';
-                        ph.textContent = infants.length === 1 ? 'Infant selected (you can view details below)' : 'Select an infant to auto-fill…';
-                        infantSelect.appendChild(ph);
-                        infants.forEach(i => {
-                            const opt = document.createElement('option');
-                            opt.value = i.infant_id;
-                            const name = `${i.first_name || ''} ${i.last_name || ''}`.trim() || 'Unnamed infant';
-                            const dob = (i.date_of_birth || '').substring(0,10);
-                            const sex = (String(i.sex || '')).toLowerCase();
-                            const sexLabel = sex === 'male' ? 'Male' : (sex === 'female' ? 'Female' : '');
-                            const wt = (i.birth_weight != null && i.birth_weight !== '') ? `${i.birth_weight} kg` : '';
-                            opt.textContent = [name, dob, sexLabel, wt].filter(Boolean).join(' • ');
-                            opt.dataset.payload = JSON.stringify(i);
-                            infantSelect.appendChild(opt);
+
+                        const visibleRows = rows.filter(r => isVisible(r));
+                        const visibleCards = cards.filter(c => isVisible(c));
+                        totalCount = visibleRows.length + visibleCards.length;
+
+                        // Exact-first by guardian, then fallback to partial across guardian+infant+contact
+                        const exactRows = [];
+                        const partialRows = [];
+                        visibleRows.forEach(row => {
+                            const g = getGuardianText(row);
+                            if (g && g === term) {
+                                exactRows.push(row);
+                                return;
+                            }
+                            const hay = extractRowFields(row);
+                            if (hay.indexOf(term) !== -1) partialRows.push(row);
                         });
-                        if (infantWrap) infantWrap.style.display = 'block';
-                        // Auto-select first infant
-                        if (infants.length > 0) {
-                            infantSelect.value = infants[0].infant_id;
-                            applyInfant(infants[0], true);
+
+                        const showRows = exactRows.length > 0 ? exactRows : partialRows;
+                        const hideRows = new Set(visibleRows);
+                        showRows.forEach(r => hideRows.delete(r));
+
+                        // Force hide using !important to beat any table-row styles
+                        showRows.forEach(row => {
+                            row.removeAttribute('hidden');
+                            row.style.removeProperty('display');
+                            row.style.setProperty('display', 'table-row');
+                            visibleCount++;
+                        });
+                        hideRows.forEach(row => {
+                            row.setAttribute('hidden', 'hidden');
+                            row.style.setProperty('display', 'none', 'important');
+                        });
+
+                        visibleCards.forEach(card => {
+                            const hay = extractCardFields(card);
+                            if (hay.indexOf(term) !== -1) {
+                                card.style.display = '';
+                                visibleCount++;
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+
+                        if (!term) {
+                            clearBtn.style.display = 'none';
+                            searchResults.textContent = '';
+                            searchResults.classList.remove('text-danger');
+                        } else {
+                            clearBtn.style.display = 'inline-block';
+                            searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
+                            if (visibleCount === 0) {
+                                searchResults.textContent = 'No results found';
+                                searchResults.classList.add('text-danger');
+                            } else {
+                                searchResults.classList.remove('text-danger');
+                            }
+                        }
+                    }
+
+                    searchInput.addEventListener('input', performSearch);
+                    clearBtn.addEventListener('click', function () {
+                        searchInput.value = '';
+                        performSearch();
+                        searchInput.focus();
+                    });
+
+                    performSearch();
+                });
+            </script>
+
+            <script>
+                // Display SweetAlert for flash messages after redirects (success/warning/error)
+                document.addEventListener('DOMContentLoaded', function () {
+                    try {
+                        const hasSwal = (typeof Swal !== 'undefined');
+                        @if ($errors->any())
+                            if (hasSwal) {
+                                let html = '';
+                                @foreach ($errors->all() as $err)
+                                    html += `<div>• {{ addslashes($err) }}</div>`;
+                                @endforeach
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Please fix the following:',
+                                    html: html,
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                            // Reopen the Assisted modal so the admin can correct inputs
+                            try {
+                                const modalEl = document.getElementById('assistedRequestModal');
+                                if (modalEl && window.bootstrap && bootstrap.Modal) {
+                                    const m = new bootstrap.Modal(modalEl);
+                                    m.show();
+                                }
+                            } catch (_) { }
+                        @endif
+                        @if(session('success'))
+                            if (hasSwal) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: @json(session('success')),
+                                    confirmButtonColor: '#28a745'
+                                });
+                            }
+                        @endif
+                        @if(session('warning'))
+                            if (hasSwal) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Notice',
+                                    text: @json(session('warning')),
+                                    confirmButtonColor: '#f59e0b'
+                                });
+                            }
+                        @endif
+                        @if(session('error'))
+                            if (hasSwal) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: @json(session('error')),
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        @endif
+                                                } catch (_) { }
+                });
+            </script>
+
+            <script>
+                // Ensure CSRF token is available for fetch
+                const csrfToken = '{{ csrf_token() }}';
+
+                // Load SweetAlert2 script dynamically (fallback if not included)
+                (function loadSwal() {
+                    if (typeof Swal === 'undefined') {
+                        const s = document.createElement('script');
+                        s.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11.7.27/dist/sweetalert2.all.min.js';
+                        s.defer = true;
+                        document.head.appendChild(s);
+                    }
+                })();
+
+                // Helper toast
+                const swalToast = (icon, title = '') => {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: icon,
+                            title: title,
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    } else {
+                        // fallback
+                        if (icon === 'success') alert(title);
+                        else alert(title || (icon === 'error' ? 'Error' : ''));
+                    }
+                };
+
+                // Initialize dispensing modals - auto-load inventory when modal opens
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Find all dispensing modals and attach event listeners
+                    const dispensingModals = document.querySelectorAll('[id^="dispensingModal"]');
+                    dispensingModals.forEach(function (modalEl) {
+                        modalEl.addEventListener('shown.bs.modal', function () {
+                            // Extract request ID from modal ID (e.g., "dispensingModal123" -> 123)
+                            const requestId = modalEl.id.replace('dispensingModal', '');
+                            if (requestId) {
+                                // Auto-load inventory since "pasteurized" is pre-selected
+                                handleMilkTypeChange(requestId);
+                            }
+                        });
+                    });
+                });
+
+                // Sanitize manual typing into volumeToDispense inputs to prevent browser auto-rounding/snapping
+                // Keep as text inputs (inputmode=numeric) and allow only digits and one decimal point.
+                document.addEventListener('input', function (e) {
+                    const el = e.target;
+                    if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+
+                    let v = String(el.value || '');
+                    // Remove commas and any characters except digits and dot
+                    v = v.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                    // Allow only first dot
+                    const parts = v.split('.');
+                    if (parts.length > 2) {
+                        v = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                    // Limit to two decimal places (optional)
+                    if (v.indexOf('.') !== -1) {
+                        const [intPart, decPart] = v.split('.');
+                        v = intPart + '.' + (decPart || '').slice(0, 2);
+                    }
+
+                    if (el.value !== v) {
+                        el.value = v;
+                    }
+                });
+
+                // Prevent non-numeric keys on volumeToDispense and block mouse wheel changes
+                document.addEventListener('keydown', function (e) {
+                    const el = e.target;
+                    if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+
+                    // Allow navigation and control keys
+                    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Home', 'End'];
+                    if (allowedKeys.indexOf(e.key) !== -1) return;
+
+                    // Allow one dot
+                    if (e.key === '.') {
+                        if ((el.value || '').indexOf('.') === -1) return;
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // Allow digits
+                    if (/^[0-9]$/.test(e.key)) return;
+
+                    // Prevent anything else
+                    e.preventDefault();
+                }, true);
+
+                // Prevent mouse wheel from changing focused input value (some browsers change number inputs)
+                document.addEventListener('wheel', function (e) {
+                    const el = document.activeElement;
+                    if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+                    e.preventDefault();
+                }, { passive: false });
+
+                // Sanitize paste into volumeToDispense
+                document.addEventListener('paste', function (e) {
+                    const el = e.target;
+                    if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
+                    e.preventDefault();
+                    const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+                    let v = text.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                    const parts = v.split('.');
+                    if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+                    if (v.indexOf('.') !== -1) {
+                        const [intPart, decPart] = v.split('.');
+                        v = intPart + '.' + (decPart || '').slice(0, 2);
+                    }
+                    el.value = v;
+                    // trigger input handlers
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+
+                // Input validation: for non-multiples of 10, show inline warning and require user to accept or apply rounded value
+                function removeVolumeWarning(requestId) {
+                    const warn = document.getElementById('volumeWarning' + requestId);
+                    if (warn) warn.remove();
+                }
+
+                // Auto-apply rounding on blur and show a transient notice that value was considered as roundedDown
+                function showVolumeNotice(requestId, original, roundedDown) {
+                    // remove existing notice
+                    const existing = document.getElementById('volumeNotice' + requestId);
+                    if (existing) existing.remove();
+
+                    const input = document.getElementById(`volumeToDispense${requestId}`);
+                    if (!input) return;
+
+                    const container = document.createElement('div');
+                    container.id = 'volumeNotice' + requestId;
+                    container.className = 'mt-2';
+                    container.innerHTML = `
+                                                    <div class="alert alert-info d-flex align-items-center justify-content-between">
+                                                        <div>
+                                                            You entered <strong>${original}</strong> ml — recorded as <strong>${roundedDown}</strong> ml.
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('volumeNotice${requestId}').remove()">Dismiss</button>
+                                                        </div>
+                                                    </div>
+                                                `;
+
+                    const parent = input.parentElement || input.closest('.mb-3');
+                    if (parent) parent.appendChild(container);
+
+                    // auto-remove after 4 seconds
+                    setTimeout(() => {
+                        const el = document.getElementById('volumeNotice' + requestId);
+                        if (el) el.remove();
+                    }, 4000);
+                }
+
+                document.addEventListener('blur', function (e) {
+                    const el = e.target;
+                    if (!el || !el.id) return;
+                    const isDispense = el.id.startsWith('volumeToDispense');
+                    const isRequested = el.id.startsWith('volumeRequested');
+                    const isAssisted = el.id === 'assistedVolumeToDispense';
+                    const isItemVolume = /^volume_\d+_\d+$/.test(el.id);
+                    if (!(isDispense || isRequested || isAssisted || isItemVolume)) return;
+
+                    const raw = String(el.value || '').trim();
+                    if (!raw) return;
+                    const num = parseFloat(raw.replace(/,/g, ''));
+                    if (isNaN(num) || num <= 0) return;
+
+                    if (num >= 10 && Math.round(num) % 10 !== 0) {
+                        const rounded = Math.round(num / 10) * 10;
+                        if (rounded <= 0) return;
+                        el.value = String(rounded);
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        if (isDispense) {
+                            const requestId = el.id.replace('volumeToDispense', '');
+                            showVolumeNotice(requestId, num, rounded);
+                            updateSelectedVolume(requestId);
+                        } else if (isRequested) {
+                            const requestId = el.id.replace('volumeRequested', '');
+                            validateDispenseForm(requestId);
+                        } else if (isItemVolume) {
+                            // id format: volume_{requestId}_{itemId}
+                            const parts = el.id.split('_');
+                            const requestId = parts[1];
+                            updateSelectedVolume(requestId);
+                            validateDispenseForm(requestId);
+                        } else if (isAssisted) {
+                            assistedUpdateSelectedVolume();
+                        }
+                    }
+                }, true);
+
+                // Also snap on change to give immediate feedback
+                document.addEventListener('change', function (e) {
+                    const el = e.target;
+                    if (!el || !el.id) return;
+                    const isDispense = el.id.startsWith('volumeToDispense');
+                    const isRequested = el.id.startsWith('volumeRequested');
+                    const isAssisted = el.id === 'assistedVolumeToDispense';
+                    const isItemVolume = /^volume_\d+_\d+$/.test(el.id);
+                    if (!(isDispense || isRequested || isAssisted || isItemVolume)) return;
+
+                    const raw = String(el.value || '').trim();
+                    if (!raw) return;
+                    const num = parseFloat(raw.replace(/,/g, ''));
+                    if (isNaN(num) || num <= 0) return;
+
+                    if (num >= 10 && Math.round(num) % 10 !== 0) {
+                        const rounded = Math.round(num / 10) * 10;
+                        if (rounded <= 0) return;
+                        el.value = String(rounded);
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        if (isDispense) {
+                            const requestId = el.id.replace('volumeToDispense', '');
+                            showVolumeNotice(requestId, num, rounded);
+                            updateSelectedVolume(requestId);
+                        } else if (isRequested) {
+                            const requestId = el.id.replace('volumeRequested', '');
+                            validateDispenseForm(requestId);
+                        } else if (isItemVolume) {
+                            const parts = el.id.split('_');
+                            const requestId = parts[1];
+                            updateSelectedVolume(requestId);
+                            validateDispenseForm(requestId);
+                        } else if (isAssisted) {
+                            assistedUpdateSelectedVolume();
+                        }
+                    }
+                }, true);
+
+                function viewPrescription(requestId) {
+                    const container = document.getElementById('prescriptionImageContainer' + requestId);
+                    const img = document.getElementById('prescriptionImage' + requestId);
+
+                    if (container.style.display === 'none') {
+                        // Show loading
+                        container.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading prescription...</div>';
+                        container.style.display = 'block';
+
+                        // Fetch prescription image
+                        fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/prescription`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.error) {
+                                    container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+                                } else {
+                                    container.innerHTML = `
+                                                                                                                                                                                                        <div class="d-flex flex-column align-items-center justify-content-center">
+                                                                                                                                                                                                            <h6 class="mb-3">Prescription: ${data.filename}</h6>
+                                                                                                                                                                                                            <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+                                                                                                                                                                                                                <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
+                                                                                                                                                                                                                    style="max-width:100%; max-height:70vh; object-fit:contain;">
+                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                    `;
+                                }
+                            })
+                            .catch(error => {
+                                container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';
+                            });
+                    } else {
+                        container.style.display = 'none';
+                    }
+                }
+
+                // New minimal modal view: fetch prescription and display image or PDF
+                function viewPrescriptionModal(requestId) {
+                    const containerId = 'prescriptionModalContent' + requestId;
+                    const container = document.getElementById(containerId);
+
+                    // show spinner while loading
+                    container.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading prescription...</div>';
+
+                    // Programmatically show the prescription modal so the parent modal (dispensing) stays open
+                    try {
+                        const modalEl = document.getElementById('prescriptionModal' + requestId);
+                        if (modalEl) {
+                            const bsModal = new bootstrap.Modal(modalEl, { keyboard: true });
+                            bsModal.show();
                         }
                     } catch (e) {
-                        // fail silently
-                    }
-                }
-
-                if (infantSelect) {
-                    infantSelect.addEventListener('change', function () {
-                        const sel = infantSelect.options[infantSelect.selectedIndex];
-                        const payload = sel && sel.dataset && sel.dataset.payload ? JSON.parse(sel.dataset.payload) : null;
-                        if (payload) {
-                            // When user is selected from existing user, keep fields readonly when switching infants
-                            const isExistingUser = hiddenId && hiddenId.value;
-                            applyInfant(payload, isExistingUser);
-                        }
-                    });
-                }
-                function toggle() {
-                    if (!optionSel) return;
-                    wrap.style.display = optionSel.value === 'record_to_existing_user' ? 'block' : 'none';
-                    if (optionSel.value !== 'record_to_existing_user') {
-                        list.innerHTML = '';
-                        hiddenId.value = '';
-                        clearInfantSelector();
-                        setGuardianFieldsReadonly(false); // Enable fields when switching away from existing user
-                        setInfantFieldsReadonly(false); // Enable infant fields when switching away from existing user
-                    }
-                }
-                if (optionSel) {
-                    optionSel.addEventListener('change', toggle);
-                    toggle();
-                }
-                function render(items) {
-                    list.innerHTML = '';
-                    (items || []).forEach(u => {
-                        const b = document.createElement('button');
-                        b.type = 'button';
-                        b.className = 'list-group-item list-group-item-action';
-                        const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
-                        b.innerHTML = `<div class=\"d-flex justify-content-between\"><strong>${name || 'Unnamed user'}</strong><span class=\"badge bg-secondary\">${u.user_type || ''}</span></div><div class=\"small text-muted\">${u.contact_number || ''} • ${u.address || ''}</div>`;
-                        b.addEventListener('click', () => {
-                            hiddenId.value = u.user_id;
-                            if (gFirst) gFirst.value = u.first_name || '';
-                            if (gLast) gLast.value = u.last_name || '';
-                            if (gContact) gContact.value = u.contact_number || '';
-                            list.innerHTML = '';
-                            search.value = name || u.contact_number || '';
-                            // Make guardian fields readonly when existing user is selected
-                            setGuardianFieldsReadonly(true);
-                            // Load infants for this user and auto-fill when possible
-                            loadInfantsForUser(u.user_id);
-                        });
-                        list.appendChild(b);
-                    });
-                }
-                let t = null;
-                async function doFetch() {
-                    const q = (search.value || '').trim();
-                    if (q.length < 2) { list.innerHTML=''; return; }
-                    try {
-                        const r = await fetch(`{{ route('admin.users.search') }}?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
-                        if (!r.ok) return;
-                        const data = await r.json();
-                        render((data && data.data) || []);
-                    } catch (e) { /* ignore */ }
-                }
-                if (search) {
-                    search.addEventListener('input', () => { if (t) clearTimeout(t); t = setTimeout(doFetch, 300); });
-                }
-
-                // Reset guardian and infant fields to editable when modal is closed
-                const assistModal = document.getElementById('assistedRequestModal');
-                if (assistModal) {
-                    assistModal.addEventListener('hidden.bs.modal', function () {
-                        setGuardianFieldsReadonly(false);
-                        setInfantFieldsReadonly(false);
-                        // Also clear the hidden user ID and search results
-                        if (hiddenId) hiddenId.value = '';
-                        if (list) list.innerHTML = '';
-                        if (search) search.value = '';
-                    });
-                }
-            })();
-        });
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('searchInput');
-            const clearBtn = document.getElementById('clearSearch');
-            const searchResults = document.getElementById('searchResults');
-
-            if (!searchInput) return;
-
-            // Helpers: extract searchable text from rows (guardian-only for exact), and full haystack for partial
-            function getGuardianText(row) {
-                const guardianCell = row.querySelector('[data-label="Guardian"], td:nth-child(1)');
-                const guardian = guardianCell ? guardianCell.textContent : '';
-                return (guardian || '').replace(/\s+/g, ' ').trim().toLowerCase();
-            }
-            function extractRowFields(row) {
-                // Guardian + Infant + Contact for partial matching fallback
-                const guardianCell = row.querySelector('[data-label="Guardian"], td:nth-child(1)');
-                const infantCell = row.querySelector('[data-label="Infant"], td:nth-child(2)');
-                const contactCell = row.querySelector('[data-label="Contact"], td:nth-child(3)');
-                const guardian = guardianCell ? guardianCell.textContent.trim() : '';
-                const infant = infantCell ? infantCell.textContent.trim() : '';
-                const contact = contactCell ? contactCell.textContent.trim() : '';
-                return (guardian + ' ' + infant + ' ' + contact).toLowerCase();
-            }
-
-            function extractCardFields(card) {
-                // If a mobile card layout exists in the future, adapt selectors here
-                // Currently, return empty string so no cards are matched
-                return '';
-            }
-
-            function getActivePane() {
-                return document.querySelector('.tab-pane.show.active') || document.querySelector('.tab-pane.active') || document.querySelector('.tab-pane');
-            }
-
-            function isVisible(el) {
-                if (!el) return false;
-                return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
-            }
-
-            function getAllTableRowsInActivePane() {
-                const pane = getActivePane();
-                if (!pane) return [];
-                const rows = [];
-                pane.querySelectorAll('table tbody tr').forEach(r => rows.push(r));
-                return rows;
-            }
-
-            function getAllCardsInActivePane() {
-                const pane = getActivePane();
-                if (!pane) return [];
-                // No dedicated card layout currently; return empty array
-                return [];
-            }
-
-            function performSearch() {
-                const term = (searchInput.value || '').trim().toLowerCase();
-                let totalCount = 0;
-                let visibleCount = 0;
-
-                const rows = getAllTableRowsInActivePane();
-                const cards = getAllCardsInActivePane();
-
-                if (!term) {
-                    rows.forEach(row => { row.hidden = false; row.style.display = ''; });
-                    cards.forEach(card => { card.style.display = ''; });
-                    const visibleRows = rows.filter(r => isVisible(r));
-                    const visibleCards = cards.filter(c => isVisible(c));
-                    totalCount = visibleRows.length + visibleCards.length;
-                    visibleCount = totalCount;
-                    clearBtn.style.display = 'none';
-                    searchResults.textContent = '';
-                    searchResults.classList.remove('text-danger');
-                    return;
-                }
-
-                const visibleRows = rows.filter(r => isVisible(r));
-                const visibleCards = cards.filter(c => isVisible(c));
-                totalCount = visibleRows.length + visibleCards.length;
-
-                // Exact-first by guardian, then fallback to partial across guardian+infant+contact
-                const exactRows = [];
-                const partialRows = [];
-                visibleRows.forEach(row => {
-                    const g = getGuardianText(row);
-                    if (g && g === term) {
-                        exactRows.push(row);
-                        return;
-                    }
-                    const hay = extractRowFields(row);
-                    if (hay.indexOf(term) !== -1) partialRows.push(row);
-                });
-
-                const showRows = exactRows.length > 0 ? exactRows : partialRows;
-                const hideRows = new Set(visibleRows);
-                showRows.forEach(r => hideRows.delete(r));
-
-                // Force hide using !important to beat any table-row styles
-                showRows.forEach(row => {
-                    row.removeAttribute('hidden');
-                    row.style.removeProperty('display');
-                    row.style.setProperty('display', 'table-row');
-                    visibleCount++;
-                });
-                hideRows.forEach(row => {
-                    row.setAttribute('hidden', 'hidden');
-                    row.style.setProperty('display', 'none', 'important');
-                });
-
-                visibleCards.forEach(card => {
-                    const hay = extractCardFields(card);
-                    if (hay.indexOf(term) !== -1) {
-                        card.style.display = '';
-                        visibleCount++;
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-
-                if (!term) {
-                    clearBtn.style.display = 'none';
-                    searchResults.textContent = '';
-                    searchResults.classList.remove('text-danger');
-                } else {
-                    clearBtn.style.display = 'inline-block';
-                    searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                    if (visibleCount === 0) {
-                        searchResults.textContent = 'No results found';
-                        searchResults.classList.add('text-danger');
-                    } else {
-                        searchResults.classList.remove('text-danger');
-                    }
-                }
-            }
-
-            searchInput.addEventListener('input', performSearch);
-            clearBtn.addEventListener('click', function () {
-                searchInput.value = '';
-                performSearch();
-                searchInput.focus();
-            });
-
-            performSearch();
-        });
-    </script>
-
-    <script>
-        // Display SweetAlert for flash messages after redirects (success/warning/error)
-        document.addEventListener('DOMContentLoaded', function () {
-            try {
-                const hasSwal = (typeof Swal !== 'undefined');
-                @if ($errors->any())
-                    if (hasSwal) {
-                        let html = '';
-                        @foreach ($errors->all() as $err)
-                            html += `<div>• {{ addslashes($err) }}</div>`;
-                        @endforeach
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Please fix the following:',
-                            html: html,
-                            confirmButtonColor: '#dc3545'
-                        });
-                    }
-                    // Reopen the Assisted modal so the admin can correct inputs
-                    try {
-                        const modalEl = document.getElementById('assistedRequestModal');
-                        if (modalEl && window.bootstrap && bootstrap.Modal) {
-                            const m = new bootstrap.Modal(modalEl);
-                            m.show();
-                        }
-                    } catch (_) { }
-                @endif
-                @if(session('success'))
-                    if (hasSwal) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: @json(session('success')),
-                            confirmButtonColor: '#28a745'
-                        });
-                    }
-                @endif
-                @if(session('warning'))
-                    if (hasSwal) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Notice',
-                            text: @json(session('warning')),
-                            confirmButtonColor: '#f59e0b'
-                        });
-                    }
-                @endif
-                @if(session('error'))
-                    if (hasSwal) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: @json(session('error')),
-                            confirmButtonColor: '#dc3545'
-                        });
-                    }
-                @endif
-                    } catch (_) { }
-        });
-    </script>
-
-    <script>
-        // Ensure CSRF token is available for fetch
-        const csrfToken = '{{ csrf_token() }}';
-
-        // Load SweetAlert2 script dynamically (fallback if not included)
-        (function loadSwal() {
-            if (typeof Swal === 'undefined') {
-                const s = document.createElement('script');
-                s.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11.7.27/dist/sweetalert2.all.min.js';
-                s.defer = true;
-                document.head.appendChild(s);
-            }
-        })();
-
-        // Helper toast
-        const swalToast = (icon, title = '') => {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: icon,
-                    title: title,
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-            } else {
-                // fallback
-                if (icon === 'success') alert(title);
-                else alert(title || (icon === 'error' ? 'Error' : ''));
-            }
-        };
-
-        // Initialize dispensing modals - auto-load inventory when modal opens
-        document.addEventListener('DOMContentLoaded', function () {
-            // Find all dispensing modals and attach event listeners
-            const dispensingModals = document.querySelectorAll('[id^="dispensingModal"]');
-            dispensingModals.forEach(function(modalEl) {
-                modalEl.addEventListener('shown.bs.modal', function () {
-                    // Extract request ID from modal ID (e.g., "dispensingModal123" -> 123)
-                    const requestId = modalEl.id.replace('dispensingModal', '');
-                    if (requestId) {
-                        // Auto-load inventory since "pasteurized" is pre-selected
-                        handleMilkTypeChange(requestId);
-                    }
-                });
-            });
-        });
-
-        // Sanitize manual typing into volumeToDispense inputs to prevent browser auto-rounding/snapping
-        // Keep as text inputs (inputmode=numeric) and allow only digits and one decimal point.
-        document.addEventListener('input', function (e) {
-            const el = e.target;
-            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
-
-            let v = String(el.value || '');
-            // Remove commas and any characters except digits and dot
-            v = v.replace(/,/g, '').replace(/[^0-9.]/g, '');
-            // Allow only first dot
-            const parts = v.split('.');
-            if (parts.length > 2) {
-                v = parts[0] + '.' + parts.slice(1).join('');
-            }
-            // Limit to two decimal places (optional)
-            if (v.indexOf('.') !== -1) {
-                const [intPart, decPart] = v.split('.');
-                v = intPart + '.' + (decPart || '').slice(0, 2);
-            }
-
-            if (el.value !== v) {
-                el.value = v;
-            }
-        });
-
-        // Prevent non-numeric keys on volumeToDispense and block mouse wheel changes
-        document.addEventListener('keydown', function (e) {
-            const el = e.target;
-            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
-
-            // Allow navigation and control keys
-            const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Home', 'End'];
-            if (allowedKeys.indexOf(e.key) !== -1) return;
-
-            // Allow one dot
-            if (e.key === '.') {
-                if ((el.value || '').indexOf('.') === -1) return;
-                e.preventDefault();
-                return;
-            }
-
-            // Allow digits
-            if (/^[0-9]$/.test(e.key)) return;
-
-            // Prevent anything else
-            e.preventDefault();
-        }, true);
-
-        // Prevent mouse wheel from changing focused input value (some browsers change number inputs)
-        document.addEventListener('wheel', function (e) {
-            const el = document.activeElement;
-            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
-            e.preventDefault();
-        }, { passive: false });
-
-        // Sanitize paste into volumeToDispense
-        document.addEventListener('paste', function (e) {
-            const el = e.target;
-            if (!el || !el.id || !el.id.startsWith('volumeToDispense')) return;
-            e.preventDefault();
-            const text = (e.clipboardData || window.clipboardData).getData('text') || '';
-            let v = text.replace(/,/g, '').replace(/[^0-9.]/g, '');
-            const parts = v.split('.');
-            if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
-            if (v.indexOf('.') !== -1) {
-                const [intPart, decPart] = v.split('.');
-                v = intPart + '.' + (decPart || '').slice(0, 2);
-            }
-            el.value = v;
-            // trigger input handlers
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-        });
-
-        // Input validation: for non-multiples of 10, show inline warning and require user to accept or apply rounded value
-        function removeVolumeWarning(requestId) {
-            const warn = document.getElementById('volumeWarning' + requestId);
-            if (warn) warn.remove();
-        }
-
-        // Auto-apply rounding on blur and show a transient notice that value was considered as roundedDown
-        function showVolumeNotice(requestId, original, roundedDown) {
-            // remove existing notice
-            const existing = document.getElementById('volumeNotice' + requestId);
-            if (existing) existing.remove();
-
-            const input = document.getElementById(`volumeToDispense${requestId}`);
-            if (!input) return;
-
-            const container = document.createElement('div');
-            container.id = 'volumeNotice' + requestId;
-            container.className = 'mt-2';
-            container.innerHTML = `
-                        <div class="alert alert-info d-flex align-items-center justify-content-between">
-                            <div>
-                                You entered <strong>${original}</strong> ml — recorded as <strong>${roundedDown}</strong> ml.
-                            </div>
-                            <div class="ms-3">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('volumeNotice${requestId}').remove()">Dismiss</button>
-                            </div>
-                        </div>
-                    `;
-
-            const parent = input.parentElement || input.closest('.mb-3');
-            if (parent) parent.appendChild(container);
-
-            // auto-remove after 4 seconds
-            setTimeout(() => {
-                const el = document.getElementById('volumeNotice' + requestId);
-                if (el) el.remove();
-            }, 4000);
-        }
-
-        document.addEventListener('blur', function (e) {
-            const el = e.target;
-            if (!el || !el.id) return;
-            const isDispense = el.id.startsWith('volumeToDispense');
-            const isRequested = el.id.startsWith('volumeRequested');
-            const isAssisted = el.id === 'assistedVolumeToDispense';
-            const isItemVolume = /^volume_\d+_\d+$/.test(el.id);
-            if (!(isDispense || isRequested || isAssisted || isItemVolume)) return;
-
-            const raw = String(el.value || '').trim();
-            if (!raw) return;
-            const num = parseFloat(raw.replace(/,/g, ''));
-            if (isNaN(num) || num <= 0) return;
-
-            if (num >= 10 && Math.round(num) % 10 !== 0) {
-                const rounded = Math.round(num / 10) * 10;
-                if (rounded <= 0) return;
-                el.value = String(rounded);
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                if (isDispense) {
-                    const requestId = el.id.replace('volumeToDispense', '');
-                    showVolumeNotice(requestId, num, rounded);
-                    updateSelectedVolume(requestId);
-                } else if (isRequested) {
-                    const requestId = el.id.replace('volumeRequested', '');
-                    validateDispenseForm(requestId);
-                } else if (isItemVolume) {
-                    // id format: volume_{requestId}_{itemId}
-                    const parts = el.id.split('_');
-                    const requestId = parts[1];
-                    updateSelectedVolume(requestId);
-                    validateDispenseForm(requestId);
-                } else if (isAssisted) {
-                    assistedUpdateSelectedVolume();
-                }
-            }
-        }, true);
-
-        // Also snap on change to give immediate feedback
-        document.addEventListener('change', function (e) {
-            const el = e.target;
-            if (!el || !el.id) return;
-            const isDispense = el.id.startsWith('volumeToDispense');
-            const isRequested = el.id.startsWith('volumeRequested');
-            const isAssisted = el.id === 'assistedVolumeToDispense';
-            const isItemVolume = /^volume_\d+_\d+$/.test(el.id);
-            if (!(isDispense || isRequested || isAssisted || isItemVolume)) return;
-
-            const raw = String(el.value || '').trim();
-            if (!raw) return;
-            const num = parseFloat(raw.replace(/,/g, ''));
-            if (isNaN(num) || num <= 0) return;
-
-            if (num >= 10 && Math.round(num) % 10 !== 0) {
-                const rounded = Math.round(num / 10) * 10;
-                if (rounded <= 0) return;
-                el.value = String(rounded);
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                if (isDispense) {
-                    const requestId = el.id.replace('volumeToDispense', '');
-                    showVolumeNotice(requestId, num, rounded);
-                    updateSelectedVolume(requestId);
-                } else if (isRequested) {
-                    const requestId = el.id.replace('volumeRequested', '');
-                    validateDispenseForm(requestId);
-                } else if (isItemVolume) {
-                    const parts = el.id.split('_');
-                    const requestId = parts[1];
-                    updateSelectedVolume(requestId);
-                    validateDispenseForm(requestId);
-                } else if (isAssisted) {
-                    assistedUpdateSelectedVolume();
-                }
-            }
-        }, true);
-
-        function viewPrescription(requestId) {
-            const container = document.getElementById('prescriptionImageContainer' + requestId);
-            const img = document.getElementById('prescriptionImage' + requestId);
-
-            if (container.style.display === 'none') {
-                // Show loading
-                container.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading prescription...</div>';
-                container.style.display = 'block';
-
-                // Fetch prescription image
-                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/prescription`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
-                        } else {
-                            container.innerHTML = `
-                                                                                                                                                                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                                                                                                                                                                <h6 class="mb-3">Prescription: ${data.filename}</h6>
-                                                                                                                                                                                <div class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
-                                                                                                                                                                                    <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" 
-                                                                                                                                                                                        style="max-width:100%; max-height:70vh; object-fit:contain;">
-                                                                                                                                                                                </div>
-                                                                                                                                                                            </div>
-                                                                                                                                                                        `;
-                        }
-                    })
-                    .catch(error => {
-                        container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';
-                    });
-            } else {
-                container.style.display = 'none';
-            }
-        }
-
-        // New minimal modal view: fetch prescription and display image or PDF
-        function viewPrescriptionModal(requestId) {
-            const containerId = 'prescriptionModalContent' + requestId;
-            const container = document.getElementById(containerId);
-
-            // show spinner while loading
-            container.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading prescription...</div>';
-
-            fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/prescription`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
-                        return;
+                        // ignore errors if bootstrap not available yet
+                        console.warn('Could not show prescription modal programmatically', e);
                     }
 
-                    // Build UI showing user details alongside the prescription image
-                    const user = data.user || null;
-                    let userHtml = '';
-                    if (user) {
-                        userHtml = `
-                                    <div class="card p-3 mb-3" style="min-width:250px;">
-                                        <h6 class="mb-2"><i class="fas fa-user"></i> Requester</h6>
-                                        <p class="mb-1"><strong>Name:</strong> ${escapeHtml(user.full_name || '-')}</p>
-                                        <p class="mb-1"><strong>Contact:</strong> ${escapeHtml(user.contact_number || '-')}</p>
-                                        <p class="mb-0"><strong>Address:</strong> ${escapeHtml(user.address || '-')}</p>
-                                    </div>
-                                `;
-                    }
-
-                    const isPdf = typeof data.image === 'string' && /^data:application\/pdf/i.test(data.image);
-                    const filenameSafe = escapeHtml(data.filename || 'Prescription');
-                    let viewerHtml = '';
-                    if (isPdf) {
-                        viewerHtml = `
-                                    <div class="ratio ratio-16x9 w-100">
-                                        <iframe src="${data.image}" title="${filenameSafe}" style="border:1px solid #dee2e6; border-radius: .25rem;"></iframe>
-                                    </div>
-                                    <div class="mt-2 text-center">
-                                        <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download PDF</a>
-                                    </div>
-                                `;
-                    } else {
-                        viewerHtml = `
-                                    <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
-                                        <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
-                                    </div>
-                                    <div class="mt-2 text-center">
-                                        <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download</a>
-                                    </div>
-                                `;
-                    }
-
-                    container.innerHTML = `
-                                <div class="row">
-                                    <div class="col-md-4 d-flex justify-content-center align-items-start">
-                                        ${userHtml}
-                                    </div>
-                                    <div class="col-md-8 d-flex flex-column align-items-center">
-                                        <h6 class="mb-3">Prescription: ${filenameSafe}</h6>
-                                        ${viewerHtml}
-                                    </div>
-                                </div>
-                            `;
-                })
-                .catch(err => {
-                    container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';
-                });
-        }
-
-        function loadInventory(requestId) {
-            const milkType = document.getElementById('milkType' + requestId).value;
-            const inventorySection = document.getElementById('inventorySection' + requestId);
-            const loadingDiv = document.getElementById('loadingInventory' + requestId);
-            const inventoryList = document.getElementById('inventoryList' + requestId);
-
-            if (!milkType) {
-                inventorySection.style.display = 'none';
-                return;
-            }
-
-            // Show loading
-            inventorySection.style.display = 'block';
-            loadingDiv.style.display = 'block';
-            inventoryList.innerHTML = '';
-
-            // Fetch available inventory
-            fetch(`{{ route('admin.request.inventory') }}?milk_type=${milkType}`)
-                .then(response => response.json())
-                .then(data => {
-                    loadingDiv.style.display = 'none';
-
-                    if (data.error) {
-                        inventoryList.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
-                        return;
-                    }
-
-                    if (data.inventory.length === 0) {
-                        inventoryList.innerHTML = '<div class="alert alert-warning">No ' + milkType + ' milk available in inventory.</div>';
-                        return;
-                    }
-
-                    // Display inventory items
-                    let html = '';
-                    data.inventory.forEach(item => {
-                        const itemId = milkType === 'unpasteurized' ? item.id : item.id;
-                        html += `
-                                                                                                                                                                        <div class="card mb-2">
-                                                                                                                                                                            <div class="card-body p-2">
-                                                                                                                                                                                <div class="form-check">
-                                                                                                                                                                                    <input class="form-check-input" type="checkbox" 
-                                                                                                                                                                                        id="item_${requestId}_${itemId}" 
-                                                                                                                                                                                        onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
-                                                                                                                                                                                    <label class="form-check-label" for="item_${requestId}_${itemId}">
-                                                                                                                                                                                        <small>
-                                                                                                                                                                                            ${milkType === 'unpasteurized' ?
-                                `<strong>Donation #${item.id}</strong><br>
-                                                                                                                                                                                                 ${item.donor_name} - ${item.donation_type}<br>
-                                                                                                                                                                                                 <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
-                                `<strong>Batch ${item.batch_number}</strong><br>
-                                                                                                                                                                                                 Pasteurized by: ${item.admin_name}<br>
-                                                                                                                                                                                                 <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
+                    fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/prescription`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                container.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+                                return;
                             }
-                                                                                                                                                                                        </small>
-                                                                                                                                                                                    </label>
-                                                                                                                                                                                </div>
-                                                                                                                                                                                <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
-                                                                                                                                                                                    <label class="form-label">Volume to deduct (ml):</label>
-                                                                                                                                                                                    <input type="number" class="form-control form-control-sm" 
-                                                                                                                                                                                        id="volume_${requestId}_${itemId}" 
-                                                                                                                                                                                        step="0.01" min="0.01" max="${item.volume}" 
-                                                                                                                                                                                        value="${item.volume}"
-                                                                                                                                                                                        onchange="updateSelectedVolume(${requestId})">
-                                                                                                                                                                                </div>
-                                                                                                                                                                            </div>
-                                                                                                                                                                        </div>
-                                                                                                                                                                    `;
+
+                            // Build UI showing user details alongside the prescription image
+                            const user = data.user || null;
+                            let userHtml = '';
+                            if (user) {
+                                userHtml = `
+                                                                <div class="card p-3 mb-3" style="min-width:250px;">
+                                                                    <h6 class="mb-2"><i class="fas fa-user"></i> Requester</h6>
+                                                                    <p class="mb-1"><strong>Name:</strong> ${escapeHtml(user.full_name || '-')}</p>
+                                                                    <p class="mb-1"><strong>Contact:</strong> ${escapeHtml(user.contact_number || '-')}</p>
+                                                                    <p class="mb-0"><strong>Address:</strong> ${escapeHtml(user.address || '-')}</p>
+                                                                </div>
+                                                            `;
+                            }
+
+                            const isPdf = typeof data.image === 'string' && /^data:application\/pdf/i.test(data.image);
+                            const filenameSafe = escapeHtml(data.filename || 'Prescription');
+                            let viewerHtml = '';
+                            if (isPdf) {
+                                viewerHtml = `
+                                                                <div class="ratio ratio-16x9 w-100">
+                                                                    <iframe src="${data.image}" title="${filenameSafe}" style="border:1px solid #dee2e6; border-radius: .25rem;"></iframe>
+                                                                </div>
+                                                                <div class="mt-2 text-center">
+                                                                    <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download PDF</a>
+                                                                </div>
+                                                            `;
+                            } else {
+                                viewerHtml = `
+                                                                <div class="d-flex justify-content-center align-items-center" style="min-height: 320px; width:100%;">
+                                                                    <img src="${data.image}" alt="Prescription" class="img-fluid rounded border" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+                                                                </div>
+                                                                <div class="mt-2 text-center">
+                                                                    <a class="btn btn-sm btn-outline-secondary" href="${data.image}" download="${filenameSafe}"><i class="fas fa-download"></i> Download</a>
+                                                                </div>
+                                                            `;
+                            }
+
+                            container.innerHTML = `
+                                                            <div class="row">
+                                                                <div class="col-md-4 d-flex justify-content-center align-items-start">
+                                                                    ${userHtml}
+                                                                </div>
+                                                                <div class="col-md-8 d-flex flex-column align-items-center">
+                                                                    <h6 class="mb-3">Prescription: ${filenameSafe}</h6>
+                                                                    ${viewerHtml}
+                                                                </div>
+                                                            </div>
+                                                        `;
+                        })
+                        .catch(err => {
+                            container.innerHTML = '<div class="alert alert-danger">Failed to load prescription image.</div>';
+                        });
+                }
+
+                function loadInventory(requestId) {
+                    const milkType = document.getElementById('milkType' + requestId).value;
+                    const inventorySection = document.getElementById('inventorySection' + requestId);
+                    const loadingDiv = document.getElementById('loadingInventory' + requestId);
+                    const inventoryList = document.getElementById('inventoryList' + requestId);
+
+                    if (!milkType) {
+                        inventorySection.style.display = 'none';
+                        return;
+                    }
+
+                    // Show loading
+                    inventorySection.style.display = 'block';
+                    loadingDiv.style.display = 'block';
+                    inventoryList.innerHTML = '';
+
+                    // Fetch available inventory
+                    fetch(`{{ route('admin.request.inventory') }}?milk_type=${milkType}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            loadingDiv.style.display = 'none';
+
+                            if (data.error) {
+                                inventoryList.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+                                return;
+                            }
+
+                            if (data.inventory.length === 0) {
+                                inventoryList.innerHTML = '<div class="alert alert-warning">No ' + milkType + ' milk available in inventory.</div>';
+                                return;
+                            }
+
+                            // Display inventory items
+                            let html = '';
+                            data.inventory.forEach(item => {
+                                const itemId = milkType === 'unpasteurized' ? item.id : item.id;
+                                html += `
+                                                                                                                                                                                                    <div class="card mb-2">
+                                                                                                                                                                                                        <div class="card-body p-2">
+                                                                                                                                                                                                            <div class="form-check">
+                                                                                                                                                                                                                <input class="form-check-input" type="checkbox" 
+                                                                                                                                                                                                                    id="item_${requestId}_${itemId}" 
+                                                                                                                                                                                                                    onchange="toggleInventoryItem(${requestId}, ${itemId}, ${item.volume})">
+                                                                                                                                                                                                                <label class="form-check-label" for="item_${requestId}_${itemId}">
+                                                                                                                                                                                                                    <small>
+                                                                                                                                                                                                                        ${milkType === 'unpasteurized' ?
+                                        `<strong>Donation #${item.id}</strong><br>
+                                                                                                                                                                                                                             ${item.donor_name} - ${item.donation_type}<br>
+                                                                                                                                                                                                                             <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
+                                        `<strong>Batch ${item.batch_number}</strong><br>
+                                                                                                                                                                                                                             Pasteurized by: ${item.admin_name}<br>
+                                                                                                                                                                                                                             <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
+                                    }
+                                                                                                                                                                                                                    </small>
+                                                                                                                                                                                                                </label>
+                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                            <div id="volumeInput_${requestId}_${itemId}" style="display: none;" class="mt-2">
+                                                                                                                                                                                                                <label class="form-label">Volume to deduct (ml):</label>
+                                                                                                                                                                                                                <input type="number" class="form-control form-control-sm" 
+                                                                                                                                                                                                                    id="volume_${requestId}_${itemId}" 
+                                                                                                                                                                                                                    step="0.01" min="0.01" max="${item.volume}" 
+                                                                                                                                                                                                                    value="${item.volume}"
+                                                                                                                                                                                                                    onchange="updateSelectedVolume(${requestId})">
+                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                `;
+                            });
+
+                            inventoryList.innerHTML = html;
+                        })
+                        .catch(error => {
+                            loadingDiv.style.display = 'none';
+                            inventoryList.innerHTML = '<div class="alert alert-danger">Failed to load inventory.</div>';
+                        });
+                }
+
+                function toggleInventoryItem(requestId, itemId, maxVolume) {
+                    const checkbox = document.getElementById(`item_${requestId}_${itemId}`);
+                    const volumeDiv = document.getElementById(`volumeInput_${requestId}_${itemId}`);
+
+                    if (checkbox.checked) {
+                        volumeDiv.style.display = 'block';
+                    } else {
+                        volumeDiv.style.display = 'none';
+                    }
+
+                    updateSelectedVolume(requestId);
+                }
+
+                function updateSelectedVolume(requestId) {
+                    const checkboxes = document.querySelectorAll(`input[id^="item_${requestId}_"]:checked`);
+                    let totalVolume = 0;
+
+                    checkboxes.forEach(checkbox => {
+                        const itemId = checkbox.id.split('_')[2];
+                        const volumeInput = document.getElementById(`volume_${requestId}_${itemId}`);
+                        if (volumeInput && volumeInput.value) {
+                            totalVolume += parseFloat(volumeInput.value);
+                        }
                     });
 
-                    inventoryList.innerHTML = html;
-                })
-                .catch(error => {
-                    loadingDiv.style.display = 'none';
-                    inventoryList.innerHTML = '<div class="alert alert-danger">Failed to load inventory.</div>';
-                });
-        }
+                    // Remove .00 from whole numbers
+                    const displayVolume = totalVolume % 1 === 0 ? Math.round(totalVolume) : totalVolume.toFixed(2).replace(/\.?0+$/, '');
+                    document.getElementById(`selectedVolume${requestId}`).textContent = displayVolume;
 
-        function toggleInventoryItem(requestId, itemId, maxVolume) {
-            const checkbox = document.getElementById(`item_${requestId}_${itemId}`);
-            const volumeDiv = document.getElementById(`volumeInput_${requestId}_${itemId}`);
+                    // Validate the form
+                    validateDispenseForm(requestId);
 
-            if (checkbox.checked) {
-                volumeDiv.style.display = 'block';
-            } else {
-                volumeDiv.style.display = 'none';
-            }
-
-            updateSelectedVolume(requestId);
-        }
-
-        function updateSelectedVolume(requestId) {
-            const checkboxes = document.querySelectorAll(`input[id^="item_${requestId}_"]:checked`);
-            let totalVolume = 0;
-
-            checkboxes.forEach(checkbox => {
-                const itemId = checkbox.id.split('_')[2];
-                const volumeInput = document.getElementById(`volume_${requestId}_${itemId}`);
-                if (volumeInput && volumeInput.value) {
-                    totalVolume += parseFloat(volumeInput.value);
+                    // Update form with selected items data
+                    updateFormData(requestId);
                 }
-            });
 
-            // Remove .00 from whole numbers
-            const displayVolume = totalVolume % 1 === 0 ? Math.round(totalVolume) : totalVolume.toFixed(2).replace(/\.?0+$/, '');
-            document.getElementById(`selectedVolume${requestId}`).textContent = displayVolume;
+                function validateDispenseForm(requestId) {
+                    const requestedVolume = parseFloat(document.getElementById(`volumeRequested${requestId}`).value || 0);
+                    const milkType = document.getElementById(`milkType${requestId}`).value;
+                    const approveBtn = document.getElementById(`approveBtn${requestId}`);
 
-            // Validate the form
-            validateDispenseForm(requestId);
+                    // Calculate total selected volume
+                    let totalVolume = 0;
+                    const checkboxes = document.querySelectorAll(`input[id^="item_${requestId}_"]:checked`);
+                    checkboxes.forEach(checkbox => {
+                        const itemId = checkbox.id.split('_')[2];
+                        const volumeInput = document.getElementById(`volume_${requestId}_${itemId}`);
+                        if (volumeInput && volumeInput.value) {
+                            totalVolume += parseFloat(volumeInput.value);
+                        }
+                    });
 
-            // Update form with selected items data
-            updateFormData(requestId);
-        }
+                    // Check if all required fields are filled and valid
+                    const hasRequestedVolume = requestedVolume > 0;
+                    const hasMilkType = milkType !== '';
+                    const hasSelectedItems = totalVolume > 0;
+                    const hasSufficientVolume = totalVolume >= requestedVolume;
 
-        function validateDispenseForm(requestId) {
-            const requestedVolume = parseFloat(document.getElementById(`volumeRequested${requestId}`).value || 0);
-            const milkType = document.getElementById(`milkType${requestId}`).value;
-            const approveBtn = document.getElementById(`approveBtn${requestId}`);
-
-            // Calculate total selected volume
-            let totalVolume = 0;
-            const checkboxes = document.querySelectorAll(`input[id^="item_${requestId}_"]:checked`);
-            checkboxes.forEach(checkbox => {
-                const itemId = checkbox.id.split('_')[2];
-                const volumeInput = document.getElementById(`volume_${requestId}_${itemId}`);
-                if (volumeInput && volumeInput.value) {
-                    totalVolume += parseFloat(volumeInput.value);
+                    if (hasRequestedVolume && hasMilkType && hasSelectedItems && hasSufficientVolume) {
+                        approveBtn.disabled = false;
+                    } else {
+                        approveBtn.disabled = true;
+                    }
                 }
-            });
 
-            // Check if all required fields are filled and valid
-            const hasRequestedVolume = requestedVolume > 0;
-            const hasMilkType = milkType !== '';
-            const hasSelectedItems = totalVolume > 0;
-            const hasSufficientVolume = totalVolume >= requestedVolume;
+                function updateFormData(requestId) {
+                    const form = document.getElementById(`approveForm${requestId}`);
+                    const checkboxes = document.querySelectorAll(`input[id^="item_${requestId}_"]:checked`);
 
-            if (hasRequestedVolume && hasMilkType && hasSelectedItems && hasSufficientVolume) {
-                approveBtn.disabled = false;
-            } else {
-                approveBtn.disabled = true;
-            }
-        }
+                    // Remove existing hidden inputs
+                    const existingInputs = form.querySelectorAll('input[name^="selected_items"]');
+                    existingInputs.forEach(input => input.remove());
 
-        function updateFormData(requestId) {
-            const form = document.getElementById(`approveForm${requestId}`);
-            const checkboxes = document.querySelectorAll(`input[id^="item_${requestId}_"]:checked`);
+                    // Add new hidden inputs for selected items
+                    checkboxes.forEach((checkbox, index) => {
+                        const itemId = checkbox.id.split('_')[2];
+                        const volumeInput = document.getElementById(`volume_${requestId}_${itemId}`);
 
-            // Remove existing hidden inputs
-            const existingInputs = form.querySelectorAll('input[name^="selected_items"]');
-            existingInputs.forEach(input => input.remove());
+                        if (volumeInput && volumeInput.value) {
+                            // Add item id
+                            const idInput = document.createElement('input');
+                            idInput.type = 'hidden';
+                            idInput.name = `selected_items[${index}][id]`;
+                            idInput.value = itemId;
+                            form.appendChild(idInput);
 
-            // Add new hidden inputs for selected items
-            checkboxes.forEach((checkbox, index) => {
-                const itemId = checkbox.id.split('_')[2];
-                const volumeInput = document.getElementById(`volume_${requestId}_${itemId}`);
-
-                if (volumeInput && volumeInput.value) {
-                    // Add item id
-                    const idInput = document.createElement('input');
-                    idInput.type = 'hidden';
-                    idInput.name = `selected_items[${index}][id]`;
-                    idInput.value = itemId;
-                    form.appendChild(idInput);
-
-                    // Add volume
-                    const volumeHiddenInput = document.createElement('input');
-                    volumeHiddenInput.type = 'hidden';
-                    volumeHiddenInput.name = `selected_items[${index}][volume]`;
-                    volumeHiddenInput.value = volumeInput.value;
-                    form.appendChild(volumeHiddenInput);
+                            // Add volume
+                            const volumeHiddenInput = document.createElement('input');
+                            volumeHiddenInput.type = 'hidden';
+                            volumeHiddenInput.name = `selected_items[${index}][volume]`;
+                            volumeHiddenInput.value = volumeInput.value;
+                            form.appendChild(volumeHiddenInput);
+                        }
+                    });
                 }
-            });
-        }
 
-        // ---- Accept / Decline workflow helpers ----
+                // ---- Accept / Decline workflow helpers ----
 
-        /**
-         * Handle Accept action from View Modal
-         * Shows the Approve/Dispense modal for full workflow
-         */
-        function handleAcceptFromViewModal(requestId) {
-            const notesField = document.getElementById('viewModalNotes' + requestId);
-            const notes = notesField ? notesField.value.trim() : '';
+                /**
+                 * Handle Accept action from View Modal
+                 * Shows the Approve/Dispense modal for full workflow
+                 */
+                function handleAcceptFromViewModal(requestId) {
+                    const notesField = document.getElementById('viewModalNotes' + requestId);
+                    const notes = notesField ? notesField.value.trim() : '';
 
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Accept Request',
-                    html: `
-                                                                                            <p>To accept this request, you need to specify the dispensing details.</p>
-                                                                                            <p class="text-muted">Click "Continue" to open the dispensing form.</p>
-                                                                                        `,
-                    icon: 'info',
-                    showCancelButton: true,
-                    confirmButtonText: 'Continue to Dispense Form',
-                    cancelButtonText: 'Cancel',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Close the view modal
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Accept Request',
+                            html: `
+                                                                                                                        <p>To accept this request, you need to specify the dispensing details.</p>
+                                                                                                                        <p class="text-muted">Click "Continue" to open the dispensing form.</p>
+                                                                                                                    `,
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: 'Continue to Dispense Form',
+                            cancelButtonText: 'Cancel',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Close the view modal
+                                const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewModal' + requestId));
+                                if (viewModal) viewModal.hide();
+
+                                // Store notes temporarily if provided
+                                if (notes) {
+                                    const approveNotesField = document.querySelector(`#approveForm${requestId} textarea[name="admin_notes"]`);
+                                    if (approveNotesField) {
+                                        approveNotesField.value = notes;
+                                    }
+                                }
+
+                                // Open the approve modal
+                                const approveModal = new bootstrap.Modal(document.getElementById('approveModal' + requestId));
+                                approveModal.show();
+                            }
+                        });
+                    } else {
+                        // Fallback without SweetAlert
                         const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewModal' + requestId));
                         if (viewModal) viewModal.hide();
 
-                        // Store notes temporarily if provided
                         if (notes) {
                             const approveNotesField = document.querySelector(`#approveForm${requestId} textarea[name="admin_notes"]`);
                             if (approveNotesField) {
@@ -2380,991 +2456,974 @@
                             }
                         }
 
-                        // Open the approve modal
                         const approveModal = new bootstrap.Modal(document.getElementById('approveModal' + requestId));
                         approveModal.show();
                     }
-                });
-            } else {
-                // Fallback without SweetAlert
-                const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewModal' + requestId));
-                if (viewModal) viewModal.hide();
-
-                if (notes) {
-                    const approveNotesField = document.querySelector(`#approveForm${requestId} textarea[name="admin_notes"]`);
-                    if (approveNotesField) {
-                        approveNotesField.value = notes;
-                    }
                 }
 
-                const approveModal = new bootstrap.Modal(document.getElementById('approveModal' + requestId));
-                approveModal.show();
-            }
-        }
-
-        /**
-         * Handle Decline action from View Modal
-         * Shows SweetAlert confirmation and processes the decline
-         */
-        function handleDeclineFromViewModal(requestId) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Decline Request',
-                    html: `
-                        <div class="text-start">
-                            <p>Are you sure you want to decline this request?</p>
-                            <p class="text-muted">This action cannot be undone.</p>
-                        </div>
-                    `,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, Decline Request',
-                    cancelButtonText: 'Cancel',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Show loading state
+                /**
+                 * Handle Decline action from View Modal
+                 * Shows SweetAlert confirmation and processes the decline
+                 */
+                function handleDeclineFromViewModal(requestId) {
+                    if (typeof Swal !== 'undefined') {
                         Swal.fire({
-                            title: 'Processing...',
-                            text: 'Declining request...',
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            didOpen: () => {
-                                Swal.showLoading();
+                            title: 'Decline Request',
+                            html: `
+                                                    <div class="text-start">
+                                                        <p>Are you sure you want to decline this request?</p>
+                                                        <p class="text-muted">This action cannot be undone.</p>
+                                                    </div>
+                                                `,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Yes, Decline Request',
+                            cancelButtonText: 'Cancel',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Show loading state
+                                Swal.fire({
+                                    title: 'Processing...',
+                                    text: 'Declining request...',
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+
+                                // Submit the decline request without notes
+                                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/decline`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': csrfToken
+                                    },
+                                    body: JSON.stringify({})
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.error) {
+                                            Swal.fire({
+                                                title: 'Error',
+                                                text: data.error,
+                                                icon: 'error'
+                                            });
+                                            return;
+                                        }
+
+                                        Swal.fire({
+                                            title: 'Success!',
+                                            text: 'Request has been declined successfully.',
+                                            icon: 'success',
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        }).then(() => {
+                                            location.reload();
+                                        });
+                                    })
+                                    .catch(error => {
+                                        console.error(error);
+                                        Swal.fire({
+                                            title: 'Error',
+                                            text: 'Failed to decline request. Please try again.',
+                                            icon: 'error'
+                                        });
+                                    });
                             }
                         });
+                    } else {
+                        // Fallback without SweetAlert
+                        const reason = prompt('Please provide a reason for declining this request:', notes);
+                        if (!reason || !reason.trim()) {
+                            alert('Please provide a reason for declining.');
+                            return;
+                        }
 
-                        // Submit the decline request without notes
+                        if (!confirm('Are you sure you want to decline this request?')) {
+                            return;
+                        }
+
                         fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/decline`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrfToken
                             },
-                            body: JSON.stringify({})
+                            body: JSON.stringify({ admin_notes: reason.trim() })
                         })
                             .then(response => response.json())
                             .then(data => {
                                 if (data.error) {
-                                    Swal.fire({
-                                        title: 'Error',
-                                        text: data.error,
-                                        icon: 'error'
-                                    });
+                                    alert('Error: ' + data.error);
                                     return;
                                 }
-
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: 'Request has been declined successfully.',
-                                    icon: 'success',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    location.reload();
-                                });
+                                alert('Request has been declined successfully.');
+                                location.reload();
                             })
                             .catch(error => {
                                 console.error(error);
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: 'Failed to decline request. Please try again.',
-                                    icon: 'error'
-                                });
+                                alert('Failed to decline request. Please try again.');
                             });
                     }
-                });
-            } else {
-                // Fallback without SweetAlert
-                const reason = prompt('Please provide a reason for declining this request:', notes);
-                if (!reason || !reason.trim()) {
-                    alert('Please provide a reason for declining.');
-                    return;
                 }
 
-                if (!confirm('Are you sure you want to decline this request?')) {
-                    return;
-                }
+                // ---- Legacy functions (kept for compatibility) ----
 
-                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/decline`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({ admin_notes: reason.trim() })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert('Error: ' + data.error);
-                            return;
+                function confirmAccept(requestId) {
+                    // Read requested volume and milk type from the accept section inputs
+                    const volumeEl = document.getElementById('volumeRequested' + requestId);
+                    const typeEl = document.getElementById('milkType' + requestId);
+                    const volumeRequested = volumeEl ? parseFloat(volumeEl.value) : 0;
+                    const milkType = typeEl ? typeEl.value : '';
+
+                    if (!volumeRequested || volumeRequested <= 0) {
+                        alert('Please enter a valid volume to dispense.');
+                        return;
+                    }
+                    if (!milkType) {
+                        alert('Please select a milk type.');
+                        return;
+                    }
+
+                    // Collect selected inventory items and volumes
+                    const selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="item_${requestId}_"]:checked`));
+                    const selectedItems = [];
+                    let totalSelectedVolume = 0;
+
+                    selectedCheckboxes.forEach(cb => {
+                        const parts = cb.id.split('_');
+                        const itemId = parts[2];
+                        const volumeInput = document.getElementById(`volume_${requestId}_${itemId}`);
+                        const vol = volumeInput && volumeInput.value ? parseFloat(volumeInput.value) : 0;
+                        if (vol > 0) {
+                            selectedItems.push({ id: itemId, volume: vol });
+                            totalSelectedVolume += vol;
                         }
-                        alert('Request has been declined successfully.');
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        alert('Failed to decline request. Please try again.');
                     });
-            }
-        }
 
-        // ---- Legacy functions (kept for compatibility) ----
+                    if (selectedItems.length === 0) {
+                        alert('Please select at least one inventory item to deduct from.');
+                        return;
+                    }
 
-        function confirmAccept(requestId) {
-            // Read requested volume and milk type from the accept section inputs
-            const volumeEl = document.getElementById('volumeRequested' + requestId);
-            const typeEl = document.getElementById('milkType' + requestId);
-            const volumeRequested = volumeEl ? parseFloat(volumeEl.value) : 0;
-            const milkType = typeEl ? typeEl.value : '';
+                    if (totalSelectedVolume < volumeRequested) {
+                        alert('Selected inventory volume is less than the requested dispense volume. Please adjust selections.');
+                        return;
+                    }
 
-            if (!volumeRequested || volumeRequested <= 0) {
-                alert('Please enter a valid volume to dispense.');
-                return;
-            }
-            if (!milkType) {
-                alert('Please select a milk type.');
-                return;
-            }
-
-            // Collect selected inventory items and volumes
-            const selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="item_${requestId}_"]:checked`));
-            const selectedItems = [];
-            let totalSelectedVolume = 0;
-
-            selectedCheckboxes.forEach(cb => {
-                const parts = cb.id.split('_');
-                const itemId = parts[2];
-                const volumeInput = document.getElementById(`volume_${requestId}_${itemId}`);
-                const vol = volumeInput && volumeInput.value ? parseFloat(volumeInput.value) : 0;
-                if (vol > 0) {
-                    selectedItems.push({ id: itemId, volume: vol });
-                    totalSelectedVolume += vol;
-                }
-            });
-
-            if (selectedItems.length === 0) {
-                alert('Please select at least one inventory item to deduct from.');
-                return;
-            }
-
-            if (totalSelectedVolume < volumeRequested) {
-                alert('Selected inventory volume is less than the requested dispense volume. Please adjust selections.');
-                return;
-            }
-
-            // Use SweetAlert2 for confirmation and loading
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Confirm Accept',
-                    text: 'Are you sure you want to accept and record this milk dispensing transaction?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, accept',
-                    reverseButtons: true,
-                    preConfirm: () => {
-                        return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/approve`, {
+                    // Use SweetAlert2 for confirmation and loading
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Confirm Accept',
+                            text: 'Are you sure you want to accept and record this milk dispensing transaction?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Yes, accept',
+                            reverseButtons: true,
+                            preConfirm: () => {
+                                return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/approve`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': csrfToken
+                                    },
+                                    body: JSON.stringify({ volume_requested: volumeRequested, milk_type: milkType, selected_items: selectedItems })
+                                }).then(response => response.json()).catch(err => {
+                                    Swal.showValidationMessage('Network error');
+                                    throw err;
+                                });
+                            }
+                        }).then(result => {
+                            if (result.isConfirmed && result.value) {
+                                if (result.value.error) {
+                                    if (typeof Swal !== 'undefined') Swal.fire('Error', result.value.error, 'error');
+                                    else alert(result.value.error);
+                                    return;
+                                }
+                                swalToast('success', 'Request accepted and milk volume successfully recorded.');
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        if (!confirm('Are you sure you want to accept and record this milk dispensing transaction?')) return;
+                        // fallback to previous fetch
+                        fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/approve`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrfToken
                             },
                             body: JSON.stringify({ volume_requested: volumeRequested, milk_type: milkType, selected_items: selectedItems })
-                        }).then(response => response.json()).catch(err => {
-                            Swal.showValidationMessage('Network error');
-                            throw err;
-                        });
+                        })
+                            .then(resp => resp.json())
+                            .then(data => {
+                                if (data.error) {
+                                    alert(data.error);
+                                    return;
+                                }
+                                alert('Request accepted and milk volume successfully recorded.');
+                                location.reload();
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                alert('Failed to accept request.');
+                            });
                     }
-                }).then(result => {
-                    if (result.isConfirmed && result.value) {
-                        if (result.value.error) {
-                            if (typeof Swal !== 'undefined') Swal.fire('Error', result.value.error, 'error');
-                            else alert(result.value.error);
-                            return;
-                        }
-                        swalToast('success', 'Request accepted and milk volume successfully recorded.');
-                        location.reload();
-                    }
-                });
-            } else {
-                if (!confirm('Are you sure you want to accept and record this milk dispensing transaction?')) return;
-                // fallback to previous fetch
-                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/approve`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({ volume_requested: volumeRequested, milk_type: milkType, selected_items: selectedItems })
-                })
-                    .then(resp => resp.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
-                        alert('Request accepted and milk volume successfully recorded.');
-                        location.reload();
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert('Failed to accept request.');
-                    });
-            }
-        }
-
-        function confirmDecline(requestId) {
-            const reasonEl = document.getElementById('declineReason' + requestId);
-            const reason = reasonEl ? reasonEl.value.trim() : '';
-            if (!reason) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire('Missing reason', 'Please provide a reason for declining.', 'warning');
-                } else {
-                    alert('Please provide a reason for declining.');
                 }
-                return;
-            }
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Confirm Decline',
-                    text: 'Are you sure you want to decline this request?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, decline',
-                    reverseButtons: true,
-                    preConfirm: () => {
-                        return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/decline`, {
+
+                function confirmDecline(requestId) {
+                    const reasonEl = document.getElementById('declineReason' + requestId);
+                    const reason = reasonEl ? reasonEl.value.trim() : '';
+                    if (!reason) {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire('Missing reason', 'Please provide a reason for declining.', 'warning');
+                        } else {
+                            alert('Please provide a reason for declining.');
+                        }
+                        return;
+                    }
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Confirm Decline',
+                            text: 'Are you sure you want to decline this request?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Yes, decline',
+                            reverseButtons: true,
+                            preConfirm: () => {
+                                return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/decline`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': csrfToken
+                                    },
+                                    body: JSON.stringify({ admin_notes: reason })
+                                }).then(response => response.json()).catch(err => {
+                                    Swal.showValidationMessage('Network error');
+                                    throw err;
+                                });
+                            }
+                        }).then(result => {
+                            if (result.isConfirmed && result.value) {
+                                if (result.value.error) {
+                                    Swal.fire('Error', result.value.error, 'error');
+                                    return;
+                                }
+                                swalToast('success', 'Request has been declined.');
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        if (!confirm('Are you sure you want to decline this request?')) return;
+                        fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/decline`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrfToken
                             },
                             body: JSON.stringify({ admin_notes: reason })
-                        }).then(response => response.json()).catch(err => {
-                            Swal.showValidationMessage('Network error');
-                            throw err;
-                        });
+                        })
+                            .then(resp => resp.json())
+                            .then(data => {
+                                if (data.error) {
+                                    alert(data.error);
+                                    return;
+                                }
+                                alert('Request has been declined.');
+                                location.reload();
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                alert('Failed to decline request.');
+                            });
                     }
-                }).then(result => {
-                    if (result.isConfirmed && result.value) {
-                        if (result.value.error) {
-                            Swal.fire('Error', result.value.error, 'error');
-                            return;
-                        }
-                        swalToast('success', 'Request has been declined.');
-                        location.reload();
-                    }
-                });
-            } else {
-                if (!confirm('Are you sure you want to decline this request?')) return;
-                fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/decline`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({ admin_notes: reason })
-                })
-                    .then(resp => resp.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
-                        alert('Request has been declined.');
-                        location.reload();
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert('Failed to decline request.');
-                    });
-            }
-        }
-
-        // Archive and restore functionality removed per requirements
-
-        // New functions for the dispensing modal
-
-        /**
-         * Handle milk type change - load inventory based on selection
-         */
-        function handleMilkTypeChange(requestId) {
-            const milkTypeSelect = document.getElementById(`milkTypeSelect${requestId}`);
-            const milkType = milkTypeSelect.value;
-            const inventoryContainer = document.getElementById(`inventoryContainer${requestId}`);
-            const inventoryList = document.getElementById(`inventoryList${requestId}`);
-            const loadingIndicator = document.getElementById(`loadingInventory${requestId}`);
-
-            if (!milkType) {
-                inventoryContainer.style.display = 'none';
-                return;
-            }
-
-            // Show container and loading
-            inventoryContainer.style.display = 'block';
-            loadingIndicator.style.display = 'block';
-            inventoryList.innerHTML = '';
-
-            // Fetch available inventory
-            fetch(`{{ route('admin.request.inventory') }}?type=${milkType}`, {
-                method: 'GET',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
                 }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    loadingIndicator.style.display = 'none';
 
-                    if (data.error) {
-                        inventoryList.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                // Archive and restore functionality removed per requirements
+
+                // New functions for the dispensing modal
+
+                /**
+                 * Handle milk type change - load inventory based on selection
+                 */
+                function handleMilkTypeChange(requestId) {
+                    const milkTypeSelect = document.getElementById(`milkTypeSelect${requestId}`);
+                    const milkType = milkTypeSelect.value;
+                    const inventoryContainer = document.getElementById(`inventoryContainer${requestId}`);
+                    const inventoryList = document.getElementById(`inventoryList${requestId}`);
+                    const loadingIndicator = document.getElementById(`loadingInventory${requestId}`);
+
+                    if (!milkType) {
+                        inventoryContainer.style.display = 'none';
                         return;
                     }
 
-                    if (milkType === 'pasteurized') {
-                        displayPasteurizedInventory(requestId, data.batches || []);
-                    }
+                    // Show container and loading
+                    inventoryContainer.style.display = 'block';
+                    loadingIndicator.style.display = 'block';
+                    inventoryList.innerHTML = '';
 
-                    // Show volume tracker
-                    document.getElementById(`volumeTracker${requestId}`).style.display = 'block';
-                })
-                .catch(error => {
-                    loadingIndicator.style.display = 'none';
-                    console.error('Error fetching inventory:', error);
-                    inventoryList.innerHTML = '<div class="alert alert-danger">Failed to load inventory</div>';
-                });
-        }
-
-        /**
-         * Display pasteurized batch inventory
-         */
-        function displayPasteurizedInventory(requestId, batches) {
-            const inventoryList = document.getElementById(`inventoryList${requestId}`);
-
-            if (!batches || batches.length === 0) {
-                inventoryList.innerHTML = '<div class="alert alert-warning">No pasteurized batches available</div>';
-                return;
-            }
-
-            let html = '';
-            batches.forEach(batch => {
-                html += `
-                    <div class="card mb-2">
-                        <div class="card-body p-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                    id="batch_${requestId}_${batch.batch_id}" 
-                                    value="${batch.batch_id}"
-                                    data-volume="${batch.available_volume}"
-                                    onchange="updateSelectedVolume(${requestId})">
-                                <label class="form-check-label" for="batch_${requestId}_${batch.batch_id}">
-                                    <small>
-                                        <strong>Batch #${batch.batch_number}</strong><br>
-                                        <span class="text-primary">${batch.available_volume} ml available</span><br>
-                                        <span class="text-muted">Date: ${batch.date_pasteurized}</span>
-                                    </small>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            html += '<div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle"></i> Select batches in order. Volume will be automatically deducted based on your input above.</small></div>';
-            inventoryList.innerHTML = html;
-        }
-
-        /**
-         * Display unpasteurized donation inventory
-         */
-        function displayUnpasteurizedInventory(requestId, donations) {
-            const inventoryList = document.getElementById(`inventoryList${requestId}`);
-
-            if (!donations || donations.length === 0) {
-                inventoryList.innerHTML = '<div class="alert alert-warning">No unpasteurized donations available</div>';
-                return;
-            }
-
-            let html = '';
-            donations.forEach(donation => {
-                const donorName = donation.donor_name || 'Anonymous';
-                html += `
-                    <div class="card mb-2">
-                        <div class="card-body p-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                    id="donation_${requestId}_${donation.breastmilk_donation_id}" 
-                                    value="${donation.breastmilk_donation_id}"
-                                    data-volume="${donation.available_volume}"
-                                    onchange="updateSelectedVolume(${requestId})">
-                                <label class="form-check-label" for="donation_${requestId}_${donation.breastmilk_donation_id}">
-                                    <small>
-                                        <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
-                                        <span class="text-muted">Donor: ${donorName}</span><br>
-                                        <span class="text-primary">${donation.available_volume} ml available</span><br>
-                                        <span class="text-muted">Date: ${donation.donation_date}</span>
-                                    </small>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            html += '<div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle"></i> Select donations in order. Volume will be automatically deducted based on your input above.</small></div>';
-            inventoryList.innerHTML = html;
-        }
-
-        /**
-         * Update the selected volume tracker - calculate automatic distribution
-         */
-        function updateSelectedVolume(requestId) {
-            const milkTypeSelect = document.getElementById(`milkTypeSelect${requestId}`);
-            const milkType = milkTypeSelect.value;
-            const volumeRequired = parseFloat(document.getElementById(`volumeToDispense${requestId}`).value) || 0;
-
-            let totalAvailable = 0;
-            let selectedCheckboxes = [];
-
-            if (milkType === 'pasteurized') {
-                // Get all checked batch checkboxes
-                selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="batch_${requestId}_"]:checked`));
-            } else if (milkType === 'unpasteurized') {
-                // Get all checked donation checkboxes
-                selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="donation_${requestId}_"]:checked`));
-            }
-
-            // Calculate total available from selected sources
-            selectedCheckboxes.forEach(checkbox => {
-                const available = parseFloat(checkbox.dataset.volume) || 0;
-                totalAvailable += available;
-            });
-
-            // Update display
-            const displaySelected = totalAvailable % 1 === 0 ? Math.round(totalAvailable) : totalAvailable.toFixed(2).replace(/\.?0+$/, '');
-            const displayRequired = volumeRequired % 1 === 0 ? Math.round(volumeRequired) : volumeRequired.toFixed(2).replace(/\.?0+$/, '');
-            document.getElementById(`totalSelected${requestId}`).textContent = displaySelected;
-            document.getElementById(`volumeRequired${requestId}`).textContent = displayRequired;
-        }
-
-        /**
-         * Handle dispense action
-         */
-        function handleDispense(requestId) {
-            const volumeToDispense = parseFloat(document.getElementById(`volumeToDispense${requestId}`).value);
-            const milkType = document.getElementById(`milkTypeSelect${requestId}`).value;
-            const adminNotes = document.getElementById(`adminNotes${requestId}`).value;
-
-            // Validation
-            if (!volumeToDispense || volumeToDispense <= 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid Volume',
-                    text: 'Please enter a valid volume to dispense.',
-                    confirmButtonColor: '#3085d6'
-                });
-                return;
-            }
-
-            if (!milkType) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Missing Milk Type',
-                    text: 'Please select a milk type.',
-                    confirmButtonColor: '#3085d6'
-                });
-                return;
-            }
-
-            // Collect selected sources and automatically distribute volume
-            let selectedSources = [];
-            let selectedCheckboxes = [];
-            let totalAvailable = 0;
-
-            if (milkType === 'pasteurized') {
-                selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="batch_${requestId}_"]:checked`));
-
-                if (selectedCheckboxes.length === 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'No Batch Selected',
-                        text: 'Please select at least one pasteurized batch.',
-                        confirmButtonColor: '#3085d6'
-                    });
-                    return;
-                }
-            } else if (milkType === 'unpasteurized') {
-                selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="donation_${requestId}_"]:checked`));
-
-                if (selectedCheckboxes.length === 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'No Donation Selected',
-                        text: 'Please select at least one unpasteurized donation.',
-                        confirmButtonColor: '#3085d6'
-                    });
-                    return;
-                }
-            }
-
-            // Calculate total available volume
-            selectedCheckboxes.forEach(checkbox => {
-                totalAvailable += parseFloat(checkbox.dataset.volume) || 0;
-            });
-
-            // Check if we have enough volume
-            if (totalAvailable < volumeToDispense) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Insufficient Volume',
-                    text: `Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volumeToDispense} ml. Please select more bags.`,
-                    confirmButtonColor: '#3085d6'
-                });
-                return;
-            }
-
-            // Automatically distribute the volume across selected bags in order
-            let remainingVolume = volumeToDispense;
-            selectedCheckboxes.forEach(checkbox => {
-                if (remainingVolume <= 0) return;
-                
-                const availableVolume = parseFloat(checkbox.dataset.volume) || 0;
-                const volumeToTake = Math.min(remainingVolume, availableVolume);
-                
-                if (volumeToTake > 0) {
-                    selectedSources.push({
-                        type: milkType,
-                        id: checkbox.value,
-                        volume: volumeToTake
-                    });
-                    remainingVolume -= volumeToTake;
-                }
-            });
-
-            // Validate that we collected the sources
-            if (selectedSources.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No Sources Selected',
-                    text: 'Please select at least one source.',
-                    confirmButtonColor: '#3085d6'
-                });
-                return;
-            }
-
-            // Confirm and dispense
-            const displayVolumeToDispense = volumeToDispense % 1 === 0 ? Math.round(volumeToDispense) : volumeToDispense.toFixed(2).replace(/\.?0+$/, '');
-            Swal.fire({
-                title: 'Confirm Dispensing',
-                html: `
-                                                                                <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
-                                                                                <p class="text-muted mb-0">This action cannot be undone.</p>
-                                                                            `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="fas fa-check"></i> Yes, Dispense',
-                cancelButtonText: '<i class="fas fa-times"></i> Cancel',
-                reverseButtons: true,
-                showLoaderOnConfirm: true,
-                preConfirm: () => {
-                    return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/dispense`, {
-                        method: 'POST',
+                    // Fetch available inventory
+                    fetch(`{{ route('admin.request.inventory') }}?type=${milkType}`, {
+                        method: 'GET',
                         headers: {
-                            'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': csrfToken,
                             'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            volume_dispensed: volumeToDispense,
-                            milk_type: milkType,
-                            sources: selectedSources,
-                            dispensing_notes: adminNotes
-                        })
+                        }
                     })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
+                        .then(response => response.json())
+                        .then(data => {
+                            loadingIndicator.style.display = 'none';
+
+                            if (data.error) {
+                                inventoryList.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                                return;
                             }
-                            return response.json();
+
+                            if (milkType === 'pasteurized') {
+                                displayPasteurizedInventory(requestId, data.batches || []);
+                            }
+
+                            // Show volume tracker
+                            document.getElementById(`volumeTracker${requestId}`).style.display = 'block';
                         })
                         .catch(error => {
-                            Swal.showValidationMessage(`Request failed: ${error}`);
+                            loadingIndicator.style.display = 'none';
+                            console.error('Error fetching inventory:', error);
+                            inventoryList.innerHTML = '<div class="alert alert-danger">Failed to load inventory</div>';
                         });
-                },
-                allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    if (result.value.error) {
+                }
+
+                /**
+                 * Display pasteurized batch inventory
+                 */
+                function displayPasteurizedInventory(requestId, batches) {
+                    const inventoryList = document.getElementById(`inventoryList${requestId}`);
+
+                    if (!batches || batches.length === 0) {
+                        inventoryList.innerHTML = '<div class="alert alert-warning">No pasteurized batches available</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    batches.forEach(batch => {
+                        html += `
+                                                <div class="card mb-2">
+                                                    <div class="card-body p-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" 
+                                                                id="batch_${requestId}_${batch.batch_id}" 
+                                                                value="${batch.batch_id}"
+                                                                data-volume="${batch.available_volume}"
+                                                                onchange="updateSelectedVolume(${requestId})">
+                                                            <label class="form-check-label" for="batch_${requestId}_${batch.batch_id}">
+                                                                <small>
+                                                                    <strong>Batch #${batch.batch_number}</strong><br>
+                                                                    <span class="text-primary">${batch.available_volume} ml available</span><br>
+                                                                    <span class="text-muted">Date: ${batch.date_pasteurized}</span>
+                                                                </small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                    });
+                    html += '<div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle"></i> Select batches in order. Volume will be automatically deducted based on your input above.</small></div>';
+                    inventoryList.innerHTML = html;
+                }
+
+                /**
+                 * Display unpasteurized donation inventory
+                 */
+                function displayUnpasteurizedInventory(requestId, donations) {
+                    const inventoryList = document.getElementById(`inventoryList${requestId}`);
+
+                    if (!donations || donations.length === 0) {
+                        inventoryList.innerHTML = '<div class="alert alert-warning">No unpasteurized donations available</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    donations.forEach(donation => {
+                        const donorName = donation.donor_name || 'Anonymous';
+                        html += `
+                                                <div class="card mb-2">
+                                                    <div class="card-body p-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" 
+                                                                id="donation_${requestId}_${donation.breastmilk_donation_id}" 
+                                                                value="${donation.breastmilk_donation_id}"
+                                                                data-volume="${donation.available_volume}"
+                                                                onchange="updateSelectedVolume(${requestId})">
+                                                            <label class="form-check-label" for="donation_${requestId}_${donation.breastmilk_donation_id}">
+                                                                <small>
+                                                                    <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
+                                                                    <span class="text-muted">Donor: ${donorName}</span><br>
+                                                                    <span class="text-primary">${donation.available_volume} ml available</span><br>
+                                                                    <span class="text-muted">Date: ${donation.donation_date}</span>
+                                                                </small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                    });
+                    html += '<div class="mt-2"><small class="text-muted"><i class="fas fa-info-circle"></i> Select donations in order. Volume will be automatically deducted based on your input above.</small></div>';
+                    inventoryList.innerHTML = html;
+                }
+
+                /**
+                 * Update the selected volume tracker - calculate automatic distribution
+                 */
+                function updateSelectedVolume(requestId) {
+                    const milkTypeSelect = document.getElementById(`milkTypeSelect${requestId}`);
+                    const milkType = milkTypeSelect.value;
+                    const volumeRequired = parseFloat(document.getElementById(`volumeToDispense${requestId}`).value) || 0;
+
+                    let totalAvailable = 0;
+                    let selectedCheckboxes = [];
+
+                    if (milkType === 'pasteurized') {
+                        // Get all checked batch checkboxes
+                        selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="batch_${requestId}_"]:checked`));
+                    } else if (milkType === 'unpasteurized') {
+                        // Get all checked donation checkboxes
+                        selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="donation_${requestId}_"]:checked`));
+                    }
+
+                    // Calculate total available from selected sources
+                    selectedCheckboxes.forEach(checkbox => {
+                        const available = parseFloat(checkbox.dataset.volume) || 0;
+                        totalAvailable += available;
+                    });
+
+                    // Update display
+                    const displaySelected = totalAvailable % 1 === 0 ? Math.round(totalAvailable) : totalAvailable.toFixed(2).replace(/\.?0+$/, '');
+                    const displayRequired = volumeRequired % 1 === 0 ? Math.round(volumeRequired) : volumeRequired.toFixed(2).replace(/\.?0+$/, '');
+                    document.getElementById(`totalSelected${requestId}`).textContent = displaySelected;
+                    document.getElementById(`volumeRequired${requestId}`).textContent = displayRequired;
+                }
+
+                /**
+                 * Handle dispense action
+                 */
+                function handleDispense(requestId) {
+                    const volumeToDispense = parseFloat(document.getElementById(`volumeToDispense${requestId}`).value);
+                    const milkType = document.getElementById(`milkTypeSelect${requestId}`).value;
+                    const adminNotes = document.getElementById(`adminNotes${requestId}`).value;
+
+                    // Validation
+                    if (!volumeToDispense || volumeToDispense <= 0) {
                         Swal.fire({
-                            icon: 'error',
-                            title: 'Dispensing Failed',
-                            text: result.value.error,
+                            icon: 'warning',
+                            title: 'Invalid Volume',
+                            text: 'Please enter a valid volume to dispense.',
                             confirmButtonColor: '#3085d6'
                         });
-                    } else {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Successfully Dispensed!',
-                            text: result.value.message || 'Breastmilk has been dispensed successfully.',
-                            confirmButtonColor: '#28a745'
-                        }).then(() => {
-                            location.reload();
-                        });
+                        return;
                     }
-                }
-            });
-        }
 
-        /**
-         * Handle reject action
-         */
-        function handleReject(requestId) {
-            // Close the dispensing modal first to prevent backdrop interference
-            const modal = bootstrap.Modal.getInstance(document.getElementById(`dispensingModal${requestId}`));
-            if (modal) {
-                modal.hide();
-            }
-
-            // Wait a moment for the modal to close before showing SweetAlert
-            setTimeout(() => {
-                Swal.fire({
-                    title: 'Reject Request',
-                    text: 'Are you sure you want to reject this request? This action cannot be undone.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: '<i class="fas fa-ban"></i> Reject Request',
-                    cancelButtonText: '<i class="fas fa-times"></i> Cancel',
-                    reverseButtons: true,
-                    showLoaderOnConfirm: true,
-                    preConfirm: () => {
-                        return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/reject`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrfToken,
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({})
-                        })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Network response was not ok');
-                                }
-                                return response.json();
-                            })
-                            .catch(error => {
-                                Swal.showValidationMessage(`Request failed: ${error}`);
-                            });
-                    },
-                    allowOutsideClick: () => !Swal.isLoading()
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        if (result.value.error) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Rejection Failed',
-                                text: result.value.error,
-                                confirmButtonColor: '#3085d6'
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Request Rejected',
-                                text: result.value.message || 'The request has been rejected.',
-                                confirmButtonColor: '#28a745'
-                            }).then(() => {
-                                location.reload();
-                            });
-                        }
-                    }
-                });
-            }, 300); // Wait 300ms for modal to close
-        }
-
-        // --- Assisted request inventory helpers ---
-        document.addEventListener('DOMContentLoaded', function () {
-            const dispenseNowCheckbox = document.getElementById('dispense_now_checkbox');
-            const milkTypeSelect = document.getElementById('milk_type');
-            if (dispenseNowCheckbox) {
-                dispenseNowCheckbox.addEventListener('change', function () {
-                    const section = document.getElementById('assistedInventorySection');
-                    if (this.checked) {
-                        section.style.display = 'block';
-                        // load inventory for currently selected milk type
-                        assistedLoadInventory();
-                    } else {
-                        section.style.display = 'none';
-                        document.getElementById('assistedInventoryList').innerHTML = '';
-                        document.getElementById('selected_sources_json').value = '';
-                    }
-                });
-            }
-
-            if (milkTypeSelect) {
-                milkTypeSelect.addEventListener('change', function () {
-                    if (dispenseNowCheckbox && dispenseNowCheckbox.checked) {
-                        assistedLoadInventory();
-                    }
-                });
-            }
-
-            // On initial load, if checkbox is checked, show inventory section when milk type is selected
-            (function initAssistedInventory() {
-                const section = document.getElementById('assistedInventorySection');
-                if (!section) return;
-                if (dispenseNowCheckbox && dispenseNowCheckbox.checked) {
-                    section.style.display = 'block';
-                    if (milkTypeSelect && milkTypeSelect.value) {
-                        assistedLoadInventory();
-                    }
-                } else {
-                    section.style.display = 'none';
-                }
-            })();
-
-            // Prepare selected_sources_json before form submit
-            const assistedForm = document.getElementById('assistedRequestForm');
-            if (assistedForm) {
-                assistedForm.addEventListener('submit', function (e) {
-                    const dispenseNow = document.getElementById('dispense_now_checkbox').checked;
-                    if (!dispenseNow) return; // nothing to do
-                    
-                    const milkType = (document.getElementById('milk_type') || {}).value;
-                    const volumeStr = (document.getElementById('assistedVolumeToDispense') || {}).value || '';
-                    const volume = parseFloat(volumeStr);
-                    
                     if (!milkType) {
-                        e.preventDefault();
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Missing Milk Type',
-                                text: 'Please select a milk type.',
-                                confirmButtonColor: '#3085d6'
-                            });
-                        } else {
-                            alert('Please select a milk type.');
-                        }
-                        return false;
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Missing Milk Type',
+                            text: 'Please select a milk type.',
+                            confirmButtonColor: '#3085d6'
+                        });
+                        return;
                     }
-                    if (!volume || volume <= 0) {
-                        e.preventDefault();
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Invalid Volume',
-                                text: 'Please enter a valid volume to dispense.',
-                                confirmButtonColor: '#3085d6'
-                            });
-                        } else {
-                            alert('Please enter a valid volume to dispense.');
-                        }
-                        return false;
-                    }
-                    
-                    // Get all checked checkboxes
+
+                    // Collect selected sources and automatically distribute volume
+                    let selectedSources = [];
                     let selectedCheckboxes = [];
-                    if (milkType === 'unpasteurized') {
-                        selectedCheckboxes = Array.from(document.querySelectorAll('input[id^="assisted_donation_"]:checked'));
-                    } else {
-                        selectedCheckboxes = Array.from(document.querySelectorAll('input[id^="assisted_batch_"]:checked'));
-                    }
-                    
-                    if (selectedCheckboxes.length === 0) {
-                        e.preventDefault();
-                        if (typeof Swal !== 'undefined') {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'No Source Selected',
-                                text: 'Please select at least one source from inventory.',
-                                confirmButtonColor: '#3085d6'
-                            });
-                        } else {
-                            alert('Please select at least one source from inventory.');
-                        }
-                        return false;
-                    }
-                    
-                    // Calculate total available
                     let totalAvailable = 0;
-                    selectedCheckboxes.forEach(cb => {
-                        totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
-                    });
-                    
-                    if (volume > totalAvailable + 1e-6) {
-                        e.preventDefault();
-                        if (typeof Swal !== 'undefined') {
+
+                    if (milkType === 'pasteurized') {
+                        selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="batch_${requestId}_"]:checked`));
+
+                        if (selectedCheckboxes.length === 0) {
                             Swal.fire({
                                 icon: 'warning',
-                                title: 'Insufficient Volume',
-                                text: `Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volume} ml. Please select more bags.`,
+                                title: 'No Batch Selected',
+                                text: 'Please select at least one pasteurized batch.',
                                 confirmButtonColor: '#3085d6'
                             });
-                        } else {
-                            alert(`Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volume} ml. Please select more bags.`);
+                            return;
                         }
-                        return false;
+                    } else if (milkType === 'unpasteurized') {
+                        selectedCheckboxes = Array.from(document.querySelectorAll(`input[id^="donation_${requestId}_"]:checked`));
+
+                        if (selectedCheckboxes.length === 0) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'No Donation Selected',
+                                text: 'Please select at least one unpasteurized donation.',
+                                confirmButtonColor: '#3085d6'
+                            });
+                            return;
+                        }
                     }
-                    
-                    // Automatically distribute volume across selected bags in order
-                    const sources = [];
-                    let remainingVolume = volume;
-                    selectedCheckboxes.forEach(cb => {
+
+                    // Calculate total available volume
+                    selectedCheckboxes.forEach(checkbox => {
+                        totalAvailable += parseFloat(checkbox.dataset.volume) || 0;
+                    });
+
+                    // Check if we have enough volume
+                    if (totalAvailable < volumeToDispense) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Insufficient Volume',
+                            text: `Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volumeToDispense} ml. Please select more bags.`,
+                            confirmButtonColor: '#3085d6'
+                        });
+                        return;
+                    }
+
+                    // Automatically distribute the volume across selected bags in order
+                    let remainingVolume = volumeToDispense;
+                    selectedCheckboxes.forEach(checkbox => {
                         if (remainingVolume <= 0) return;
-                        const availableVolume = parseFloat(cb.dataset.volume || '0') || 0;
+
+                        const availableVolume = parseFloat(checkbox.dataset.volume) || 0;
                         const volumeToTake = Math.min(remainingVolume, availableVolume);
+
                         if (volumeToTake > 0) {
-                            sources.push({ type: milkType, id: cb.value, volume: volumeToTake });
+                            selectedSources.push({
+                                type: milkType,
+                                id: checkbox.value,
+                                volume: volumeToTake
+                            });
                             remainingVolume -= volumeToTake;
                         }
                     });
-                    
-                    document.getElementById('selected_sources_json').value = JSON.stringify(sources);
-                });
-            }
-        });
-        function assistedLoadInventory() {
-            const milkType = document.getElementById('milk_type').value;
-            const loading = document.getElementById('assistedInventoryLoading');
-            const list = document.getElementById('assistedInventoryList');
-            const tracker = document.getElementById('assistedVolumeTracker');
-            list.innerHTML = '';
-            if (!milkType) return;
-            loading.style.display = 'block';
-            tracker.style.display = 'block';
-            fetch(`{{ route('admin.request.inventory') }}?type=${milkType}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } })
-                .then(r => r.json())
-                .then(data => {
-                    loading.style.display = 'none';
-                    if (data.error) {
-                        list.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+
+                    // Validate that we collected the sources
+                    if (selectedSources.length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Sources Selected',
+                            text: 'Please select at least one source.',
+                            confirmButtonColor: '#3085d6'
+                        });
                         return;
                     }
 
-                    if (milkType === 'unpasteurized') {
-                        const donations = data.donations || [];
-                        if (donations.length === 0) {
-                            list.innerHTML = '<div class="alert alert-warning">No unpasteurized donations available.</div>';
-                            return;
+                    // Confirm and dispense
+                    const displayVolumeToDispense = volumeToDispense % 1 === 0 ? Math.round(volumeToDispense) : volumeToDispense.toFixed(2).replace(/\.?0+$/, '');
+                    Swal.fire({
+                        title: 'Confirm Dispensing',
+                        html: `
+                                                                                                            <p>Are you sure you want to dispense <strong>${displayVolumeToDispense} ml</strong> of <strong>${milkType}</strong> breastmilk?</p>
+                                                                                                            <p class="text-muted mb-0">This action cannot be undone.</p>
+                                                                                                        `,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#28a745',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: '<i class="fas fa-check"></i> Yes, Dispense',
+                        cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+                        reverseButtons: true,
+                        showLoaderOnConfirm: true,
+                        preConfirm: () => {
+                            return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/dispense`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    volume_dispensed: volumeToDispense,
+                                    milk_type: milkType,
+                                    sources: selectedSources,
+                                    dispensing_notes: adminNotes
+                                })
+                            })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .catch(error => {
+                                    Swal.showValidationMessage(`Request failed: ${error}`);
+                                });
+                        },
+                        allowOutsideClick: () => !Swal.isLoading()
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            if (result.value.error) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Dispensing Failed',
+                                    text: result.value.error,
+                                    confirmButtonColor: '#3085d6'
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Successfully Dispensed!',
+                                    text: result.value.message || 'Breastmilk has been dispensed successfully.',
+                                    confirmButtonColor: '#28a745'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            }
                         }
-                        let html = '';
-                        donations.forEach(d => {
-                            const avail = d.available_volume || 0;
-                            html += `
-                                <div class="card mb-2">
-                                    <div class="card-body p-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
-                                            <label class="form-check-label" for="assisted_donation_${d.breastmilk_donation_id}">
-                                                <small>
-                                                    <strong>Donation #${d.breastmilk_donation_id}</strong><br>
-                                                    <span class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</span><br>
-                                                    <span class="text-primary">${avail} ml available</span>
-                                                </small>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>`;
-                        });
-                        list.innerHTML = html;
-                    } else {
-                        const batches = data.batches || [];
-                        if (batches.length === 0) {
-                            list.innerHTML = '<div class="alert alert-warning">No pasteurized batches available.</div>';
-                            return;
-                        }
-                        let html = '';
-                        batches.forEach(b => {
-                            const avail = b.available_volume || 0;
-                            html += `
-                                <div class="card mb-2">
-                                    <div class="card-body p-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
-                                            <label class="form-check-label" for="assisted_batch_${b.batch_id}">
-                                                <small>
-                                                    <strong>Batch #${b.batch_number}</strong><br>
-                                                    <span class="text-primary">${avail} ml available</span><br>
-                                                    <span class="text-muted">Date: ${b.date_pasteurized}</span>
-                                                </small>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>`;
-                        });
-                        list.innerHTML = html;
+                    });
+                }
+
+                /**
+                 * Handle reject action
+                 */
+                function handleReject(requestId) {
+                    // Close the dispensing modal first to prevent backdrop interference
+                    const modal = bootstrap.Modal.getInstance(document.getElementById(`dispensingModal${requestId}`));
+                    if (modal) {
+                        modal.hide();
                     }
 
-                    assistedUpdateSelectedVolume();
-                })
-                .catch(err => {
-                    loading.style.display = 'none';
-                    list.innerHTML = '<div class="alert alert-danger">Failed to load inventory.</div>';
-                });
-        }
+                    // Wait a moment for the modal to close before showing SweetAlert
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: 'Reject Request',
+                            text: 'Are you sure you want to reject this request? This action cannot be undone.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#dc3545',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: '<i class="fas fa-ban"></i> Reject Request',
+                            cancelButtonText: '<i class="fas fa-times"></i> Cancel',
+                            reverseButtons: true,
+                            showLoaderOnConfirm: true,
+                            preConfirm: () => {
+                                return fetch(`{{ url('/admin/breastmilk-request') }}/${requestId}/reject`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': csrfToken,
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({})
+                                })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Network response was not ok');
+                                        }
+                                        return response.json();
+                                    })
+                                    .catch(error => {
+                                        Swal.showValidationMessage(`Request failed: ${error}`);
+                                    });
+                            },
+                            allowOutsideClick: () => !Swal.isLoading()
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                if (result.value.error) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Rejection Failed',
+                                        text: result.value.error,
+                                        confirmButtonColor: '#3085d6'
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Request Rejected',
+                                        text: result.value.message || 'The request has been rejected.',
+                                        confirmButtonColor: '#28a745'
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                }
+                            }
+                        });
+                    }, 300); // Wait 300ms for modal to close
+                }
 
-        function assistedUpdateSelectedVolume() {
-            const milkType = (document.getElementById('milk_type') || {}).value;
-            const volumeRequired = parseFloat((document.getElementById('assistedVolumeToDispense') || {}).value || '0') || 0;
-            let totalAvailable = 0;
-            
-            // Get all checked checkboxes and sum available volumes
-            if (milkType === 'unpasteurized') {
-                const checked = document.querySelectorAll('input[id^="assisted_donation_"]:checked');
-                checked.forEach(cb => {
-                    totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
-                });
-            } else if (milkType === 'pasteurized') {
-                const checked = document.querySelectorAll('input[id^="assisted_batch_"]:checked');
-                checked.forEach(cb => {
-                    totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
-                });
-            }
-            
-            const selEl = document.getElementById('assistedTotalSelected');
-            const reqEl = document.getElementById('assistedVolumeRequired');
-            if (selEl && reqEl) {
-                const displaySel = totalAvailable % 1 === 0 ? Math.round(totalAvailable) : totalAvailable.toFixed(2).replace(/\.?0+$/, '');
-                const displayReq = volumeRequired % 1 === 0 ? Math.round(volumeRequired) : volumeRequired.toFixed(2).replace(/\.?0+$/, '');
-                selEl.textContent = displaySel;
-                reqEl.textContent = displayReq;
-            }
-            const tracker = document.getElementById('assistedVolumeTracker');
-            if (tracker) tracker.style.display = (milkType ? 'block' : 'none');
-        }
+                // --- Assisted request inventory helpers ---
+                document.addEventListener('DOMContentLoaded', function () {
+                    const dispenseNowCheckbox = document.getElementById('dispense_now_checkbox');
+                    const milkTypeSelect = document.getElementById('milk_type');
+                    if (dispenseNowCheckbox) {
+                        dispenseNowCheckbox.addEventListener('change', function () {
+                            const section = document.getElementById('assistedInventorySection');
+                            if (this.checked) {
+                                section.style.display = 'block';
+                                // load inventory for currently selected milk type
+                                assistedLoadInventory();
+                            } else {
+                                section.style.display = 'none';
+                                document.getElementById('assistedInventoryList').innerHTML = '';
+                                document.getElementById('selected_sources_json').value = '';
+                            }
+                        });
+                    }
 
-        // Safe HTML escape helper (guarded define)
-        if (typeof window.escapeHtml !== 'function') {
-            window.escapeHtml = function (text) {
-                if (text === null || text === undefined) return '';
-                const div = document.createElement('div');
-                div.textContent = String(text);
-                return div.innerHTML;
-            };
-        }
+                    if (milkTypeSelect) {
+                        milkTypeSelect.addEventListener('change', function () {
+                            if (dispenseNowCheckbox && dispenseNowCheckbox.checked) {
+                                assistedLoadInventory();
+                            }
+                        });
+                    }
 
-        // Auto-capitalize first letter of each word
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.auto-capitalize-words').forEach(function(input) {
-                input.addEventListener('input', function(e) {
-                    const cursorPosition = e.target.selectionStart;
-                    const originalLength = e.target.value.length;
-                    
-                    // Capitalize first letter of each word
-                    e.target.value = e.target.value.replace(/\b\w/g, function(char) {
-                        return char.toUpperCase();
+                    // On initial load, if checkbox is checked, show inventory section when milk type is selected
+                    (function initAssistedInventory() {
+                        const section = document.getElementById('assistedInventorySection');
+                        if (!section) return;
+                        if (dispenseNowCheckbox && dispenseNowCheckbox.checked) {
+                            section.style.display = 'block';
+                            if (milkTypeSelect && milkTypeSelect.value) {
+                                assistedLoadInventory();
+                            }
+                        } else {
+                            section.style.display = 'none';
+                        }
+                    })();
+
+                    // Prepare selected_sources_json before form submit
+                    const assistedForm = document.getElementById('assistedRequestForm');
+                    if (assistedForm) {
+                        assistedForm.addEventListener('submit', function (e) {
+                            const dispenseNow = document.getElementById('dispense_now_checkbox').checked;
+                            if (!dispenseNow) return; // nothing to do
+
+                            const milkType = (document.getElementById('milk_type') || {}).value;
+                            const volumeStr = (document.getElementById('assistedVolumeToDispense') || {}).value || '';
+                            const volume = parseFloat(volumeStr);
+
+                            if (!milkType) {
+                                e.preventDefault();
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Missing Milk Type',
+                                        text: 'Please select a milk type.',
+                                        confirmButtonColor: '#3085d6'
+                                    });
+                                } else {
+                                    alert('Please select a milk type.');
+                                }
+                                return false;
+                            }
+                            if (!volume || volume <= 0) {
+                                e.preventDefault();
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Invalid Volume',
+                                        text: 'Please enter a valid volume to dispense.',
+                                        confirmButtonColor: '#3085d6'
+                                    });
+                                } else {
+                                    alert('Please enter a valid volume to dispense.');
+                                }
+                                return false;
+                            }
+
+                            // Get all checked checkboxes
+                            let selectedCheckboxes = [];
+                            if (milkType === 'unpasteurized') {
+                                selectedCheckboxes = Array.from(document.querySelectorAll('input[id^="assisted_donation_"]:checked'));
+                            } else {
+                                selectedCheckboxes = Array.from(document.querySelectorAll('input[id^="assisted_batch_"]:checked'));
+                            }
+
+                            if (selectedCheckboxes.length === 0) {
+                                e.preventDefault();
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'No Source Selected',
+                                        text: 'Please select at least one source from inventory.',
+                                        confirmButtonColor: '#3085d6'
+                                    });
+                                } else {
+                                    alert('Please select at least one source from inventory.');
+                                }
+                                return false;
+                            }
+
+                            // Calculate total available
+                            let totalAvailable = 0;
+                            selectedCheckboxes.forEach(cb => {
+                                totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
+                            });
+
+                            if (volume > totalAvailable + 1e-6) {
+                                e.preventDefault();
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Insufficient Volume',
+                                        text: `Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volume} ml. Please select more bags.`,
+                                        confirmButtonColor: '#3085d6'
+                                    });
+                                } else {
+                                    alert(`Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volume} ml. Please select more bags.`);
+                                }
+                                return false;
+                            }
+
+                            // Automatically distribute volume across selected bags in order
+                            const sources = [];
+                            let remainingVolume = volume;
+                            selectedCheckboxes.forEach(cb => {
+                                if (remainingVolume <= 0) return;
+                                const availableVolume = parseFloat(cb.dataset.volume || '0') || 0;
+                                const volumeToTake = Math.min(remainingVolume, availableVolume);
+                                if (volumeToTake > 0) {
+                                    sources.push({ type: milkType, id: cb.value, volume: volumeToTake });
+                                    remainingVolume -= volumeToTake;
+                                }
+                            });
+
+                            document.getElementById('selected_sources_json').value = JSON.stringify(sources);
+                        });
+                    }
+                });
+                function assistedLoadInventory() {
+                    const milkType = document.getElementById('milk_type').value;
+                    const loading = document.getElementById('assistedInventoryLoading');
+                    const list = document.getElementById('assistedInventoryList');
+                    const tracker = document.getElementById('assistedVolumeTracker');
+                    list.innerHTML = '';
+                    if (!milkType) return;
+                    loading.style.display = 'block';
+                    tracker.style.display = 'block';
+                    fetch(`{{ route('admin.request.inventory') }}?type=${milkType}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } })
+                        .then(r => r.json())
+                        .then(data => {
+                            loading.style.display = 'none';
+                            if (data.error) {
+                                list.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                                return;
+                            }
+
+                            if (milkType === 'unpasteurized') {
+                                const donations = data.donations || [];
+                                if (donations.length === 0) {
+                                    list.innerHTML = '<div class="alert alert-warning">No unpasteurized donations available.</div>';
+                                    return;
+                                }
+                                let html = '';
+                                donations.forEach(d => {
+                                    const avail = d.available_volume || 0;
+                                    html += `
+                                                            <div class="card mb-2">
+                                                                <div class="card-body p-2">
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="checkbox" id="assisted_donation_${d.breastmilk_donation_id}" value="${d.breastmilk_donation_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                                                        <label class="form-check-label" for="assisted_donation_${d.breastmilk_donation_id}">
+                                                                            <small>
+                                                                                <strong>Donation #${d.breastmilk_donation_id}</strong><br>
+                                                                                <span class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</span><br>
+                                                                                <span class="text-primary">${avail} ml available</span>
+                                                                            </small>
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>`;
+                                });
+                                list.innerHTML = html;
+                            } else {
+                                const batches = data.batches || [];
+                                if (batches.length === 0) {
+                                    list.innerHTML = '<div class="alert alert-warning">No pasteurized batches available.</div>';
+                                    return;
+                                }
+                                let html = '';
+                                batches.forEach(b => {
+                                    const avail = b.available_volume || 0;
+                                    html += `
+                                                            <div class="card mb-2">
+                                                                <div class="card-body p-2">
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
+                                                                        <label class="form-check-label" for="assisted_batch_${b.batch_id}">
+                                                                            <small>
+                                                                                <strong>Batch #${b.batch_number}</strong><br>
+                                                                                <span class="text-primary">${avail} ml available</span><br>
+                                                                                <span class="text-muted">Date: ${b.date_pasteurized}</span>
+                                                                            </small>
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>`;
+                                });
+                                list.innerHTML = html;
+                            }
+
+                            assistedUpdateSelectedVolume();
+                        })
+                        .catch(err => {
+                            loading.style.display = 'none';
+                            list.innerHTML = '<div class="alert alert-danger">Failed to load inventory.</div>';
+                        });
+                }
+
+                function assistedUpdateSelectedVolume() {
+                    const milkType = (document.getElementById('milk_type') || {}).value;
+                    const volumeRequired = parseFloat((document.getElementById('assistedVolumeToDispense') || {}).value || '0') || 0;
+                    let totalAvailable = 0;
+
+                    // Get all checked checkboxes and sum available volumes
+                    if (milkType === 'unpasteurized') {
+                        const checked = document.querySelectorAll('input[id^="assisted_donation_"]:checked');
+                        checked.forEach(cb => {
+                            totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
+                        });
+                    } else if (milkType === 'pasteurized') {
+                        const checked = document.querySelectorAll('input[id^="assisted_batch_"]:checked');
+                        checked.forEach(cb => {
+                            totalAvailable += parseFloat(cb.dataset.volume || '0') || 0;
+                        });
+                    }
+
+                    const selEl = document.getElementById('assistedTotalSelected');
+                    const reqEl = document.getElementById('assistedVolumeRequired');
+                    if (selEl && reqEl) {
+                        const displaySel = totalAvailable % 1 === 0 ? Math.round(totalAvailable) : totalAvailable.toFixed(2).replace(/\.?0+$/, '');
+                        const displayReq = volumeRequired % 1 === 0 ? Math.round(volumeRequired) : volumeRequired.toFixed(2).replace(/\.?0+$/, '');
+                        selEl.textContent = displaySel;
+                        reqEl.textContent = displayReq;
+                    }
+                    const tracker = document.getElementById('assistedVolumeTracker');
+                    if (tracker) tracker.style.display = (milkType ? 'block' : 'none');
+                }
+
+                // Safe HTML escape helper (guarded define)
+                if (typeof window.escapeHtml !== 'function') {
+                    window.escapeHtml = function (text) {
+                        if (text === null || text === undefined) return '';
+                        const div = document.createElement('div');
+                        div.textContent = String(text);
+                        return div.innerHTML;
+                    };
+                }
+
+                // Auto-capitalize first letter of each word
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.querySelectorAll('.auto-capitalize-words').forEach(function (input) {
+                        input.addEventListener('input', function (e) {
+                            const cursorPosition = e.target.selectionStart;
+                            const originalLength = e.target.value.length;
+
+                            // Capitalize first letter of each word
+                            e.target.value = e.target.value.replace(/\b\w/g, function (char) {
+                                return char.toUpperCase();
+                            });
+
+                            // Restore cursor position
+                            const newLength = e.target.value.length;
+                            const newPosition = cursorPosition + (newLength - originalLength);
+                            e.target.setSelectionRange(newPosition, newPosition);
+                        });
                     });
-                    
-                    // Restore cursor position
-                    const newLength = e.target.value.length;
-                    const newPosition = cursorPosition + (newLength - originalLength);
-                    e.target.setSelectionRange(newPosition, newPosition);
                 });
-            });
-        });
-    </script>
+            </script>
 @endsection
