@@ -6,14 +6,13 @@
 <table class="report-table">
     <thead>
         <tr>
-            <th style="width: 50px;">No</th>
-            <th>Guardian</th>
-            <th>Infant</th>
-            <th>Donor / Batch</th>
-            <th>Milk Type</th>
-            <th>Dispensed Date</th>
-            <th>Dispensed Time</th>
-            <th style="width: 140px;">Total Volume (ml)</th>
+            <th style="width: 5%;">No</th>
+            <th style="width: 20%;">Guardian</th>
+            <th style="width: 20%;">Infant</th>
+            <th style="width: 25%;">Batch</th>
+            <th style="width: 13%;">Dispensed Date</th>
+            <th style="width: 10%;">Dispensed Time</th>
+            <th style="width: 7%;">Total Volume (ml)</th>
         </tr>
     </thead>
     <tbody>
@@ -22,8 +21,7 @@
                 <td style="text-align: center;">{{ $index + 1 }}</td>
                 <td>{{ $row['guardian'] ?? '-' }}</td>
                 <td>{{ $row['infant'] ?? '-' }}</td>
-                <td>{{ $row['donor_or_batch'] ?? '-' }}</td>
-                <td>{{ $row['milk_type'] ?? '-' }}</td>
+                <td style="word-wrap: break-word;">{{ $row['donor_or_batch'] ?? '-' }}</td>
                 <td>{{ $row['dispensed_date'] ?? '-' }}</td>
                 <td>{{ $row['dispensed_time'] ?? '-' }}</td>
                 <td class="text-end">
@@ -35,13 +33,13 @@
             </tr>
         @empty
             <tr>
-                <td colspan="8" style="text-align:center;">No dispensed requests for this period.</td>
+                <td colspan="7" style="text-align:center;">No dispensed requests for this period.</td>
             </tr>
         @endforelse
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="7"><strong>Grand Total</strong></td>
+            <td colspan="6"><strong>Grand Total</strong></td>
             <td class="text-end">
                 <strong>
                     @php
