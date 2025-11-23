@@ -52,12 +52,25 @@
             }
 
             .stats-cards-container {
-                gap: 10px;
+                gap: 8px;
             }
 
             .stats-card {
-                padding: 15px 10px;
+                padding: 10px 8px;
                 min-width: unset;
+                gap: 8px;
+            }
+
+            .stats-icon {
+                font-size: 1.8rem;
+            }
+
+            .stats-number {
+                font-size: 1.2rem;
+            }
+
+            .stats-label {
+                font-size: 0.65rem;
             }
         }
 
@@ -151,6 +164,24 @@
             transform: scale(1.2);
         }
 
+        .bag-checkbox {
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .pasteurize-checkbox {
+                transform: scale(1);
+                width: 16px;
+                height: 16px;
+            }
+
+            .bag-checkbox {
+                transform: scale(0.9);
+                width: 14px;
+                height: 14px;
+            }
+        }
+
         .btn-pasteurize {
             background: linear-gradient(135deg, #28a745, #20c997);
             border: none;
@@ -238,6 +269,45 @@
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            .table th,
+            .table td {
+                padding: 0.4rem 0.25rem;
+                font-size: 0.8rem;
+            }
+
+            .table td[data-label="Select"] {
+                width: 40px;
+                padding: 0.3rem 0.2rem;
+            }
+
+            .bag-list.per-bag-list .d-flex {
+                margin-bottom: 0.5rem !important;
+            }
+
+            .form-check-label {
+                font-size: 0.75rem !important;
+            }
+
+            .donation-type-badge {
+                font-size: 0.7rem;
+                padding: 2px 6px;
+            }
+
+            .volume-badge {
+                font-size: 0.75rem;
+                padding: 3px 6px;
+            }
+
+            .per-bag-list {
+                gap: 0.15rem;
+            }
+
+            .per-bag-list div {
+                font-size: 0.75rem;
+            }
         }
 
         /* Responsive adjustments */
@@ -353,11 +423,22 @@
         @media (max-width: 576px) {
             .inventory-action-buttons .btn {
                 flex: 1 1 100%;
+                font-size: 0.8rem;
+                padding: 0.4rem 0.6rem;
             }
 
             /* Hide Select All / Clear All on small phones to save space */
             .inventory-select-controls {
                 display: none !important;
+            }
+
+            .table {
+                font-size: 0.75rem;
+            }
+
+            .table th {
+                font-size: 0.7rem;
+                padding: 0.35rem 0.2rem;
             }
 
             .modal-dialog {
