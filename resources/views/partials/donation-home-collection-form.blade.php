@@ -426,7 +426,16 @@
             const bagsLabel = el('div', { class: 'hc-bag-label fw-bold', text: 'Bag ' + bagNumber });
             const bags = el('input', { type: 'hidden', name: 'bag_number[]', value: String(bagNumber) });
 
-            const volume = el('input', { type: 'number', name: 'bag_volume[]', class: 'form-control form-control-sm', min: '1', step: '0.01', placeholder: 'ml', required: true, value: '120' });
+            const volume = el('input', { 
+                type: 'number', 
+                name: 'bag_volume[]', 
+                class: 'form-control form-control-sm', 
+                min: '1', 
+                step: '1', 
+                placeholder: 'ml', 
+                required: true, 
+                value: '120' 
+            });
 
             const storage = el('select', { name: 'bag_storage[]', class: 'form-select form-select-sm', required: true }, [
                 el('option', { value: '', text: 'Select' }),
@@ -444,23 +453,28 @@
             const m3 = el('option', { value: 'Electric breast pump', text: 'Electric breast pump' });
             method.appendChild(m0); method.appendChild(m1); method.appendChild(m2); method.appendChild(m3);
 
-            // Rounding helper: nearest 10 ml, keep <10 unchanged
+            // Rounding helper: rounds to nearest 10ml for values >= 10
             function snapVolumeIfNeeded(inputEl) {
                 const raw = inputEl.value.trim();
                 if (!raw) return;
                 const num = parseFloat(raw);
                 if (isNaN(num) || num <= 0) return;
-                if (num < 10) return; // do not snap very small volumes
-                const rounded = Math.round(num / 10) * 10;
-                if (String(rounded) !== raw) {
+                
+                // For values less than 10, keep as whole numbers
+                if (num < 10) {
+                    const rounded = Math.round(num);
+                    inputEl.value = String(rounded);
+                } else {
+                    // For values >= 10, round to nearest 10
+                    const rounded = Math.round(num / 10) * 10;
                     inputEl.value = String(rounded);
                 }
             }
 
-            // Attach immediate snapping on input & change for volume field
-            // On creation, apply rounding to default in case rounding rule changes (still 120 -> nearest 10 stays 120)
+            // Attach snapping on blur (when user exits the field) for volume field
+            // On creation, apply rounding to default value
             setTimeout(() => { snapVolumeIfNeeded(volume); recalcTotals(); enableSubmitCheck(); }, 0);
-            volume.addEventListener('input', () => { snapVolumeIfNeeded(volume); markRow(tr); recalcTotals(); enableSubmitCheck(); });
+            volume.addEventListener('blur', () => { snapVolumeIfNeeded(volume); markRow(tr); recalcTotals(); enableSubmitCheck(); });
             volume.addEventListener('change', () => { snapVolumeIfNeeded(volume); markRow(tr); recalcTotals(); enableSubmitCheck(); });
 
             const inputs = [time, date, storage, temp, method];
