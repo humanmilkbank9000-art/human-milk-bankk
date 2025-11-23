@@ -272,6 +272,7 @@
         }
 
         @media (max-width: 768px) {
+
             .table th,
             .table td {
                 padding: 0.4rem 0.25rem;
@@ -946,7 +947,8 @@
                                                 </td>
                                                 <td class="text-center">{{ (int) $donation->number_of_bags }}</td>
                                                 <td class="text-center">
-                                                    {{ optional($donation->added_to_inventory_at)->format('M d, Y') }}</td>
+                                                    {{ optional($donation->added_to_inventory_at)->format('M d, Y') }}
+                                                </td>
                                                 <td class="text-center">{{ optional($donation->expiration_date)->format('M d, Y') }}
                                                 </td>
                                                 <td class="text-center">
@@ -966,7 +968,8 @@
                                         <div class="d-flex justify-content-between">
                                             <strong>{{ data_get($donation, 'user.first_name') }}
                                                 {{ data_get($donation, 'user.last_name') }}</strong><span
-                                                class="badge bg-secondary">{{ (int) $donation->available_volume }} ml</span></div>
+                                                class="badge bg-secondary">{{ (int) $donation->available_volume }} ml</span>
+                                        </div>
                                         <div class="small text-muted">Bags: {{ (int) $donation->number_of_bags }}</div>
                                         <div class="small">Added: {{ optional($donation->added_to_inventory_at)->format('M d, Y') }}
                                         </div>
@@ -1310,14 +1313,12 @@
                                                         @endphp
 
                                                         @if($hasMultipleBatches && $currentBatchVolumeUsed !== null)
-                                                            {{-- Show total volume with breakdown in parentheses --}}
+                                                            {{-- When multiple source batches were used, show only the volume taken from
+                                                            this batch --}}
                                                             <span
-                                                                class="badge badge-success">{{ $dispensed->formatted_volume_dispensed }}ml</span>
-                                                            <br>
-                                                            <small class="text-muted">({{ number_format($currentBatchVolumeUsed, 0) }}ml
-                                                                from this batch)</small>
+                                                                class="badge badge-success">{{ number_format($currentBatchVolumeUsed, 0) }}ml</span>
                                                         @else
-                                                            {{-- Show only total volume --}}
+                                                            {{-- Show only total dispensed volume when single batch used --}}
                                                             <span
                                                                 class="badge badge-success">{{ $dispensed->formatted_volume_dispensed }}ml</span>
                                                         @endif
@@ -2219,28 +2220,28 @@
 
                     if (batch && batch.notes) {
                         content += `
-                            <div class="alert alert-info mb-4">
-                                <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
-                                <p class="mb-0">${escapeHtml(batch.notes)}</p>
-                            </div>`;
+                                <div class="alert alert-info mb-4">
+                                    <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
+                                    <p class="mb-0">${escapeHtml(batch.notes)}</p>
+                                </div>`;
                     }
 
                     content += `
-                            <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${(donations || []).length})</h6>
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th class="text-center">Donor</th>
-                                            <th class="text-center">Type</th>
-                                            <th class="text-center">Bags</th>
-                                            <th class="text-center">Volume/Bag</th>
-                                            <th class="text-center">Total Volume</th>
-                                            <th class="text-center">Date</th>
-                                            <th class="text-center">Time</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>`;
+                                <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${(donations || []).length})</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-center">Donor</th>
+                                                <th class="text-center">Type</th>
+                                                <th class="text-center">Bags</th>
+                                                <th class="text-center">Volume/Bag</th>
+                                                <th class="text-center">Total Volume</th>
+                                                <th class="text-center">Date</th>
+                                                <th class="text-center">Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>`;
 
                     (donations || []).forEach(donation => {
                         const donorName = donation.donor_name || (donation.user ? `${donation.user.first_name} ${donation.user.last_name}` : 'Unknown');
@@ -2275,15 +2276,15 @@
                         }
 
                         content += `
-                                <tr>
-                                    <td style="white-space: normal;">${escapeHtml(donorName)}</td>
-                                    <td class="text-center"><span class="badge ${badgeClass}">${escapeHtml(donationType)}</span></td>
-                                    <td class="text-center">${bags}</td>
-                                    <td class="text-start" style="font-size:0.9rem;">${perBagHtml}</td>
-                                    <td class="text-center"><span class="badge badge-info">${totalVol}ml</span></td>
-                                    <td class="text-center">${dateHtml}</td>
-                                    <td class="text-center">${timeHtml}</td>
-                                </tr>`;
+                                    <tr>
+                                        <td style="white-space: normal;">${escapeHtml(donorName)}</td>
+                                        <td class="text-center"><span class="badge ${badgeClass}">${escapeHtml(donationType)}</span></td>
+                                        <td class="text-center">${bags}</td>
+                                        <td class="text-start" style="font-size:0.9rem;">${perBagHtml}</td>
+                                        <td class="text-center"><span class="badge badge-info">${totalVol}ml</span></td>
+                                        <td class="text-center">${dateHtml}</td>
+                                        <td class="text-center">${timeHtml}</td>
+                                    </tr>`;
                     });
 
                     content += `</tbody></table></div>`;
@@ -2292,10 +2293,10 @@
                 })
                 .catch(error => {
                     document.getElementById('batchDetailsContent').innerHTML = `
-                                                <div class="alert alert-danger">
-                                                    <i class="fas fa-exclamation-triangle"></i> Error loading batch details: ${escapeHtml(error.message)}
-                                                </div>
-                                            `;
+                                                    <div class="alert alert-danger">
+                                                        <i class="fas fa-exclamation-triangle"></i> Error loading batch details: ${escapeHtml(error.message)}
+                                                    </div>
+                                                `;
                 });
         }
 
