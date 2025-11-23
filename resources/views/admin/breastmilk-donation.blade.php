@@ -878,26 +878,28 @@
                             @media (max-width: 767.98px) {
                                 #pending-donations .donation-card {
                                     background: #fff;
-                                    border: 1px solid #f1f3f5;
-                                    border-radius: 10px;
-                                    padding: 10px 12px;
-                                    margin-bottom: 12px;
-                                    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+                                    border: 1px solid #e9ecef;
+                                    border-radius: 12px;
+                                    padding: 14px 16px;
+                                    margin-bottom: 14px;
+                                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
                                 }
 
                                 #pending-donations .card-header-row {
                                     display: flex;
                                     align-items: center;
                                     justify-content: space-between;
-                                    margin-bottom: 6px;
+                                    margin-bottom: 12px;
+                                    padding-bottom: 10px;
+                                    border-bottom: 2px solid #f8f9fa;
                                 }
 
                                 #pending-donations .card-row {
-                                    display: grid;
-                                    grid-template-columns: 96px 1fr;
-                                    gap: 6px;
-                                    padding: 6px 0;
-                                    border-bottom: 1px dashed #eef2f7;
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: 4px;
+                                    padding: 8px 0;
+                                    border-bottom: 1px solid #f1f3f5;
                                 }
 
                                 #pending-donations .card-row:last-of-type {
@@ -906,29 +908,44 @@
 
                                 #pending-donations .card-label {
                                     color: #6c757d;
-                                    font-size: 0.86rem;
+                                    font-size: 0.8rem;
+                                    font-weight: 600;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.3px;
                                 }
 
                                 #pending-donations .card-value {
+                                    color: #212529;
                                     font-size: 0.95rem;
                                     word-break: break-word;
+                                    line-height: 1.4;
                                 }
 
                                 #pending-donations .card-actions {
-                                    margin-top: 8px;
+                                    margin-top: 12px;
+                                    padding-top: 4px;
                                 }
 
                                 #pending-donations .card-actions .btn {
                                     width: 100%;
+                                    font-weight: 600;
+                                    padding: 10px;
                                 }
 
                                 #pending-donations .donation-type-badge {
-                                    font-size: 0.7rem;
-                                    padding: 0.2rem 0.45rem;
+                                    font-size: 0.72rem;
+                                    padding: 0.25rem 0.5rem;
+                                    font-weight: 600;
                                 }
 
                                 #pending-donations .card-row .btn.view-location {
-                                    padding: 0.3rem 0.45rem;
+                                    padding: 0.4rem 0.6rem;
+                                    font-size: 0.85rem;
+                                }
+                                
+                                #pending-donations .card-header-row strong {
+                                    font-size: 1.05rem;
+                                    color: #212529;
                                 }
                             }
                         </style>
