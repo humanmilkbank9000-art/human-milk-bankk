@@ -1297,11 +1297,9 @@
                                                     </td>
                                                     <td class="text-center" data-label="Dispensed Volume">
                                                         @php
-                                                            // Check if this dispensed record has multiple batches
-                                                            $hasMultipleBatches = $dispensed->sourceBatches && $dispensed->sourceBatches->count() > 1;
+                                                            // Find the volume used from the current batch being viewed
                                                             $currentBatchVolumeUsed = null;
 
-                                                            // Find the volume used from the current batch being viewed
                                                             if ($dispensed->sourceBatches) {
                                                                 foreach ($dispensed->sourceBatches as $batchItem) {
                                                                     if ($batchItem->batch_id == $batchId) {
@@ -1312,13 +1310,13 @@
                                                             }
                                                         @endphp
 
-                                                        @if($hasMultipleBatches && $currentBatchVolumeUsed !== null)
-                                                            {{-- When multiple source batches were used, show only the volume taken from
-                                                            this batch --}}
+                                                        @if($currentBatchVolumeUsed !== null)
+                                                            {{-- Show only the volume deducted from this specific batch --}}
                                                             <span
                                                                 class="badge badge-success">{{ number_format($currentBatchVolumeUsed, 0) }}ml</span>
                                                         @else
-                                                            {{-- Show only total dispensed volume when single batch used --}}
+                                                            {{-- Fallback: show total dispensed volume if pivot data is not available
+                                                            --}}
                                                             <span
                                                                 class="badge badge-success">{{ $dispensed->formatted_volume_dispensed }}ml</span>
                                                         @endif
@@ -1566,794 +1564,794 @@
 
 @section('scripts')
     <script>
-        // Provide list of expired donation IDs for bulk disposal (if available)
-        window.EXPIRED_DONATION_IDS = @json(isset($expiredUnpasteurized) ? $expiredUnpasteurized->pluck('breastmilk_donation_id') : []);
-        // Provide list of expired pasteurized batch IDs for bulk disposal (if available)
-        window.EXPIRED_BATCH_IDS = @json(isset($expiredPasteurizedBatches) ? $expiredPasteurizedBatches->pluck('batch_id') : []);
-        function selectAllDonations() {
-            // Check all bag checkboxes and donation master checkboxes
-            document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = true);
-            document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = true);
-            const headerCheckbox = document.getElementById('selectAllCheckbox');
-            if (headerCheckbox) headerCheckbox.checked = true;
-            updatePasteurizeButton();
-        }
-
-        function clearAllSelections() {
-            document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = false);
-            document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = false);
-            const headerCheckbox = document.getElementById('selectAllCheckbox');
-            if (headerCheckbox) headerCheckbox.checked = false;
-            updatePasteurizeButton();
-        }
-
-        function toggleAllDonations() {
-            const selectAll = document.getElementById('selectAllCheckbox');
-            const checked = selectAll ? selectAll.checked : false;
-            document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = checked);
-            document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = checked);
-            updatePasteurizeButton();
-        }
-
-        function toggleDonationBags(masterCheckbox) {
-            // When a donation master checkbox is toggled, toggle its row's bag checkboxes
-            const row = masterCheckbox.closest('tr');
-            if (!row) return;
-            row.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
-            updatePasteurizeButton();
-        }
-
-        function updatePasteurizeButton() {
-            // Count selected bags (we enable pasteurize when at least one bag is selected)
-            const checkedBagBoxes = document.querySelectorAll('.bag-checkbox:checked');
-            const pasteurizeBtn = document.getElementById('pasteurizeBtn');
-            const disposeBtn = document.getElementById('disposeBtn');
-            pasteurizeBtn.disabled = checkedBagBoxes.length === 0;
-            if (disposeBtn) disposeBtn.disabled = checkedBagBoxes.length === 0;
-
-            if (checkedBagBoxes.length > 0) {
-                pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected (${checkedBagBoxes.length} bag${checkedBagBoxes.length > 1 ? 's' : ''})`;
-                if (disposeBtn) disposeBtn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected (${checkedBagBoxes.length} bag${checkedBagBoxes.length > 1 ? 's' : ''})`;
-            } else {
-                pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected`;
-                if (disposeBtn) disposeBtn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected`;
+           // Provide list of expired donation IDs for bulk disposal (if available)
+            window.EXPIRED_DONATION_IDS = @json(isset($expiredUnpasteurized) ? $expiredUnpasteurized->pluck('breastmilk_donation_id') : []);
+            // Provide list of expired pasteurized batch IDs for bulk disposal (if available)
+            window.EXPIRED_BATCH_IDS = @json(isset($expiredPasteurizedBatches) ? $expiredPasteurizedBatches->pluck('batch_id') : []);
+            function selectAllDonations() {
+                // Check all bag checkboxes and donation master checkboxes
+                document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = true);
+                document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = true);
+                const headerCheckbox = document.getElementById('selectAllCheckbox');
+                if (headerCheckbox) headerCheckbox.checked = true;
+                updatePasteurizeButton();
             }
 
-            // Update the selected total volume display
-            updateSelectedVolume();
-        }
+            function clearAllSelections() {
+                document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = false);
+                document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = false);
+                const headerCheckbox = document.getElementById('selectAllCheckbox');
+                if (headerCheckbox) headerCheckbox.checked = false;
+                updatePasteurizeButton();
+            }
 
-        // Maximum selectable total volume (ml)
-        const MAX_SELECTABLE_VOLUME = 9000;
+            function toggleAllDonations() {
+                const selectAll = document.getElementById('selectAllCheckbox');
+                const checked = selectAll ? selectAll.checked : false;
+                document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = checked);
+                document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = checked);
+                updatePasteurizeButton();
+            }
 
-        function updateSelectedVolume() {
-            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
-            let totalVolume = 0;
-
-            checkedBags.forEach(cb => {
-                const donationId = cb.getAttribute('data-donation-id');
-                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
-                const donationRowEl = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`);
-                if (!donationRowEl) return;
-                const row = donationRowEl.closest('tr');
+            function toggleDonationBags(masterCheckbox) {
+                // When a donation master checkbox is toggled, toggle its row's bag checkboxes
+                const row = masterCheckbox.closest('tr');
                 if (!row) return;
-
-                const bagContainer = row.querySelector('[data-bag-volumes]');
-                let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
-                let bagVolumes = [];
-                try {
-                    const parsed = JSON.parse(bagVolumesRaw);
-                    if (Array.isArray(parsed)) bagVolumes = parsed;
-                } catch (e) {
-                    if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
-                        bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
-                    }
-                }
-
-                const rawVol = (bagVolumes[bagIndex] !== undefined) ? ('' + bagVolumes[bagIndex]) : '';
-                const vol = parseFloat((rawVol + '').replace(/[^0-9.\-]+/g, '')) || 0;
-                totalVolume += vol;
-            });
-
-            const displayEl = document.getElementById('selectedVolumeValue');
-            if (displayEl) {
-                // Format with thousand separators
-                displayEl.textContent = Math.round(totalVolume).toLocaleString();
-                // Optionally change color if exceeds max
-                const parent = document.getElementById('selectedVolumeInfo');
-                if (parent) {
-                    if (totalVolume > MAX_SELECTABLE_VOLUME) {
-                        parent.style.color = '#b91c1c'; // red
-                    } else {
-                        parent.style.color = '#343a40';
-                    }
-                }
-            }
-        }
-
-        function pasteurizeSelected() {
-            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
-
-            if (checkedBags.length === 0) {
-                alert('Please select at least one bag to pasteurize.');
-                return;
+                row.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
+                updatePasteurizeButton();
             }
 
-            // Build list of selected donations/bags for modal
-            let donationsList = '<h6>Selected Bags:</h6><ul>';
-            let totalVolume = 0;
+            function updatePasteurizeButton() {
+                // Count selected bags (we enable pasteurize when at least one bag is selected)
+                const checkedBagBoxes = document.querySelectorAll('.bag-checkbox:checked');
+                const pasteurizeBtn = document.getElementById('pasteurizeBtn');
+                const disposeBtn = document.getElementById('disposeBtn');
+                pasteurizeBtn.disabled = checkedBagBoxes.length === 0;
+                if (disposeBtn) disposeBtn.disabled = checkedBagBoxes.length === 0;
 
-            // Group by donation id
-            const groups = {};
-            checkedBags.forEach(cb => {
-                const donationId = cb.getAttribute('data-donation-id');
-                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
-                if (!groups[donationId]) groups[donationId] = [];
-                groups[donationId].push(bagIndex);
-            });
-
-            Object.keys(groups).forEach(donationId => {
-                // Find the row for this donation
-                const donationRow = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`).closest('tr');
-                const donorName = donationRow.cells[1].textContent.trim().split('\n')[0];
-
-                // Attempt to read bag volumes from the bag container data attribute
-                const bagContainer = donationRow.querySelector('[data-bag-volumes]');
-                let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
-                let bagVolumes = [];
-                try {
-                    // If it's JSON array string
-                    const parsed = JSON.parse(bagVolumesRaw);
-                    if (Array.isArray(parsed)) bagVolumes = parsed;
-                } catch (e) {
-                    // Not JSON, fall back to splitting by comma
-                    if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
-                        bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
-                    }
+                if (checkedBagBoxes.length > 0) {
+                    pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected (${checkedBagBoxes.length} bag${checkedBagBoxes.length > 1 ? 's' : ''})`;
+                    if (disposeBtn) disposeBtn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected (${checkedBagBoxes.length} bag${checkedBagBoxes.length > 1 ? 's' : ''})`;
+                } else {
+                    pasteurizeBtn.innerHTML = `<i class="fas fa-fire"></i> Pasteurize Selected`;
+                    if (disposeBtn) disposeBtn.innerHTML = `<i class="fas fa-trash-alt"></i> Dispose Selected`;
                 }
 
-                groups[donationId].forEach(bi => {
-                    const rawVol = (bagVolumes[bi] !== undefined) ? ('' + bagVolumes[bi]) : '';
-                    // Extract numeric portion
+                // Update the selected total volume display
+                updateSelectedVolume();
+            }
+
+            // Maximum selectable total volume (ml)
+            const MAX_SELECTABLE_VOLUME = 9000;
+
+            function updateSelectedVolume() {
+                const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
+                let totalVolume = 0;
+
+                checkedBags.forEach(cb => {
+                    const donationId = cb.getAttribute('data-donation-id');
+                    const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                    const donationRowEl = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`);
+                    if (!donationRowEl) return;
+                    const row = donationRowEl.closest('tr');
+                    if (!row) return;
+
+                    const bagContainer = row.querySelector('[data-bag-volumes]');
+                    let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
+                    let bagVolumes = [];
+                    try {
+                        const parsed = JSON.parse(bagVolumesRaw);
+                        if (Array.isArray(parsed)) bagVolumes = parsed;
+                    } catch (e) {
+                        if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
+                            bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
+                        }
+                    }
+
+                    const rawVol = (bagVolumes[bagIndex] !== undefined) ? ('' + bagVolumes[bagIndex]) : '';
                     const vol = parseFloat((rawVol + '').replace(/[^0-9.\-]+/g, '')) || 0;
                     totalVolume += vol;
-                    const label = rawVol ? `${rawVol}ml` : `Bag ${bi + 1}`;
-                    donationsList += `<li>${donorName} - ${label}</li>`;
                 });
-            });
 
-            donationsList += `</ul><p><strong>Total Volume: ${totalVolume}ml</strong></p>`;
-
-            document.getElementById('selectedDonationsList').innerHTML = donationsList;
-
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('pasteurizationModal'));
-            modal.show();
-        }
-
-        // Dispose a single expired pasteurized batch entirely
-        function disposeExpiredBatch(batchId) {
-            if (!batchId) return;
-            Swal.fire({
-                title: 'Dispose Expired Batch?',
-                text: 'This will mark the entire expired batch as disposed.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, dispose',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#dc2626'
-            }).then(result => {
-                if (!result.isConfirmed) return;
-                Swal.fire({ title: 'Processing...', text: 'Disposing expired batch', icon: 'info', allowOutsideClick: false, showConfirmButton: false, willOpen: () => Swal.showLoading() });
-                fetch('{{ route("admin.inventory.dispose-batches") }}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify({ batch_ids: [batchId], notes: 'Expired pasteurized batch disposed' })
-                })
-                    .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
-                    .then(res => {
-                        let data = null;
-                        if (res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch (e) { } }
-                        if (data && data.errors) {
-                            const errs = []; Object.values(data.errors).forEach(arr => (arr || []).forEach(m => errs.push(m)));
-                            Swal.fire({ title: 'Validation Error', html: `<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                            return;
+                const displayEl = document.getElementById('selectedVolumeValue');
+                if (displayEl) {
+                    // Format with thousand separators
+                    displayEl.textContent = Math.round(totalVolume).toLocaleString();
+                    // Optionally change color if exceeds max
+                    const parent = document.getElementById('selectedVolumeInfo');
+                    if (parent) {
+                        if (totalVolume > MAX_SELECTABLE_VOLUME) {
+                            parent.style.color = '#b91c1c'; // red
+                        } else {
+                            parent.style.color = '#343a40';
                         }
-                        if (data && data.success) {
-                            Swal.fire({ title: 'Disposed', text: data.message || 'Expired batch disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#10b981' }).then(() => location.reload());
-                            return;
-                        }
-                        Swal.fire({ title: 'Error', text: (data && (data.error || data.message)) || 'Failed to dispose batch.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                    })
-                    .catch(err => Swal.fire({ title: 'Error', text: err.message || 'Unexpected error.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' }));
-            });
-        }
-
-        // Bulk dispose all expired pasteurized batches
-        function disposeAllExpiredBatches() {
-            const ids = (window.EXPIRED_BATCH_IDS || []).map(Number).filter(id => id > 0);
-            if (ids.length === 0) return;
-            Swal.fire({
-                title: 'Dispose All Expired Batches?',
-                text: `This will dispose ${ids.length} expired batch(es).`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, dispose all',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#dc2626'
-            }).then(result => {
-                if (!result.isConfirmed) return;
-                Swal.fire({ title: 'Processing...', text: 'Disposing expired batches', icon: 'info', allowOutsideClick: false, showConfirmButton: false, willOpen: () => Swal.showLoading() });
-                fetch('{{ route("admin.inventory.dispose-batches") }}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify({ batch_ids: ids, notes: 'Bulk disposal of expired pasteurized batches' })
-                })
-                    .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
-                    .then(res => {
-                        let data = null;
-                        if (res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch (e) { } }
-                        if (data && data.errors) {
-                            const errs = []; Object.values(data.errors).forEach(arr => (arr || []).forEach(m => errs.push(m)));
-                            Swal.fire({ title: 'Validation Error', html: `<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                            return;
-                        }
-                        if (data && data.success) {
-                            Swal.fire({ title: 'Disposed', text: data.message || 'All expired batches disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#10b981' }).then(() => location.reload());
-                            return;
-                        }
-                        Swal.fire({ title: 'Error', text: (data && (data.error || data.message)) || 'Failed to dispose expired batches.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                    })
-                    .catch(err => Swal.fire({ title: 'Error', text: err.message || 'Unexpected error.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' }));
-            });
-        }
-
-        function disposeSelected() {
-            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
-
-            if (checkedBags.length === 0) {
-                alert('Please select at least one bag to dispose.');
-                return;
-            }
-
-            // Build list of selected donations/bags for modal
-            let donationsList = '<h6>Selected Bags for Disposal:</h6><ul>';
-            let totalVolume = 0;
-
-            // Group by donation id
-            const groups = {};
-            checkedBags.forEach(cb => {
-                const donationId = cb.getAttribute('data-donation-id');
-                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
-                if (!groups[donationId]) groups[donationId] = [];
-                groups[donationId].push(bagIndex);
-            });
-
-            Object.keys(groups).forEach(donationId => {
-                const donationRow = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`).closest('tr');
-                const donorName = donationRow.cells[1].textContent.trim().split('\n')[0];
-
-                const bagContainer = donationRow.querySelector('[data-bag-volumes]');
-                let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
-                let bagVolumes = [];
-                try {
-                    const parsed = JSON.parse(bagVolumesRaw);
-                    if (Array.isArray(parsed)) bagVolumes = parsed;
-                } catch (e) {
-                    if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
-                        bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
                     }
                 }
-
-                groups[donationId].forEach(bi => {
-                    const rawVol = (bagVolumes[bi] !== undefined) ? ('' + bagVolumes[bi]) : '';
-                    const vol = parseFloat((rawVol + '').replace(/[^0-9.\-]+/g, '')) || 0;
-                    totalVolume += vol;
-                    const label = rawVol ? `${rawVol}ml` : `Bag ${bi + 1}`;
-                    donationsList += `<li>${donorName} - ${label}</li>`;
-                });
-            });
-
-            donationsList += `</ul><p><strong>Total Volume: ${totalVolume}ml</strong></p>`;
-
-            document.getElementById('selectedDisposalList').innerHTML = donationsList;
-
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('disposalModal'));
-            modal.show();
-        }
-
-        // Dispose a single expired donation entirely
-        function disposeExpiredDonation(donationId) {
-            if (!donationId) return;
-            Swal.fire({
-                title: 'Dispose Expired Donation?',
-                text: 'This will mark the entire expired donation as disposed.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, dispose',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#dc2626'
-            }).then(result => {
-                if (!result.isConfirmed) return;
-                Swal.fire({ title: 'Processing...', text: 'Disposing expired donation', icon: 'info', allowOutsideClick: false, showConfirmButton: false, willOpen: () => Swal.showLoading() });
-                fetch('{{ route("admin.inventory.dispose") }}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify({ donation_ids: [donationId], notes: 'Expired donation disposed' })
-                })
-                    .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
-                    .then(res => {
-                        let data = null;
-                        if (res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch (e) { } }
-                        if (data && data.errors) {
-                            const errs = []; Object.values(data.errors).forEach(arr => (arr || []).forEach(m => errs.push(m)));
-                            Swal.fire({ title: 'Validation Error', html: `<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                            return;
-                        }
-                        if (data && data.success) {
-                            Swal.fire({ title: 'Disposed', text: data.message || 'Expired donation disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#10b981' }).then(() => location.reload());
-                            return;
-                        }
-                        Swal.fire({ title: 'Error', text: (data && (data.error || data.message)) || 'Failed to dispose donation.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                    })
-                    .catch(err => Swal.fire({ title: 'Error', text: err.message || 'Unexpected error.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' }));
-            });
-        }
-
-        // Bulk dispose all expired
-        function disposeAllExpired() {
-            const ids = (window.EXPIRED_DONATION_IDS || []).map(Number).filter(id => id > 0);
-            if (ids.length === 0) return;
-            Swal.fire({
-                title: 'Dispose All Expired?',
-                text: `This will dispose ${ids.length} expired donation(s).`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, dispose all',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#dc2626'
-            }).then(result => {
-                if (!result.isConfirmed) return;
-                Swal.fire({ title: 'Processing...', text: 'Disposing expired donations', icon: 'info', allowOutsideClick: false, showConfirmButton: false, willOpen: () => Swal.showLoading() });
-                fetch('{{ route("admin.inventory.dispose") }}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify({ donation_ids: ids, notes: 'Bulk disposal of expired donations' })
-                })
-                    .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
-                    .then(res => {
-                        let data = null;
-                        if (res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch (e) { } }
-                        if (data && data.errors) {
-                            const errs = []; Object.values(data.errors).forEach(arr => (arr || []).forEach(m => errs.push(m)));
-                            Swal.fire({ title: 'Validation Error', html: `<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                            return;
-                        }
-                        if (data && data.success) {
-                            Swal.fire({ title: 'Disposed', text: data.message || 'All expired donations disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#10b981' }).then(() => location.reload());
-                            return;
-                        }
-                        Swal.fire({ title: 'Error', text: (data && (data.error || data.message)) || 'Failed to dispose expired donations.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                    })
-                    .catch(err => Swal.fire({ title: 'Error', text: err.message || 'Unexpected error.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' }));
-            });
-        }
-
-        function confirmDisposal() {
-            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
-            const notes = document.getElementById('disposalNotes').value;
-
-            if (checkedBags.length === 0) {
-                alert('No bags selected to dispose.');
-                return;
             }
 
-            const donationMap = {};
-            checkedBags.forEach(cb => {
-                const donationId = cb.getAttribute('data-donation-id');
-                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
-                if (!donationMap[donationId]) donationMap[donationId] = [];
-                donationMap[donationId].push(bagIndex);
-            });
+            function pasteurizeSelected() {
+                const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
 
-            // Hide modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('disposalModal'));
-            modal.hide();
-
-            // Show loading indicator
-            Swal.fire({
-                title: 'Processing...',
-                text: 'Disposing selected bags',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
+                if (checkedBags.length === 0) {
+                    alert('Please select at least one bag to pasteurize.');
+                    return;
                 }
-            });
 
-            fetch('{{ route("admin.inventory.dispose") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    donation_map: donationMap,
-                    // include donation_ids array for compatibility with older callers
-                    donation_ids: Object.keys(donationMap).map(k => parseInt(k)),
-                    notes: notes
-                })
-            })
-                .then(async response => {
-                    const contentType = response.headers.get('content-type') || '';
-                    const text = await response.text();
+                // Build list of selected donations/bags for modal
+                let donationsList = '<h6>Selected Bags:</h6><ul>';
+                let totalVolume = 0;
 
-                    // Try to parse JSON if content-type indicates JSON
-                    if (contentType.includes('application/json')) {
-                        try {
-                            const data = JSON.parse(text);
-                            return { ok: response.ok, data };
-                        } catch (e) {
-                            return { ok: response.ok, data: null, text };
+                // Group by donation id
+                const groups = {};
+                checkedBags.forEach(cb => {
+                    const donationId = cb.getAttribute('data-donation-id');
+                    const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                    if (!groups[donationId]) groups[donationId] = [];
+                    groups[donationId].push(bagIndex);
+                });
+
+                Object.keys(groups).forEach(donationId => {
+                    // Find the row for this donation
+                    const donationRow = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`).closest('tr');
+                    const donorName = donationRow.cells[1].textContent.trim().split('\n')[0];
+
+                    // Attempt to read bag volumes from the bag container data attribute
+                    const bagContainer = donationRow.querySelector('[data-bag-volumes]');
+                    let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
+                    let bagVolumes = [];
+                    try {
+                        // If it's JSON array string
+                        const parsed = JSON.parse(bagVolumesRaw);
+                        if (Array.isArray(parsed)) bagVolumes = parsed;
+                    } catch (e) {
+                        // Not JSON, fall back to splitting by comma
+                        if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
+                            bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
                         }
                     }
 
-                    // Non-JSON response (probably HTML error page)
-                    return { ok: response.ok, data: null, text };
+                    groups[donationId].forEach(bi => {
+                        const rawVol = (bagVolumes[bi] !== undefined) ? ('' + bagVolumes[bi]) : '';
+                        // Extract numeric portion
+                        const vol = parseFloat((rawVol + '').replace(/[^0-9.\-]+/g, '')) || 0;
+                        totalVolume += vol;
+                        const label = rawVol ? `${rawVol}ml` : `Bag ${bi + 1}`;
+                        donationsList += `<li>${donorName} - ${label}</li>`;
+                    });
+                });
+
+                donationsList += `</ul><p><strong>Total Volume: ${totalVolume}ml</strong></p>`;
+
+                document.getElementById('selectedDonationsList').innerHTML = donationsList;
+
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('pasteurizationModal'));
+                modal.show();
+            }
+
+            // Dispose a single expired pasteurized batch entirely
+            function disposeExpiredBatch(batchId) {
+                if (!batchId) return;
+                Swal.fire({
+                    title: 'Dispose Expired Batch?',
+                    text: 'This will mark the entire expired batch as disposed.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, dispose',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#dc2626'
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    Swal.fire({ title: 'Processing...', text: 'Disposing expired batch', icon: 'info', allowOutsideClick: false, showConfirmButton: false, willOpen: () => Swal.showLoading() });
+                    fetch('{{ route("admin.inventory.dispose-batches") }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ batch_ids: [batchId], notes: 'Expired pasteurized batch disposed' })
+                    })
+                        .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
+                        .then(res => {
+                            let data = null;
+                            if (res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch (e) { } }
+                            if (data && data.errors) {
+                                const errs = []; Object.values(data.errors).forEach(arr => (arr || []).forEach(m => errs.push(m)));
+                                Swal.fire({ title: 'Validation Error', html: `<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                                return;
+                            }
+                            if (data && data.success) {
+                                Swal.fire({ title: 'Disposed', text: data.message || 'Expired batch disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#10b981' }).then(() => location.reload());
+                                return;
+                            }
+                            Swal.fire({ title: 'Error', text: (data && (data.error || data.message)) || 'Failed to dispose batch.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                        })
+                        .catch(err => Swal.fire({ title: 'Error', text: err.message || 'Unexpected error.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' }));
+                });
+            }
+
+            // Bulk dispose all expired pasteurized batches
+            function disposeAllExpiredBatches() {
+                const ids = (window.EXPIRED_BATCH_IDS || []).map(Number).filter(id => id > 0);
+                if (ids.length === 0) return;
+                Swal.fire({
+                    title: 'Dispose All Expired Batches?',
+                    text: `This will dispose ${ids.length} expired batch(es).`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, dispose all',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#dc2626'
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    Swal.fire({ title: 'Processing...', text: 'Disposing expired batches', icon: 'info', allowOutsideClick: false, showConfirmButton: false, willOpen: () => Swal.showLoading() });
+                    fetch('{{ route("admin.inventory.dispose-batches") }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ batch_ids: ids, notes: 'Bulk disposal of expired pasteurized batches' })
+                    })
+                        .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
+                        .then(res => {
+                            let data = null;
+                            if (res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch (e) { } }
+                            if (data && data.errors) {
+                                const errs = []; Object.values(data.errors).forEach(arr => (arr || []).forEach(m => errs.push(m)));
+                                Swal.fire({ title: 'Validation Error', html: `<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                                return;
+                            }
+                            if (data && data.success) {
+                                Swal.fire({ title: 'Disposed', text: data.message || 'All expired batches disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#10b981' }).then(() => location.reload());
+                                return;
+                            }
+                            Swal.fire({ title: 'Error', text: (data && (data.error || data.message)) || 'Failed to dispose expired batches.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                        })
+                        .catch(err => Swal.fire({ title: 'Error', text: err.message || 'Unexpected error.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' }));
+                });
+            }
+
+            function disposeSelected() {
+                const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
+
+                if (checkedBags.length === 0) {
+                    alert('Please select at least one bag to dispose.');
+                    return;
+                }
+
+                // Build list of selected donations/bags for modal
+                let donationsList = '<h6>Selected Bags for Disposal:</h6><ul>';
+                let totalVolume = 0;
+
+                // Group by donation id
+                const groups = {};
+                checkedBags.forEach(cb => {
+                    const donationId = cb.getAttribute('data-donation-id');
+                    const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                    if (!groups[donationId]) groups[donationId] = [];
+                    groups[donationId].push(bagIndex);
+                });
+
+                Object.keys(groups).forEach(donationId => {
+                    const donationRow = document.querySelector(`.bag-checkbox[data-donation-id="${donationId}"]`).closest('tr');
+                    const donorName = donationRow.cells[1].textContent.trim().split('\n')[0];
+
+                    const bagContainer = donationRow.querySelector('[data-bag-volumes]');
+                    let bagVolumesRaw = bagContainer ? bagContainer.getAttribute('data-bag-volumes') : '';
+                    let bagVolumes = [];
+                    try {
+                        const parsed = JSON.parse(bagVolumesRaw);
+                        if (Array.isArray(parsed)) bagVolumes = parsed;
+                    } catch (e) {
+                        if (bagVolumesRaw && typeof bagVolumesRaw === 'string') {
+                            bagVolumes = bagVolumesRaw.split(/\s*,\s*/).map(v => v.trim());
+                        }
+                    }
+
+                    groups[donationId].forEach(bi => {
+                        const rawVol = (bagVolumes[bi] !== undefined) ? ('' + bagVolumes[bi]) : '';
+                        const vol = parseFloat((rawVol + '').replace(/[^0-9.\-]+/g, '')) || 0;
+                        totalVolume += vol;
+                        const label = rawVol ? `${rawVol}ml` : `Bag ${bi + 1}`;
+                        donationsList += `<li>${donorName} - ${label}</li>`;
+                    });
+                });
+
+                donationsList += `</ul><p><strong>Total Volume: ${totalVolume}ml</strong></p>`;
+
+                document.getElementById('selectedDisposalList').innerHTML = donationsList;
+
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('disposalModal'));
+                modal.show();
+            }
+
+            // Dispose a single expired donation entirely
+            function disposeExpiredDonation(donationId) {
+                if (!donationId) return;
+                Swal.fire({
+                    title: 'Dispose Expired Donation?',
+                    text: 'This will mark the entire expired donation as disposed.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, dispose',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#dc2626'
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    Swal.fire({ title: 'Processing...', text: 'Disposing expired donation', icon: 'info', allowOutsideClick: false, showConfirmButton: false, willOpen: () => Swal.showLoading() });
+                    fetch('{{ route("admin.inventory.dispose") }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ donation_ids: [donationId], notes: 'Expired donation disposed' })
+                    })
+                        .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
+                        .then(res => {
+                            let data = null;
+                            if (res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch (e) { } }
+                            if (data && data.errors) {
+                                const errs = []; Object.values(data.errors).forEach(arr => (arr || []).forEach(m => errs.push(m)));
+                                Swal.fire({ title: 'Validation Error', html: `<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                                return;
+                            }
+                            if (data && data.success) {
+                                Swal.fire({ title: 'Disposed', text: data.message || 'Expired donation disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#10b981' }).then(() => location.reload());
+                                return;
+                            }
+                            Swal.fire({ title: 'Error', text: (data && (data.error || data.message)) || 'Failed to dispose donation.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                        })
+                        .catch(err => Swal.fire({ title: 'Error', text: err.message || 'Unexpected error.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' }));
+                });
+            }
+
+            // Bulk dispose all expired
+            function disposeAllExpired() {
+                const ids = (window.EXPIRED_DONATION_IDS || []).map(Number).filter(id => id > 0);
+                if (ids.length === 0) return;
+                Swal.fire({
+                    title: 'Dispose All Expired?',
+                    text: `This will dispose ${ids.length} expired donation(s).`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, dispose all',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#dc2626'
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    Swal.fire({ title: 'Processing...', text: 'Disposing expired donations', icon: 'info', allowOutsideClick: false, showConfirmButton: false, willOpen: () => Swal.showLoading() });
+                    fetch('{{ route("admin.inventory.dispose") }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ donation_ids: ids, notes: 'Bulk disposal of expired donations' })
+                    })
+                        .then(r => r.text().then(t => ({ ok: r.ok, text: t, ct: r.headers.get('content-type') || '' })))
+                        .then(res => {
+                            let data = null;
+                            if (res.ct.includes('application/json')) { try { data = JSON.parse(res.text); } catch (e) { } }
+                            if (data && data.errors) {
+                                const errs = []; Object.values(data.errors).forEach(arr => (arr || []).forEach(m => errs.push(m)));
+                                Swal.fire({ title: 'Validation Error', html: `<pre style='text-align:left;white-space:pre-wrap;'>${errs.join('\n')}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                                return;
+                            }
+                            if (data && data.success) {
+                                Swal.fire({ title: 'Disposed', text: data.message || 'All expired donations disposed.', icon: 'success', confirmButtonText: 'OK', confirmButtonColor: '#10b981' }).then(() => location.reload());
+                                return;
+                            }
+                            Swal.fire({ title: 'Error', text: (data && (data.error || data.message)) || 'Failed to dispose expired donations.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                        })
+                        .catch(err => Swal.fire({ title: 'Error', text: err.message || 'Unexpected error.', icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' }));
+                });
+            }
+
+            function confirmDisposal() {
+                const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
+                const notes = document.getElementById('disposalNotes').value;
+
+                if (checkedBags.length === 0) {
+                    alert('No bags selected to dispose.');
+                    return;
+                }
+
+                const donationMap = {};
+                checkedBags.forEach(cb => {
+                    const donationId = cb.getAttribute('data-donation-id');
+                    const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                    if (!donationMap[donationId]) donationMap[donationId] = [];
+                    donationMap[donationId].push(bagIndex);
+                });
+
+                // Hide modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('disposalModal'));
+                modal.hide();
+
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Disposing selected bags',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch('{{ route("admin.inventory.dispose") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        donation_map: donationMap,
+                        // include donation_ids array for compatibility with older callers
+                        donation_ids: Object.keys(donationMap).map(k => parseInt(k)),
+                        notes: notes
+                    })
                 })
-                .then(res => {
-                    // Handle Laravel validation errors (422) which return { message, errors: { field: [msg,...] } }
-                    if (res.data && res.data.errors) {
-                        // Build a readable error message
-                        const errs = [];
-                        Object.keys(res.data.errors).forEach(k => {
-                            const arr = res.data.errors[k] || [];
-                            if (Array.isArray(arr)) arr.forEach(m => errs.push(m));
-                        });
-                        const msg = errs.join('\n') || res.data.message || 'Validation failed.';
-                        Swal.fire({ title: 'Validation Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(msg)}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                        return;
-                    }
+                    .then(async response => {
+                        const contentType = response.headers.get('content-type') || '';
+                        const text = await response.text();
 
-                    if (res.data && res.data.success) {
-                        Swal.fire({
-                            title: 'Disposed',
-                            text: res.data.message || 'Selected bags have been disposed.',
-                            icon: 'success',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#b91c1c'
-                        }).then(() => {
-                            location.reload();
-                        });
-                        return;
-                    }
+                        // Try to parse JSON if content-type indicates JSON
+                        if (contentType.includes('application/json')) {
+                            try {
+                                const data = JSON.parse(text);
+                                return { ok: response.ok, data };
+                            } catch (e) {
+                                return { ok: response.ok, data: null, text };
+                            }
+                        }
 
-                    // If server returned JSON with an error
-                    if (res.data && !res.data.success) {
+                        // Non-JSON response (probably HTML error page)
+                        return { ok: response.ok, data: null, text };
+                    })
+                    .then(res => {
+                        // Handle Laravel validation errors (422) which return { message, errors: { field: [msg,...] } }
+                        if (res.data && res.data.errors) {
+                            // Build a readable error message
+                            const errs = [];
+                            Object.keys(res.data.errors).forEach(k => {
+                                const arr = res.data.errors[k] || [];
+                                if (Array.isArray(arr)) arr.forEach(m => errs.push(m));
+                            });
+                            const msg = errs.join('\n') || res.data.message || 'Validation failed.';
+                            Swal.fire({ title: 'Validation Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(msg)}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                            return;
+                        }
+
+                        if (res.data && res.data.success) {
+                            Swal.fire({
+                                title: 'Disposed',
+                                text: res.data.message || 'Selected bags have been disposed.',
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#b91c1c'
+                            }).then(() => {
+                                location.reload();
+                            });
+                            return;
+                        }
+
+                        // If server returned JSON with an error
+                        if (res.data && !res.data.success) {
+                            Swal.fire({
+                                title: 'Error',
+                                text: res.data.error || (res.data.message || 'Failed to dispose selected bags.'),
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#dc2626'
+                            });
+                            return;
+                        }
+
+                        // Non-JSON or unparsable response — show a helpful error including server body (trimmed)
+                        const serverText = (res.text || '').toString();
+                        const short = serverText.length > 1000 ? serverText.substring(0, 1000) + '... (truncated)' : serverText;
                         Swal.fire({
-                            title: 'Error',
-                            text: res.data.error || (res.data.message || 'Failed to dispose selected bags.'),
+                            title: 'Server Error',
+                            html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(short)}</pre>`,
                             icon: 'error',
                             confirmButtonText: 'OK',
                             confirmButtonColor: '#dc2626'
                         });
-                        return;
-                    }
-
-                    // Non-JSON or unparsable response — show a helpful error including server body (trimmed)
-                    const serverText = (res.text || '').toString();
-                    const short = serverText.length > 1000 ? serverText.substring(0, 1000) + '... (truncated)' : serverText;
-                    Swal.fire({
-                        title: 'Server Error',
-                        html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(short)}</pre>`,
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#dc2626'
-                    });
-                })
-                .catch(error => {
-                    Swal.fire({
-                        title: 'Error',
-                        text: error.message || 'An error occurred while disposing bags.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#dc2626'
-                    });
-                });
-        }
-
-        function confirmPasteurization() {
-            // Build payload based on selected bag-checkboxes grouped by donation
-            const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
-            const notes = document.getElementById('pasteurizationNotes').value;
-
-            if (checkedBags.length === 0) {
-                alert('No bags selected to pasteurize.');
-                return;
-            }
-
-            const donationMap = {};
-            checkedBags.forEach(cb => {
-                const donationId = cb.getAttribute('data-donation-id');
-                const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
-                if (!donationMap[donationId]) donationMap[donationId] = [];
-                donationMap[donationId].push(bagIndex);
-            });
-
-            // Hide modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('pasteurizationModal'));
-            modal.hide();
-
-            // Show loading indicator
-            Swal.fire({
-                title: 'Processing...',
-                text: 'Creating pasteurization batch',
-                icon: 'info',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            fetch('{{ route("admin.inventory.pasteurize") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    // donation_map: { donationId: [bagIndex, ...] }
-                    donation_map: donationMap,
-                    // include donation_ids array for compatibility with older callers
-                    donation_ids: Object.keys(donationMap).map(k => parseInt(k)),
-                    notes: notes
-                })
-            })
-                .then(async response => {
-                    const contentType = response.headers.get('content-type') || '';
-                    const text = await response.text();
-
-                    if (contentType.includes('application/json')) {
-                        try {
-                            const data = JSON.parse(text);
-                            return { ok: response.ok, data };
-                        } catch (e) {
-                            return { ok: response.ok, data: null, text };
-                        }
-                    }
-
-                    // Non-JSON response (probably HTML error page)
-                    return { ok: response.ok, data: null, text };
-                })
-                .then(res => {
-                    // Handle Laravel validation errors
-                    if (res.data && res.data.errors) {
-                        const errs = [];
-                        Object.keys(res.data.errors).forEach(k => {
-                            const arr = res.data.errors[k] || [];
-                            if (Array.isArray(arr)) arr.forEach(m => errs.push(m));
-                        });
-                        const msg = errs.join('\n') || res.data.message || 'Validation failed.';
-                        Swal.fire({ title: 'Validation Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(msg)}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                        return;
-                    }
-
-                    if (res.data && res.data.success) {
-                        // Show success SweetAlert
+                    })
+                    .catch(error => {
                         Swal.fire({
-                            title: 'Success!',
-                            html: `<strong>${res.data.simple_batch_name}</strong> created successfully!<br><br>` +
-                                `<div style="font-size: 1.1em;">` +
-                                `Processed <strong>${res.data.donations_count}</strong> donations<br>` +
-                                `Totaling <strong>${res.data.total_volume}ml</strong>` +
-                                `</div>`,
-                            icon: 'success',
+                            title: 'Error',
+                            text: error.message || 'An error occurred while disposing bags.',
+                            icon: 'error',
                             confirmButtonText: 'OK',
-                            confirmButtonColor: '#10b981',
-                            timer: 5000,
-                            timerProgressBar: true
-                        }).then(() => {
-                            location.reload(); // Refresh page to show updated inventory
+                            confirmButtonColor: '#dc2626'
                         });
-                        return;
-                    }
-
-                    // If server returned JSON with an error
-                    if (res.data && !res.data.success) {
-                        const msg = res.data.error || res.data.message || 'Failed to create pasteurization batch.';
-                        Swal.fire({ title: 'Error', text: msg, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
-                        return;
-                    }
-
-                    // Non-JSON or unparsable response — show a helpful error including server body (trimmed)
-                    const serverText = (res.text || '').toString();
-                    const short = serverText.length > 1000 ? serverText.substring(0, 1000) + '... (truncated)' : serverText;
-                    Swal.fire({
-                        title: 'Server Error',
-                        html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(short)}</pre>`,
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#dc2626'
                     });
-                })
-                .catch(error => {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'An error occurred while processing',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#dc2626'
-                    });
-                });
-        }
-
-        function viewBatchDetails(batchId) {
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('batchDetailsModal'));
-            modal.show();
-
-            // Fetch batch details
-            fetch(`{{ url('/admin/inventory/batch') }}/${batchId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load batch details');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Normalize payload: controller may return { batch, donations } or a flat batch object
-                    const payload = data || {};
-                    const batch = payload.batch ?? payload;
-                    const donations = payload.donations ?? (Array.isArray(batch.donations) ? batch.donations : []);
-
-                    // Determine batch number safely
-                    const batchNumber = (batch && (batch.batch_number || batch.batchNumber || batch.batch_id || batch.id)) || 'Batch';
-                    document.getElementById('batchModalTitle').textContent = `${batchNumber} - Details`;
-
-                    // Build the content to mimic the unpasteurized table alignment with per-bag lists
-                    let content = '';
-
-                    if (batch && batch.notes) {
-                        content += `
-                                <div class="alert alert-info mb-4">
-                                    <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
-                                    <p class="mb-0">${escapeHtml(batch.notes)}</p>
-                                </div>`;
-                    }
-
-                    content += `
-                                <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${(donations || []).length})</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-striped align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th class="text-center">Donor</th>
-                                                <th class="text-center">Type</th>
-                                                <th class="text-center">Bags</th>
-                                                <th class="text-center">Volume/Bag</th>
-                                                <th class="text-center">Total Volume</th>
-                                                <th class="text-center">Date</th>
-                                                <th class="text-center">Time</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>`;
-
-                    (donations || []).forEach(donation => {
-                        const donorName = donation.donor_name || (donation.user ? `${donation.user.first_name} ${donation.user.last_name}` : 'Unknown');
-                        const donationType = donation.donation_type || (donation.donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection');
-                        const badgeClass = (donation.donation_type && donation.donation_type.toLowerCase().includes('walk')) ? 'badge-primary' : 'badge-success';
-                        const bags = donation.number_of_bags || 1;
-                        const volumePerBag = donation.volume_per_bag || '-';
-                        const totalVol = donation.total_volume || 0;
-                        const date = donation.date || '-';
-                        const time = donation.time || '-';
-
-                        // Build per-bag volume list (volume_per_bag might be a comma-separated string)
-                        let perBagHtml = '';
-                        if (typeof volumePerBag === 'string' && volumePerBag.trim() !== '') {
-                            const parts = volumePerBag.split(/\s*,\s*/);
-                            parts.forEach(p => {
-                                perBagHtml += `<div>${escapeHtml(p)}</div>`;
-                            });
-                        } else if (Array.isArray(volumePerBag)) {
-                            volumePerBag.forEach(p => perBagHtml += `<div>${escapeHtml(p)}</div>`);
-                        } else {
-                            // Fallback: repeat dash per bag
-                            for (let i = 0; i < bags; i++) perBagHtml += `<div>-</div>`;
-                        }
-
-                        // Repeat date/time per bag for consistent alignment
-                        let dateHtml = '';
-                        let timeHtml = '';
-                        for (let i = 0; i < bags; i++) {
-                            dateHtml += `<div><small>${escapeHtml(date)}</small></div>`;
-                            timeHtml += `<div><small>${escapeHtml(time)}</small></div>`;
-                        }
-
-                        content += `
-                                    <tr>
-                                        <td style="white-space: normal;">${escapeHtml(donorName)}</td>
-                                        <td class="text-center"><span class="badge ${badgeClass}">${escapeHtml(donationType)}</span></td>
-                                        <td class="text-center">${bags}</td>
-                                        <td class="text-start" style="font-size:0.9rem;">${perBagHtml}</td>
-                                        <td class="text-center"><span class="badge badge-info">${totalVol}ml</span></td>
-                                        <td class="text-center">${dateHtml}</td>
-                                        <td class="text-center">${timeHtml}</td>
-                                    </tr>`;
-                    });
-
-                    content += `</tbody></table></div>`;
-
-                    document.getElementById('batchDetailsContent').innerHTML = content;
-                })
-                .catch(error => {
-                    document.getElementById('batchDetailsContent').innerHTML = `
-                                                    <div class="alert alert-danger">
-                                                        <i class="fas fa-exclamation-triangle"></i> Error loading batch details: ${escapeHtml(error.message)}
-                                                    </div>
-                                                `;
-                });
-        }
-
-        function formatDate(dateString) {
-            if (!dateString || dateString === '-') return '-';
-            try {
-                const date = parseYMD(dateString);
-                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            } catch (e) {
-                return dateString;
             }
-        }
 
-        function formatTime(timeString) {
-            if (!timeString || timeString === '-') return '-';
-            try {
-                // Handle both full datetime and time-only strings
-                let date;
-                if (timeString.includes('T') || timeString.includes(' ')) {
-                    date = new Date(timeString);
-                } else {
-                    date = new Date(`2000-01-01T${timeString}`);
+            function confirmPasteurization() {
+                // Build payload based on selected bag-checkboxes grouped by donation
+                const checkedBags = document.querySelectorAll('.bag-checkbox:checked');
+                const notes = document.getElementById('pasteurizationNotes').value;
+
+                if (checkedBags.length === 0) {
+                    alert('No bags selected to pasteurize.');
+                    return;
                 }
-                return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-            } catch (e) {
-                return timeString;
-            }
-        }
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function refreshInventoryStats() {
-            fetch('{{ route("admin.inventory.stats") }}')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('unpasteurized-count').textContent = data.unpasteurized_donations_count;
-                    document.getElementById('unpasteurized-volume').textContent = Math.round(data.unpasteurized_total_volume) + 'ml';
-                    document.getElementById('pasteurized-batches').textContent = data.pasteurized_batches_count;
-                    document.getElementById('pasteurized-volume').textContent = Math.round(data.pasteurized_total_volume) + 'ml';
-                    document.getElementById('dispensed-records').textContent = data.dispensed_records_count;
-                    document.getElementById('dispensed-volume').textContent = Math.round(data.total_dispensed_volume) + 'ml';
-                })
-                .catch(error => {
-                    console.error('Error refreshing stats:', error);
+                const donationMap = {};
+                checkedBags.forEach(cb => {
+                    const donationId = cb.getAttribute('data-donation-id');
+                    const bagIndex = parseInt(cb.getAttribute('data-bag-index')) || 0;
+                    if (!donationMap[donationId]) donationMap[donationId] = [];
+                    donationMap[donationId].push(bagIndex);
                 });
-        }
 
-        // Initialize selected volume display once page scripts have loaded
-        try {
-            updatePasteurizeButton();
-        } catch (e) {
-            // ignore if functions are not yet available
-        }
-    </script>
+                // Hide modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('pasteurizationModal'));
+                modal.hide();
+
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Creating pasteurization batch',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch('{{ route("admin.inventory.pasteurize") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        // donation_map: { donationId: [bagIndex, ...] }
+                        donation_map: donationMap,
+                        // include donation_ids array for compatibility with older callers
+                        donation_ids: Object.keys(donationMap).map(k => parseInt(k)),
+                        notes: notes
+                    })
+                })
+                    .then(async response => {
+                        const contentType = response.headers.get('content-type') || '';
+                        const text = await response.text();
+
+                        if (contentType.includes('application/json')) {
+                            try {
+                                const data = JSON.parse(text);
+                                return { ok: response.ok, data };
+                            } catch (e) {
+                                return { ok: response.ok, data: null, text };
+                            }
+                        }
+
+                        // Non-JSON response (probably HTML error page)
+                        return { ok: response.ok, data: null, text };
+                    })
+                    .then(res => {
+                        // Handle Laravel validation errors
+                        if (res.data && res.data.errors) {
+                            const errs = [];
+                            Object.keys(res.data.errors).forEach(k => {
+                                const arr = res.data.errors[k] || [];
+                                if (Array.isArray(arr)) arr.forEach(m => errs.push(m));
+                            });
+                            const msg = errs.join('\n') || res.data.message || 'Validation failed.';
+                            Swal.fire({ title: 'Validation Error', html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(msg)}</pre>`, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                            return;
+                        }
+
+                        if (res.data && res.data.success) {
+                            // Show success SweetAlert
+                            Swal.fire({
+                                title: 'Success!',
+                                html: `<strong>${res.data.simple_batch_name}</strong> created successfully!<br><br>` +
+                                    `<div style="font-size: 1.1em;">` +
+                                    `Processed <strong>${res.data.donations_count}</strong> donations<br>` +
+                                    `Totaling <strong>${res.data.total_volume}ml</strong>` +
+                                    `</div>`,
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#10b981',
+                                timer: 5000,
+                                timerProgressBar: true
+                            }).then(() => {
+                                location.reload(); // Refresh page to show updated inventory
+                            });
+                            return;
+                        }
+
+                        // If server returned JSON with an error
+                        if (res.data && !res.data.success) {
+                            const msg = res.data.error || res.data.message || 'Failed to create pasteurization batch.';
+                            Swal.fire({ title: 'Error', text: msg, icon: 'error', confirmButtonText: 'OK', confirmButtonColor: '#dc2626' });
+                            return;
+                        }
+
+                        // Non-JSON or unparsable response — show a helpful error including server body (trimmed)
+                        const serverText = (res.text || '').toString();
+                        const short = serverText.length > 1000 ? serverText.substring(0, 1000) + '... (truncated)' : serverText;
+                        Swal.fire({
+                            title: 'Server Error',
+                            html: `<pre style="text-align:left;white-space:pre-wrap;">${escapeHtml(short)}</pre>`,
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#dc2626'
+                        });
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: error.message || 'An error occurred while processing',
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#dc2626'
+                        });
+                    });
+            }
+
+            function viewBatchDetails(batchId) {
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('batchDetailsModal'));
+                modal.show();
+
+                // Fetch batch details
+                fetch(`{{ url('/admin/inventory/batch') }}/${batchId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to load batch details');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Normalize payload: controller may return { batch, donations } or a flat batch object
+                        const payload = data || {};
+                        const batch = payload.batch ?? payload;
+                        const donations = payload.donations ?? (Array.isArray(batch.donations) ? batch.donations : []);
+
+                        // Determine batch number safely
+                        const batchNumber = (batch && (batch.batch_number || batch.batchNumber || batch.batch_id || batch.id)) || 'Batch';
+                        document.getElementById('batchModalTitle').textContent = `${batchNumber} - Details`;
+
+                        // Build the content to mimic the unpasteurized table alignment with per-bag lists
+                        let content = '';
+
+                        if (batch && batch.notes) {
+                            content += `
+                                    <div class="alert alert-info mb-4">
+                                        <h6><i class="fas fa-sticky-note"></i> Notes:</h6>
+                                        <p class="mb-0">${escapeHtml(batch.notes)}</p>
+                                    </div>`;
+                        }
+
+                        content += `
+                                    <h6 class="mb-3"><i class="fas fa-list"></i> Donations in this Batch (${(donations || []).length})</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped align-middle">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="text-center">Donor</th>
+                                                    <th class="text-center">Type</th>
+                                                    <th class="text-center">Bags</th>
+                                                    <th class="text-center">Volume/Bag</th>
+                                                    <th class="text-center">Total Volume</th>
+                                                    <th class="text-center">Date</th>
+                                                    <th class="text-center">Time</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>`;
+
+                        (donations || []).forEach(donation => {
+                            const donorName = donation.donor_name || (donation.user ? `${donation.user.first_name} ${donation.user.last_name}` : 'Unknown');
+                            const donationType = donation.donation_type || (donation.donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection');
+                            const badgeClass = (donation.donation_type && donation.donation_type.toLowerCase().includes('walk')) ? 'badge-primary' : 'badge-success';
+                            const bags = donation.number_of_bags || 1;
+                            const volumePerBag = donation.volume_per_bag || '-';
+                            const totalVol = donation.total_volume || 0;
+                            const date = donation.date || '-';
+                            const time = donation.time || '-';
+
+                            // Build per-bag volume list (volume_per_bag might be a comma-separated string)
+                            let perBagHtml = '';
+                            if (typeof volumePerBag === 'string' && volumePerBag.trim() !== '') {
+                                const parts = volumePerBag.split(/\s*,\s*/);
+                                parts.forEach(p => {
+                                    perBagHtml += `<div>${escapeHtml(p)}</div>`;
+                                });
+                            } else if (Array.isArray(volumePerBag)) {
+                                volumePerBag.forEach(p => perBagHtml += `<div>${escapeHtml(p)}</div>`);
+                            } else {
+                                // Fallback: repeat dash per bag
+                                for (let i = 0; i < bags; i++) perBagHtml += `<div>-</div>`;
+                            }
+
+                            // Repeat date/time per bag for consistent alignment
+                            let dateHtml = '';
+                            let timeHtml = '';
+                            for (let i = 0; i < bags; i++) {
+                                dateHtml += `<div><small>${escapeHtml(date)}</small></div>`;
+                                timeHtml += `<div><small>${escapeHtml(time)}</small></div>`;
+                            }
+
+                            content += `
+                                        <tr>
+                                            <td style="white-space: normal;">${escapeHtml(donorName)}</td>
+                                            <td class="text-center"><span class="badge ${badgeClass}">${escapeHtml(donationType)}</span></td>
+                                            <td class="text-center">${bags}</td>
+                                            <td class="text-start" style="font-size:0.9rem;">${perBagHtml}</td>
+                                            <td class="text-center"><span class="badge badge-info">${totalVol}ml</span></td>
+                                            <td class="text-center">${dateHtml}</td>
+                                            <td class="text-center">${timeHtml}</td>
+                                        </tr>`;
+                        });
+
+                        content += `</tbody></table></div>`;
+
+                        document.getElementById('batchDetailsContent').innerHTML = content;
+                    })
+                    .catch(error => {
+                        document.getElementById('batchDetailsContent').innerHTML = `
+                                                        <div class="alert alert-danger">
+                                                            <i class="fas fa-exclamation-triangle"></i> Error loading batch details: ${escapeHtml(error.message)}
+                                                        </div>
+                                                    `;
+                    });
+            }
+
+            function formatDate(dateString) {
+                if (!dateString || dateString === '-') return '-';
+                try {
+                    const date = parseYMD(dateString);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                } catch (e) {
+                    return dateString;
+                }
+            }
+
+            function formatTime(timeString) {
+                if (!timeString || timeString === '-') return '-';
+                try {
+                    // Handle both full datetime and time-only strings
+                    let date;
+                    if (timeString.includes('T') || timeString.includes(' ')) {
+                        date = new Date(timeString);
+                    } else {
+                        date = new Date(`2000-01-01T${timeString}`);
+                    }
+                    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                } catch (e) {
+                    return timeString;
+                }
+            }
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function refreshInventoryStats() {
+                fetch('{{ route("admin.inventory.stats") }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('unpasteurized-count').textContent = data.unpasteurized_donations_count;
+                        document.getElementById('unpasteurized-volume').textContent = Math.round(data.unpasteurized_total_volume) + 'ml';
+                        document.getElementById('pasteurized-batches').textContent = data.pasteurized_batches_count;
+                        document.getElementById('pasteurized-volume').textContent = Math.round(data.pasteurized_total_volume) + 'ml';
+                        document.getElementById('dispensed-records').textContent = data.dispensed_records_count;
+                        document.getElementById('dispensed-volume').textContent = Math.round(data.total_dispensed_volume) + 'ml';
+                    })
+                    .catch(error => {
+                        console.error('Error refreshing stats:', error);
+                    });
+            }
+
+            // Initialize selected volume display once page scripts have loaded
+            try {
+                updatePasteurizeButton();
+            } catch (e) {
+                // ignore if functions are not yet available
+            }
+        </script>
 @endsection
