@@ -10,22 +10,10 @@
     <title>@yield('title', 'Admin Dashboard')</title>
     <!-- Favicon / Tab Icon -->
     {{-- Favicon (prefer transparent PNG if available) --}}
-    @if (file_exists(public_path('hmblsc-logo-circle.png')))
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('hmblsc-logo-circle.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('hmblsc-logo-circle.png') }}">
-        <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo-circle.png') }}">
-        <link rel="shortcut icon" href="{{ asset('hmblsc-logo-circle.png') }}">
-    @elseif (file_exists(public_path('hmblsc-logo.png')))
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('hmblsc-logo.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('hmblsc-logo.png') }}">
-        <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo.png') }}">
-        <link rel="shortcut icon" href="{{ asset('hmblsc-logo.png') }}">
-    @else
-        <link rel="icon" type="image/jpeg" sizes="32x32" href="{{ asset('hmblsc-logo.jpg') }}">
-        <link rel="icon" type="image/jpeg" sizes="16x16" href="{{ asset('hmblsc-logo.jpg') }}">
-        <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo.jpg') }}">
-        <link rel="shortcut icon" href="{{ asset('hmblsc-logo.jpg') }}">
-    @endif
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('hmblsc-logo.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('hmblsc-logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo.png') }}">
+    <link rel="shortcut icon" href="{{ asset('hmblsc-logo.png') }}">
     
     <!-- Preload critical images to prevent FOUC (Flash of Unstyled Content) -->
     <link rel="preload" as="image" href="{{ asset('hmblsc-logo.jpg') }}" fetchpriority="high">
