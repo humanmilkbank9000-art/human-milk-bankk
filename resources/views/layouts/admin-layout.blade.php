@@ -8,6 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>@yield('title', 'Admin Dashboard')</title>
+    <!-- Favicon / Tab Icon -->
+    <link rel="icon" type="image/jpeg" sizes="32x32" href="{{ asset('hmblsc-logo.jpg') }}">
+    <link rel="icon" type="image/jpeg" sizes="16x16" href="{{ asset('hmblsc-logo.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo.jpg') }}">
+    <link rel="shortcut icon" href="{{ asset('hmblsc-logo.jpg') }}">
     
     <!-- Preload critical images to prevent FOUC (Flash of Unstyled Content) -->
     <link rel="preload" as="image" href="{{ asset('hmblsc-logo.jpg') }}" fetchpriority="high">

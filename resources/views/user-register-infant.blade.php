@@ -5,6 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Infant Registration - Human Milk Bank</title>
+    <link rel="icon" type="image/jpeg" sizes="32x32" href="{{ asset('hmblsc-logo.jpg') }}">
+    <link rel="icon" type="image/jpeg" sizes="16x16" href="{{ asset('hmblsc-logo.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('hmblsc-logo.jpg') }}">
+    <link rel="shortcut icon" href="{{ asset('hmblsc-logo.jpg') }}">
     
     <!-- Preload critical images to prevent FOUC -->
     <link rel="preload" as="image" href="{{ asset('hmblsc-logo.jpg') }}" fetchpriority="high">

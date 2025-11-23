@@ -50,6 +50,9 @@
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     <input type="password" name="current_password" id="current_password"
                                         class="form-control" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleAdminCurrentPassword" aria-label="Show/Hide current password">
+                                        <i class="fas fa-eye" id="adminCurrentPasswordIcon"></i>
+                                    </button>
                                 </div>
                                 @error('current_password')
                                     <div class="text-danger">{{ $message }}</div>
@@ -60,6 +63,9 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-key"></i></span>
                                     <input type="password" name="password" id="password" class="form-control">
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleAdminNewPassword" aria-label="Show/Hide new password">
+                                        <i class="fas fa-eye" id="adminNewPasswordIcon"></i>
+                                    </button>
                                     <div id="password-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                                         Password must be 8-64 chars and include upper, lower, number, and special character.
                                     </div>
@@ -93,6 +99,9 @@
                                     <span class="input-group-text"><i class="fas fa-check"></i></span>
                                     <input type="password" name="password_confirmation" id="password_confirmation"
                                         class="form-control">
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleAdminConfirmPassword" aria-label="Show/Hide confirm password">
+                                        <i class="fas fa-eye" id="adminConfirmPasswordIcon"></i>
+                                    </button>
                                 </div>
                             </div>
                             <button class="btn btn-primary w-100" type="submit"><i class="fas fa-save me-2"></i>Update
@@ -108,6 +117,52 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Toggle password visibility (admin)
+            document.getElementById('toggleAdminCurrentPassword')?.addEventListener('click', function() {
+                const input = document.getElementById('current_password');
+                const icon = document.getElementById('adminCurrentPasswordIcon');
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon?.classList.remove('fa-eye');
+                    icon?.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon?.classList.remove('fa-eye-slash');
+                    icon?.classList.add('fa-eye');
+                }
+            });
+
+            document.getElementById('toggleAdminNewPassword')?.addEventListener('click', function() {
+                const input = document.getElementById('password');
+                const icon = document.getElementById('adminNewPasswordIcon');
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon?.classList.remove('fa-eye');
+                    icon?.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon?.classList.remove('fa-eye-slash');
+                    icon?.classList.add('fa-eye');
+                }
+            });
+
+            document.getElementById('toggleAdminConfirmPassword')?.addEventListener('click', function() {
+                const input = document.getElementById('password_confirmation');
+                const icon = document.getElementById('adminConfirmPasswordIcon');
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon?.classList.remove('fa-eye');
+                    icon?.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon?.classList.remove('fa-eye-slash');
+                    icon?.classList.add('fa-eye');
+                }
+            });
+
             @if(session('success'))
                 Swal.fire({
                     icon: 'success',
