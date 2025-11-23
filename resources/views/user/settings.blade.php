@@ -3,68 +3,33 @@
 @section('pageTitle', 'User Settings')
 
 @section('content')
-    <div class="container-fluid">
-        @section('styles')
-            <style>
-                /* Add spacing between card header and table and ensure table sits on white rounded surface */
-                .table-card {
-                    padding: 12px;
-                }
+    <div class="container">
+        {{-- Flash messages are handled via SweetAlert for consistency --}}
 
-                .table-card .table {
-                    margin-top: 8px;
-                    background: #ffffff;
-                    border-radius: 8px;
-                    overflow: hidden;
-                }
-
-                .table-card .table thead th:first-child { border-top-left-radius: 8px; }
-                .table-card .table thead th:last-child { border-top-right-radius: 8px; }
-
-                /* Page-specific lighter pink overrides for settings page */
-                .container-fluid .card-header.bg-primary,
-                .container-fluid .card-header.bg-info,
-                .container-fluid .card-header.bg-secondary {
-                    background: #ffdfe8 !important; /* lighter pastel pink */
-                    border-bottom: 1px solid rgba(255,111,166,0.08) !important;
-                    color: #222 !important; /* darker text for readability */
-                }
-
-                .table-card .table thead th {
-                    background: #ffdfe8 !important; /* match lighter pink */
-                    color: #222 !important;
-                    font-weight: 700;
-                    border-bottom: 0 !important;
-                }
-            </style>
-        @endsection
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                @php
-                    $tab = request('tab', 'user');
-                @endphp
-                <ul class="nav nav-tabs mb-3" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link {{ $tab == 'user' ? 'active bg-primary text-white' : '' }}" href="?tab=user">User
-                            Info</a>
+        <div class="card shadow-sm rounded">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-cog me-2"></i>Account Settings
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs mb-3" id="settingsTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user"
+                            type="button" role="tab" aria-controls="user" aria-selected="true">User Info</button>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ $tab == 'infant' ? 'active bg-info text-white' : '' }}"
-                            href="?tab=infant">Infant Info</a>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="infant-tab" data-bs-toggle="tab" data-bs-target="#infant"
+                            type="button" role="tab" aria-controls="infant" aria-selected="false">Infant Info</button>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ $tab == 'password' ? 'active bg-secondary text-white' : '' }}"
-                            href="?tab=password">Change Password</a>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password"
+                            type="button" role="tab" aria-controls="password" aria-selected="false">Change Password</button>
                     </li>
                 </ul>
-                @if($tab == 'user')
-                    <div class="card mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">User Registration Information</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-card">
-                            <table class="table table-standard table-striped table-bordered mb-0">
+                <div class="tab-content" id="settingsTabContent">
+                    <div class="tab-pane fade show active" id="user" role="tabpanel" aria-labelledby="user-tab">
+                        <h5 class="mb-3"><i class="fas fa-user me-2"></i>User Registration Information</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
                                 <thead class="table-light">
                                     <tr>
                                         <th>First Name</th>
@@ -90,17 +55,12 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            </div>
                         </div>
                     </div>
-                @elseif($tab == 'infant')
-                    <div class="card mb-4">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">Infant Registration Information</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-card">
-                            <table class="table table-standard table-striped table-bordered mb-0">
+                    <div class="tab-pane fade" id="infant" role="tabpanel" aria-labelledby="infant-tab">
+                        <h5 class="mb-3"><i class="fas fa-baby me-2"></i>Infant Registration Information</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
                                 <thead class="table-light">
                                     <tr>
                                         <th>First Name</th>
@@ -132,58 +92,49 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                        <form method="POST" action="{{ route('user.update-password') }}">
+                            @csrf
+                            <h5 class="mb-3">Change Password</h5>
+                            <div class="mb-3">
+                                <label for="current_password" class="form-label">Current Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" name="current_password" id="current_password"
+                                        class="form-control" required>
+                                </div>
+                                @error('current_password')
+                                    <div class="text-danger">{{ $message }}</div>
+                                @enderror
                             </div>
-                        </div>
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">New Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                    <input type="password" name="new_password" id="new_password" class="form-control" required>
+                                </div>
+                                <div id="password-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
+                                    Password must be 8-64 chars and include upper, lower, number, and special character.
+                                </div>
+                                @error('new_password')
+                                    <div class="text-danger">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_password_confirmation" class="form-label">Confirm New Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-check"></i></span>
+                                    <input type="password" name="new_password_confirmation" id="new_password_confirmation"
+                                        class="form-control" required>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100" type="submit"><i class="fas fa-save me-2"></i>Update
+                                Password</button>
+                        </form>
                     </div>
-                @elseif($tab == 'password')
-                    <div class="card">
-                        <div class="card-header bg-secondary text-white">
-                            <h5 class="mb-0">Change Password</h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST" action="{{ route('user.update-password') }}">
-                                @csrf
-                                <div class="mb-3">
-                                    <label for="current_password" class="form-label">Current Password</label>
-                                    <input type="password" class="form-control" id="current_password" name="current_password"
-                                        required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="new_password" class="form-label">New Password</label>
-                                    <input type="password" class="form-control" id="new_password" name="new_password" required>
-                                    <div id="password-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
-                                        Password must be 8-64 chars and include upper, lower, number, and special character.
-                                    </div>
-                                    <script>
-                                    function checkPasswordStrength(pw) {
-                                        return pw.length >= 8 && pw.length <= 64 &&
-                                            /[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
-                                    }
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        var pwInput = document.getElementById('new_password');
-                                        var reqMsg = document.getElementById('password-req');
-                                        pwInput.addEventListener('input', function() {
-                                            if (pwInput.value === '') {
-                                                reqMsg.style.display = 'none';
-                                            } else if (!checkPasswordStrength(pwInput.value)) {
-                                                reqMsg.style.display = 'block';
-                                            } else {
-                                                reqMsg.style.display = 'none';
-                                            }
-                                        });
-                                    });
-                                    </script>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="new_password_confirmation" class="form-label">Confirm New Password</label>
-                                    <input type="password" class="form-control" id="new_password_confirmation"
-                                        name="new_password_confirmation" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Update Password</button>
-                            </form>
-                        </div>
-                    </div>
-                @endif
+                </div>
             </div>
         </div>
     </div>
@@ -191,13 +142,43 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        function checkPasswordStrength(pw) {
+            return pw.length >= 8 && pw.length <= 64 &&
+                /[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var pwInput = document.getElementById('new_password');
+            var reqMsg = document.getElementById('password-req');
+            
+            if (pwInput && reqMsg) {
+                pwInput.addEventListener('input', function() {
+                    if (pwInput.value === '') {
+                        reqMsg.style.display = 'none';
+                    } else if (!checkPasswordStrength(pwInput.value)) {
+                        reqMsg.style.display = 'block';
+                    } else {
+                        reqMsg.style.display = 'none';
+                    }
+                });
+            }
+
             // Show SweetAlert on successful password update
             @if(session('status'))
                 Swal.fire({
                     icon: 'success',
                     title: 'Success',
                     text: {!! json_encode(session('status')) !!},
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            // Show SweetAlert on error messages
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: {!! json_encode(session('error')) !!},
                     confirmButtonText: 'OK'
                 });
             @endif
@@ -211,6 +192,16 @@
                     confirmButtonText: 'OK'
                 });
             @endif
-            });
+
+            // If there are validation errors related to new_password, show an error alert
+            @if($errors->has('new_password'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: {!! json_encode($errors->first('new_password')) !!},
+                    confirmButtonText: 'OK'
+                });
+            @endif
+        });
     </script>
 @endsection

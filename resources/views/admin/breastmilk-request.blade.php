@@ -604,6 +604,11 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            {{-- Pagination --}}
+                            <div class="d-flex justify-content-center mt-4">
+                                {{ $pendingRequests->links() }}
+                            </div>
                         @else
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-heart fa-3x mb-3"></i>
@@ -728,6 +733,11 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            {{-- Pagination --}}
+                            <div class="d-flex justify-content-center mt-4">
+                                {{ $dispensedRequests->links() }}
+                            </div>
                         @else
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-prescription-bottle fa-3x mb-3"></i>
@@ -799,6 +809,11 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                            </div>
+
+                            {{-- Pagination --}}
+                            <div class="d-flex justify-content-center mt-4">
+                                {{ $declinedRequests->links() }}
                             </div>
                         @else
                             <div class="text-center text-muted py-4">

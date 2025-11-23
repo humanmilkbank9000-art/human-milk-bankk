@@ -10,17 +10,6 @@
 
 @section('content')
     <div class="container-fluid page-container-standard">
-        @if($completedDonations->count() > 0)
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-
-                </div>
-                <a href="{{ route('user.donate') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Donate Again
-                </a>
-            </div>
-        @endif
-
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -30,8 +19,13 @@
         @endif
 
         <div class="card card-standard mb-4" style="background: #fff;">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Completed Donations</h5>
+                @if($completedDonations->count() > 0)
+                    <a href="{{ route('user.donate') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus"></i> Donate Again
+                    </a>
+                @endif
             </div>
             <div class="card-body">
                 @if($completedDonations->count() > 0)
@@ -97,27 +91,26 @@
                     <div class="mt-4">
                         <div class="d-flex flex-wrap justify-content-center gap-3">
                             <div class="flex-fill" style="min-width: 250px; max-width: 350px;">
-                                <div class="card shadow-sm rounded-lg border-0 bg-light h-100">
+                                <div class="card shadow-sm rounded-lg border-0 h-100" style="background: #e91e63; color: white;">
                                     <div class="card-body text-center py-4">
-                                        <h6 class="card-title text-uppercase text-secondary mb-2">Total Donations</h6>
-                                        <h2 class="text-primary fw-bold mb-0">{{ $completedDonations->count() }}</h2>
+                                        <h6 class="card-title text-uppercase mb-2" style="color: rgba(255, 255, 255, 0.95); font-weight: 500; letter-spacing: 0.5px; font-size: 0.8rem;">Total Donations</h6>
+                                        <h2 class="fw-bold mb-0" style="color: white; font-size: 2rem;">{{ $completedDonations->count() }}</h2>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex-fill" style="min-width: 250px; max-width: 350px;">
-                                <div class="card shadow-sm rounded-lg border-0 bg-light h-100">
+                                <div class="card shadow-sm rounded-lg border-0 h-100" style="background: #16a34a; color: white;">
                                     <div class="card-body text-center py-4">
-                                        <h6 class="card-title text-uppercase text-secondary mb-2">Total Volume</h6>
-                                        <h2 class="text-success fw-bold mb-0">{{ $completedDonations->sum('total_volume') }} ml
-                                        </h2>
+                                        <h6 class="card-title text-uppercase mb-2" style="color: rgba(255, 255, 255, 0.95); font-weight: 500; letter-spacing: 0.5px; font-size: 0.8rem;">Total Volume</h6>
+                                        <h2 class="fw-bold mb-0" style="color: white; font-size: 2rem;">{{ $completedDonations->sum('total_volume') }} ml</h2>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex-fill" style="min-width: 250px; max-width: 350px;">
-                                <div class="card shadow-sm rounded-lg border-0 bg-light h-100">
+                                <div class="card shadow-sm rounded-lg border-0 h-100" style="background: #2563eb; color: white;">
                                     <div class="card-body text-center py-4">
-                                        <h6 class="card-title text-uppercase text-secondary mb-2">Total Bags</h6>
-                                        <h2 class="text-info fw-bold mb-0">{{ $completedDonations->sum('number_of_bags') }}</h2>
+                                        <h6 class="card-title text-uppercase mb-2" style="color: rgba(255, 255, 255, 0.95); font-weight: 500; letter-spacing: 0.5px; font-size: 0.8rem;">Total Bags</h6>
+                                        <h2 class="fw-bold mb-0" style="color: white; font-size: 2rem;">{{ $completedDonations->sum('number_of_bags') }}</h2>
                                     </div>
                                 </div>
                             </div>

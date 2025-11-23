@@ -28,6 +28,8 @@
     <link href="{{ asset('css/responsive.css') }}?v={{ time() }}" rel="stylesheet">
     <!-- Global Tab Styles - Horizontal Alignment -->
     <link href="{{ asset('css/global-tabs.css') }}" rel="stylesheet">
+    <!-- Pagination Styles -->
+    <link href="{{ asset('css/pagination.css') }}" rel="stylesheet">
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

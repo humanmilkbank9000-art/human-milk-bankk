@@ -912,6 +912,13 @@
                                 </table>
                             </div>
 
+                            {{-- Pagination --}}
+                            @if($pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $pendingDonations->links() }}
+                                </div>
+                            @endif
+
                             {{-- Card Layout for Smaller Screens --}}
                             @foreach($pendingOrdered as $donation)
                                 <div class="donation-card d-block d-md-none">
@@ -1122,6 +1129,13 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            {{-- Pagination --}}
+                            @if($scheduledHomeCollection instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $scheduledHomeCollection->links() }}
+                                </div>
+                            @endif
                         @else
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-calendar-alt fa-3x mb-3"></i>
@@ -1229,6 +1243,13 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            {{-- Pagination --}}
+                            @if($successWalkIn instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $successWalkIn->links() }}
+                                </div>
+                            @endif
                         @else
                             <div class="text-center text-muted py-4">
                                 <p>No completed walk-in donations yet</p>
@@ -1315,6 +1336,13 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            {{-- Pagination --}}
+                            @if($successHomeCollection instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $successHomeCollection->links() }}
+                                </div>
+                            @endif
                         @else
                             <div class="text-center text-muted py-4">
                                 
@@ -1373,6 +1401,13 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            {{-- Pagination --}}
+                            @if($declinedDonations instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $declinedDonations->links() }}
+                                </div>
+                            @endif
                         @else
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-inbox fa-3x mb-3"></i>
