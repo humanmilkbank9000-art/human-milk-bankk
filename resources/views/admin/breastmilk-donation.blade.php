@@ -314,9 +314,9 @@
             }
 
             /* Keep table headers aligned on a single horizontal line
-                                                                                                               - prevent wrapping of header labels
-                                                                                                               - use ellipsis when a header is too long
-                                                                                                               - ensure consistent vertical alignment and padding */
+                                                                                                                       - prevent wrapping of header labels
+                                                                                                                       - use ellipsis when a header is too long
+                                                                                                                       - ensure consistent vertical alignment and padding */
             #pending-donations .table thead th {
                 white-space: nowrap;
                 overflow: hidden;
@@ -585,7 +585,7 @@
                 }
 
                 /* Permanently style the Decline button in the Schedule Pickup modal to
-                                                                                                                                                                                                                                                                                           match the hovered look of the Cancel (.btn-secondary:hover) button */
+                                                                                                                                                                                                                                                                                                   match the hovered look of the Cancel (.btn-secondary:hover) button */
                 #schedule-decline-btn {
                     background-color: #5c636a !important;
                     /* darkened secondary */
@@ -1142,8 +1142,8 @@
             <div class="tab-pane fade {{ $tabStatus == 'scheduled' ? 'show active' : '' }}" id="scheduled-home"
                 role="tabpanel">
                 <div class="card card-standard" style="margin-top: 30px;">
-                    <div class="card-header bg-primary text-white">
-                        <h5>Scheduled Home Collection</h5>
+                    <div class="card-header bg-primary text-white" style="padding: 0.6rem 1rem;">
+                        <h5 style="margin: 0;">Scheduled Home Collection</h5>
                     </div>
                     <div class="card-body">
                         @if($scheduledHomeCollection->count() > 0)
@@ -1272,8 +1272,8 @@
             <div class="tab-pane fade {{ $tabStatus == 'success_walk_in' ? 'show active' : '' }}" id="success-walk-in"
                 role="tabpanel">
                 <div class="card card-standard" style="margin-top: 30px;">
-                    <div class="card-header bg-success text-white">
-                        <h5>Completed Walk-in Donations</h5>
+                    <div class="card-header bg-success text-white" style="padding: 0.6rem 1rem;">
+                        <h5 style="margin: 0;">Completed Walk-in Donations</h5>
                     </div>
                     <div class="card-body">
                         @if($successWalkIn->count() > 0)
@@ -1384,8 +1384,8 @@
             <div class="tab-pane fade {{ $tabStatus == 'success_home_collection' ? 'show active' : '' }}" id="success-home"
                 role="tabpanel">
                 <div class="card card-standard" style="margin-top: 30px;">
-                    <div class="card-header bg-success text-white">
-                        <h5>Completed Home Collection</h5>
+                    <div class="card-header bg-success text-white" style="padding: 0.6rem 1rem;">
+                        <h5 style="margin: 0;">Completed Home Collection</h5>
                     </div>
                     <div class="card-body">
                         @if($successHomeCollection->count() > 0)
@@ -1477,8 +1477,9 @@
             <div class="tab-pane fade {{ $tabStatus == 'declined' ? 'show active' : '' }}" id="declined-donations"
                 role="tabpanel">
                 <div class="card card-standard" style="margin-top: 30px;">
-                    <div class="card-header text-white" style="background: linear-gradient(90deg,#ff7eb6,#ff65a3);">
-                        <h5>Declined Donations</h5>
+                    <div class="card-header text-white"
+                        style="background: linear-gradient(90deg,#ff7eb6,#ff65a3); padding: 0.6rem 1rem;">
+                        <h5 style="margin: 0;">Declined Donations</h5>
                     </div>
                     @php
                         $declinedOrdered = $declinedDonations instanceof \Illuminate\Pagination\LengthAwarePaginator
@@ -2248,10 +2249,10 @@
                 let html = '<div class="row">';
                 for (let i = 1; i <= n; i++) {
                     html += `
-                                                                                                                                                            <div class="col-md-6 mb-2">
-                                                                                                                                                                <label class="form-label">Bag ${i} (ml)</label>
-                                                                                                                                                                <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
-                                                                                                                                                            </div>`;
+                                                                                                                                                                <div class="col-md-6 mb-2">
+                                                                                                                                                                    <label class="form-label">Bag ${i} (ml)</label>
+                                                                                                                                                                    <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
+                                                                                                                                                                </div>`;
                 }
                 html += '</div>';
                 container.innerHTML = html;
@@ -2452,44 +2453,44 @@
                         const method = bag.collection_method || '--';
 
                         const row = `
-                                                                                                                                                                <tr>
-                                                                                                                                                                    <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                                                                                                                                                    <td>${time}</td>
-                                                                                                                                                                    <td>${date}</td>
-                                                                                                                                                                    <td>
-                                                                                                                                                                        <div class="input-group input-group-sm">
-                                                                                                                                                                            <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
-                                                                                                                                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
-                                                                                                                                                                            <span class="input-group-text">ml</span>
-                                                                                                                                                                        </div>
-                                                                                                                                                                    </td>
-                                                                                                                                                                    <td>${storageLabel}</td>
-                                                                                                                                                                    <td class="text-end">${temp}</td>
-                                                                                                                                                                    <td><small>${method}</small></td>
-                                                                                                                                                                </tr>
-                                                                                                                                                            `;
+                                                                                                                                                                    <tr>
+                                                                                                                                                                        <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                                                                                                                        <td>${time}</td>
+                                                                                                                                                                        <td>${date}</td>
+                                                                                                                                                                        <td>
+                                                                                                                                                                            <div class="input-group input-group-sm">
+                                                                                                                                                                                <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
+                                                                                                                                                                                <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
+                                                                                                                                                                                <span class="input-group-text">ml</span>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        </td>
+                                                                                                                                                                        <td>${storageLabel}</td>
+                                                                                                                                                                        <td class="text-end">${temp}</td>
+                                                                                                                                                                        <td><small>${method}</small></td>
+                                                                                                                                                                    </tr>
+                                                                                                                                                                `;
                         tbody.append(row);
                         const v = parseFloat(volume); if (!isNaN(v)) total += v;
                     });
                 } else if (numberOfBags > 0) {
                     for (let i = 0; i < numberOfBags; i++) {
                         const row = `
-                                                                                                                                                                <tr>
-                                                                                                                                                                    <td class="text-center fw-bold">Bag ${i + 1}</td>
-                                                                                                                                                                    <td>--</td>
-                                                                                                                                                                    <td>--</td>
-                                                                                                                                                                    <td>
-                                                                                                                                                                        <div class="input-group input-group-sm">
-                                                                                                                                                                            <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
-                                                                                                                                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
-                                                                                                                                                                            <span class="input-group-text">ml</span>
-                                                                                                                                                                        </div>
-                                                                                                                                                                    </td>
-                                                                                                                                                                    <td>--</td>
-                                                                                                                                                                    <td class="text-end">--</td>
-                                                                                                                                                                    <td><small>--</small></td>
-                                                                                                                                                                </tr>
-                                                                                                                                                            `;
+                                                                                                                                                                    <tr>
+                                                                                                                                                                        <td class="text-center fw-bold">Bag ${i + 1}</td>
+                                                                                                                                                                        <td>--</td>
+                                                                                                                                                                        <td>--</td>
+                                                                                                                                                                        <td>
+                                                                                                                                                                            <div class="input-group input-group-sm">
+                                                                                                                                                                                <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
+                                                                                                                                                                                <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
+                                                                                                                                                                                <span class="input-group-text">ml</span>
+                                                                                                                                                                            </div>
+                                                                                                                                                                        </td>
+                                                                                                                                                                        <td>--</td>
+                                                                                                                                                                        <td class="text-end">--</td>
+                                                                                                                                                                        <td><small>--</small></td>
+                                                                                                                                                                    </tr>
+                                                                                                                                                                `;
                         tbody.append(row);
                     }
                 } else {
@@ -2625,44 +2626,44 @@
                             const method = bag.collection_method || '--';
 
                             const row = `
-                                                        <tr>
-                                                            <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                                            <td>${time}</td>
-                                                            <td>${date}</td>
-                                                            <td>
-                                                                <div class="input-group input-group-sm">
-                                                                    <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
-                                                                    <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
-                                                                    <span class="input-group-text">ml</span>
-                                                                </div>
-                                                            </td>
-                                                            <td>${storageLabel}</td>
-                                                            <td class="text-end">${temp}</td>
-                                                            <td><small>${method}</small></td>
-                                                        </tr>
-                                                    `;
+                                                            <tr>
+                                                                <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                <td>${time}</td>
+                                                                <td>${date}</td>
+                                                                <td>
+                                                                    <div class="input-group input-group-sm">
+                                                                        <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
+                                                                        <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
+                                                                        <span class="input-group-text">ml</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td>${storageLabel}</td>
+                                                                <td class="text-end">${temp}</td>
+                                                                <td><small>${method}</small></td>
+                                                            </tr>
+                                                        `;
                             tbody.append(row);
                             const v = parseFloat(volume); if (!isNaN(v)) total += v;
                         });
                     } else if (numBags > 0) {
                         for (let i = 0; i < numBags; i++) {
                             const row = `
-                                                        <tr>
-                                                            <td class="text-center fw-bold">Bag ${i + 1}</td>
-                                                            <td>--</td>
-                                                            <td>--</td>
-                                                            <td>
-                                                                <div class="input-group input-group-sm">
-                                                                    <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
-                                                                    <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
-                                                                    <span class="input-group-text">ml</span>
-                                                                </div>
-                                                            </td>
-                                                            <td>--</td>
-                                                            <td class="text-end">--</td>
-                                                            <td><small>--</small></td>
-                                                        </tr>
-                                                    `;
+                                                            <tr>
+                                                                <td class="text-center fw-bold">Bag ${i + 1}</td>
+                                                                <td>--</td>
+                                                                <td>--</td>
+                                                                <td>
+                                                                    <div class="input-group input-group-sm">
+                                                                        <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
+                                                                        <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
+                                                                        <span class="input-group-text">ml</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td>--</td>
+                                                                <td class="text-end">--</td>
+                                                                <td><small>--</small></td>
+                                                            </tr>
+                                                        `;
                             tbody.append(row);
                         }
                     } else {
@@ -2942,74 +2943,74 @@
                                 totalVol += parseFloat(volume) || 0;
 
                                 const row = `
-                                                                                                                                        <tr>
-                                                                                                                                            <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${bagNum}</td>
-                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                <input type="text" name="bag_time[]" class="form-control" value="${time}" placeholder="e.g. 4:49 PM" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                            </td>
-                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                <input type="text" name="bag_date[]" class="form-control" value="${bag.date || ''}" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                            </td>
-                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                <div class="input-group">
-                                                                                                                                                    <input type="number"
-                                                                                                                                                           id="home_bag_volume_${index + 1}"
-                                                                                                                                                           name="bag_volumes[]"
-                                                                                                                                                           class="form-control home-bag-volume-input"
-                                                                                                                                                           step="0.01"
-                                                                                                                                                           min="0.01"
-                                                                                                                                                           value="${volume}"
-                                                                                                                                                           placeholder="400"
-                                                                                                                                                           style="border: 1px solid #dee2e6; padding: 8px; text-align: right;"
-                                                                                                                                                           required>
-                                                                                                                                                    <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
-                                                                                                                                                </div>
-                                                                                                                                            </td>
-                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                    ${(() => {
+                                                                                                                                            <tr>
+                                                                                                                                                <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${bagNum}</td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <input type="text" name="bag_time[]" class="form-control" value="${time}" placeholder="e.g. 4:49 PM" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <input type="text" name="bag_date[]" class="form-control" value="${bag.date || ''}" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <div class="input-group">
+                                                                                                                                                        <input type="number"
+                                                                                                                                                               id="home_bag_volume_${index + 1}"
+                                                                                                                                                               name="bag_volumes[]"
+                                                                                                                                                               class="form-control home-bag-volume-input"
+                                                                                                                                                               step="0.01"
+                                                                                                                                                               min="0.01"
+                                                                                                                                                               value="${volume}"
+                                                                                                                                                               placeholder="400"
+                                                                                                                                                               style="border: 1px solid #dee2e6; padding: 8px; text-align: right;"
+                                                                                                                                                               required>
+                                                                                                                                                        <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
+                                                                                                                                                    </div>
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                        ${(() => {
                                         const raw = bag.storage_location || '';
                                         const key = String(raw).toLowerCase();
                                         if (key.indexOf('ref') !== -1 || key.indexOf('refrig') !== -1 || key.indexOf('fridge') !== -1) return `
-                                                                                                                                                            <option value="Refrigerator" selected>Refrigerator</option>
-                                                                                                                                                            <option value="Freezer">Freezer</option>
-                                                                                                                                                            <option value="Room temperature">Room temperature</option>
-                                                                                                                                                            <option value="Other">Other</option>
-                                                                                                                                                        `;
+                                                                                                                                                                <option value="Refrigerator" selected>Refrigerator</option>
+                                                                                                                                                                <option value="Freezer">Freezer</option>
+                                                                                                                                                                <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                <option value="Other">Other</option>
+                                                                                                                                                            `;
                                         if (key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1 || key.indexOf('frz') !== -1) return `
-                                                                                                                                                            <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                            <option value="Freezer" selected>Freezer</option>
-                                                                                                                                                            <option value="Room temperature">Room temperature</option>
-                                                                                                                                                            <option value="Other">Other</option>
-                                                                                                                                                        `;
+                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                <option value="Freezer" selected>Freezer</option>
+                                                                                                                                                                <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                <option value="Other">Other</option>
+                                                                                                                                                            `;
                                         if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1) return `
-                                                                                                                                                            <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                            <option value="Freezer">Freezer</option>
-                                                                                                                                                            <option value="Room temperature" selected>Room temperature</option>
-                                                                                                                                                            <option value="Other">Other</option>
-                                                                                                                                                        `;
+                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                <option value="Freezer">Freezer</option>
+                                                                                                                                                                <option value="Room temperature" selected>Room temperature</option>
+                                                                                                                                                                <option value="Other">Other</option>
+                                                                                                                                                            `;
                                         if (raw && raw !== '') return `
-                                                                                                                                                            <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                            <option value="Freezer">Freezer</option>
-                                                                                                                                                            <option value="Room temperature">Room temperature</option>
-                                                                                                                                                            <option value="Other" selected>Other</option>
-                                                                                                                                                        `;
+                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                <option value="Freezer">Freezer</option>
+                                                                                                                                                                <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                <option value="Other" selected>Other</option>
+                                                                                                                                                            `;
                                         return `
-                                                                                                                                                            <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                            <option value="Freezer">Freezer</option>
-                                                                                                                                                            <option value="Room temperature">Room temperature</option>
-                                                                                                                                                            <option value="Other">Other</option>
-                                                                                                                                                        `;
+                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                <option value="Freezer">Freezer</option>
+                                                                                                                                                                <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                <option value="Other">Other</option>
+                                                                                                                                                            `;
                                     })()}
-                                                                                                                                                </select>
-                                                                                                                                            </td>
-                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                <input type="text" name="bag_temp[]" class="form-control" value="${bag.temperature || ''}" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
-                                                                                                                                            </td>
-                                                                                                                                            <td style="padding: 8px;">
-                                                                                                                                                <input type="text" name="bag_method[]" class="form-control" value="${bag.collection_method || ''}" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                            </td>
-                                                                                                                                        </tr>`;
+                                                                                                                                                    </select>
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <input type="text" name="bag_temp[]" class="form-control" value="${bag.temperature || ''}" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <input type="text" name="bag_method[]" class="form-control" value="${bag.collection_method || ''}" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                </td>
+                                                                                                                                            </tr>`;
                                 tbody.append(row);
                                 tbody.closest('.table-responsive').show();
                             });
@@ -3019,39 +3020,39 @@
                             if (n > 0) {
                                 for (let i = 1; i <= n; i++) {
                                     const row = `
-                                                                                                                                                    <tr>
-                                                                                                                                                        <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${i}</td>
-                                                                                                                                                        <td style="padding: 8px;">
-                                                                                                                                                            <input type="text" name="bag_time[]" class="form-control" value="" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                        </td>
-                                                                                                                                                        <td style="padding: 8px;">
-                                                                                                                                                            <input type="text" name="bag_date[]" class="form-control" value="" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                        </td>
-                                                                                                                                                        <td style="padding: 8px;">
-                                                                                                                                                            <div class="input-group">
-                                                                                                                                                                <input type="number"
-                                                                                                                                                                       id="home_bag_volume_${i}"
-                                                                                                                                                                       name="bag_volumes[]"
-                                                                                                                                                                       class="form-control home-bag-volume-input"
-                                                                                                                                                                       step="0.01" min="0.01" placeholder="400" style="border: 1px solid #dee2e6; padding: 8px; text-align: right;" required>
-                                                                                                                                                                <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
-                                                                                                                                                            </div>
-                                                                                                                                                        </td>
-                                                                                                                                                        <td style="padding: 8px;">
-                                                                                                                                                            <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                                <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                                                <option value="Freezer">Freezer</option>
-                                                                                                                                                                <option value="Room temperature">Room temperature</option>
-                                                                                                                                                                <option value="Other">Other</option>
-                                                                                                                                                            </select>
-                                                                                                                                                        </td>
-                                                                                                                                                        <td style="padding: 8px;">
-                                                                                                                                                            <input type="text" name="bag_temp[]" class="form-control" value="" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
-                                                                                                                                                        </td>
-                                                                                                                                                        <td style="padding: 8px;">
-                                                                                                                                                            <input type="text" name="bag_method[]" class="form-control" value="" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                                        </td>
-                                                                                                                                                    </tr>`;
+                                                                                                                                                        <tr>
+                                                                                                                                                            <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${i}</td>
+                                                                                                                                                            <td style="padding: 8px;">
+                                                                                                                                                                <input type="text" name="bag_time[]" class="form-control" value="" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                            </td>
+                                                                                                                                                            <td style="padding: 8px;">
+                                                                                                                                                                <input type="text" name="bag_date[]" class="form-control" value="" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                            </td>
+                                                                                                                                                            <td style="padding: 8px;">
+                                                                                                                                                                <div class="input-group">
+                                                                                                                                                                    <input type="number"
+                                                                                                                                                                           id="home_bag_volume_${i}"
+                                                                                                                                                                           name="bag_volumes[]"
+                                                                                                                                                                           class="form-control home-bag-volume-input"
+                                                                                                                                                                           step="0.01" min="0.01" placeholder="400" style="border: 1px solid #dee2e6; padding: 8px; text-align: right;" required>
+                                                                                                                                                                    <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
+                                                                                                                                                                </div>
+                                                                                                                                                            </td>
+                                                                                                                                                            <td style="padding: 8px;">
+                                                                                                                                                                <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                                    <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                                    <option value="Freezer">Freezer</option>
+                                                                                                                                                                    <option value="Room temperature">Room temperature</option>
+                                                                                                                                                                    <option value="Other">Other</option>
+                                                                                                                                                                </select>
+                                                                                                                                                            </td>
+                                                                                                                                                            <td style="padding: 8px;">
+                                                                                                                                                                <input type="text" name="bag_temp[]" class="form-control" value="" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                                                                                                                                                            </td>
+                                                                                                                                                            <td style="padding: 8px;">
+                                                                                                                                                                <input type="text" name="bag_method[]" class="form-control" value="" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                            </td>
+                                                                                                                                                        </tr>`;
                                     tbody.append(row);
                                 }
                                 totalVol = 0;
@@ -3163,17 +3164,17 @@
                 let fieldsHTML = '<div class="row">';
                 for (let i = 1; i <= bagCount; i++) {
                     fieldsHTML += `
-                                                                                                                    <div class="col-md-6 mb-2">
-                                                                                                                                                                                                                                                                            <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                                                                                                                                                            <input type="number" 
-                                                                                                                                                                                                                                                                                   id="walkin_bag_volume_${i}" 
-                                                                                                                                                                                                                                                                                   name="bag_volumes[]" 
-                                                                                                                                                                                                                                                                                   class="form-control walkin-bag-volume-input" 
-                                                                                                                                                                                                                                                                                   step="0.01" 
-                                                                                                                                                                                                                                                                                   min="0.01" 
-                                                                                                                                                                                                                                                                                   required>
-                                                                                                                                                                                                                                                                        </div>
-                                                                                                                `;
+                                                                                                                        <div class="col-md-6 mb-2">
+                                                                                                                                                                                                                                                                                <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                                                                                <input type="number" 
+                                                                                                                                                                                                                                                                                       id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                                                                       name="bag_volumes[]" 
+                                                                                                                                                                                                                                                                                       class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                                                                       step="0.01" 
+                                                                                                                                                                                                                                                                                       min="0.01" 
+                                                                                                                                                                                                                                                                                       required>
+                                                                                                                                                                                                                                                                            </div>
+                                                                                                                    `;
                 }
                 fieldsHTML += '</div>';
 
@@ -3529,19 +3530,19 @@
                 // Restore existing value if it exists
                 const existingValue = existingValues[i] || '';
                 fieldsHTML += `
-                                                                                                                    <div class="col-md-6 mb-2">
-                                                                                                                                                                                                                                                                            <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                                                                                                                                                            <input type="number" 
-                                                                                                                                                                                                                                                                                   id="walkin_bag_volume_${i}" 
-                                                                                                                                                                                                                                                                                   name="bag_volumes[]" 
-                                                                                                                                                                                                                                                                                   class="form-control walkin-bag-volume-input" 
-                                                                                                                                                                                                                                                                                   step="0.01" 
-                                                                                                                                                                                                                                                                                   min="0.01" 
-                                                                                                                                                                                                                                                                                   value="${existingValue}"
-                                                                                                                                                                                                                                                                                   placeholder="Enter volume"
-                                                                                                                                                                                                                                                                                   required>
-                                                                                                                                                                                                                                                                        </div>
-                                                                                                                `;
+                                                                                                                        <div class="col-md-6 mb-2">
+                                                                                                                                                                                                                                                                                <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                                                                                <input type="number" 
+                                                                                                                                                                                                                                                                                       id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                                                                       name="bag_volumes[]" 
+                                                                                                                                                                                                                                                                                       class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                                                                       step="0.01" 
+                                                                                                                                                                                                                                                                                       min="0.01" 
+                                                                                                                                                                                                                                                                                       value="${existingValue}"
+                                                                                                                                                                                                                                                                                       placeholder="Enter volume"
+                                                                                                                                                                                                                                                                                       required>
+                                                                                                                                                                                                                                                                            </div>
+                                                                                                                    `;
             }
             fieldsHTML += '</div>';
 
@@ -3602,24 +3603,24 @@
                 }
 
                 fieldsHTML += `
-                                                                                                                    <div class="col-md-6">
-                                                                                                                        <div class="input-group input-group-lg">
-                                                                                                                            <span class="input-group-text bg-primary text-white fw-bold">
-                                                                                                                                <i class="fas fa-flask me-2"></i>Bag ${i}
-                                                                                                                            </span>
-                                                                                                                            <input type="number"
-                                                                                                                                id="home_bag_volume_${i}"
-                                                                                                                                name="bag_volumes[]"
-                                                                                                                                class="form-control home-bag-volume-input"
-                                                                                                                                step="0.01"
-                                                                                                                                min="0.01"
-                                                                                                                                value="${existingValue}"
-                                                                                                                                placeholder="Enter volume"
-                                                                                                                                required>
-                                                                                                                                <span class="input-group-text">ml</span>
-                                                                                                                        </div>
-                                                                                                                                                                                                                                            </div>
-                                                                                                                    `;
+                                                                                                                        <div class="col-md-6">
+                                                                                                                            <div class="input-group input-group-lg">
+                                                                                                                                <span class="input-group-text bg-primary text-white fw-bold">
+                                                                                                                                    <i class="fas fa-flask me-2"></i>Bag ${i}
+                                                                                                                                </span>
+                                                                                                                                <input type="number"
+                                                                                                                                    id="home_bag_volume_${i}"
+                                                                                                                                    name="bag_volumes[]"
+                                                                                                                                    class="form-control home-bag-volume-input"
+                                                                                                                                    step="0.01"
+                                                                                                                                    min="0.01"
+                                                                                                                                    value="${existingValue}"
+                                                                                                                                    placeholder="Enter volume"
+                                                                                                                                    required>
+                                                                                                                                    <span class="input-group-text">ml</span>
+                                                                                                                            </div>
+                                                                                                                                                                                                                                                </div>
+                                                                                                                        `;
             }
             fieldsHTML += '</div>';
 
@@ -3743,13 +3744,13 @@
                     const time = formatTimeDisplay(rawTime);
 
                     return `
-                                                            <tr>
-                                                                <td style="text-align: center; padding: 12px; font-weight: 600;">${bagNum ?? '-'}</td>
-                                                                <td style="text-align: center; padding: 12px;">${time}</td>
-                                                                <td style="text-align: center; padding: 12px;">${date || '-'}</td>
-                                                                <td style="text-align: center; padding: 12px;"><span style="color: #0d6efd; font-weight: 500;">${volume}</span> ml</td>
-                                                            </tr>
-                                                        `;
+                                                                <tr>
+                                                                    <td style="text-align: center; padding: 12px; font-weight: 600;">${bagNum ?? '-'}</td>
+                                                                    <td style="text-align: center; padding: 12px;">${time}</td>
+                                                                    <td style="text-align: center; padding: 12px;">${date || '-'}</td>
+                                                                    <td style="text-align: center; padding: 12px;"><span style="color: #0d6efd; font-weight: 500;">${volume}</span> ml</td>
+                                                                </tr>
+                                                            `;
                 }).join('');
 
                 tbody.html(rows);
@@ -4088,13 +4089,13 @@
                     const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
                     const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
                     listHtml += `
-                                                        <div class="list-group-item">
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
-                                                                <span class="badge bg-${color}">${ans}</span>
-                                                            </div>
-                                                            ${detailsHtml}
-                                                        </div>`;
+                                                            <div class="list-group-item">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                                    <span class="badge bg-${color}">${ans}</span>
+                                                                </div>
+                                                                ${detailsHtml}
+                                                            </div>`;
                 });
                 listHtml += '</div>';
 
@@ -4150,13 +4151,13 @@
                     const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
                     const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
                     listHtml += `
-                                                        <div class="list-group-item">
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
-                                                                <span class="badge bg-${color}">${ans}</span>
-                                                            </div>
-                                                            ${detailsHtml}
-                                                        </div>`;
+                                                            <div class="list-group-item">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                                    <span class="badge bg-${color}">${ans}</span>
+                                                                </div>
+                                                                ${detailsHtml}
+                                                            </div>`;
                 });
                 listHtml += '</div>';
 
@@ -4204,13 +4205,13 @@
                     const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
                     const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
                     listHtml += `
-                                                        <div class="list-group-item">
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
-                                                                <span class="badge bg-${color}">${ans}</span>
-                                                            </div>
-                                                            ${detailsHtml}
-                                                        </div>`;
+                                                            <div class="list-group-item">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                                    <span class="badge bg-${color}">${ans}</span>
+                                                                </div>
+                                                                ${detailsHtml}
+                                                            </div>`;
                 });
                 listHtml += '</div>';
 
