@@ -149,19 +149,27 @@
                 }
 
                 function fmtTime(t) {
-                    if (!t) return '--';
+                    if ( !t) return '--';
                     if (/\b(am|pm)\b/i.test(t)) return t;
-                    
+
                     // Match time patterns like "16:49" or "16:49:30"
-                    const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-                    if (!m) return t;
-                    
-                    let hh = parseInt(m[1], 10);
-                    const mm = m[2];
-                    const ampm = hh >= 12 ? 'PM' : 'AM';
-                    hh = hh % 12;
-                    if (hh === 0) hh = 12;
-                    return hh + ':' + mm + ' ' + ampm;
+                    const m=t.toString().match(/^(\d {
+                                1, 2
+
+                            }):(\d {
+                                2
+
+                            })(?::(\d {
+                                    2
+                                }))?$/);
+                    if ( !m) return t;
+
+                    let hh=parseInt(m[1], 10);
+                    const mm=m[2];
+                    const ampm=hh>=12 ? 'PM' : 'AM';
+                    hh=hh % 12;
+                    if (hh===0) hh=12;
+                    return hh+':'+mm+' '+ampm;
                 }
 
                 function mapStorageLabel(s) {
@@ -184,22 +192,34 @@
                         const temp=bag.temperature || '--';
                         const method=bag.collection_method || bag.method || '--';
 
-                        const row=`<tr>
-                            <td class="text-center fw-bold">Bag ${bagNum}</td>
-                            <td>${time}</td>
-                            <td>${date}</td>
-                            <td>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]" 
-                                           class="form-control home-bag-volume-input" step="0.01" min="0.01" 
-                                           value="${volume}" placeholder="ml" required>
-                                    <span class="input-group-text">ml</span>
-                                </div>
-                            </td>
-                            <td>${storageLabel}</td>
-                            <td class="text-end">${temp}</td>
-                            <td><small>${method}</small></td>
-                        </tr>`;
+                        const row=`<tr> <td class="text-center fw-bold" >Bag $ {
+                            bagNum
+                        }
+
+                        </td> <td>$ {
+                            time
+                        }
+
+                        </td> <td>$ {
+                            date
+                        }
+
+                        </td> <td> <div class="input-group input-group-sm" > <input type="number" id="home_bag_volume_${index + 1}" name="bag_volumes[]"
+                        class="form-control home-bag-volume-input" step="0.01" min="0.01"
+
+                        value="${volume}" placeholder="ml" required> <span class="input-group-text" >ml</span> </div> </td> <td>$ {
+                            storageLabel
+                        }
+
+                        </td> <td class="text-end" >$ {
+                            temp
+                        }
+
+                        </td> <td><small>$ {
+                            method
+                        }
+
+                        </small></td> </tr>`;
 
                         tbody.append(row);
                         total +=parseFloat(volume) || 0;
@@ -294,9 +314,9 @@
             }
 
             /* Keep table headers aligned on a single horizontal line
-                                               - prevent wrapping of header labels
-                                               - use ellipsis when a header is too long
-                                               - ensure consistent vertical alignment and padding */
+                                                                                               - prevent wrapping of header labels
+                                                                                               - use ellipsis when a header is too long
+                                                                                               - ensure consistent vertical alignment and padding */
             #pending-donations .table thead th {
                 white-space: nowrap;
                 overflow: hidden;
@@ -565,7 +585,7 @@
                 }
 
                 /* Permanently style the Decline button in the Schedule Pickup modal to
-                                                                                                                                                                                                                           match the hovered look of the Cancel (.btn-secondary:hover) button */
+                                                                                                                                                                                                                                                                           match the hovered look of the Cancel (.btn-secondary:hover) button */
                 #schedule-decline-btn {
                     background-color: #5c636a !important;
                     /* darkened secondary */
@@ -597,73 +617,158 @@
             font-weight: 700;
             border-radius: 0.375rem;
         }
+
         /* Assist option badge */
         .assist-option-badge {
-            display:inline-block;
-            padding:0.25rem 0.5rem;
-            font-size:0.65rem;
-            line-height:1.1;
-            font-weight:600;
-            border-radius:0.35rem;
-            background:#6c757d;
-            color:#fff;
-            white-space:nowrap;
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.65rem;
+            line-height: 1.1;
+            font-weight: 600;
+            border-radius: 0.35rem;
+            background: #6c757d;
+            color: #fff;
+            white-space: nowrap;
         }
-        .assist-option-badge.option-direct { background:#0d6efd; }
-        .assist-option-badge.option-existing { background:#198754; }
-        .assist-option-badge.option-letting { background:#6610f2; }
+
+        .assist-option-badge.option-direct {
+            background: #0d6efd;
+        }
+
+        .assist-option-badge.option-existing {
+            background: #198754;
+        }
+
+        .assist-option-badge.option-letting {
+            background: #6610f2;
+        }
 
         /* Assist button styling to match screenshot */
         .assist-btn {
-            background: linear-gradient(90deg,#ff7eb6,#ff65a3) !important;
+            background: linear-gradient(90deg, #ff7eb6, #ff65a3) !important;
             color: #fff !important;
             border: none !important;
             border-radius: 10px !important;
             padding: 0.35rem 0.9rem !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
             white-space: nowrap;
         }
-        .assist-btn:hover, .assist-btn:focus {
+
+        .assist-btn:hover,
+        .assist-btn:focus {
             filter: brightness(0.96);
             color: #fff !important;
         }
 
         /* Search + Assist layout refinement */
-        .search-assist-row { width:100%; gap:0; }
-        .search-assist-row .donation-search-wrap { flex:1; min-width:260px; position: relative; }
-        .search-assist-row .assist-btn { flex-shrink:0; height:32px; line-height:1; }
-        .search-assist-row .assist-btn i { font-size:0.9rem; }
-        .search-assist-row .assist-btn span { font-size:0.78rem; font-weight:600; }
-        .search-assist-row .donation-search-input { height:32px; }
+        .search-assist-row {
+            width: 100%;
+            gap: 0;
+        }
+
+        .search-assist-row .donation-search-wrap {
+            flex: 1;
+            min-width: 260px;
+            position: relative;
+        }
+
+        .search-assist-row .assist-btn {
+            flex-shrink: 0;
+            height: 32px;
+            line-height: 1;
+        }
+
+        .search-assist-row .assist-btn i {
+            font-size: 0.9rem;
+        }
+
+        .search-assist-row .assist-btn span {
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .search-assist-row .donation-search-input {
+            height: 32px;
+        }
 
         /* New donation searchbox (no input-group) */
-        .donation-search-wrap { width:100%; }
+        .donation-search-wrap {
+            width: 100%;
+        }
+
         .donation-search-input {
             width: 100%;
             border: 1px solid #ced4da;
             border-radius: 8px;
             background: #fff;
-            padding-left: 2.9rem !important; /* ensure space for icon, override any global padding */
-            padding-right: 2rem; /* clear button space */
+            padding-left: 2.9rem !important;
+            /* ensure space for icon, override any global padding */
+            padding-right: 2rem;
+            /* clear button space */
             transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
         }
-        .donation-search-input::placeholder { color:#9aa0a6; opacity:.95; }
-        .donation-search-input:focus { border-color:#0d6efd; box-shadow:0 0 0 3px rgba(13,110,253,.12); }
-        .donation-search-icon {
-            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-            color:#6c757d; pointer-events:none; font-size:1rem;
-            width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+
+        .donation-search-input::placeholder {
+            color: #9aa0a6;
+            opacity: .95;
         }
-        .donation-search-clear { position:absolute; right:10px; top:50%; transform:translateY(-50%);
-            display:none; border:none; background:transparent; color:#6c757d; padding:0; line-height:1; }
-        .donation-search-clear:hover { color:#495057; }
-        .donation-search-clear:focus { outline:none; box-shadow:0 0 0 3px rgba(13,110,253,.2); border-radius:50%; }
+
+        .donation-search-input:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, .12);
+        }
+
+        .donation-search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            pointer-events: none;
+            font-size: 1rem;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donation-search-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            border: none;
+            background: transparent;
+            color: #6c757d;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .donation-search-clear:hover {
+            color: #495057;
+        }
+
+        .donation-search-clear:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, .2);
+            border-radius: 50%;
+        }
+
         @media (max-width: 576px) {
-            .search-assist-row { flex-direction:column; }
-            .search-assist-row .assist-btn { width:100%; margin-left:0 !important; margin-top:6px; }
+            .search-assist-row {
+                flex-direction: column;
+            }
+
+            .search-assist-row .assist-btn {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-top: 6px;
+            }
         }
     </style>
 
@@ -722,15 +827,19 @@
                 @if(request('donation_type'))
                     <input type="hidden" name="donation_type" value="{{ request('donation_type') }}">
                 @endif
-                <div class="donation-search-wrap flex-grow-1" role="search" aria-label="Search donations by name or contact number">
+                <div class="donation-search-wrap flex-grow-1" role="search"
+                    aria-label="Search donations by name or contact number">
                     <i class="bi bi-search donation-search-icon" aria-hidden="true"></i>
                     <input type="text" class="form-control form-control-sm donation-search-input" id="searchInput" name="q"
-                        placeholder="Search by name, contact number..." aria-describedby="searchResults" value="{{ request('q') }}" autocomplete="off">
-                    <button type="button" class="donation-search-clear" id="clearSearch" aria-label="Clear search" style="display:none;">
+                        placeholder="Search by name, contact number..." aria-describedby="searchResults"
+                        value="{{ request('q') }}" autocomplete="off">
+                    <button type="button" class="donation-search-clear" id="clearSearch" aria-label="Clear search"
+                        style="display:none;">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 </div>
-                <button type="button" class="btn btn-sm assist-btn ms-2" data-bs-toggle="modal" data-bs-target="#assistWalkInDonationModal">
+                <button type="button" class="btn btn-sm assist-btn ms-2" data-bs-toggle="modal"
+                    data-bs-target="#assistWalkInDonationModal">
                     <i class="fas fa-user-plus"></i>
                     <span>Assist Walk-in Donation</span>
                 </button>
@@ -835,9 +944,10 @@
                                     </thead>
                                     <tbody>
                                         @php
+                                            // Show oldest-first (first-to-submit on top) for pending donations
                                             $pendingOrdered = $pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $pendingDonations->getCollection()->sortByDesc('created_at')
-                                                : collect($pendingDonations)->sortByDesc('created_at');
+                                                ? $pendingDonations->getCollection()->sortBy('created_at')
+                                                : collect($pendingDonations)->sortBy('created_at');
                                         @endphp
                                         @foreach($pendingOrdered as $donation)
                                             <tr>
@@ -1114,6 +1224,10 @@
                                                             data-id="{{ $donation->breastmilk_donation_id }}"
                                                             data-donor="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
                                                             data-address="{{ data_get($donation, 'user.address', 'Not provided') }}"
+                                                            data-latitude="{{ $donation->latitude ?? optional($donation->user)->latitude ?? '' }}"
+                                                            data-longitude="{{ $donation->longitude ?? optional($donation->user)->longitude ?? '' }}"
+                                                            data-first-expression="{{ $donation->first_expression_date ? $donation->first_expression_date->format('M d, Y') : '' }}"
+                                                            data-last-expression="{{ $donation->last_expression_date ? $donation->last_expression_date->format('M d, Y') : '' }}"
                                                             data-date-iso="{{ $donation->scheduled_pickup_date ? $donation->scheduled_pickup_date->format('Y-m-d') : '' }}"
                                                             data-time="{{ $donation->scheduled_pickup_time ?? '' }}"
                                                             data-bags="{{ $donation->number_of_bags }}"
@@ -1185,19 +1299,18 @@
                                                         $assistMap = [
                                                             'no_account_direct_record' => 'Direct Record',
                                                             'record_to_existing_user' => 'Existing User',
-                                                            'milk_letting_activity' => 'Milk Letting Activity',
                                                         ];
                                                         $assistKey = $donation->assist_option ?? null;
                                                         $assistLabel = $assistKey ? ($assistMap[$assistKey] ?? $assistKey) : null;
-                                                        $assistClass = match($assistKey) {
+                                                        $assistClass = match ($assistKey) {
                                                             'no_account_direct_record' => 'option-direct',
                                                             'record_to_existing_user' => 'option-existing',
-                                                            'milk_letting_activity' => 'option-letting',
                                                             default => ''
                                                         };
                                                     @endphp
                                                     @if($assistLabel)
-                                                        <span class="assist-option-badge {{ $assistClass }}" title="Assist Option">{{ $assistLabel }}</span>
+                                                        <span class="assist-option-badge {{ $assistClass }}"
+                                                            title="Assist Option">{{ $assistLabel }}</span>
                                                     @else
                                                         <span class="text-muted">-</span>
                                                     @endif
@@ -1235,7 +1348,7 @@
                                                             <i class="fas fa-eye"></i>
                                                             <span class="d-none d-md-inline"> View</span>
                                                         </button>
-                                                        
+
                                                     </div>
                                                 </td>
                                             </tr>
@@ -1328,7 +1441,7 @@
                                                             <i class="fas fa-eye"></i>
                                                             <span class="d-none d-md-inline"> View</span>
                                                         </button>
-                                                        
+
                                                     </div>
                                                 </td>
                                             </tr>
@@ -1345,7 +1458,7 @@
                             @endif
                         @else
                             <div class="text-center text-muted py-4">
-                                
+
                             </div>
                         @endif
                     </div>
@@ -1353,7 +1466,8 @@
             </div>
 
             <!-- Declined Tab -->
-            <div class="tab-pane fade {{ $tabStatus == 'declined' ? 'show active' : '' }}" id="declined-donations" role="tabpanel">
+            <div class="tab-pane fade {{ $tabStatus == 'declined' ? 'show active' : '' }}" id="declined-donations"
+                role="tabpanel">
                 <div class="card card-standard">
                     <div class="card-header text-white" style="background: linear-gradient(90deg,#ff7eb6,#ff65a3);">
                         <h5 class="mb-0">Declined Donations</h5>
@@ -1381,10 +1495,10 @@
                                         @foreach($declinedOrdered as $donation)
                                             <tr>
                                                 <td class="text-center">
-                                                    <strong>{{ trim(data_get($donation,'user.first_name','').' '.data_get($donation,'user.last_name','')) }}</strong>
+                                                    <strong>{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}</strong>
                                                 </td>
                                                 <td class="text-center">
-                                                    <small>{{ data_get($donation,'user.contact_number','N/A') }}</small>
+                                                    <small>{{ data_get($donation, 'user.contact_number', 'N/A') }}</small>
                                                 </td>
                                                 <td class="text-center">
                                                     @if($donation->donation_method === 'walk_in')
@@ -1394,8 +1508,12 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-center"><strong>{{ $donation->number_of_bags ?? '-' }}</strong></td>
-                                                <td class="text-center"><small>{{ $donation->declined_at ? $donation->declined_at->format('M d, Y g:i A') : 'N/A' }}</small></td>
-                                                <td class="text-center"><small>{{ $donation->decline_reason ?? 'No reason provided' }}</small></td>
+                                                <td class="text-center">
+                                                    <small>{{ $donation->declined_at ? $donation->declined_at->format('M d, Y g:i A') : 'N/A' }}</small>
+                                                </td>
+                                                <td class="text-center">
+                                                    <small>{{ $donation->decline_reason ?? 'No reason provided' }}</small>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -1482,7 +1600,8 @@
         </div>
 
         <!-- Schedule Pickup Modal (Tabbed) -->
-        <div class="modal fade" id="schedulePickupModal" tabindex="-1" aria-labelledby="schedulePickupModalLabel" aria-hidden="true">
+        <div class="modal fade" id="schedulePickupModal" tabindex="-1" aria-labelledby="schedulePickupModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1494,44 +1613,62 @@
                         <div class="modal-body">
                             <ul class="nav nav-tabs" id="schedulePickupTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="pickup-donor-tab" data-bs-toggle="tab" data-bs-target="#pickup-donor" type="button" role="tab" aria-controls="pickup-donor" aria-selected="true"><i class="fas fa-user me-1"></i> Donor Info</button>
+                                    <button class="nav-link active" id="pickup-donor-tab" data-bs-toggle="tab"
+                                        data-bs-target="#pickup-donor" type="button" role="tab" aria-controls="pickup-donor"
+                                        aria-selected="true"><i class="fas fa-user me-1"></i> Donor Info</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="pickup-bags-tab" data-bs-toggle="tab" data-bs-target="#pickup-bags" type="button" role="tab" aria-controls="pickup-bags" aria-selected="false"><i class="fas fa-box-open me-1"></i> Bag Details</button>
+                                    <button class="nav-link" id="pickup-bags-tab" data-bs-toggle="tab"
+                                        data-bs-target="#pickup-bags" type="button" role="tab" aria-controls="pickup-bags"
+                                        aria-selected="false"><i class="fas fa-box-open me-1"></i> Bag Details</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="pickup-screening-tab" data-bs-toggle="tab" data-bs-target="#pickup-screening" type="button" role="tab" aria-controls="pickup-screening" aria-selected="false"><i class="fas fa-clipboard-list me-1"></i> Lifestyle Checklist</button>
+                                    <button class="nav-link" id="pickup-screening-tab" data-bs-toggle="tab"
+                                        data-bs-target="#pickup-screening" type="button" role="tab"
+                                        aria-controls="pickup-screening" aria-selected="false"><i
+                                            class="fas fa-clipboard-list me-1"></i> Lifestyle Checklist</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="pickup-schedule-tab" data-bs-toggle="tab" data-bs-target="#pickup-schedule" type="button" role="tab" aria-controls="pickup-schedule" aria-selected="false"><i class="fas fa-calendar-alt me-1"></i> Schedule</button>
+                                    <button class="nav-link" id="pickup-schedule-tab" data-bs-toggle="tab"
+                                        data-bs-target="#pickup-schedule" type="button" role="tab"
+                                        aria-controls="pickup-schedule" aria-selected="false"><i
+                                            class="fas fa-calendar-alt me-1"></i> Schedule</button>
                                 </li>
                             </ul>
                             <div class="tab-content pt-3" id="schedulePickupTabContent">
                                 <!-- Donor Info Tab -->
-                                <div class="tab-pane fade show active" id="pickup-donor" role="tabpanel" aria-labelledby="pickup-donor-tab">
+                                <div class="tab-pane fade show active" id="pickup-donor" role="tabpanel"
+                                    aria-labelledby="pickup-donor-tab">
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <div class="p-3 border rounded bg-light">
                                                 <h6 class="mb-2"><i class="fas fa-user me-1"></i> Donor</h6>
-                                                <p class="mb-1"><strong>Name:</strong> <span id="schedule-donor-name">&nbsp;</span></p>
-                                                <p class="mb-1"><strong>Address:</strong> <span id="schedule-donor-address">&nbsp;</span></p>
-                                                <p class="mb-1"><strong>Location:</strong> <span id="schedule-donor-location">-</span></p>
+                                                <p class="mb-1"><strong>Name:</strong> <span
+                                                        id="schedule-donor-name">&nbsp;</span></p>
+                                                <p class="mb-1"><strong>Address:</strong> <span
+                                                        id="schedule-donor-address">&nbsp;</span></p>
+                                                <p class="mb-1"><strong>Location:</strong> <span
+                                                        id="schedule-donor-location">-</span></p>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="p-3 border rounded bg-light">
                                                 <h6 class="mb-2"><i class="fas fa-clock me-1"></i> Expression Dates</h6>
-                                                <p class="mb-1"><strong>First Expression:</strong> <span id="schedule-first-expression">&nbsp;</span></p>
-                                                <p class="mb-0"><strong>Last Expression:</strong> <span id="schedule-last-expression">&nbsp;</span></p>
+                                                <p class="mb-1"><strong>First Expression:</strong> <span
+                                                        id="schedule-first-expression">&nbsp;</span></p>
+                                                <p class="mb-0"><strong>Last Expression:</strong> <span
+                                                        id="schedule-last-expression">&nbsp;</span></p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <!-- Bag Details Tab -->
-                                <div class="tab-pane fade" id="pickup-bags" role="tabpanel" aria-labelledby="pickup-bags-tab">
+                                <div class="tab-pane fade" id="pickup-bags" role="tabpanel"
+                                    aria-labelledby="pickup-bags-tab">
                                     <div class="mb-2 d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0">Bag Details</h6>
-                                        <span class="badge bg-info"><strong>Total Volume:</strong> <span id="schedule-total-volume">0</span> ml</span>
+                                        <span class="badge bg-info"><strong>Total Volume:</strong> <span
+                                                id="schedule-total-volume">0</span> ml</span>
                                     </div>
                                     <div class="table-responsive">
                                         <table class="table table-bordered table-sm" id="schedule-bag-details-table">
@@ -1551,29 +1688,38 @@
                                     </div>
                                 </div>
                                 <!-- Lifestyle Checklist Tab -->
-                                <div class="tab-pane fade" id="pickup-screening" role="tabpanel" aria-labelledby="pickup-screening-tab">
-                                    <div id="schedule-screening-loading" class="text-center text-muted py-3" style="display:none;">
+                                <div class="tab-pane fade" id="pickup-screening" role="tabpanel"
+                                    aria-labelledby="pickup-screening-tab">
+                                    <div id="schedule-screening-loading" class="text-center text-muted py-3"
+                                        style="display:none;">
                                         <i class="fas fa-spinner fa-spin me-2"></i> Loading lifestyle checklist...
                                     </div>
                                     <div id="schedule-screening-content" style="max-height:380px; overflow:auto;"></div>
                                 </div>
                                 <!-- Schedule Form Tab -->
-                                <div class="tab-pane fade" id="pickup-schedule" role="tabpanel" aria-labelledby="pickup-schedule-tab">
+                                <div class="tab-pane fade" id="pickup-schedule" role="tabpanel"
+                                    aria-labelledby="pickup-schedule-tab">
                                     <h6 class="mb-3">Schedule Pickup</h6>
                                     <div class="mb-3">
-                                        <label for="pickup-date" class="form-label">Pickup Date <span class="text-danger">*</span></label>
-                                        <input type="date" class="form-control" id="pickup-date" name="scheduled_pickup_date" min="{{ date('Y-m-d') }}" required>
+                                        <label for="pickup-date" class="form-label">Pickup Date <span
+                                                class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="pickup-date"
+                                            name="scheduled_pickup_date" min="{{ date('Y-m-d') }}" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="pickup-time" class="form-label">Pickup Time <span class="text-danger">*</span></label>
-                                        <input type="time" class="form-control" id="pickup-time" name="scheduled_pickup_time" required>
+                                        <label for="pickup-time" class="form-label">Pickup Time <span
+                                                class="text-danger">*</span></label>
+                                        <input type="time" class="form-control" id="pickup-time"
+                                            name="scheduled_pickup_time" required>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-danger" id="schedule-decline-btn" onclick="declineDonation(currentDonationId)"><i class="fas fa-times me-1"></i> Decline</button>
+                            <button type="button" class="btn btn-danger" id="schedule-decline-btn"
+                                onclick="declineDonation(currentDonationId)"><i class="fas fa-times me-1"></i>
+                                Decline</button>
                             <button type="submit" class="btn btn-primary">Save Schedule</button>
                         </div>
                     </form>
@@ -1592,45 +1738,100 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3 p-3" style="background:#f5f5f5;border-radius:6px;">
-                            <div class="row">
-                                <div class="col-12 mb-2">
-                                    <strong class="me-2">Name:</strong>
-                                    <span id="view-donor-name" class="text-dark">&nbsp;</span>
+                        <!-- Tabs Navigation -->
+                        <ul class="nav nav-tabs mb-3" id="viewTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="view-donor-tab" data-bs-toggle="tab"
+                                    data-bs-target="#view-donor-info" type="button" role="tab"
+                                    aria-controls="view-donor-info" aria-selected="true">
+                                    <i class="fas fa-user me-1"></i> Donor Info
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="view-bags-tab" data-bs-toggle="tab"
+                                    data-bs-target="#view-bags-info" type="button" role="tab" aria-controls="view-bags-info"
+                                    aria-selected="false">
+                                    <i class="fas fa-box me-1"></i> Bag Details
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="view-screening-tab" data-bs-toggle="tab"
+                                    data-bs-target="#view-screening" type="button" role="tab" aria-controls="view-screening"
+                                    aria-selected="false">
+                                    <i class="fas fa-clipboard-check me-1"></i> Lifestyle Checklist
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tabs Content -->
+                        <div class="tab-content" id="viewTabsContent">
+                            <!-- Donor Info Tab -->
+                            <div class="tab-pane fade show active" id="view-donor-info" role="tabpanel"
+                                aria-labelledby="view-donor-tab">
+                                <div class="mb-3 p-3" style="background:#f5f5f5;border-radius:6px;">
+                                    <div class="row">
+                                        <div class="col-12 mb-2">
+                                            <strong class="me-2">Name:</strong>
+                                            <span id="view-donor-name" class="text-dark">&nbsp;</span>
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <strong class="me-2">Contact:</strong>
+                                            <span id="view-donor-contact" class="text-dark">&nbsp;</span>
+                                        </div>
+                                        <div class="col-12 mb-2">
+                                            <strong class="me-2">Address:</strong>
+                                            <span id="view-donor-address" class="text-dark">&nbsp;</span>
+                                        </div>
+                                        <!-- Location removed per request -->
+                                    </div>
                                 </div>
-                                <div class="col-12 mb-2">
-                                    <strong class="me-2">Contact:</strong>
-                                    <span id="view-donor-contact" class="text-dark">&nbsp;</span>
-                                </div>
-                                <div class="col-12 mb-2">
-                                    <strong class="me-2">Address:</strong>
-                                    <span id="view-donor-address" class="text-dark">&nbsp;</span>
-                                </div>
-                                <!-- Location removed per request -->
                             </div>
-                        </div>
 
-                        <div class="mb-3">
-                            <strong>Total Bag:</strong> <span id="view-total-bags">-</span>
-                        </div>
-                        <div class="mb-3">
-                            <strong>Total Vol:</strong> <span id="view-total-vol">-</span>
-                        </div>
+                            <!-- Bag Details Tab -->
+                            <div class="tab-pane fade" id="view-bags-info" role="tabpanel" aria-labelledby="view-bags-tab">
+                                <div class="mb-3">
+                                    <strong>Total Bag:</strong> <span id="view-total-bags">-</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Total Vol:</strong> <span id="view-total-vol">-</span>
+                                </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="view-bag-details-table">
-                                <thead>
-                                    <tr>
-                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Bag #</th>
-                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Time</th>
-                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Date</th>
-                                        <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Volume (ml)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="view-bag-details-body">
-                                    <!-- rows inserted dynamically -->
-                                </tbody>
-                            </table>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="view-bag-details-table">
+                                        <thead>
+                                            <tr>
+                                                <th
+                                                    style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                    Bag #</th>
+                                                <th
+                                                    style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                    Time</th>
+                                                <th
+                                                    style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                    Date</th>
+                                                <th
+                                                    style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                    Volume (ml)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="view-bag-details-body">
+                                            <!-- rows inserted dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Lifestyle Checklist Tab -->
+                            <div class="tab-pane fade" id="view-screening" role="tabpanel"
+                                aria-labelledby="view-screening-tab">
+                                <div id="view-screening-loading" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading lifestyle questions...</span>
+                                    </div>
+                                    <p class="text-muted mt-2">Loading lifestyle questions...</p>
+                                </div>
+                                <div id="view-screening-content"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1657,69 +1858,133 @@
                                 style="display:none; white-space:pre-wrap; font-size:0.85rem; max-height:180px; overflow:auto;"
                                 class="mb-2"></div>
 
-                            <div class="row gx-2 gy-2 mb-3 validate-info">
-                                <div class="col-6 col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <strong class="me-1 mb-0 text-nowrap">Donor:</strong>
-                                        <div id="validate-home-donor-name" class="form-control-plaintext mb-0">&nbsp;</div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <strong class="me-1 mb-0 text-nowrap">Address:</strong>
-                                        <div id="validate-home-donor-address" class="form-control-plaintext mb-0">&nbsp;
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <strong class="me-1 mb-0 text-nowrap">First Expression Date:</strong>
-                                        <div id="validate-home-first-expression" class="form-control-plaintext mb-0">&nbsp;
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <strong class="me-1 mb-0 text-nowrap">Last Expression Date:</strong>
-                                        <div id="validate-home-last-expression" class="form-control-plaintext mb-0">&nbsp;
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <input type="hidden" id="home-donation-id" name="donation_id" value="">
                             <input type="hidden" id="home-bags" name="number_of_bags" value="">
 
                             <div id="home-form-error" class="alert alert-danger" role="alert" style="display:none;"
                                 aria-live="polite"></div>
 
-                            <!-- NOTE: Original read-only bag table removed; editable bag details only -->
+                            <!-- Tabs Navigation -->
+                            <ul class="nav nav-tabs mb-3" id="validateTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="validate-donor-tab" data-bs-toggle="tab"
+                                        data-bs-target="#validate-donor" type="button" role="tab"
+                                        aria-controls="validate-donor" aria-selected="true">
+                                        <i class="fas fa-user me-1"></i> Donor Info
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="validate-bags-tab" data-bs-toggle="tab"
+                                        data-bs-target="#validate-bags" type="button" role="tab"
+                                        aria-controls="validate-bags" aria-selected="false">
+                                        <i class="fas fa-box me-1"></i> Bag Details
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="validate-screening-tab" data-bs-toggle="tab"
+                                        data-bs-target="#validate-screening" type="button" role="tab"
+                                        aria-controls="validate-screening" aria-selected="false">
+                                        <i class="fas fa-clipboard-check me-1"></i> Lifestyle Checklist
+                                    </button>
+                                </li>
+                            </ul>
 
-                            <div class="mb-3">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" id="home-bag-details-table">
-                                        <thead>
-                                            <tr>
-                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Bag #</th>
-                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Time</th>
-                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Date</th>
-                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center; width: 180px;">Volume (ml)</th>
-                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Storage</th>
-                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Temp (°C)</th>
-                                                <th style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">Method</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="home-bag-details-body">
-                                            <!-- populated by JS -->
-                                        </tbody>
-                                    </table>
+                            <!-- Tabs Content -->
+                            <div class="tab-content" id="validateTabsContent">
+                                <!-- Donor Info Tab -->
+                                <div class="tab-pane fade show active" id="validate-donor" role="tabpanel"
+                                    aria-labelledby="validate-donor-tab">
+                                    <div class="row gx-2 gy-2 mb-3 validate-info">
+                                        <div class="col-6 col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <strong class="me-1 mb-0 text-nowrap">Donor:</strong>
+                                                <div id="validate-home-donor-name" class="form-control-plaintext mb-0">
+                                                    &nbsp;</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <strong class="me-1 mb-0 text-nowrap">Address:</strong>
+                                                <div id="validate-home-donor-address" class="form-control-plaintext mb-0">
+                                                    &nbsp;
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <strong class="me-1 mb-0 text-nowrap">First Expression Date:</strong>
+                                                <div id="validate-home-first-expression"
+                                                    class="form-control-plaintext mb-0">&nbsp;
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <strong class="me-1 mb-0 text-nowrap">Last Expression Date:</strong>
+                                                <div id="validate-home-last-expression" class="form-control-plaintext mb-0">
+                                                    &nbsp;
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <small class="text-muted">Enter the confirmed volume for each bag before completing
-                                    validation.</small>
-                            </div>
 
-                            <div class="alert alert-info mb-3">
-                                <strong>Total Volume:</strong> <span id="home-total">0 ml</span>
+                                <!-- Bag Details Tab -->
+                                <div class="tab-pane fade" id="validate-bags" role="tabpanel"
+                                    aria-labelledby="validate-bags-tab">
+                                    <div class="mb-3">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" id="home-bag-details-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th
+                                                            style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                            Bag #</th>
+                                                        <th
+                                                            style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                            Time</th>
+                                                        <th
+                                                            style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                            Date</th>
+                                                        <th
+                                                            style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center; width: 180px;">
+                                                            Volume (ml)</th>
+                                                        <th
+                                                            style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                            Storage</th>
+                                                        <th
+                                                            style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                            Temp (°C)</th>
+                                                        <th
+                                                            style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
+                                                            Method</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="home-bag-details-body">
+                                                    <!-- populated by JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <small class="text-muted">Enter the confirmed volume for each bag before completing
+                                            validation.</small>
+                                    </div>
+
+                                    <div class="alert alert-info mb-3">
+                                        <strong>Total Volume:</strong> <span id="home-total">0 ml</span>
+                                    </div>
+                                </div>
+
+                                <!-- Lifestyle Checklist Tab -->
+                                <div class="tab-pane fade" id="validate-screening" role="tabpanel"
+                                    aria-labelledby="validate-screening-tab">
+                                    <div id="validate-screening-loading" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading lifestyle questions...</span>
+                                        </div>
+                                        <p class="text-muted mt-2">Loading lifestyle questions...</p>
+                                    </div>
+                                    <div id="validate-screening-content"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -1758,18 +2023,20 @@
                     <div class="modal-body">
                         <div id="assist-walkin-error" class="alert alert-danger" style="display:none;"></div>
                         <div class="mb-3">
-                            <label class="form-label"><i class="fas fa-tag me-1"></i> Assist Option <span class="text-danger">*</span></label>
+                            <label class="form-label"><i class="fas fa-tag me-1"></i> Assist Option <span
+                                    class="text-danger">*</span></label>
                             <select class="form-select" name="assist_option" required>
                                 <option value="">Select option</option>
                                 <option value="no_account_direct_record">No account or direct record</option>
                                 <option value="record_to_existing_user">Record to existing user</option>
-                                <option value="milk_letting_activity">Milk letting activity</option>
                             </select>
                         </div>
                         <div id="assist-existing-user" class="mb-3" style="display:none;">
                             <label class="form-label"><i class="fas fa-search me-1"></i> Find Existing User</label>
-                            <input type="text" class="form-control" id="assist_user_search" placeholder="Search by name or contact (min 2 chars)">
-                            <div id="assist_user_results" class="list-group mt-2" style="max-height:220px; overflow:auto;"></div>
+                            <input type="text" class="form-control" id="assist_user_search"
+                                placeholder="Search by name or contact (min 2 chars)">
+                            <div id="assist_user_results" class="list-group mt-2" style="max-height:220px; overflow:auto;">
+                            </div>
                             <input type="hidden" name="existing_user_id" id="assist_existing_user_id" value="">
                             <small class="text-muted">When you select a user, their details will auto-fill below.</small>
                         </div>
@@ -1777,11 +2044,13 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label">First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control auto-capitalize-words" name="donor_first_name" required>
+                                <input type="text" class="form-control auto-capitalize-words" name="donor_first_name"
+                                    required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control auto-capitalize-words" name="donor_last_name" required>
+                                <input type="text" class="form-control auto-capitalize-words" name="donor_last_name"
+                                    required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Contact Number <span class="text-danger">*</span></label>
@@ -1847,7 +2116,7 @@
             function extractCardFields(card) {
                 // Mobile card: pull Name, Address, and Contact rows
                 const nameEl = card.querySelector('.card-header-row strong') || card.querySelector('strong');
-                const findRow = (label) => Array.from(card.querySelectorAll('.card-row')).find(r => (r.querySelector('.card-label')||{}).textContent?.toLowerCase().includes(label));
+                const findRow = (label) => Array.from(card.querySelectorAll('.card-row')).find(r => (r.querySelector('.card-label') || {}).textContent?.toLowerCase().includes(label));
                 const addressValEl = (findRow('address') || {}).querySelector ? findRow('address').querySelector('.card-value') : null;
                 const contactValEl = (findRow('contact') || {}).querySelector ? findRow('contact').querySelector('.card-value') : null;
                 const nameText = nameEl ? nameEl.textContent.trim() : '';
@@ -2063,10 +2332,10 @@
                 let html = '<div class="row">';
                 for (let i = 1; i <= n; i++) {
                     html += `
-                                                                                                                            <div class="col-md-6 mb-2">
-                                                                                                                                <label class="form-label">Bag ${i} (ml)</label>
-                                                                                                                                <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
-                                                                                                                            </div>`;
+                                                                                                                                                    <div class="col-md-6 mb-2">
+                                                                                                                                                        <label class="form-label">Bag ${i} (ml)</label>
+                                                                                                                                                        <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
+                                                                                                                                                    </div>`;
                 }
                 html += '</div>';
                 container.innerHTML = html;
@@ -2267,44 +2536,44 @@
                         const method = bag.collection_method || '--';
 
                         const row = `
-                                                                                                                                <tr>
-                                                                                                                                    <td class="text-center fw-bold">Bag ${bagNum}</td>
-                                                                                                                                    <td>${time}</td>
-                                                                                                                                    <td>${date}</td>
-                                                                                                                                    <td>
-                                                                                                                                        <div class="input-group input-group-sm">
-                                                                                                                                            <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
-                                                                                                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
-                                                                                                                                            <span class="input-group-text">ml</span>
-                                                                                                                                        </div>
-                                                                                                                                    </td>
-                                                                                                                                    <td>${storageLabel}</td>
-                                                                                                                                    <td class="text-end">${temp}</td>
-                                                                                                                                    <td><small>${method}</small></td>
-                                                                                                                                </tr>
-                                                                                                                            `;
+                                                                                                                                                        <tr>
+                                                                                                                                                            <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                                                                                                                            <td>${time}</td>
+                                                                                                                                                            <td>${date}</td>
+                                                                                                                                                            <td>
+                                                                                                                                                                <div class="input-group input-group-sm">
+                                                                                                                                                                    <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
+                                                                                                                                                                    <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
+                                                                                                                                                                    <span class="input-group-text">ml</span>
+                                                                                                                                                                </div>
+                                                                                                                                                            </td>
+                                                                                                                                                            <td>${storageLabel}</td>
+                                                                                                                                                            <td class="text-end">${temp}</td>
+                                                                                                                                                            <td><small>${method}</small></td>
+                                                                                                                                                        </tr>
+                                                                                                                                                    `;
                         tbody.append(row);
                         const v = parseFloat(volume); if (!isNaN(v)) total += v;
                     });
                 } else if (numberOfBags > 0) {
                     for (let i = 0; i < numberOfBags; i++) {
                         const row = `
-                                                                                                                                <tr>
-                                                                                                                                    <td class="text-center fw-bold">Bag ${i + 1}</td>
-                                                                                                                                    <td>--</td>
-                                                                                                                                    <td>--</td>
-                                                                                                                                    <td>
-                                                                                                                                        <div class="input-group input-group-sm">
-                                                                                                                                            <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
-                                                                                                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
-                                                                                                                                            <span class="input-group-text">ml</span>
-                                                                                                                                        </div>
-                                                                                                                                    </td>
-                                                                                                                                    <td>--</td>
-                                                                                                                                    <td class="text-end">--</td>
-                                                                                                                                    <td><small>--</small></td>
-                                                                                                                                </tr>
-                                                                                                                            `;
+                                                                                                                                                        <tr>
+                                                                                                                                                            <td class="text-center fw-bold">Bag ${i + 1}</td>
+                                                                                                                                                            <td>--</td>
+                                                                                                                                                            <td>--</td>
+                                                                                                                                                            <td>
+                                                                                                                                                                <div class="input-group input-group-sm">
+                                                                                                                                                                    <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
+                                                                                                                                                                    <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
+                                                                                                                                                                    <span class="input-group-text">ml</span>
+                                                                                                                                                                </div>
+                                                                                                                                                            </td>
+                                                                                                                                                            <td>--</td>
+                                                                                                                                                            <td class="text-end">--</td>
+                                                                                                                                                            <td><small>--</small></td>
+                                                                                                                                                        </tr>
+                                                                                                                                                    `;
                         tbody.append(row);
                     }
                 } else {
@@ -2344,6 +2613,155 @@
                 const dateIso = $(this).data('date-iso') || '';
                 const timeRaw = $(this).data('time') || '';
 
+                // Also populate donor and bag details so tabs have content (even if hidden initially)
+                const donorName = $(this).data('donor') || '';
+                const donorAddress = $(this).data('address') || 'Not provided';
+                const lat = $(this).data('latitude');
+                const lng = $(this).data('longitude');
+                const firstExpression = $(this).data('first-expression') || '--';
+                const lastExpression = $(this).data('last-expression') || '--';
+                const bagDetailsRaw = $(this).attr('data-bag-details');
+                const totalVolume = $(this).data('total') || 0;
+                const numberOfBags = $(this).data('bags') || 0;
+
+                // Populate donor info (so Donor Info tab is populated)
+                $('#schedule-donor-name').text(donorName);
+                $('#schedule-donor-address').text(donorAddress);
+                $('#schedule-first-expression').text(firstExpression);
+                $('#schedule-last-expression').text(lastExpression);
+
+                // Inject location button into modal if coordinates are present
+                (function setScheduleLocation() {
+                    const hasLat = (lat !== undefined && lat !== null && String(lat) !== '');
+                    const hasLng = (lng !== undefined && lng !== null && String(lng) !== '');
+                    if (hasLat && hasLng) {
+                        const safeName = donorName || '';
+                        const safeAddress = donorAddress || '';
+                        $('#schedule-donor-location').html(
+                            `<button class="btn btn-info btn-sm view-location" title="View on Map" data-donor-name="${$('<div>').text(safeName).html()}" data-donor-address="${$('<div>').text(safeAddress).html()}" data-latitude="${lat}" data-longitude="${lng}"><i class="fas fa-map-marked-alt"></i></button>`
+                        );
+                    } else {
+                        $('#schedule-donor-location').text('-');
+                    }
+                })();
+
+                // Parse and render bag details into the Bag Details tab
+                (function populateScheduleBagDetails(raw, totalVol, numBags) {
+                    function safeParseBagDetails_local(raw) {
+                        if (!raw) return [];
+                        if (Array.isArray(raw)) return raw;
+                        if (typeof raw !== 'string') return [];
+                        const s = raw.trim();
+                        if (s === '' || s === 'null') return [];
+                        try { return JSON.parse(s); } catch (e) { }
+                        try {
+                            const txt = document.createElement('textarea');
+                            txt.innerHTML = s;
+                            const decoded = txt.value;
+                            if (decoded && decoded !== s) {
+                                try { return JSON.parse(decoded); } catch (e) { }
+                            }
+                        } catch (e) { }
+                        try {
+                            const replaced = s.replace(/&quot;/g, '"').replace(/&apos;|&#039;/g, "'").replace(/&amp;/g, '&');
+                            return JSON.parse(replaced);
+                        } catch (e) { }
+                        try {
+                            const unescaped = s.replace(/\\\"/g, '"').replace(/\\'/g, "'");
+                            return JSON.parse(unescaped);
+                        } catch (e) { }
+                        return [];
+                    }
+
+                    const bagDetails = safeParseBagDetails_local(raw);
+                    const tbody = $('#schedule-bag-details-body');
+                    tbody.empty();
+                    function formatTime12(t) {
+                        if (!t) return '--';
+                        if (/\b(am|pm)\b/i.test(t)) return t;
+                        const m = t.toString().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+                        if (!m) return t;
+                        let hh = parseInt(m[1], 10);
+                        const mm = m[2];
+                        const ampm = hh >= 12 ? 'PM' : 'AM';
+                        hh = hh % 12; if (hh === 0) hh = 12;
+                        return hh + ':' + mm + ' ' + ampm;
+                    }
+                    function mapStorage(s) {
+                        if (!s || s === '--' || s === '-') return s || '--';
+                        const key = String(s).toLowerCase().trim();
+                        if (key === 'ref' || key === 'refr' || key === 'fridge' || key === 'refrigerator' || key.indexOf('refrig') !== -1) return 'Refrigerator';
+                        if (key === 'frz' || key === 'fridge_freeze' || key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1) return 'Freezer';
+                        if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1 || key.indexOf('room_temp') !== -1 || key === 'roomtemp') return 'Room temperature';
+                        return String(s).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    }
+
+                    let total = 0;
+                    if (bagDetails && bagDetails.length > 0) {
+                        bagDetails.forEach((bag, index) => {
+                            const bagNum = bag.bag_number || (index + 1);
+                            const time = formatTime12(bag.time) || '--';
+                            const date = bag.date || '--';
+                            const volume = bag.volume || '';
+                            const storage = bag.storage_location || '--';
+                            const storageLabel = mapStorage(storage);
+                            const temp = bag.temperature || '--';
+                            const method = bag.collection_method || '--';
+
+                            const row = `
+                                                <tr>
+                                                    <td class="text-center fw-bold">Bag ${bagNum}</td>
+                                                    <td>${time}</td>
+                                                    <td>${date}</td>
+                                                    <td>
+                                                        <div class="input-group input-group-sm">
+                                                            <span class="form-control form-control-sm schedule-bag-volume-display">${volume ? volume : '--'}</span>
+                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="${volume}">
+                                                            <span class="input-group-text">ml</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>${storageLabel}</td>
+                                                    <td class="text-end">${temp}</td>
+                                                    <td><small>${method}</small></td>
+                                                </tr>
+                                            `;
+                            tbody.append(row);
+                            const v = parseFloat(volume); if (!isNaN(v)) total += v;
+                        });
+                    } else if (numBags > 0) {
+                        for (let i = 0; i < numBags; i++) {
+                            const row = `
+                                                <tr>
+                                                    <td class="text-center fw-bold">Bag ${i + 1}</td>
+                                                    <td>--</td>
+                                                    <td>--</td>
+                                                    <td>
+                                                        <div class="input-group input-group-sm">
+                                                            <span class="form-control form-control-sm schedule-bag-volume-display">--</span>
+                                                            <input type="hidden" name="bag_volumes[]" class="schedule-bag-volume" value="">
+                                                            <span class="input-group-text">ml</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>--</td>
+                                                    <td class="text-end">--</td>
+                                                    <td><small>--</small></td>
+                                                </tr>
+                                            `;
+                            tbody.append(row);
+                        }
+                    } else {
+                        tbody.append('<tr><td colspan="7" class="text-center text-muted"><i class="fas fa-info-circle me-2"></i>No bag details available</td></tr>');
+                    }
+
+                    // set total volume display
+                    if (total > 0) {
+                        $('#schedule-total-volume').text(total.toFixed(2));
+                    } else {
+                        const displayTotal = (parseFloat(totalVol) || 0);
+                        $('#schedule-total-volume').text(displayTotal.toFixed(2));
+                    }
+                })(bagDetailsRaw, totalVolume, numberOfBags);
+
                 // Prefill date/time inputs; #pickup-date expects ISO yyyy-mm-dd, #pickup-time expects 24hr HH:MM
                 $('#pickup-date').val(dateIso || '');
 
@@ -2363,15 +2781,9 @@
 
                 $('#pickup-time').val(to24Hour(timeRaw));
 
-                // Hide other modal sections so only date/time are visible
-                $('#schedule-donor-name').closest('.row').hide();
-                $('#schedule-first-expression').closest('.row').hide();
-                // hide bag details container and total volume alert
-                $('#schedule-bag-details-body').closest('.table-responsive').closest('.mb-3').hide();
-                $('#schedule-total-volume').closest('.alert').hide();
-                // hide header/label for scheduling
-                $('#schedulePickupModal').find('hr').hide();
-                $('#schedulePickupModal').find('h6.mb-3').hide();
+                // Don't hide donor info and bag details tabs - they should remain visible and populated
+                // The tabs allow users to review donation details while rescheduling
+                // Only hide unnecessary elements if needed (currently keeping all tabs visible)
 
                 // Set form action to reschedule endpoint and update modal title/button
                 $('#schedulePickupForm').attr('action', `/admin/donations/${currentDonationId}/reschedule-pickup`);
@@ -2614,74 +3026,74 @@
                                 totalVol += parseFloat(volume) || 0;
 
                                 const row = `
-                                                                                                        <tr>
-                                                                                                            <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${bagNum}</td>
-                                                                                                            <td style="padding: 8px;">
-                                                                                                                <input type="text" name="bag_time[]" class="form-control" value="${time}" placeholder="e.g. 4:49 PM" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                            </td>
-                                                                                                            <td style="padding: 8px;">
-                                                                                                                <input type="text" name="bag_date[]" class="form-control" value="${bag.date || ''}" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                            </td>
-                                                                                                            <td style="padding: 8px;">
-                                                                                                                <div class="input-group">
-                                                                                                                    <input type="number"
-                                                                                                                           id="home_bag_volume_${index + 1}"
-                                                                                                                           name="bag_volumes[]"
-                                                                                                                           class="form-control home-bag-volume-input"
-                                                                                                                           step="0.01"
-                                                                                                                           min="0.01"
-                                                                                                                           value="${volume}"
-                                                                                                                           placeholder="400"
-                                                                                                                           style="border: 1px solid #dee2e6; padding: 8px; text-align: right;"
-                                                                                                                           required>
-                                                                                                                    <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
-                                                                                                                </div>
-                                                                                                            </td>
-                                                                                                            <td style="padding: 8px;">
-                                                                                                                <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                    ${(() => {
+                                                                                                                                <tr>
+                                                                                                                                    <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${bagNum}</td>
+                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                        <input type="text" name="bag_time[]" class="form-control" value="${time}" placeholder="e.g. 4:49 PM" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                    </td>
+                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                        <input type="text" name="bag_date[]" class="form-control" value="${bag.date || ''}" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                    </td>
+                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                        <div class="input-group">
+                                                                                                                                            <input type="number"
+                                                                                                                                                   id="home_bag_volume_${index + 1}"
+                                                                                                                                                   name="bag_volumes[]"
+                                                                                                                                                   class="form-control home-bag-volume-input"
+                                                                                                                                                   step="0.01"
+                                                                                                                                                   min="0.01"
+                                                                                                                                                   value="${volume}"
+                                                                                                                                                   placeholder="400"
+                                                                                                                                                   style="border: 1px solid #dee2e6; padding: 8px; text-align: right;"
+                                                                                                                                                   required>
+                                                                                                                                            <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
+                                                                                                                                        </div>
+                                                                                                                                    </td>
+                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                        <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                            ${(() => {
                                         const raw = bag.storage_location || '';
                                         const key = String(raw).toLowerCase();
                                         if (key.indexOf('ref') !== -1 || key.indexOf('refrig') !== -1 || key.indexOf('fridge') !== -1) return `
-                                                                                                                            <option value="Refrigerator" selected>Refrigerator</option>
-                                                                                                                            <option value="Freezer">Freezer</option>
-                                                                                                                            <option value="Room temperature">Room temperature</option>
-                                                                                                                            <option value="Other">Other</option>
-                                                                                                                        `;
+                                                                                                                                                    <option value="Refrigerator" selected>Refrigerator</option>
+                                                                                                                                                    <option value="Freezer">Freezer</option>
+                                                                                                                                                    <option value="Room temperature">Room temperature</option>
+                                                                                                                                                    <option value="Other">Other</option>
+                                                                                                                                                `;
                                         if (key.indexOf('freez') !== -1 || key.indexOf('freeze') !== -1 || key.indexOf('frz') !== -1) return `
-                                                                                                                            <option value="Refrigerator">Refrigerator</option>
-                                                                                                                            <option value="Freezer" selected>Freezer</option>
-                                                                                                                            <option value="Room temperature">Room temperature</option>
-                                                                                                                            <option value="Other">Other</option>
-                                                                                                                        `;
+                                                                                                                                                    <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                    <option value="Freezer" selected>Freezer</option>
+                                                                                                                                                    <option value="Room temperature">Room temperature</option>
+                                                                                                                                                    <option value="Other">Other</option>
+                                                                                                                                                `;
                                         if (key.indexOf('room') !== -1 || key.indexOf('ambient') !== -1) return `
-                                                                                                                            <option value="Refrigerator">Refrigerator</option>
-                                                                                                                            <option value="Freezer">Freezer</option>
-                                                                                                                            <option value="Room temperature" selected>Room temperature</option>
-                                                                                                                            <option value="Other">Other</option>
-                                                                                                                        `;
+                                                                                                                                                    <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                    <option value="Freezer">Freezer</option>
+                                                                                                                                                    <option value="Room temperature" selected>Room temperature</option>
+                                                                                                                                                    <option value="Other">Other</option>
+                                                                                                                                                `;
                                         if (raw && raw !== '') return `
-                                                                                                                            <option value="Refrigerator">Refrigerator</option>
-                                                                                                                            <option value="Freezer">Freezer</option>
-                                                                                                                            <option value="Room temperature">Room temperature</option>
-                                                                                                                            <option value="Other" selected>Other</option>
-                                                                                                                        `;
+                                                                                                                                                    <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                    <option value="Freezer">Freezer</option>
+                                                                                                                                                    <option value="Room temperature">Room temperature</option>
+                                                                                                                                                    <option value="Other" selected>Other</option>
+                                                                                                                                                `;
                                         return `
-                                                                                                                            <option value="Refrigerator">Refrigerator</option>
-                                                                                                                            <option value="Freezer">Freezer</option>
-                                                                                                                            <option value="Room temperature">Room temperature</option>
-                                                                                                                            <option value="Other">Other</option>
-                                                                                                                        `;
+                                                                                                                                                    <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                    <option value="Freezer">Freezer</option>
+                                                                                                                                                    <option value="Room temperature">Room temperature</option>
+                                                                                                                                                    <option value="Other">Other</option>
+                                                                                                                                                `;
                                     })()}
-                                                                                                                </select>
-                                                                                                            </td>
-                                                                                                            <td style="padding: 8px;">
-                                                                                                                <input type="text" name="bag_temp[]" class="form-control" value="${bag.temperature || ''}" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
-                                                                                                            </td>
-                                                                                                            <td style="padding: 8px;">
-                                                                                                                <input type="text" name="bag_method[]" class="form-control" value="${bag.collection_method || ''}" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                            </td>
-                                                                                                        </tr>`;
+                                                                                                                                        </select>
+                                                                                                                                    </td>
+                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                        <input type="text" name="bag_temp[]" class="form-control" value="${bag.temperature || ''}" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                                                                                                                                    </td>
+                                                                                                                                    <td style="padding: 8px;">
+                                                                                                                                        <input type="text" name="bag_method[]" class="form-control" value="${bag.collection_method || ''}" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                    </td>
+                                                                                                                                </tr>`;
                                 tbody.append(row);
                                 tbody.closest('.table-responsive').show();
                             });
@@ -2691,39 +3103,39 @@
                             if (n > 0) {
                                 for (let i = 1; i <= n; i++) {
                                     const row = `
-                                                                                                                    <tr>
-                                                                                                                        <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${i}</td>
-                                                                                                                        <td style="padding: 8px;">
-                                                                                                                            <input type="text" name="bag_time[]" class="form-control" value="" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                        </td>
-                                                                                                                        <td style="padding: 8px;">
-                                                                                                                            <input type="text" name="bag_date[]" class="form-control" value="" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                        </td>
-                                                                                                                        <td style="padding: 8px;">
-                                                                                                                            <div class="input-group">
-                                                                                                                                <input type="number"
-                                                                                                                                       id="home_bag_volume_${i}"
-                                                                                                                                       name="bag_volumes[]"
-                                                                                                                                       class="form-control home-bag-volume-input"
-                                                                                                                                       step="0.01" min="0.01" placeholder="400" style="border: 1px solid #dee2e6; padding: 8px; text-align: right;" required>
-                                                                                                                                <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
-                                                                                                                            </div>
-                                                                                                                        </td>
-                                                                                                                        <td style="padding: 8px;">
-                                                                                                                            <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                                <option value="Refrigerator">Refrigerator</option>
-                                                                                                                                <option value="Freezer">Freezer</option>
-                                                                                                                                <option value="Room temperature">Room temperature</option>
-                                                                                                                                <option value="Other">Other</option>
-                                                                                                                            </select>
-                                                                                                                        </td>
-                                                                                                                        <td style="padding: 8px;">
-                                                                                                                            <input type="text" name="bag_temp[]" class="form-control" value="" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
-                                                                                                                        </td>
-                                                                                                                        <td style="padding: 8px;">
-                                                                                                                            <input type="text" name="bag_method[]" class="form-control" value="" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
-                                                                                                                        </td>
-                                                                                                                    </tr>`;
+                                                                                                                                            <tr>
+                                                                                                                                                <td style="text-align: center; padding: 12px; font-weight: 600;">Bag ${i}</td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <input type="text" name="bag_time[]" class="form-control" value="" placeholder="time" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <input type="text" name="bag_date[]" class="form-control" value="" placeholder="date" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <div class="input-group">
+                                                                                                                                                        <input type="number"
+                                                                                                                                                               id="home_bag_volume_${i}"
+                                                                                                                                                               name="bag_volumes[]"
+                                                                                                                                                               class="form-control home-bag-volume-input"
+                                                                                                                                                               step="0.01" min="0.01" placeholder="400" style="border: 1px solid #dee2e6; padding: 8px; text-align: right;" required>
+                                                                                                                                                        <span class="input-group-text" style="background: white; border-left: 0; color: #0d6efd; font-weight: 500;">ml</span>
+                                                                                                                                                    </div>
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <select name="bag_storage[]" class="form-select" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                        <option value="Refrigerator">Refrigerator</option>
+                                                                                                                                                        <option value="Freezer">Freezer</option>
+                                                                                                                                                        <option value="Room temperature">Room temperature</option>
+                                                                                                                                                        <option value="Other">Other</option>
+                                                                                                                                                    </select>
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <input type="text" name="bag_temp[]" class="form-control" value="" placeholder="temp" style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                                                                                                                                                </td>
+                                                                                                                                                <td style="padding: 8px;">
+                                                                                                                                                    <input type="text" name="bag_method[]" class="form-control" value="" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
+                                                                                                                                                </td>
+                                                                                                                                            </tr>`;
                                     tbody.append(row);
                                 }
                                 totalVol = 0;
@@ -2835,17 +3247,17 @@
                 let fieldsHTML = '<div class="row">';
                 for (let i = 1; i <= bagCount; i++) {
                     fieldsHTML += `
-                                                                                    <div class="col-md-6 mb-2">
-                                                                                                                                                                                                                                            <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                                                                                                                            <input type="number" 
-                                                                                                                                                                                                                                                   id="walkin_bag_volume_${i}" 
-                                                                                                                                                                                                                                                   name="bag_volumes[]" 
-                                                                                                                                                                                                                                                   class="form-control walkin-bag-volume-input" 
-                                                                                                                                                                                                                                                   step="0.01" 
-                                                                                                                                                                                                                                                   min="0.01" 
-                                                                                                                                                                                                                                                   required>
-                                                                                                                                                                                                                                        </div>
-                                                                                `;
+                                                                                                            <div class="col-md-6 mb-2">
+                                                                                                                                                                                                                                                                    <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                                                                    <input type="number" 
+                                                                                                                                                                                                                                                                           id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                                                           name="bag_volumes[]" 
+                                                                                                                                                                                                                                                                           class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                                                           step="0.01" 
+                                                                                                                                                                                                                                                                           min="0.01" 
+                                                                                                                                                                                                                                                                           required>
+                                                                                                                                                                                                                                                                </div>
+                                                                                                        `;
                 }
                 fieldsHTML += '</div>';
 
@@ -3126,6 +3538,20 @@
             }
         });
 
+        // When Validate modal's Lifestyle Checklist tab is shown, load screening
+        document.getElementById('validate-screening-tab')?.addEventListener('shown.bs.tab', function () {
+            if (currentDonationId) {
+                try { loadValidateScreening(currentDonationId); } catch (e) { /* ignore */ }
+            }
+        });
+
+        // When View modal's Lifestyle Checklist tab is shown, load screening
+        document.getElementById('view-screening-tab')?.addEventListener('shown.bs.tab', function () {
+            if (currentDonationId) {
+                try { loadViewScreening(currentDonationId); } catch (e) { /* ignore */ }
+            }
+        });
+
         $('#validateHomeCollectionModal').on('hidden.bs.modal', function () {
             $('#validateHomeCollectionForm')[0].reset();
             $('#home-volume-fields').html('');
@@ -3146,6 +3572,16 @@
             // Clear original and editable bag tables
             $('#home-bag-details-body').empty();
             $('#home-bag-original-body').empty();
+            // Clear lifestyle screening content
+            $('#validate-screening-content').html('');
+            $('#validate-screening-loading').show();
+        });
+
+        $('#viewHomeDonationModal').on('hidden.bs.modal', function () {
+            // Clear lifestyle screening content
+            $('#view-screening-content').html('');
+            $('#view-screening-loading').show();
+            currentDonationId = null;
         });            // Global functions for individual bag volume management
         window.generateWalkinBagFields = function () {
             const bagCount = parseInt($('#walkin-bags').val()) || 0;
@@ -3177,19 +3613,19 @@
                 // Restore existing value if it exists
                 const existingValue = existingValues[i] || '';
                 fieldsHTML += `
-                                                                                    <div class="col-md-6 mb-2">
-                                                                                                                                                                                                                                            <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
-                                                                                                                                                                                                                                            <input type="number" 
-                                                                                                                                                                                                                                                   id="walkin_bag_volume_${i}" 
-                                                                                                                                                                                                                                                   name="bag_volumes[]" 
-                                                                                                                                                                                                                                                   class="form-control walkin-bag-volume-input" 
-                                                                                                                                                                                                                                                   step="0.01" 
-                                                                                                                                                                                                                                                   min="0.01" 
-                                                                                                                                                                                                                                                   value="${existingValue}"
-                                                                                                                                                                                                                                                   placeholder="Enter volume"
-                                                                                                                                                                                                                                                   required>
-                                                                                                                                                                                                                                        </div>
-                                                                                `;
+                                                                                                            <div class="col-md-6 mb-2">
+                                                                                                                                                                                                                                                                    <label for="walkin_bag_volume_${i}" class="form-label">Bag ${i} Volume (ml):</label>
+                                                                                                                                                                                                                                                                    <input type="number" 
+                                                                                                                                                                                                                                                                           id="walkin_bag_volume_${i}" 
+                                                                                                                                                                                                                                                                           name="bag_volumes[]" 
+                                                                                                                                                                                                                                                                           class="form-control walkin-bag-volume-input" 
+                                                                                                                                                                                                                                                                           step="0.01" 
+                                                                                                                                                                                                                                                                           min="0.01" 
+                                                                                                                                                                                                                                                                           value="${existingValue}"
+                                                                                                                                                                                                                                                                           placeholder="Enter volume"
+                                                                                                                                                                                                                                                                           required>
+                                                                                                                                                                                                                                                                </div>
+                                                                                                        `;
             }
             fieldsHTML += '</div>';
 
@@ -3250,24 +3686,24 @@
                 }
 
                 fieldsHTML += `
-                                                                                    <div class="col-md-6">
-                                                                                        <div class="input-group input-group-lg">
-                                                                                            <span class="input-group-text bg-primary text-white fw-bold">
-                                                                                                <i class="fas fa-flask me-2"></i>Bag ${i}
-                                                                                            </span>
-                                                                                            <input type="number"
-                                                                                                id="home_bag_volume_${i}"
-                                                                                                name="bag_volumes[]"
-                                                                                                class="form-control home-bag-volume-input"
-                                                                                                step="0.01"
-                                                                                                min="0.01"
-                                                                                                value="${existingValue}"
-                                                                                                placeholder="Enter volume"
-                                                                                                required>
-                                                                                                <span class="input-group-text">ml</span>
-                                                                                        </div>
-                                                                                                                                                                                                            </div>
-                                                                                    `;
+                                                                                                            <div class="col-md-6">
+                                                                                                                <div class="input-group input-group-lg">
+                                                                                                                    <span class="input-group-text bg-primary text-white fw-bold">
+                                                                                                                        <i class="fas fa-flask me-2"></i>Bag ${i}
+                                                                                                                    </span>
+                                                                                                                    <input type="number"
+                                                                                                                        id="home_bag_volume_${i}"
+                                                                                                                        name="bag_volumes[]"
+                                                                                                                        class="form-control home-bag-volume-input"
+                                                                                                                        step="0.01"
+                                                                                                                        min="0.01"
+                                                                                                                        value="${existingValue}"
+                                                                                                                        placeholder="Enter volume"
+                                                                                                                        required>
+                                                                                                                        <span class="input-group-text">ml</span>
+                                                                                                                </div>
+                                                                                                                                                                                                                                    </div>
+                                                                                                            `;
             }
             fieldsHTML += '</div>';
 
@@ -3391,13 +3827,13 @@
                     const time = formatTimeDisplay(rawTime);
 
                     return `
-                            <tr>
-                                <td style="text-align: center; padding: 12px; font-weight: 600;">${bagNum ?? '-'}</td>
-                                <td style="text-align: center; padding: 12px;">${time}</td>
-                                <td style="text-align: center; padding: 12px;">${date || '-'}</td>
-                                <td style="text-align: center; padding: 12px;"><span style="color: #0d6efd; font-weight: 500;">${volume}</span> ml</td>
-                            </tr>
-                        `;
+                                                    <tr>
+                                                        <td style="text-align: center; padding: 12px; font-weight: 600;">${bagNum ?? '-'}</td>
+                                                        <td style="text-align: center; padding: 12px;">${time}</td>
+                                                        <td style="text-align: center; padding: 12px;">${date || '-'}</td>
+                                                        <td style="text-align: center; padding: 12px;"><span style="color: #0d6efd; font-weight: 500;">${volume}</span> ml</td>
+                                                    </tr>
+                                                `;
                 }).join('');
 
                 tbody.html(rows);
@@ -3407,6 +3843,9 @@
             const modalEl = document.getElementById('viewHomeDonationModal');
             const bsModal = new bootstrap.Modal(modalEl, { keyboard: true });
             bsModal.show();
+
+            // Store donation ID for lifestyle screening tab
+            currentDonationId = id;
 
             // Fetch fresh details and overwrite fallbacks when available
             $.ajax({
@@ -3733,16 +4172,16 @@
                     const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
                     const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
                     listHtml += `
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
-                                <span class="badge bg-${color}">${ans}</span>
-                            </div>
-                            ${detailsHtml}
-                        </div>`;
+                                                <div class="list-group-item">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                        <span class="badge bg-${color}">${ans}</span>
+                                                    </div>
+                                                    ${detailsHtml}
+                                                </div>`;
                 });
                 listHtml += '</div>';
-                
+
                 // Set innerHTML once to replace all content
                 box.innerHTML = listHtml;
             } catch (e) {
@@ -3759,18 +4198,126 @@
             return div.innerHTML;
         }
 
+        // Load and render lifestyle checklist for Validate Home Collection modal
+        async function loadValidateScreening(donationId) {
+            const loading = document.getElementById('validate-screening-loading');
+            const box = document.getElementById('validate-screening-content');
+            if (!box || !donationId) return;
+
+            // Clear any existing content first
+            box.innerHTML = '';
+            if (loading) loading.style.display = 'block';
+
+            try {
+                const resp = await fetch(`/admin/donations/${donationId}/screening`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!resp.ok) {
+                    let msg = 'Failed to load lifestyle checklist';
+                    if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
+                    if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
+                    box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
+                    return;
+                }
+                const data = await resp.json();
+                const questions = Array.isArray(data.questions) ? data.questions : [];
+
+                if (!questions.length) {
+                    box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
+                    return;
+                }
+
+                // Build HTML string
+                let listHtml = '<div class="list-group">';
+                questions.forEach((q, idx) => {
+                    const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
+                    const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
+                    const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
+                    listHtml += `
+                                                <div class="list-group-item">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                        <span class="badge bg-${color}">${ans}</span>
+                                                    </div>
+                                                    ${detailsHtml}
+                                                </div>`;
+                });
+                listHtml += '</div>';
+
+                box.innerHTML = listHtml;
+            } catch (e) {
+                box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        // Load and render lifestyle checklist for View Donation Details modal
+        async function loadViewScreening(donationId) {
+            const loading = document.getElementById('view-screening-loading');
+            const box = document.getElementById('view-screening-content');
+            if (!box || !donationId) return;
+
+            // Clear any existing content first
+            box.innerHTML = '';
+            if (loading) loading.style.display = 'block';
+
+            try {
+                const resp = await fetch(`/admin/donations/${donationId}/screening`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!resp.ok) {
+                    let msg = 'Failed to load lifestyle checklist';
+                    if (resp.status === 401) msg = 'Unauthorized. Please log in as admin to view the lifestyle checklist.';
+                    if (resp.status === 404) msg = 'Lifestyle checklist not found for this donation.';
+                    box.innerHTML = `<div class="alert alert-warning" role="alert">${msg}</div>`;
+                    return;
+                }
+                const data = await resp.json();
+                const questions = Array.isArray(data.questions) ? data.questions : [];
+
+                if (!questions.length) {
+                    box.innerHTML = '<div class="text-muted">No lifestyle checklist available.</div>';
+                    return;
+                }
+
+                // Build HTML string
+                let listHtml = '<div class="list-group">';
+                questions.forEach((q, idx) => {
+                    const ans = (q && q.answer) ? String(q.answer).toUpperCase() : 'N/A';
+                    const color = ans === 'YES' ? 'success' : (ans === 'NO' ? 'danger' : 'secondary');
+                    const detailsHtml = q.details ? `<div class="mt-1 small text-muted">Details: ${escapeHtml(String(q.details))}</div>` : '';
+                    listHtml += `
+                                                <div class="list-group-item">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span>${idx + 1}. ${escapeHtml(q.label || q.key || 'Question')}</span>
+                                                        <span class="badge bg-${color}">${ans}</span>
+                                                    </div>
+                                                    ${detailsHtml}
+                                                </div>`;
+                });
+                listHtml += '</div>';
+
+                box.innerHTML = listHtml;
+            } catch (e) {
+                box.innerHTML = '<div class="alert alert-danger" role="alert">Error loading lifestyle checklist.</div>';
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
         // Auto-capitalize first letter of each word
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.auto-capitalize-words').forEach(function(input) {
-                input.addEventListener('input', function(e) {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.auto-capitalize-words').forEach(function (input) {
+                input.addEventListener('input', function (e) {
                     const cursorPosition = e.target.selectionStart;
                     const originalLength = e.target.value.length;
-                    
+
                     // Capitalize first letter of each word
-                    e.target.value = e.target.value.replace(/\b\w/g, function(char) {
+                    e.target.value = e.target.value.replace(/\b\w/g, function (char) {
                         return char.toUpperCase();
                     });
-                    
+
                     // Restore cursor position
                     const newLength = e.target.value.length;
                     const newPosition = cursorPosition + (newLength - originalLength);

@@ -20,9 +20,11 @@
             padding-bottom: 0;
             margin-bottom: 0;
         }
-        .nav-tabs.hs-tabs .nav-item { 
+
+        .nav-tabs.hs-tabs .nav-item {
             flex: 0 0 auto;
         }
+
         .nav-tabs.hs-tabs .nav-link {
             padding: 0.25rem 0.5rem;
             font-size: 0.85rem;
@@ -34,9 +36,11 @@
             transition: all 0.2s ease;
             font-weight: 500;
         }
+
         .nav-tabs.hs-tabs .nav-link:hover {
-            background: rgba(0,0,0,0.02);
+            background: rgba(0, 0, 0, 0.02);
         }
+
         .nav-tabs.hs-tabs .count-badge {
             display: inline-flex;
             align-items: center;
@@ -50,30 +54,54 @@
             line-height: 1;
             margin-left: 0.3rem;
         }
+
         /* inactive colors */
-        .nav-tabs.hs-tabs .nav-link.hs-pending { color: #6c757d; }
-        .nav-tabs.hs-tabs .nav-link.hs-accepted { color: #6c757d; }
-        .nav-tabs.hs-tabs .nav-link.hs-declined { color: #6c757d; }
+        .nav-tabs.hs-tabs .nav-link.hs-pending {
+            color: #6c757d;
+        }
+
+        .nav-tabs.hs-tabs .nav-link.hs-accepted {
+            color: #6c757d;
+        }
+
+        .nav-tabs.hs-tabs .nav-link.hs-declined {
+            color: #6c757d;
+        }
+
         /* active fills - remove background, use border-bottom */
-        .nav-tabs.hs-tabs .nav-link.active.hs-pending { 
-            background-color: transparent; 
-            color: #ffc107; 
+        .nav-tabs.hs-tabs .nav-link.active.hs-pending {
+            background-color: transparent;
+            color: #ffc107;
             border-bottom-color: #ffc107;
         }
-        .nav-tabs.hs-tabs .nav-link.active.hs-accepted { 
-            background-color: transparent; 
-            color: #198754; 
+
+        .nav-tabs.hs-tabs .nav-link.active.hs-accepted {
+            background-color: transparent;
+            color: #198754;
             border-bottom-color: #198754;
         }
-        .nav-tabs.hs-tabs .nav-link.active.hs-declined { 
-            background-color: transparent; 
-            color: #dc3545; 
+
+        .nav-tabs.hs-tabs .nav-link.active.hs-declined {
+            background-color: transparent;
+            color: #dc3545;
             border-bottom-color: #dc3545;
         }
+
         /* count bubble colors (both active/inactive) */
-        .nav-tabs.hs-tabs .nav-link.hs-pending .count-badge { background: #ffc107; color: #111827; }
-        .nav-tabs.hs-tabs .nav-link.hs-accepted .count-badge { background: #198754; color: #fff; }
-        .nav-tabs.hs-tabs .nav-link.hs-declined .count-badge { background: #dc3545; color: #fff; }
+        .nav-tabs.hs-tabs .nav-link.hs-pending .count-badge {
+            background: #ffc107;
+            color: #111827;
+        }
+
+        .nav-tabs.hs-tabs .nav-link.hs-accepted .count-badge {
+            background: #198754;
+            color: #fff;
+        }
+
+        .nav-tabs.hs-tabs .nav-link.hs-declined .count-badge {
+            background: #dc3545;
+            color: #fff;
+        }
 
         .nav-tabs .nav-link.active {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -96,23 +124,23 @@
 
         .table tbody tr {
             transition: box-shadow 0.2s, background 0.2s;
-                /* Archive button styles removed */
-                /* .hs-archive-btn {
-                    background: #f8f9fa;
-                    border: 1px solid #dee2e6;
-                    color: #6c757d;
-                    padding: 0.375rem 0.75rem;
-                    border-radius: 6px;
-                }
+            /* Archive button styles removed */
+            /* .hs-archive-btn {
+                        background: #f8f9fa;
+                        border: 1px solid #dee2e6;
+                        color: #6c757d;
+                        padding: 0.375rem 0.75rem;
+                        border-radius: 6px;
+                    }
 
-                .hs-archive-btn:hover {
-                    background: #f1f3f5;
-                    color: #495057;
-                }
+                    .hs-archive-btn:hover {
+                        background: #f1f3f5;
+                        color: #495057;
+                    }
 
-                .hs-archive-btn i {
-                    margin-right: 0.25rem;
-                } */
+                    .hs-archive-btn i {
+                        margin-right: 0.25rem;
+                    } */
         }
 
         .card-header {
@@ -756,7 +784,7 @@
                     <span class="count-badge">{{ $declinedCount }}</span>
                 </a>
             </li>
-            
+
         </ul>
 
         {{-- Search Input Below Tabs --}}
@@ -802,9 +830,16 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        $screeningsOrdered = $healthScreenings instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                            ? $healthScreenings->getCollection()->sortByDesc('created_at')
-                                            : collect($healthScreenings)->sortByDesc('created_at');
+                                        // For pending tab, show oldest-first (first-to-submit on top). Keep newest-first for other statuses.
+                                        if ($healthScreenings instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+                                            $screeningsOrdered = ($status === 'pending')
+                                                ? $healthScreenings->getCollection()->sortBy('created_at')
+                                                : $healthScreenings->getCollection()->sortByDesc('created_at');
+                                        } else {
+                                            $screeningsOrdered = ($status === 'pending')
+                                                ? collect($healthScreenings)->sortBy('created_at')
+                                                : collect($healthScreenings)->sortByDesc('created_at');
+                                        }
                                     @endphp
                                     @foreach($screeningsOrdered as $index => $screening)
                                         <tr>
@@ -904,7 +939,7 @@
                                             data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
                                             Review
                                         </button>
-                                        
+
                                     </div>
                                 </div>
                             </div>
@@ -1063,191 +1098,194 @@
                                             <span
                                                 class="badge bg-{{ $screening->status == 'accepted' ? 'success' : ($screening->status == 'declined' ? 'danger' : 'warning text-dark') }}">
                                                 {{ ucfirst($screening->status) }}
-                                                </span> </div>
-                                                <div class="col-md-6 mb-2 d-flex align-items-center">
-                                                    <strong class="me-2 mb-0">Submitted:</strong>
-                                                    <span>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
-                                                    </div> @if($screening->status == 'accepted' && $screening->date_accepted)
-                                                            <div class="col-md-6 mb-2 d-flex align-items-center">
-                                                        <strong class="me-2 mb-0">Accepted At:</strong>
-                                                        <span>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
-                                                    </div> @endif @if($screening->status == 'declined' && $screening->date_declined)
-                                                            <div class="col-md-6 mb-2 d-flex align-items-center">
-                                                        <strong class="me-2 mb-0">Declined At:</strong>
-                                                        <span>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
-                                                    </div> @endif @if(!empty($screening->admin_notes))
-                                                            <div class="col-12 mb-2 mt-2">
-                                                        <strong>Admin Comments:</strong>
-                                                        <div class="mt-2 p-3 bg-light border rounded">
-                                                            {{ $screening->admin_notes }}
-                                                            </div> </div>
-                                                    @endif
-                                                        </div> </div>
-
-                                                        {{-- Admin Comments/Notes Section --}}
-                                                        @if($screening->status == 'pending')
-                                                                    <div class="mb-4">
-                                                                <h6 class="text-primary border-bottom pb-2 mb-3"><i
-                                                                        class="bi bi-chat-left-text-fill me-2"></i>Admin Action</h6>
-                                                                <div class="row">
-                                                                    <div class="col-12 mb-2">
-                                                                        <textarea class="form-control admin-comments-textarea rounded mt-2"
-                                                                            id="adminComments{{ $screening->health_screening_id }}"
-                                                                            name="comments" rows="3"
-                                                                            placeholder="Enter comments or notes (required for declining, optional for accepting)"></textarea>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                    </div> <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Close</button>
-                                                    @if($screening->status == 'pending')
-                                                            {{-- Keep accept/decline actions for pending items only; archive/restore handled
-                                                        in archived tab --}}
-                                                        <button type="button" class="btn btn-danger"
-                                                            onclick="declineScreening({{ $screening->health_screening_id }})">
-                                                            <i class="bi bi-x-circle me-1"></i> Decline
-                                                        </button>
-                                                        <button type="button" class="btn btn-success"
-                                                            onclick="acceptScreening({{ $screening->health_screening_id }})">
-                                                            <i class="bi bi-check-circle me-1"></i> Accept
-                                                        </button>
-                                                    @elseif($screening->status == 'declined')
-                                                            {{-- Allow undo/accept when declined --}}
-                                                        <button type="button" class="btn btn-success"
-                                                            onclick="undoDeclineScreening({{ $screening->health_screening_id }})">
-                                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Undo & Accept
-                                                        </button>
-                                                    @endif
-                                                    </div> </div>
-                                                </div>
+                                            </span>
                                         </div>
+                                        <div class="col-md-6 mb-2 d-flex align-items-center">
+                                            <strong class="me-2 mb-0">Submitted:</strong>
+                                            <span>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                        </div> @if($screening->status == 'accepted' && $screening->date_accepted)
+                                            <div class="col-md-6 mb-2 d-flex align-items-center">
+                                                <strong class="me-2 mb-0">Accepted At:</strong>
+                                                <span>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                        </div> @endif @if($screening->status == 'declined' && $screening->date_declined)
+                                            <div class="col-md-6 mb-2 d-flex align-items-center">
+                                                <strong class="me-2 mb-0">Declined At:</strong>
+                                                <span>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                        </div> @endif @if(!empty($screening->admin_notes))
+                                            <div class="col-12 mb-2 mt-2">
+                                                <strong>Admin Comments:</strong>
+                                                <div class="mt-2 p-3 bg-light border rounded">
+                                                    {{ $screening->admin_notes }}
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                {{-- Admin Comments/Notes Section --}}
+                                @if($screening->status == 'pending')
+                                    <div class="mb-4">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-chat-left-text-fill me-2"></i>Admin
+                                            Action</h6>
+                                        <div class="row">
+                                            <div class="col-12 mb-2">
+                                                <textarea class="form-control admin-comments-textarea rounded mt-2"
+                                                    id="adminComments{{ $screening->health_screening_id }}" name="comments" rows="3"
+                                                    placeholder="Enter comments or notes (required for declining, optional for accepting)"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                @if($screening->status == 'pending')
+                                    {{-- Keep accept/decline actions for pending items only; archive/restore handled
+                                    in archived tab --}}
+                                    <button type="button" class="btn btn-danger"
+                                        onclick="declineScreening({{ $screening->health_screening_id }})">
+                                        <i class="bi bi-x-circle me-1"></i> Decline
+                                    </button>
+                                    <button type="button" class="btn btn-success"
+                                        onclick="acceptScreening({{ $screening->health_screening_id }})">
+                                        <i class="bi bi-check-circle me-1"></i> Accept
+                                    </button>
+                                @elseif($screening->status == 'declined')
+                                    {{-- Allow undo/accept when declined --}}
+                                    <button type="button" class="btn btn-success"
+                                        onclick="undoDeclineScreening({{ $screening->health_screening_id }})">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Undo & Accept
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
             @endforeach
         @endif
-                            </div>
+    </div>
 
-                            {{-- Real-time Search Functionality for Health Screening --}}
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    const searchInput = document.getElementById('searchInput');
-                                    const clearBtn = document.getElementById('clearSearch');
-                                    const searchResults = document.getElementById('searchResults');
+    {{-- Real-time Search Functionality for Health Screening --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            const searchResults = document.getElementById('searchResults');
 
-                                    if (!searchInput) return;
+            if (!searchInput) return;
 
-                                    // Helpers to extract searchable text from table rows and responsive cards
-                                    function extractRowFields(row) {
-                                        // Include Name and Contact cells for searching
-                                        const cells = row.querySelectorAll('td');
-                                        if (cells.length === 0) return '';
-                                        
-                                        // First cell is Name, second is Contact Number
-                                        const nameText = cells[0] ? cells[0].textContent.trim() : '';
-                                        const contactText = cells[1] ? cells[1].textContent.trim() : '';
-                                        return (nameText + ' ' + contactText).toLowerCase();
-                                    }
+            // Helpers to extract searchable text from table rows and responsive cards
+            function extractRowFields(row) {
+                // Include Name and Contact cells for searching
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 0) return '';
 
-                                    function extractCardFields(card) {
-                                        // Mobile card: pull Name and Contact rows
-                                        const rows = card.querySelectorAll('.card-row');
-                                        let nameText = '';
-                                        let contactText = '';
-                                        
-                                        rows.forEach(row => {
-                                            const label = row.querySelector('.card-label');
-                                            const value = row.querySelector('.card-value');
-                                            if (label && value) {
-                                                const labelTxt = label.textContent.toLowerCase();
-                                                if (labelTxt.includes('name')) {
-                                                    nameText = value.textContent.trim();
-                                                } else if (labelTxt.includes('contact')) {
-                                                    contactText = value.textContent.trim();
-                                                }
-                                            }
-                                        });
-                                        return (nameText + ' ' + contactText).toLowerCase();
-                                    }
+                // First cell is Name, second is Contact Number
+                const nameText = cells[0] ? cells[0].textContent.trim() : '';
+                const contactText = cells[1] ? cells[1].textContent.trim() : '';
+                return (nameText + ' ' + contactText).toLowerCase();
+            }
 
-                                    function isVisible(el) {
-                                        if (!el) return false;
-                                        return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
-                                    }
+            function extractCardFields(card) {
+                // Mobile card: pull Name and Contact rows
+                const rows = card.querySelectorAll('.card-row');
+                let nameText = '';
+                let contactText = '';
 
-                                    function getAllTableRows() {
-                                        const rows = [];
-                                        document.querySelectorAll('.table tbody tr').forEach(r => rows.push(r));
-                                        return rows;
-                                    }
+                rows.forEach(row => {
+                    const label = row.querySelector('.card-label');
+                    const value = row.querySelector('.card-value');
+                    if (label && value) {
+                        const labelTxt = label.textContent.toLowerCase();
+                        if (labelTxt.includes('name')) {
+                            nameText = value.textContent.trim();
+                        } else if (labelTxt.includes('contact')) {
+                            contactText = value.textContent.trim();
+                        }
+                    }
+                });
+                return (nameText + ' ' + contactText).toLowerCase();
+            }
 
-                                    function getAllCards() {
-                                        return Array.from(document.querySelectorAll('.responsive-card'));
-                                    }
+            function isVisible(el) {
+                if (!el) return false;
+                return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+            }
 
-                                    function performSearch() {
-                                        const term = searchInput.value.trim().toLowerCase();
-                                        let totalCount = 0;
-                                        let visibleCount = 0;
+            function getAllTableRows() {
+                const rows = [];
+                document.querySelectorAll('.table tbody tr').forEach(r => rows.push(r));
+                return rows;
+            }
 
-                                        const rows = getAllTableRows();
-                                        const cards = getAllCards();
+            function getAllCards() {
+                return Array.from(document.querySelectorAll('.responsive-card'));
+            }
 
-                                        // Get total count from all rows/cards
-                                        totalCount = rows.length + cards.length;
+            function performSearch() {
+                const term = searchInput.value.trim().toLowerCase();
+                let totalCount = 0;
+                let visibleCount = 0;
 
-                                        // If no term, restore all rows/cards
-                                        if (!term) {
-                                            rows.forEach(row => { row.style.display = ''; });
-                                            cards.forEach(card => { card.style.display = ''; });
+                const rows = getAllTableRows();
+                const cards = getAllCards();
 
-                                            clearBtn.style.display = 'none';
-                                            searchResults.textContent = '';
-                                            searchResults.classList.remove('text-danger');
-                                            return;
-                                        }
+                // Get total count from all rows/cards
+                totalCount = rows.length + cards.length;
 
-                                        // With a search term: hide all rows/cards by default, show only matches
-                                        rows.forEach(row => {
-                                            const hay = extractRowFields(row);
-                                            if (hay.indexOf(term) !== -1) {
-                                                row.style.removeProperty('display');
-                                                visibleCount++;
-                                            } else {
-                                                row.style.setProperty('display', 'none', 'important');
-                                            }
-                                        });
+                // If no term, restore all rows/cards
+                if (!term) {
+                    rows.forEach(row => { row.style.display = ''; });
+                    cards.forEach(card => { card.style.display = ''; });
 
-                                        // Handle responsive-card blocks (mobile view)
-                                        cards.forEach(card => {
-                                            const hay = extractCardFields(card);
-                                            if (hay.indexOf(term) !== -1) {
-                                                card.style.removeProperty('display');
-                                                visibleCount++;
-                                            } else {
-                                                card.style.setProperty('display', 'none', 'important');
-                                            }
-                                        });
+                    clearBtn.style.display = 'none';
+                    searchResults.textContent = '';
+                    searchResults.classList.remove('text-danger');
+                    return;
+                }
 
-                                        // Update UI
-                                        clearBtn.style.display = 'inline-block';
-                                        searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                                        if (visibleCount === 0) {
-                                            searchResults.textContent = 'No results found';
-                                            searchResults.classList.add('text-danger');
-                                        } else {
-                                            searchResults.classList.remove('text-danger');
-                                        }
-                                    }
+                // With a search term: hide all rows/cards by default, show only matches
+                rows.forEach(row => {
+                    const hay = extractRowFields(row);
+                    if (hay.indexOf(term) !== -1) {
+                        row.style.removeProperty('display');
+                        visibleCount++;
+                    } else {
+                        row.style.setProperty('display', 'none', 'important');
+                    }
+                });
 
-                                    searchInput.addEventListener('input', performSearch);
-                                    clearBtn.addEventListener('click', function () {
-                                        searchInput.value = '';
-                                        performSearch();
-                                        searchInput.focus();
-                                    });
+                // Handle responsive-card blocks (mobile view)
+                cards.forEach(card => {
+                    const hay = extractCardFields(card);
+                    if (hay.indexOf(term) !== -1) {
+                        card.style.removeProperty('display');
+                        visibleCount++;
+                    } else {
+                        card.style.setProperty('display', 'none', 'important');
+                    }
+                });
 
-                                    // Initial run to ensure correct state
-                                    performSearch();
-                                });
-                            </script>
+                // Update UI
+                clearBtn.style.display = 'inline-block';
+                searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
+                if (visibleCount === 0) {
+                    searchResults.textContent = 'No results found';
+                    searchResults.classList.add('text-danger');
+                } else {
+                    searchResults.classList.remove('text-danger');
+                }
+            }
+
+            searchInput.addEventListener('input', performSearch);
+            clearBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                performSearch();
+                searchInput.focus();
+            });
+
+            // Initial run to ensure correct state
+            performSearch();
+        });
+    </script>
 @endsection
