@@ -513,8 +513,8 @@
     }
 
     #yearTimelineChart {
-      max-height: 160px;
-      /* Reduced from 200px to save vertical space */
+      width: 100% !important;
+      height: 100% !important;
     }
 
     /* Three Panel Layout */
@@ -653,27 +653,49 @@
       }
 
       .chart-container {
-        padding: 1rem;
-        margin-bottom: 1rem;
+        padding: 0.6rem;
+        margin-bottom: 0.75rem;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
       }
 
       .chart-header {
         flex-direction: column;
         align-items: flex-start;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.4rem;
+        gap: 0.4rem;
+      }
+
+      .chart-header > div:first-child {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .chart-legend {
+        gap: 0.6rem;
+        font-size: 0.7rem;
+      }
+
+      .legend-item {
+        font-size: 0.7rem;
+      }
+
+      .legend-color {
+        width: 10px;
+        height: 10px;
       }
 
       .chart-title {
-        font-size: 1rem;
-      }
-
-      .year-selector {
-        padding: 0.35rem 0.6rem;
         font-size: 0.85rem;
       }
 
-      #yearTimelineChart {
-        max-height: 180px;
+      .year-selector {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.8rem;
+      }
+
+      .chart-container > div[style*="position: relative"] {
+        height: 160px !important;
       }
 
       /* Three panels stack vertically on mobile */
@@ -785,7 +807,7 @@
         </div>
       </div>
     </div>
-    <div style="position: relative;">
+    <div style="position: relative; height: 200px;">
       <canvas id="yearTimelineChart"></canvas>
     </div>
   </div>
@@ -917,11 +939,11 @@
               data: monthlyDonations,
               borderColor: '#667eea',
               backgroundColor: 'rgba(102, 126, 234, 0.1)',
-              borderWidth: 3,
+              borderWidth: window.innerWidth < 768 ? 2 : 3,
               fill: true,
               tension: 0.4,
-              pointRadius: 5,
-              pointHoverRadius: 7,
+              pointRadius: window.innerWidth < 768 ? 3 : 5,
+              pointHoverRadius: window.innerWidth < 768 ? 5 : 7,
               pointBackgroundColor: '#667eea',
               pointBorderColor: '#fff',
               pointBorderWidth: 2,
@@ -933,11 +955,11 @@
               data: monthlyRequests,
               borderColor: '#f5576c',
               backgroundColor: 'rgba(245, 87, 108, 0.1)',
-              borderWidth: 3,
+              borderWidth: window.innerWidth < 768 ? 2 : 3,
               fill: true,
               tension: 0.4,
-              pointRadius: 5,
-              pointHoverRadius: 7,
+              pointRadius: window.innerWidth < 768 ? 3 : 5,
+              pointHoverRadius: window.innerWidth < 768 ? 5 : 7,
               pointBackgroundColor: '#f5576c',
               pointBorderColor: '#fff',
               pointBorderWidth: 2,
@@ -948,8 +970,7 @@
         },
         options: {
           responsive: true,
-          maintainAspectRatio: true,
-          aspectRatio: 4.5,
+          maintainAspectRatio: false,
           interaction: {
             mode: 'index',
             intersect: false,
@@ -960,13 +981,13 @@
             },
             tooltip: {
               backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              padding: 12,
+              padding: window.innerWidth < 768 ? 8 : 12,
               titleFont: {
-                size: 14,
+                size: window.innerWidth < 768 ? 12 : 14,
                 weight: 'bold'
               },
               bodyFont: {
-                size: 13
+                size: window.innerWidth < 768 ? 11 : 13
               },
               callbacks: {
                 title: function (context) {
@@ -984,8 +1005,9 @@
               ticks: {
                 stepSize: 1,
                 font: {
-                  size: 12
-                }
+                  size: window.innerWidth < 768 ? 10 : 12
+                },
+                padding: window.innerWidth < 768 ? 5 : 10
               },
               grid: {
                 color: 'rgba(0, 0, 0, 0.05)',
@@ -994,8 +1016,12 @@
             x: {
               ticks: {
                 font: {
-                  size: 12
-                }
+                  size: window.innerWidth < 768 ? 9 : 12
+                },
+                maxRotation: 0,
+                minRotation: 0,
+                padding: window.innerWidth < 768 ? 5 : 10,
+                autoSkip: false
               },
               grid: {
                 display: false
@@ -1003,11 +1029,6 @@
             }
           }
         }
-      });
-
-      // Make chart responsive on window resize
-      window.addEventListener('resize', function () {
-        yearTimelineChart.resize();
       });
 
       // ============ DONATION METHOD BAR CHART ============

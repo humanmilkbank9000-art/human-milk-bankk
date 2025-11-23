@@ -75,6 +75,31 @@
         white-space: nowrap;
     }
 
+    /* Checkbox adjustments for mobile */
+    .table input[type="checkbox"] {
+        transform: scale(0.9);
+        width: 16px;
+        height: 16px;
+        margin: 0;
+    }
+
+    .table .form-check-input {
+        transform: scale(0.85);
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Adjust checkbox labels */
+    .table .form-check-label {
+        font-size: 0.75rem !important;
+        margin-left: 0.25rem;
+    }
+
+    /* Make checkbox containers more compact */
+    .table .d-flex.align-items-center {
+        margin-bottom: 0.3rem !important;
+    }
+
     /* Badge adjustments */
     .badge {
         font-size: 0.75rem;
@@ -154,6 +179,23 @@
         padding: 0.2rem 0.4rem !important;
         white-space: nowrap;
         line-height: 1.2;
+    }
+
+    /* Checkbox adjustments for tablets */
+    .table input[type="checkbox"] {
+        transform: scale(0.85);
+        width: 14px;
+        height: 14px;
+    }
+
+    .table .form-check-input {
+        transform: scale(0.8);
+        width: 13px;
+        height: 13px;
+    }
+
+    .table .form-check-label {
+        font-size: 0.65rem !important;
     }
 
     /* Ultra compact badges */
