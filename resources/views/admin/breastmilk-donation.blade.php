@@ -912,13 +912,6 @@
                                 </table>
                             </div>
 
-                            {{-- Pagination --}}
-                            @if($pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                                <div class="d-flex justify-content-center mt-4">
-                                    {{ $pendingDonations->links() }}
-                                </div>
-                            @endif
-
                             {{-- Card Layout for Smaller Screens --}}
                             @foreach($pendingOrdered as $donation)
                                 <div class="donation-card d-block d-md-none">
@@ -1012,6 +1005,13 @@
                                     </div>
                                 </div>
                             @endforeach
+
+                            {{-- Pagination --}}
+                            @if($pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $pendingDonations->links() }}
+                                </div>
+                            @endif
                         @else
                             <div class="text-center text-muted py-4">
                                 <i class="fas fa-inbox fa-3x mb-3"></i>
