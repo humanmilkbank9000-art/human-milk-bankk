@@ -493,20 +493,20 @@
             <li class="nav-item" role="presentation">
                 <a class="nav-link{{ request()->get('status', 'pending') == 'pending' ? ' active' : '' }}"
                     href="?status=pending" id="pending-tab" role="tab">
-                    Pending Requests <span class="badge bg-warning">{{ $pendingRequests->count() }}</span>
+                    Pending Requests <span class="badge bg-warning">{{ $pendingRequests->total() }}</span>
                 </a>
             </li>
             <!-- Approved Requests tab removed (redundant with Dispensed/Approved states) -->
             <li class="nav-item" role="presentation">
                 <a class="nav-link{{ request()->get('status') == 'dispensed' ? ' active' : '' }}" href="?status=dispensed"
                     id="dispensed-tab" role="tab">
-                    Dispensed Requests <span class="badge bg-info">{{ $dispensedRequests->count() }}</span>
+                    Dispensed Requests <span class="badge bg-info">{{ $dispensedRequests->total() }}</span>
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link{{ request()->get('status') == 'declined' ? ' active' : '' }}" href="?status=declined"
                     id="declined-tab" role="tab">
-                    Declined Requests <span class="badge bg-danger">{{ $declinedRequests->count() }}</span>
+                    Declined Requests <span class="badge bg-danger">{{ $declinedRequests->total() }}</span>
                 </a>
             </li>
         </ul>

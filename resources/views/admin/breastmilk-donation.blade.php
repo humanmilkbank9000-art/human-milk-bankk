@@ -685,25 +685,25 @@
             <li class="nav-item">
                 <a class="nav-link {{ $tabStatus == 'pending' ? 'active bg-warning text-dark' : 'text-warning' }}"
                     href="?status=pending">
-                    Pending Donations <span class="badge bg-warning text-dark">{{ $pendingDonations->count() }}</span>
+                    Pending Donations <span class="badge bg-warning text-dark">{{ $pendingDonations->total() }}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $tabStatus == 'scheduled' ? 'active bg-primary text-white' : 'text-primary' }}"
                     href="?status=scheduled">
-                    Scheduled <span class="badge bg-primary">{{ $scheduledHomeCollection->count() }}</span>
+                    Scheduled <span class="badge bg-primary">{{ $scheduledHomeCollection->total() }}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $tabStatus == 'success_walk_in' ? 'active bg-success text-white' : 'text-success' }}"
                     href="?status=success_walk_in">
-                    Walk-in Success <span class="badge bg-success">{{ $successWalkIn->count() }}</span>
+                    Walk-in Success <span class="badge bg-success">{{ $successWalkIn->total() }}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $tabStatus == 'success_home_collection' ? 'active bg-success text-white' : 'text-success' }}"
                     href="?status=success_home_collection">
-                    Home Collection Success <span class="badge bg-success">{{ $successHomeCollection->count() }}</span>
+                    Home Collection Success <span class="badge bg-success">{{ $successHomeCollection->total() }}</span>
                 </a>
             </li>
             <li class="nav-item">

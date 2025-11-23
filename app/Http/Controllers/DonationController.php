@@ -43,7 +43,7 @@ class DonationController extends Controller
             ->appends(['status' => $status, 'donation_type' => $donationType]);
             
         // For unified pending view, we'll use collection pagination
-        $allPendingQuery = Donation::where('status', 'pending')
+        $allPendingQuery = Donation::whereIn('status', ['pending', 'pending_walk_in', 'pending_home_collection'])
             ->with(['user', 'availability']);
         
         // Filter pending donations based on donation type
@@ -54,7 +54,7 @@ class DonationController extends Controller
         }
         
         $pendingDonations = $allPendingQuery
-            ->orderBy('created_at')
+            ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'pending_page')
             ->appends(['status' => $status, 'donation_type' => $donationType]);
             

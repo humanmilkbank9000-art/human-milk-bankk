@@ -104,6 +104,9 @@
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     <input type="password" name="current_password" id="current_password"
                                         class="form-control" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                                        <i class="fas fa-eye" id="currentPasswordIcon"></i>
+                                    </button>
                                 </div>
                                 @error('current_password')
                                     <div class="text-danger">{{ $message }}</div>
@@ -114,6 +117,9 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-key"></i></span>
                                     <input type="password" name="new_password" id="new_password" class="form-control" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                        <i class="fas fa-eye" id="newPasswordIcon"></i>
+                                    </button>
                                 </div>
                                 <div id="password-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
                                     Password must be 8-64 chars and include upper, lower, number, and special character.
@@ -128,6 +134,9 @@
                                     <span class="input-group-text"><i class="fas fa-check"></i></span>
                                     <input type="password" name="new_password_confirmation" id="new_password_confirmation"
                                         class="form-control" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                        <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                                    </button>
                                 </div>
                             </div>
                             <button class="btn btn-primary w-100" type="submit"><i class="fas fa-save me-2"></i>Update
@@ -162,6 +171,51 @@
                     }
                 });
             }
+
+            // Toggle password visibility for current password
+            document.getElementById('toggleCurrentPassword')?.addEventListener('click', function() {
+                const input = document.getElementById('current_password');
+                const icon = document.getElementById('currentPasswordIcon');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+
+            // Toggle password visibility for new password
+            document.getElementById('toggleNewPassword')?.addEventListener('click', function() {
+                const input = document.getElementById('new_password');
+                const icon = document.getElementById('newPasswordIcon');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+
+            // Toggle password visibility for confirm password
+            document.getElementById('toggleConfirmPassword')?.addEventListener('click', function() {
+                const input = document.getElementById('new_password_confirmation');
+                const icon = document.getElementById('confirmPasswordIcon');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
 
             // Show SweetAlert on successful password update
             @if(session('status'))
