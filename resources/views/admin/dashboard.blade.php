@@ -513,8 +513,8 @@
     }
 
     #yearTimelineChart {
-      max-height: 160px;
-      /* Reduced from 200px to save vertical space */
+      width: 100% !important;
+      height: 100% !important;
     }
 
     /* Three Panel Layout */
@@ -672,8 +672,8 @@
         font-size: 0.85rem;
       }
 
-      #yearTimelineChart {
-        max-height: 180px;
+      .chart-container > div[style*="position: relative"] {
+        height: 220px !important;
       }
 
       /* Three panels stack vertically on mobile */
@@ -785,7 +785,7 @@
         </div>
       </div>
     </div>
-    <div style="position: relative;">
+    <div style="position: relative; height: 200px;">
       <canvas id="yearTimelineChart"></canvas>
     </div>
   </div>
@@ -948,8 +948,7 @@
         },
         options: {
           responsive: true,
-          maintainAspectRatio: true,
-          aspectRatio: 4.5,
+          maintainAspectRatio: false,
           interaction: {
             mode: 'index',
             intersect: false,
@@ -1003,11 +1002,6 @@
             }
           }
         }
-      });
-
-      // Make chart responsive on window resize
-      window.addEventListener('resize', function () {
-        yearTimelineChart.resize();
       });
 
       // ============ DONATION METHOD BAR CHART ============
