@@ -948,6 +948,9 @@
                             <!-- Dispensing Form -->
                             <form id="dispensingForm{{ $request->breastmilk_request_id }}">
                                 @csrf
+                                <!-- Hidden input for milk type - always pasteurized -->
+                                <input type="hidden" id="milkTypeSelect{{ $request->breastmilk_request_id }}" name="milk_type" value="pasteurized">
+                                
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -960,20 +963,7 @@
                                                 class="form-control" id="volumeToDispense{{ $request->breastmilk_request_id }}"
                                                 name="volume_dispensed"
                                                 oninput="updateSelectedVolume({{ $request->breastmilk_request_id }})">
-                                            <div class="form-text">Enter the amount of milk to dispense</div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="milkTypeSelect{{ $request->breastmilk_request_id }}" class="form-label">
-                                                <i class="fas fa-vial"></i> Breastmilk Type <span class="text-danger">*</span>
-                                            </label>
-                                            <select class="form-select" id="milkTypeSelect{{ $request->breastmilk_request_id }}"
-                                                name="milk_type"
-                                                onchange="handleMilkTypeChange({{ $request->breastmilk_request_id }})">
-                                                <option value="pasteurized" selected>Pasteurized Breastmilk</option>
-                                            </select>
-                                            <small class="text-muted">Only pasteurized breastmilk can be dispensed for
-                                                safety.</small>
+                                            <div class="form-text">Enter the amount of milk to dispense (Pasteurized only)</div>
                                         </div>
                                     </div>
 
