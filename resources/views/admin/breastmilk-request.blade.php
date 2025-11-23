@@ -533,7 +533,7 @@
             <li class="nav-item" role="presentation">
                 <a class="nav-link{{ request()->get('status', 'pending') == 'pending' ? ' active' : '' }}"
                     href="?status=pending" id="pending-tab" role="tab">
-                    Pending Requests <span class="badge bg-warning">{{ $pendingRequests->total() }}</span>
+                    Pending Requests <span class="badge bg-warning">{{ $pendingRequests->count() }}</span>
                 </a>
             </li>
             <!-- Approved Requests tab removed (redundant with Dispensed/Approved states) -->
@@ -650,7 +650,9 @@
 
                             {{-- Pagination --}}
                             <div class="d-flex justify-content-center mt-4">
-                                {{ $pendingRequests->links() }}
+                                @if ($pendingRequests instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                    {{ $pendingRequests->links() }}
+                                @endif
                             </div>
                         @else
                             <div class="text-center text-muted py-4">

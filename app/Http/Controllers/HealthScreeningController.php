@@ -99,8 +99,12 @@ class HealthScreeningController extends Controller
         $acceptedCount = HealthScreening::where('status', 'accepted')->count();
         $declinedCount = HealthScreening::where('status', 'declined')->count();
         
-        $healthScreenings = $query->paginate(10)
-            ->appends(['status' => $status, 'q' => $search]);
+        if ($status === 'pending') {
+            $healthScreenings = $query->orderByDesc('created_at')->get();
+        } else {
+            $healthScreenings = $query->paginate(10)
+                ->appends(['status' => $status, 'q' => $search]);
+        }
 
         return view('admin.health-screening', compact('healthScreenings', 'status', 'pendingCount', 'acceptedCount', 'declinedCount'));
     }

@@ -948,7 +948,9 @@
 
                         {{-- Pagination --}}
                         <div class="d-flex justify-content-center mt-4">
-                            {{ $healthScreenings->links() }}
+                            @if ($healthScreenings instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                {{ $healthScreenings->links() }}
+                            @endif
                         </div>
                         </table>
                     </div>

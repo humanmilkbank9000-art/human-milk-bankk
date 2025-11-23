@@ -791,13 +791,13 @@
             <li class="nav-item">
                 <a class="nav-link {{ $tabStatus == 'pending' ? 'active bg-warning text-dark' : 'text-warning' }}"
                     href="?status=pending">
-                    Pending Donations <span class="badge bg-warning text-dark">{{ $pendingDonations->total() }}</span>
+                    Pending Donations <span class="badge bg-warning text-dark">{{ $pendingDonations->count() }}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $tabStatus == 'scheduled' ? 'active bg-primary text-white' : 'text-primary' }}"
                     href="?status=scheduled">
-                    Scheduled <span class="badge bg-primary">{{ $scheduledHomeCollection->total() }}</span>
+                    Scheduled <span class="badge bg-primary">{{ $scheduledHomeCollection->count() }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -1124,7 +1124,9 @@
                             {{-- Pagination --}}
                             @if($pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator)
                                 <div class="d-flex justify-content-center mt-4">
-                                    {{ $pendingDonations->links() }}
+                                    @if ($pendingDonations instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                        {{ $pendingDonations->links() }}
+                                    @endif
                                 </div>
                             @endif
                         @else
@@ -1253,7 +1255,9 @@
                             {{-- Pagination --}}
                             @if($scheduledHomeCollection instanceof \Illuminate\Pagination\LengthAwarePaginator)
                                 <div class="d-flex justify-content-center mt-4">
-                                    {{ $scheduledHomeCollection->links() }}
+                                    @if ($scheduledHomeCollection instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                        {{ $scheduledHomeCollection->links() }}
+                                    @endif
                                 </div>
                             @endif
                         @else
