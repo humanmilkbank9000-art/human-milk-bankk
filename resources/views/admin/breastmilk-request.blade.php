@@ -979,13 +979,13 @@
                                                 </div>
                                                 <div class="mt-2" id="volumeTracker{{ $request->breastmilk_request_id }}"
                                                     style="display:none;">
-                                                    <div class="alert alert-info mb-0 py-2">
+                                                            <div class="alert alert-info mb-0 py-2">
                                                         <small>
                                                             <strong>Selected:</strong> <span
-                                                                id="totalSelected{{ $request->breastmilk_request_id }}">0.00</span>
+                                                                id="totalSelected{{ $request->breastmilk_request_id }}">0</span>
                                                             ml /
                                                             <strong>Required:</strong> <span
-                                                                id="volumeRequired{{ $request->breastmilk_request_id }}">0.00</span>
+                                                                id="volumeRequired{{ $request->breastmilk_request_id }}">0</span>
                                                             ml
                                                         </small>
                                                     </div>
@@ -1412,9 +1412,9 @@
                                                 <div class="alert alert-info mb-0 py-2">
                                                     <small>
                                                         <strong>Selected:</strong> <span
-                                                            id="assistedTotalSelected">0.00</span> ml /
+                                                            id="assistedTotalSelected">0</span> ml /
                                                         <strong>Required:</strong> <span
-                                                            id="assistedVolumeRequired">0.00</span> ml
+                                                            id="assistedVolumeRequired">0</span> ml
                                                     </small>
                                                 </div>
                                             </div>
@@ -1848,6 +1848,12 @@
                                                                     });
                                                             }
 
+                                                            // Helper to format volumes: remove trailing .00 when whole number
+                                                            function formatVolume(v) {
+                                                                const n = parseFloat(v || 0) || 0;
+                                                                return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(2)));
+                                                            }
+
                                                             function loadInventory(requestId) {
                                                                 const milkType = document.getElementById('milkType' + requestId).value;
                                                                 const inventorySection = document.getElementById('inventorySection' + requestId);
@@ -1896,10 +1902,10 @@
                                                                                                                                                                                                                                                                         ${milkType === 'unpasteurized' ?
                                                                                     `<strong>Donation #${item.id}</strong><br>
                                                                                                                                                                                                                                                                              ${item.donor_name} - ${item.donation_type}<br>
-                                                                                                                                                                                                                                                                             <span class="text-primary">${item.volume}ml</span> (${item.date} ${item.time})` :
-                                                                                    `<strong>Batch ${item.batch_number}</strong><br>
+                                                                                                                                                                                                                                                                             <span class="text-primary">${formatVolume(item.volume)}ml</span> (${item.date} ${item.time})` :
+                                                                                    `<strong>Batch ${parseInt(item.batch_number)}</strong><br>
                                                                                                                                                                                                                                                                              Pasteurized by: ${item.admin_name}<br>
-                                                                                                                                                                                                                                                                             <span class="text-primary">${item.volume}ml available</span> of ${item.original_volume}ml (${item.pasteurized_date})`
+                                                                                                                                                                                                                                                                             <span class="text-primary">${formatVolume(item.volume)}ml available</span> of ${formatVolume(item.original_volume)}ml (${item.pasteurized_date})`
                                                                                 }
                                                                                                                                                                                                                                                                     </small>
                                                                                                                                                                                                                                                                 </label>
@@ -2450,8 +2456,8 @@
                                                                                                                 onchange="updateSelectedVolume(${requestId})">
                                                                                                             <label class="form-check-label" for="batch_${requestId}_${batch.batch_id}">
                                                                                                                 <small>
-                                                                                                                    <strong>Batch #${batch.batch_number}</strong><br>
-                                                                                                                    <span class="text-primary">${batch.available_volume} ml available</span><br>
+                                                                                                                    <strong>Batch #${parseInt(batch.batch_number)}</strong><br>
+                                                                                                                    <span class="text-primary">${formatVolume(batch.available_volume)} ml available</span><br>
                                                                                                                     <span class="text-muted">Date: ${batch.date_pasteurized}</span>
                                                                                                                 </small>
                                                                                                             </label>
@@ -2491,7 +2497,7 @@
                                                                                                                 <small>
                                                                                                                     <strong>Donation #${donation.breastmilk_donation_id}</strong><br>
                                                                                                                     <span class="text-muted">Donor: ${donorName}</span><br>
-                                                                                                                    <span class="text-primary">${donation.available_volume} ml available</span><br>
+                                                                                                                    <span class="text-primary">${formatVolume(donation.available_volume)} ml available</span><br>
                                                                                                                     <span class="text-muted">Date: ${donation.donation_date}</span>
                                                                                                                 </small>
                                                                                                             </label>
@@ -2602,11 +2608,11 @@
                                                                 });
 
                                                                 // Check if we have enough volume
-                                                                if (totalAvailable < volumeToDispense) {
+                                                                    if (totalAvailable < volumeToDispense) {
                                                                     Swal.fire({
                                                                         icon: 'warning',
                                                                         title: 'Insufficient Volume',
-                                                                        text: `Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volumeToDispense} ml. Please select more bags.`,
+                                                                        text: `Selected bags have ${formatVolume(totalAvailable)} ml total, but you need ${volumeToDispense} ml. Please select more bags.`,
                                                                         confirmButtonColor: '#3085d6'
                                                                     });
                                                                     return;
@@ -2902,11 +2908,11 @@
                                                                                 Swal.fire({
                                                                                     icon: 'warning',
                                                                                     title: 'Insufficient Volume',
-                                                                                    text: `Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volume} ml. Please select more bags.`,
+                                                                                    text: `Selected bags have ${formatVolume(totalAvailable)} ml total, but you need ${volume} ml. Please select more bags.`,
                                                                                     confirmButtonColor: '#3085d6'
                                                                                 });
                                                                             } else {
-                                                                                alert(`Selected bags have ${totalAvailable.toFixed(2)} ml total, but you need ${volume} ml. Please select more bags.`);
+                                                                                alert(`Selected bags have ${formatVolume(totalAvailable)} ml total, but you need ${volume} ml. Please select more bags.`);
                                                                             }
                                                                             return false;
                                                                         }
@@ -2964,7 +2970,7 @@
                                                                                                                             <small>
                                                                                                                                 <strong>Donation #${d.breastmilk_donation_id}</strong><br>
                                                                                                                                 <span class="text-muted">Donor: ${d.donor_name || 'Anonymous'}</span><br>
-                                                                                                                                <span class="text-primary">${avail} ml available</span>
+                                                                                                                                <span class="text-primary">${formatVolume(avail)} ml available</span>
                                                                                                                             </small>
                                                                                                                         </label>
                                                                                                                     </div>
@@ -2988,8 +2994,8 @@
                                                                                                                         <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
                                                                                                                         <label class="form-check-label" for="assisted_batch_${b.batch_id}">
                                                                                                                             <small>
-                                                                                                                                <strong>Batch #${b.batch_number}</strong><br>
-                                                                                                                                <span class="text-primary">${avail} ml available</span><br>
+                                                                                                                                <strong>Batch #${parseInt(b.batch_number)}</strong><br>
+                                                                                                                                <span class="text-primary">${formatVolume(avail)} ml available</span><br>
                                                                                                                                 <span class="text-muted">Date: ${b.date_pasteurized}</span>
                                                                                                                             </small>
                                                                                                                         </label>

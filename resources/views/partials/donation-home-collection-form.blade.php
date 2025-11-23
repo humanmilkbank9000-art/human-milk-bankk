@@ -580,6 +580,37 @@
             submitBtn.disabled = !shouldEnable;
         }
 
+        // Validate that last expression date is not earlier than first expression date.
+        // If `showAlert` is true, a Swal warning is shown when invalid.
+        function checkExpressionDates(showAlert = false) {
+            const first = document.getElementById('hc-first-expression')?.value;
+            const last = document.getElementById('hc-last-expression')?.value;
+            if (!first || !last) return true; // nothing to validate yet
+
+            try {
+                const f = new Date(first);
+                const l = new Date(last);
+                if (isNaN(f.getTime()) || isNaN(l.getTime())) return true;
+                if (l < f) {
+                    if (showAlert && typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Invalid Dates',
+                            text: 'The Date of last expression cannot be earlier than the Date of first expression.',
+                            confirmButtonColor: '#6c757d'
+                        }).then(() => {
+                            const lastEl = document.getElementById('hc-last-expression');
+                            if (lastEl) lastEl.focus();
+                        });
+                    }
+                    return false;
+                }
+            } catch (e) {
+                console.warn('Date validation error', e);
+            }
+            return true;
+        }
+
         function requestLocation() {
             // Silently request location in the background
             if (!navigator.geolocation) {
@@ -592,7 +623,7 @@
                 console.log('Location captured successfully');
             }, (error) => {
                 console.warn('Location error:', error.message);
-            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+            }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
         }
 
         function init() {
@@ -623,11 +654,11 @@
                 console.error('Bags input element not found!');
             }
 
-            // Add listeners for expression dates
+            // Add listeners for expression dates and validate ordering
             const firstExpr = document.getElementById('hc-first-expression');
             const lastExpr = document.getElementById('hc-last-expression');
-            if (firstExpr) firstExpr.addEventListener('change', enableSubmitCheck);
-            if (lastExpr) lastExpr.addEventListener('change', enableSubmitCheck);
+            if (firstExpr) firstExpr.addEventListener('change', function () { checkExpressionDates(false); enableSubmitCheck(); });
+            if (lastExpr) lastExpr.addEventListener('change', function () { if (!checkExpressionDates(true)) { /* invalid - alert already shown */ } enableSubmitCheck(); });
 
             console.log('Home collection form initialized');
 
@@ -665,6 +696,11 @@
                 firstExpression,
                 lastExpression
             });
+
+            // Ensure date ordering is valid before proceeding
+            if (!checkExpressionDates(true)) {
+                return;
+            }
 
             if (!firstExpression || !lastExpression) {
                 Swal.fire({
@@ -993,13 +1029,13 @@
                     if (window.hcMapCtx && window.hcMapCtx.marker && window.hcMapCtx.map) {
                         try {
                             window.hcMapCtx.marker.setLatLng([latV, lngV]);
-                            window.hcMapCtx.map.setView([latV, lngV], 14);
+                            window.hcMapCtx.map.setView([latV, lngV], 15);
                         } catch (e) { }
                     }
                 }, (err) => {
                     console.warn('Geolocation error:', err);
                     Swal.fire({ icon: 'warning', title: 'Unable to Capture Location', text: 'Please allow location access or set your location on the map.', confirmButtonColor: '#6c757d' });
-                }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
+                }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
 
                 // restore UI after a small delay
                 setTimeout(() => {
@@ -1143,6 +1179,79 @@
         }
 
         function showMapModal() {
+            // Define initializer first so it's available to the shown handler
+            const initMap = () => {
+                const latInput = document.getElementById('latitude');
+                const lngInput = document.getElementById('longitude');
+                let lat = parseFloat(latInput?.value || '');
+                let lng = parseFloat(lngInput?.value || '');
+                const hadCoords = !isNaN(lat) && !isNaN(lng);
+                if (!hadCoords) { lat = 12.8797; lng = 121.7740; }
+
+                // Recreate map fresh each time to avoid stale instances
+                const mapContainer = mapEl.querySelector('#hcMap');
+                mapContainer.innerHTML = '';
+
+                const map = L.map(mapContainer).setView([lat, lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+
+                const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                marker.on('dragend', function () {
+                    const p = marker.getLatLng();
+                    latInput.value = p.lat.toFixed(6);
+                    lngInput.value = p.lng.toFixed(6);
+                });
+
+                // Give Leaflet a moment to compute sizes inside the shown modal
+                setTimeout(() => { try { map.invalidateSize(); } catch (e) { } }, 50);
+
+                // Avoid adding duplicate resize listeners: remove previous if present
+                try {
+                    if (window.hcMapCtx && window.hcMapCtx.resizeHandler) {
+                        try { window.removeEventListener('resize', window.hcMapCtx.resizeHandler); } catch (e) { }
+                    }
+                } catch (e) { }
+
+                const resizeHandler = () => { try { map.invalidateSize(); } catch (e) { } };
+                window.addEventListener('resize', resizeHandler, { passive: true });
+
+                // Always attempt to get and show current location when map opens
+                // This helps users verify or update their location, even if coordinates already exist
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                        const currentLat = pos.coords.latitude;
+                        const currentLng = pos.coords.longitude;
+                        
+                        // If no coords were saved before, or if the saved coords are very far from current location,
+                        // automatically update to current location
+                        if (!hadCoords) {
+                            const p = [currentLat, currentLng];
+                            try { 
+                                map.setView(p, 15); 
+                                marker.setLatLng(p);
+                                latInput.value = currentLat.toFixed(6);
+                                lngInput.value = currentLng.toFixed(6);
+                            } catch (e) { }
+                        } else {
+                            // If coordinates exist, just recenter view to current location
+                            // but keep the marker at the saved position so user can see both
+                            // Then they can drag the marker to correct position if needed
+                            try { 
+                                map.setView([currentLat, currentLng], 15);
+                            } catch (e) { }
+                        }
+                    }, (error) => {
+                        console.warn('Could not get current location:', error);
+                    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+                }
+
+                // Expose context so other actions (recapture) can update live and so we can clean up later
+                window.hcMapCtx = { map, marker, resizeHandler };
+            };
+
             let mapEl = document.getElementById('hcMapModal');
             if (!mapEl) {
                 mapEl = document.createElement('div');
@@ -1159,7 +1268,9 @@
                                         </div>
                                         <div class="modal-body">
                                             <div id="hcMap"></div>
-                                            <div class="mt-2 text-muted small">Drag the pin to adjust your location.</div>
+                                            <div class="mt-3 alert alert-info py-2">
+                                                <small><i class="bi bi-info-circle me-1"></i> <strong>Tip:</strong> Drag the red pin to your exact location. The map will center on your current position when opened. Ensure the pin is placed accurately at your home address.</small>
+                                            </div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
@@ -1167,56 +1278,27 @@
                                     </div>
                                 </div>`;
                 document.body.appendChild(mapEl);
+
+                // Attach shown/hidden handlers once (when modal element is created)
+                mapEl.addEventListener('shown.bs.modal', function onShown() {
+                    ensureLeafletLoaded(initMap);
+                });
+
+                mapEl.addEventListener('hidden.bs.modal', function onHidden() {
+                    try {
+                        if (window.hcMapCtx && window.hcMapCtx.map) {
+                            try { window.hcMapCtx.map.remove(); } catch (e) { }
+                        }
+                        if (window.hcMapCtx && window.hcMapCtx.resizeHandler) {
+                            try { window.removeEventListener('resize', window.hcMapCtx.resizeHandler); } catch (e) { }
+                        }
+                    } catch (e) { }
+                    try { window.hcMapCtx = null; } catch (e) { }
+                });
             }
 
             const mapModal = new bootstrap.Modal(mapEl);
             mapModal.show();
-
-            const initMap = () => {
-                const latInput = document.getElementById('latitude');
-                const lngInput = document.getElementById('longitude');
-                let lat = parseFloat(latInput?.value || '');
-                let lng = parseFloat(lngInput?.value || '');
-                if (isNaN(lat) || isNaN(lng)) { lat = 12.8797; lng = 121.7740; }
-
-                // Recreate map fresh each time to avoid stale instances
-                const mapContainer = mapEl.querySelector('#hcMap');
-                mapContainer.innerHTML = '';
-
-                const map = L.map(mapContainer).setView([lat, lng], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '&copy; OpenStreetMap'
-                }).addTo(map);
-
-                const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-                marker.on('dragend', function () {
-                    const p = marker.getLatLng();
-                    latInput.value = p.lat.toFixed(6);
-                    lngInput.value = p.lng.toFixed(6);
-                });
-
-                // Give Leaflet a moment to compute sizes inside the shown modal
-                setTimeout(() => { try { map.invalidateSize(); } catch (e) { } }, 50);
-                window.addEventListener('resize', () => { try { map.invalidateSize(); } catch (e) { } }, { passive: true });
-
-                // If browser provides current location, optionally recenter
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition((pos) => {
-                        const p = [pos.coords.latitude, pos.coords.longitude];
-                        map.setView(p, 14);
-                        marker.setLatLng(p);
-                        latInput.value = pos.coords.latitude.toFixed(6);
-                        lngInput.value = pos.coords.longitude.toFixed(6);
-                    }, () => { }, { maximumAge: 60000 });
-                }
-
-                // Expose context so other actions (recapture) can update live
-                window.hcMapCtx = { map, marker };
-            };
-
-            // Initialize after modal is shown to ensure correct sizing
-            setTimeout(() => ensureLeafletLoaded(initMap), 150);
         }
 
         function reset() {

@@ -137,6 +137,12 @@ class DispensedMilk extends Model
     public function getSourceDisplayAttribute(): string
     {
         $sources = [];
+        $fmt = function ($v) {
+            $vol = (float) $v;
+            return ($vol == (int) $vol)
+                ? (int) $vol
+                : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
+        };
         
         // Get unpasteurized sources
         foreach ($this->sourceDonations as $donation) {
@@ -155,16 +161,18 @@ class DispensedMilk extends Model
                 $label = $donation->donor_name;
             }
 
+            $volText = $fmt($donation->pivot->volume_used) . 'ml';
             if ($label) {
-                $sources[] = "{$label} ({$donation->pivot->volume_used}ml)";
+                $sources[] = "{$label} ({$volText})";
             } else {
-                $sources[] = "Donation #{$donation->breastmilk_donation_id} ({$donation->pivot->volume_used}ml)";
+                $sources[] = "Donation #{$donation->breastmilk_donation_id} ({$volText})";
             }
         }
         
         // Get pasteurized sources
         foreach ($this->sourceBatches as $batch) {
-            $sources[] = "Batch {$batch->batch_number} ({$batch->pivot->volume_used}ml)";
+            $volText = $fmt($batch->pivot->volume_used) . 'ml';
+            $sources[] = "Batch {$batch->batch_number} ({$volText})";
         }
         
         return $sources ? implode(', ', $sources) : 'Unknown Source';

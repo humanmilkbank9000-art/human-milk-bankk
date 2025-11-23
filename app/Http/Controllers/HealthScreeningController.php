@@ -100,9 +100,15 @@ class HealthScreeningController extends Controller
         $declinedCount = HealthScreening::where('status', 'declined')->count();
         
         if ($status === 'pending') {
-            $healthScreenings = $query->orderByDesc('created_at')->get();
+            // show oldest-first for pending (first-to-submit on top)
+            $healthScreenings = $query->orderBy('created_at', 'asc')->get();
+        } elseif ($status === 'declined') {
+            // ensure declined (rejected) screenings are ordered by decline time (newest first)
+            $healthScreenings = $query->orderBy('date_declined', 'desc')->paginate(10)
+                ->appends(['status' => $status, 'q' => $search]);
         } else {
-            $healthScreenings = $query->paginate(10)
+            // default: newest first by submission for other statuses (accepted etc.)
+            $healthScreenings = $query->orderBy('created_at', 'desc')->paginate(10)
                 ->appends(['status' => $status, 'q' => $search]);
         }
 

@@ -831,15 +831,11 @@
                                 </thead>
                                 <tbody>
                                     @php
-                                        // For pending tab, show oldest-first (first-to-submit on top). Keep newest-first for other statuses.
+                                        // Use the collection returned by the controller (DB ordering is authoritative).
                                         if ($healthScreenings instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-                                            $screeningsOrdered = ($status === 'pending')
-                                                ? $healthScreenings->getCollection()->sortBy('created_at')
-                                                : $healthScreenings->getCollection()->sortByDesc('created_at');
+                                            $screeningsOrdered = $healthScreenings->getCollection();
                                         } else {
-                                            $screeningsOrdered = ($status === 'pending')
-                                                ? collect($healthScreenings)->sortBy('created_at')
-                                                : collect($healthScreenings)->sortByDesc('created_at');
+                                            $screeningsOrdered = collect($healthScreenings);
                                         }
                                     @endphp
                                     @foreach($screeningsOrdered as $index => $screening)
