@@ -17,6 +17,7 @@ class StoreBreastmilkRequestRequest extends FormRequest
         return [
             'infant_id' => 'required|exists:infant,infant_id',
             'availability_id' => 'required|exists:admin_availability,id',
+            'medical_condition' => 'required|string|max:1000',
             'prescription' => 'required|file|mimes:jpeg,jpg,png,pdf|max:5120',
         ];
     }

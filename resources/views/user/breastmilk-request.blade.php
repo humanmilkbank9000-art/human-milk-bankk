@@ -542,6 +542,13 @@
                                 </div>
 
                                 <div class="mb-3">
+                                    <label for="medical_condition" class="form-label">Medical Condition / Reason for Request *</label>
+                                    <textarea class="form-control" id="medical_condition" name="medical_condition" rows="3" 
+                                        placeholder="Please describe the medical condition or reason for requesting breastmilk..." required></textarea>
+                                    <div class="form-text">Provide details about why breastmilk is needed</div>
+                                </div>
+
+                                <div class="mb-3">
                                     <label for="prescription" class="form-label">Prescription File *</label>
                                     <div class="file-upload-area border rounded p-4 text-center bg-light" id="fileUploadArea"
                                         style="cursor:pointer;">
@@ -1009,9 +1016,11 @@
                         // Check if date and time slot are selected
                         return selectedDate !== null && selectedAvailabilityId !== null;
                     case 'prescription-tab':
-                        // Check if prescription file is uploaded
+                        // Check if medical condition is filled and prescription file is uploaded
+                        const medicalCondition = document.getElementById('medical_condition');
                         const fileInput = document.getElementById('prescription');
-                        return fileInput && fileInput.files.length > 0;
+                        return medicalCondition && medicalCondition.value.trim() !== '' && 
+                               fileInput && fileInput.files.length > 0;
                     default:
                         return false;
                 }
@@ -1157,11 +1166,24 @@
 
             function setupFileUpload() {
                 const fileInput = document.getElementById('prescription');
+                const medicalConditionInput = document.getElementById('medical_condition');
                 const uploadArea = document.getElementById('fileUploadArea');
                 const previewContainer = document.getElementById('file-preview-container');
                 const previewDiv = document.getElementById('file-preview');
                 const removeBtn = document.getElementById('removeFile');
                 const submitBtn = document.getElementById('submitRequest');
+
+                // Check if both medical condition and file are provided
+                function updateSubmitButton() {
+                    const hasMedicalCondition = medicalConditionInput && medicalConditionInput.value.trim() !== '';
+                    const hasFile = fileInput && fileInput.files.length > 0;
+                    submitBtn.disabled = !(hasMedicalCondition && hasFile);
+                }
+
+                // Listen to medical condition changes
+                if (medicalConditionInput) {
+                    medicalConditionInput.addEventListener('input', updateSubmitButton);
+                }
 
                 uploadArea.addEventListener('click', () => fileInput.click());
 
@@ -1186,6 +1208,7 @@
                 fileInput.addEventListener('change', (e) => {
                     if (e.target.files.length > 0) {
                         handleFileSelection(e.target.files[0]);
+                        updateSubmitButton();
                         // Mark prescription tab as completed when file is uploaded
                         markTabAsCompleted();
                     }
@@ -1194,7 +1217,7 @@
                 removeBtn.addEventListener('click', () => {
                     fileInput.value = '';
                     previewContainer.style.display = 'none';
-                    submitBtn.disabled = true;
+                    updateSubmitButton();
                     // Remove completed badge when file is removed
                     const prescriptionTab = document.getElementById('prescription-tab');
                     if (prescriptionTab) {
@@ -1226,7 +1249,7 @@
                     }
 
                     previewContainer.style.display = 'block';
-                    submitBtn.disabled = false;
+                    updateSubmitButton();
                 }
             }
         });

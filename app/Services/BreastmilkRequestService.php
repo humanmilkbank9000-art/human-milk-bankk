@@ -46,6 +46,7 @@ class BreastmilkRequestService
                 'user_id' => $userId,
                 'infant_id' => $data['infant_id'],
                 'availability_id' => $data['availability_id'],
+                'medical_condition' => $data['medical_condition'] ?? null,
                 'request_date' => $availability->available_date,
                 'request_time' => $availability->start_time ?? $defaultTime,
                 'status' => 'pending'

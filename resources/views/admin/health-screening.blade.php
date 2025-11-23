@@ -793,9 +793,10 @@
                 <span class="input-group-text bg-white border-end-0">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
-                    placeholder="Search name or contact number" aria-label="Search health screenings">
-                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: none;">
+                <input type="text" class="form-control border-start-0 ps-0" id="searchInput" name="q"
+                    placeholder="Search name or contact number" aria-label="Search health screenings"
+                    value="{{ request('q') }}">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch" style="display: {{ request('q') ? 'inline-block' : 'none' }};">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
@@ -1170,122 +1171,49 @@
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearch');
-            const searchResults = document.getElementById('searchResults');
 
             if (!searchInput) return;
 
-            // Helpers to extract searchable text from table rows and responsive cards
-            function extractRowFields(row) {
-                // Include Name and Contact cells for searching
-                const cells = row.querySelectorAll('td');
-                if (cells.length === 0) return '';
+            // Debounce timer
+            let searchTimer = null;
 
-                // First cell is Name, second is Contact Number
-                const nameText = cells[0] ? cells[0].textContent.trim() : '';
-                const contactText = cells[1] ? cells[1].textContent.trim() : '';
-                return (nameText + ' ' + contactText).toLowerCase();
-            }
-
-            function extractCardFields(card) {
-                // Mobile card: pull Name and Contact rows
-                const rows = card.querySelectorAll('.card-row');
-                let nameText = '';
-                let contactText = '';
-
-                rows.forEach(row => {
-                    const label = row.querySelector('.card-label');
-                    const value = row.querySelector('.card-value');
-                    if (label && value) {
-                        const labelTxt = label.textContent.toLowerCase();
-                        if (labelTxt.includes('name')) {
-                            nameText = value.textContent.trim();
-                        } else if (labelTxt.includes('contact')) {
-                            contactText = value.textContent.trim();
-                        }
-                    }
-                });
-                return (nameText + ' ' + contactText).toLowerCase();
-            }
-
-            function isVisible(el) {
-                if (!el) return false;
-                return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
-            }
-
-            function getAllTableRows() {
-                const rows = [];
-                document.querySelectorAll('.table tbody tr').forEach(r => rows.push(r));
-                return rows;
-            }
-
-            function getAllCards() {
-                return Array.from(document.querySelectorAll('.responsive-card'));
-            }
-
-            function performSearch() {
-                const term = searchInput.value.trim().toLowerCase();
-                let totalCount = 0;
-                let visibleCount = 0;
-
-                const rows = getAllTableRows();
-                const cards = getAllCards();
-
-                // Get total count from all rows/cards
-                totalCount = rows.length + cards.length;
-
-                // If no term, restore all rows/cards
-                if (!term) {
-                    rows.forEach(row => { row.style.display = ''; });
-                    cards.forEach(card => { card.style.display = ''; });
-
-                    clearBtn.style.display = 'none';
-                    searchResults.textContent = '';
-                    searchResults.classList.remove('text-danger');
-                    return;
-                }
-
-                // With a search term: hide all rows/cards by default, show only matches
-                rows.forEach(row => {
-                    const hay = extractRowFields(row);
-                    if (hay.indexOf(term) !== -1) {
-                        row.style.removeProperty('display');
-                        visibleCount++;
-                    } else {
-                        row.style.setProperty('display', 'none', 'important');
-                    }
-                });
-
-                // Handle responsive-card blocks (mobile view)
-                cards.forEach(card => {
-                    const hay = extractCardFields(card);
-                    if (hay.indexOf(term) !== -1) {
-                        card.style.removeProperty('display');
-                        visibleCount++;
-                    } else {
-                        card.style.setProperty('display', 'none', 'important');
-                    }
-                });
-
-                // Update UI
-                clearBtn.style.display = 'inline-block';
-                searchResults.textContent = `Showing ${visibleCount} of ${totalCount} results`;
-                if (visibleCount === 0) {
-                    searchResults.textContent = 'No results found';
-                    searchResults.classList.add('text-danger');
+            // Submit search to server
+            function submitSearch() {
+                const url = new URL(window.location.href);
+                const searchValue = searchInput.value.trim();
+                
+                if (searchValue) {
+                    url.searchParams.set('q', searchValue);
+                    clearBtn.style.display = 'inline-block';
                 } else {
-                    searchResults.classList.remove('text-danger');
+                    url.searchParams.delete('q');
+                    clearBtn.style.display = 'none';
                 }
+                
+                window.location.href = url.toString();
             }
 
-            searchInput.addEventListener('input', performSearch);
-            clearBtn.addEventListener('click', function () {
-                searchInput.value = '';
-                performSearch();
-                searchInput.focus();
+            // Debounced search on input
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(submitSearch, 500);
             });
 
-            // Initial run to ensure correct state
-            performSearch();
+            // Search on Enter key
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimer);
+                    submitSearch();
+                }
+            });
+
+            // Clear search
+            clearBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                const url = new URL(window.location.href);
+                url.searchParams.delete('q');
+                window.location.href = url.toString();
+            });
         });
     </script>
 @endsection
