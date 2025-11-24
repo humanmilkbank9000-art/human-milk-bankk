@@ -542,8 +542,20 @@
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="stats-text">
+                        @php
+                            $totalDispensedFromPivots = 0;
+                            foreach ($dispensedMilk as $d) {
+                                if (!empty($d->sourceBatches) && $d->sourceBatches->count() > 0) {
+                                    foreach ($d->sourceBatches as $sb) {
+                                        $totalDispensedFromPivots += isset($sb->pivot->volume_used) ? (float) $sb->pivot->volume_used : 0;
+                                    }
+                                } else {
+                                    $totalDispensedFromPivots += (float) ($d->volume_dispensed ?? 0);
+                                }
+                            }
+                        @endphp
                         <div class="stats-number" id="dispensed-volume">
-                            {{ number_format($dispensedMilk->sum('volume_dispensed'), 0) }}ml
+                            {{ number_format($totalDispensedFromPivots, 0) }}ml
                         </div>
                         <div class="stats-label">Total Dispensed</div>
                     </div>
@@ -1182,8 +1194,11 @@
                                             ];
                                         }
 
+                                        // Get the actual volume used from THIS specific batch (from pivot table)
+                                        $volumeFromThisBatch = $batch->pivot->volume_used ?? $dispensed->volume_dispensed;
+
                                         $batchGroups[$batchId]['total_recipients']++;
-                                        $batchGroups[$batchId]['total_volume'] += (float) $dispensed->volume_dispensed;
+                                        $batchGroups[$batchId]['total_volume'] += (float) $volumeFromThisBatch;
                                         $batchGroups[$batchId]['dispensed_records'][] = $dispensed;
                                     }
                                 }
@@ -1208,9 +1223,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($batchGroups as $batchId => $group)
+                                        @foreach($batchGroups as $batchKey => $group)
                                             @php
                                                 $batch = $group['batch'];
+                                                // Use the actual batch id for identifiers and comparisons
+                                                $viewingBatchId = $batch->batch_id;
                                                 $totalVol = $group['total_volume'];
                                                 $formattedVol = $totalVol == (int) $totalVol ? (int) $totalVol : rtrim(rtrim(number_format($totalVol, 2, '.', ''), '0'), '.');
                                             @endphp
@@ -1229,7 +1246,7 @@
                                                 </td>
                                                 <td class="text-center" data-label="Actions">
                                                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                        data-bs-target="#dispensedDetailsModal{{ $batchId }}">
+                                                        data-bs-target="#dispensedDetailsModal{{ $viewingBatchId }}">
                                                         <i class="fas fa-eye"></i> View
                                                     </button>
                                                 </td>
@@ -1250,9 +1267,10 @@
             </div>
 
             <!-- Dispensed Details Modals -->
-            @foreach($batchGroups as $batchId => $group)
-                <div class="modal fade" id="dispensedDetailsModal{{ $batchId }}" tabindex="-1"
-                    aria-labelledby="dispensedDetailsModalLabel{{ $batchId }}" aria-hidden="true">
+            @foreach($batchGroups as $batchKey => $group)
+                @php $viewingBatchId = $group['batch']->batch_id; @endphp
+                <div class="modal fade" id="dispensedDetailsModal{{ $viewingBatchId }}" tabindex="-1"
+                    aria-labelledby="dispensedDetailsModalLabel{{ $viewingBatchId }}" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <div class="modal-header bg-success text-white">
@@ -1300,25 +1318,42 @@
                                                             // Find the volume used from the current batch being viewed
                                                             $currentBatchVolumeUsed = null;
 
-                                                            if ($dispensed->sourceBatches) {
+                                                            if ($dispensed->sourceBatches && $dispensed->sourceBatches->count() > 0) {
                                                                 foreach ($dispensed->sourceBatches as $batchItem) {
-                                                                    if ($batchItem->batch_id == $batchId) {
+                                                                    if ($batchItem->batch_id == $viewingBatchId) {
+                                                                        // Access pivot data - try both methods
                                                                         $currentBatchVolumeUsed = $batchItem->pivot->volume_used ?? null;
+                                                                        if ($currentBatchVolumeUsed === null && isset($batchItem->pivot)) {
+                                                                            $currentBatchVolumeUsed = $batchItem->pivot['volume_used'] ?? null;
+                                                                        }
                                                                         break;
                                                                     }
                                                                 }
+                                                            }
+                                                            
+                                                            // Debug: Log to help troubleshoot
+                                                            if ($currentBatchVolumeUsed === null) {
+                                                                \Log::warning('Batch volume not found', [
+                                                                    'dispensed_id' => $dispensed->dispensed_id,
+                                                                    'looking_for_batch_id' => $batchId,
+                                                                    'source_batches_count' => $dispensed->sourceBatches ? $dispensed->sourceBatches->count() : 0,
+                                                                    'source_batch_ids' => $dispensed->sourceBatches ? $dispensed->sourceBatches->pluck('batch_id')->toArray() : []
+                                                                ]);
                                                             }
                                                         @endphp
 
                                                         @if($currentBatchVolumeUsed !== null)
                                                             {{-- Show only the volume deducted from this specific batch --}}
+                                                            @php
+                                                                $volUsed = (float) $currentBatchVolumeUsed;
+                                                                $formattedVolUsed = $volUsed == (int) $volUsed ? (int) $volUsed : rtrim(rtrim(number_format($volUsed, 2, '.', ''), '0'), '.');
+                                                            @endphp
                                                             <span
-                                                                class="badge badge-success">{{ number_format($currentBatchVolumeUsed, 0) }}ml</span>
+                                                                class="badge badge-success">{{ $formattedVolUsed }}ml</span>
                                                         @else
                                                             {{-- Fallback: show total dispensed volume if pivot data is not available
                                                             --}}
-                                                            <span
-                                                                class="badge badge-success">{{ $dispensed->formatted_volume_dispensed }}ml</span>
+                                                            <span class="badge badge-warning" title="Pivot data not found - showing total">{{ $dispensed->formatted_volume_dispensed }}ml</span>
                                                         @endif
                                                     </td>
                                                     <td class="text-center" data-label="Date">

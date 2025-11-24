@@ -2629,12 +2629,17 @@
                                                                     if (volumeToTake > 0) {
                                                                         selectedSources.push({
                                                                             type: milkType,
-                                                                            id: checkbox.value,
-                                                                            volume: volumeToTake
+                                                                            id: parseInt(checkbox.value, 10),
+                                                                            volume: parseFloat(volumeToTake.toFixed(2))
                                                                         });
                                                                         remainingVolume -= volumeToTake;
                                                                     }
                                                                 });
+
+                                                                // Debug logging
+                                                                console.log('Volume to dispense:', volumeToDispense);
+                                                                console.log('Selected sources:', selectedSources);
+                                                                console.log('Total from sources:', selectedSources.reduce((sum, s) => sum + s.volume, 0));
 
                                                                 // Validate that we collected the sources
                                                                 if (selectedSources.length === 0) {
@@ -2680,12 +2685,17 @@
                                                                         })
                                                                             .then(response => {
                                                                                 if (!response.ok) {
-                                                                                    throw new Error('Network response was not ok');
+                                                                                    // Try to extract error message from response
+                                                                                    return response.json().then(data => {
+                                                                                        throw new Error(data.error || data.message || `Server error: ${response.status}`);
+                                                                                    }).catch(() => {
+                                                                                        throw new Error(`Network error: ${response.status} ${response.statusText}`);
+                                                                                    });
                                                                                 }
                                                                                 return response.json();
                                                                             })
                                                                             .catch(error => {
-                                                                                Swal.showValidationMessage(`Request failed: ${error}`);
+                                                                                Swal.showValidationMessage(`Request failed: ${error.message || error}`);
                                                                             });
                                                                     },
                                                                     allowOutsideClick: () => !Swal.isLoading()

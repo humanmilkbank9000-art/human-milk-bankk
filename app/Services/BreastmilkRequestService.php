@@ -93,15 +93,10 @@ class BreastmilkRequestService
                 throw new \RuntimeException('Only pasteurized breastmilk can be dispensed. Unpasteurized dispensing is not allowed for safety reasons.');
             }
             
-            // Round requested volume to nearest 10 mL
-            $volumeRequested = \App\Helpers\VolumeHelper::roundMl($payload['volume_requested']);
-            // Round each selected item volume to nearest 10 mL
-            $selectedItems = array_map(function($item){
-                if (isset($item['volume'])) {
-                    $item['volume'] = \App\Helpers\VolumeHelper::roundMl($item['volume']);
-                }
-                return $item;
-            }, $payload['selected_items']);
+            // Use exact volume as provided (already calculated correctly by frontend)
+            $volumeRequested = (float) $payload['volume_requested'];
+            // Use exact selected item volumes (don't round - frontend already distributed correctly)
+            $selectedItems = $payload['selected_items'];
 
             $totalSelectedVolume = collect($selectedItems)->sum('volume');
             if ($totalSelectedVolume < $volumeRequested) {
@@ -188,14 +183,24 @@ class BreastmilkRequestService
         // Similar to approveAndDispense but supports flexible sources
         DB::beginTransaction();
         try {
-            // Round dispensed volume and each source volume to nearest 10 mL
-            $volume = \App\Helpers\VolumeHelper::roundMl($payload['volume_dispensed']);
-            $sources = array_map(function($s){
-                if (isset($s['volume'])) {
-                    $s['volume'] = \App\Helpers\VolumeHelper::roundMl($s['volume']);
-                }
-                return $s;
-            }, $payload['sources']);
+            // Use the exact volume requested (already validated and rounded in frontend)
+            $volume = (float) $payload['volume_dispensed'];
+            
+            // Use exact source volumes as calculated by frontend
+            // Don't round individual portions - they're already correctly distributed
+            $sources = $payload['sources'];
+            
+            // Log for debugging
+            Log::info('Dispensing - Volume requested: ' . $volume);
+            Log::info('Dispensing - Sources: ' . json_encode($sources));
+            
+            // Validate total source volume matches requested volume
+            $totalSourceVolume = array_sum(array_column($sources, 'volume'));
+            Log::info('Dispensing - Total source volume: ' . $totalSourceVolume);
+            
+            if (abs($totalSourceVolume - $volume) > 0.01) {
+                throw new \RuntimeException("Total source volume ({$totalSourceVolume}ml) doesn't match requested volume ({$volume}ml)");
+            }
 
             $dispensedMilk = DispensedMilk::create([
                 'breastmilk_request_id' => $breastmilkRequest->breastmilk_request_id,
@@ -214,11 +219,21 @@ class BreastmilkRequestService
                 }
                 
                 $batch = PasteurizationBatch::findOrFail($source['id']);
-                if ($batch->available_volume < $source['volume']) {
-                    throw new \RuntimeException("Batch #{$batch->batch_number} does not have sufficient volume");
+                
+                // Validate batch is active and available
+                if ($batch->status !== 'active') {
+                    throw new \RuntimeException("Batch {$batch->batch_number} is not available for dispensing (status: {$batch->status})");
                 }
-                $batch->available_volume -= $source['volume'];
-                $batch->save();
+                
+                if ($batch->available_volume < $source['volume']) {
+                    throw new \RuntimeException("Batch {$batch->batch_number} does not have sufficient volume. Available: {$batch->available_volume}ml, Requested: {$source['volume']}ml");
+                }
+                
+                // Use reduceVolume method which properly handles status updates
+                if (!$batch->reduceVolume($source['volume'])) {
+                    throw new \RuntimeException("Failed to reduce volume for batch {$batch->batch_number}");
+                }
+                
                 DB::table('dispensed_milk_sources')->insert([
                     'dispensed_id' => $dispensedMilk->dispensed_id,
                     'source_type' => 'pasteurized',
@@ -318,21 +333,21 @@ class BreastmilkRequestService
 
     private function deductSelectedPasteurizedInventory($selectedItems, $dispensedId, $volumeRequested)
     {
-        $totalSelectedVolume = collect($selectedItems)->sum('volume');
-        $remainingToDeduct = $volumeRequested;
-        
+        // Use exact volumes as calculated by frontend - no proportional recalculation
         foreach ($selectedItems as $item) {
-            if ($remainingToDeduct <= 0) break;
-            
             $batch = PasteurizationBatch::findOrFail($item['id']);
             
-            $proportionalAmount = ($item['volume'] / $totalSelectedVolume) * $volumeRequested;
-            $volumeToTake = min($proportionalAmount, $remainingToDeduct, $batch->available_volume);
+            // Use the exact volume for this batch as provided by frontend
+            $volumeToTake = (float) $item['volume'];
             
             if ($volumeToTake <= 0) continue;
 
-            if ($batch->status !== 'active' || $batch->available_volume < $volumeToTake) {
-                throw new \RuntimeException("Batch {$batch->batch_number} does not have sufficient volume available.");
+            if ($batch->status !== 'active') {
+                throw new \RuntimeException("Batch {$batch->batch_number} is not available (status: {$batch->status}).");
+            }
+            
+            if ($batch->available_volume < $volumeToTake) {
+                throw new \RuntimeException("Batch {$batch->batch_number} does not have sufficient volume. Available: {$batch->available_volume}ml, Requested: {$volumeToTake}ml");
             }
 
             if (!$batch->reduceVolume($volumeToTake)) {
@@ -343,8 +358,6 @@ class BreastmilkRequestService
                 'source_type' => 'pasteurized',
                 'volume_used' => $volumeToTake
             ]);
-            
-            $remainingToDeduct -= $volumeToTake;
         }
     }
 }

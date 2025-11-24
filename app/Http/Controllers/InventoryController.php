@@ -57,7 +57,10 @@ class InventoryController extends Controller
         // Section 3: Dispensed Breastmilk (All dispensing records)
         $dispensedMilk = DispensedMilk::with([
             'guardian', 'recipient', 'admin',
-            'sourceDonations.user', 'sourceBatches'
+            'sourceDonations.user', 
+            'sourceBatches' => function($query) {
+                $query->withPivot('volume_used', 'source_type');
+            }
         ])
             ->orderBy('date_dispensed', 'desc')
             ->get();

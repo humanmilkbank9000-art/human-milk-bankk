@@ -514,9 +514,18 @@ class BreastmilkRequestController extends Controller
         $adminId = Session::get('account_id');
 
         try {
+            Log::info('Dispensing request', [
+                'request_id' => $requestId,
+                'payload' => $request->validated()
+            ]);
+            
             $dispensed = $this->service->dispense($breastmilkRequest, $request->validated(), $adminId);
             return response()->json(['success' => true, 'message' => 'Breastmilk dispensed successfully.']);
         } catch (\Exception $e) {
+            Log::error('Dispense error: ' . $e->getMessage(), [
+                'request_id' => $requestId,
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json(['error' => 'Failed to dispense: ' . $e->getMessage()], 500);
         }
     }
