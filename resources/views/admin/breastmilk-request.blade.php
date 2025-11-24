@@ -685,7 +685,7 @@
                                             <th class="text-center">Infant</th>
                                             <th class="text-center">Batch</th>
                                             <th class="text-center">Volume</th>
-                                            <th class="text-center">Type</th>
+                                            {{-- Type column removed per request --}}
                                             <th class="text-center">Date</th>
                                             <th class="text-center">Time</th>
                                             <th class="text-center">Action</th>
@@ -693,10 +693,10 @@
                                     </thead>
                                     <tbody>
                                         @php
-                                            // Show earliest dispensed requests first (oldest dispensed on top)
+                                            // Use the original ordering provided by the controller/paginator.
                                             $dispensedOrdered = $dispensedRequests instanceof \Illuminate\Pagination\LengthAwarePaginator
-                                                ? $dispensedRequests->getCollection()->sortBy('dispensed_at')
-                                                : collect($dispensedRequests)->sortBy('dispensed_at');
+                                                ? $dispensedRequests->getCollection()
+                                                : collect($dispensedRequests);
                                         @endphp
                                         @foreach($dispensedOrdered as $request)
                                             <tr>
@@ -744,16 +744,7 @@
                                                     @endphp
                                                     <strong>{{ $vol_display }} ml</strong>
                                                 </td>
-                                                <td data-label="Type">
-                                                    @if($request->dispensedMilk && $request->dispensedMilk->milk_type)
-                                                        <span
-                                                            class="badge milk-type-badge bg-{{ $request->dispensedMilk->milk_type === 'pasteurized' ? 'success' : 'warning' }}">
-                                                            {{ ucfirst($request->dispensedMilk->milk_type) }}
-                                                        </span>
-                                                    @else
-                                                        <span class="text-muted">Not specified</span>
-                                                    @endif
-                                                </td>
+                                                {{-- Type column removed --}}
                                                 <td data-label="Date">
                                                     {{ $request->dispensed_at ? \Carbon\Carbon::parse($request->dispensed_at)->format('M d, Y') : 'N/A' }}
                                                 </td>
