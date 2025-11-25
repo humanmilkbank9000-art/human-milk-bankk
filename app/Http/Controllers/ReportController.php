@@ -114,6 +114,37 @@ class ReportController extends Controller
             'isPdf' => true,
         ])->setPaper([0, 0, 612, 936], 'portrait');
 
+        // Render the PDF so we can access the underlying Dompdf canvas and
+        // draw the page number centered at the footer. We render here so
+        // page numbers appear even if inline PHP is disabled in DOMPDF.
+        $pdf->render();
+
+        try {
+            $dompdf = $pdf->getDomPDF();
+            $canvas = $dompdf->get_canvas();
+            $fontMetrics = $dompdf->getFontMetrics();
+            $font = $fontMetrics->get_font("DejaVu Sans", "normal");
+            $size = 9;
+            $text = "Page {PAGE_NUM}";
+
+            $w = $canvas->get_width();
+            $h = $canvas->get_height();
+
+            // Use a sample width based on 'Page 1' to compute a stable center
+            $sampleText = 'Page 1';
+            $textWidth = $fontMetrics->get_text_width($sampleText, $font, $size);
+            $x = ($w - $textWidth) / 2;
+
+            // Vertical placement: place inside footer band (adjust as needed)
+            $y = $h - 36;
+
+            // Footer color #6b7280 as floats
+            $color = [107/255, 114/255, 128/255];
+            $canvas->page_text($x, $y, $text, $font, $size, $color);
+        } catch (\Throwable $e) {
+            // If anything goes wrong, ignore and continue — download will still work.
+        }
+
         return $pdf->download($meta['filename']);
     }
 }

@@ -530,6 +530,11 @@
         body.pdf-output table.report-table th:nth-child(9),
         body.pdf-output table.report-table td:nth-child(9) { width: 10%; }
 
+          /* Inventory partials include explicit <colgroup> widths; prefer those
+              over global nth-child hints. Avoid generic 4/8-column overrides
+              which can conflict with the partials and cause extremely narrow
+              columns in some layouts. */
+
         @media print {
             .btn-download {
                 display: none !important;
@@ -729,19 +734,28 @@
 
         <footer class="report-footer">
             <div class="footer-grid">
-                <div class="footer-left">
-                    Development of Web App for Breastmilk Request and Donation
-                </div>
+                @unless($isPdf)
+                    <div class="footer-left">
+                        Development of Web App for Breastmilk Request and Donation
+                    </div>
+                @endunless
+
                 <div class="footer-center">
-                    Page <span class="page-number"></span>
+                    @unless($isPdf)
+                        Page <span class="page-number"></span>
+                    @endunless
                 </div>
-                <div class="footer-right">
-                    Generated: {{ $generatedAt->timezone('Asia/Manila')->format('M d, Y h:i A') }} PHT
-                </div>
+
+                @unless($isPdf)
+                    <div class="footer-right">
+                        Generated: {{ $generatedAt->timezone('Asia/Manila')->format('M d, Y h:i A') }} PHT
+                    </div>
+                @endunless
             </div>
         </footer>
 
     </div>
+    {{-- Page numbers removed from PDF output per request --}}
 </body>
 
 </html>
