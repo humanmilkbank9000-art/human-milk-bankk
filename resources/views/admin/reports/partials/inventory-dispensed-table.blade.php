@@ -4,13 +4,22 @@
 @endphp
 
 <table class="report-table">
+    <colgroup>
+        <col style="width:5%">
+        <col style="width:18%">
+        <col style="width:18%">
+        <col style="width:28%">
+        <col style="width:12%">
+        <col style="width:12%">
+        <col style="width:7%">
+    </colgroup>
     <thead>
         <tr>
             <th style="width: 50px;">No</th>
             <th>Guardian</th>
             <th>Recipient</th>
-            <th>Source (Donor/Batch)</th>
-            <th style="width: 120px;">Volume (ml)</th>
+            <th style="white-space: normal;" title="Source (Donor/Batch)">Source (Donor/Batch)</th>
+            <th style="width: 120px; white-space: normal;" title="Volume (ml)">Volume (ml)</th>
             <th style="width: 120px;">Date</th>
             <th style="width: 100px;">Time</th>
         </tr>
@@ -21,7 +30,7 @@
                 <td style="text-align: center;">{{ $index + 1 }}</td>
                 <td>{{ $row['guardian'] ?? '-' }}</td>
                 <td>{{ $row['recipient'] ?? '-' }}</td>
-                <td style="font-size: 10px;">{{ $row['source'] ?? '-' }}</td>
+                <td style="font-size: 10px; white-space: normal; word-break: break-word;">{{ $row['source'] ?? '-' }}</td>
                 <td class="text-end">
                     @php
                         $vol = (float) ($row['volume'] ?? 0);

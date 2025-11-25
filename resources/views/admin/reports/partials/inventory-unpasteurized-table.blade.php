@@ -1,18 +1,28 @@
 @php
     $rows = collect($rows ?? []);
-    $total = $total ?? $rows->sum('available');
+    // Grand total is the sum of the per-row `total` values (Total (ml)).
+    $total = $total ?? $rows->sum('total');
 @endphp
 
 <table class="report-table">
+    <colgroup>
+        <col style="width:5%">
+        <col style="width:22%">
+        <col style="width:12%">
+        <col style="width:8%">
+        <col style="width:18%">
+        <col style="width:12%">
+        <col style="width:13%">
+        <col style="width:10%">
+    </colgroup>
     <thead>
         <tr>
             <th style="width: 50px;">No</th>
             <th>Donor</th>
             <th>Type</th>
-            <th style="width: 60px;">Count of Bag</th>
+            <th style="width: 60px;" title="Count of Bag">Bags</th>
             <th>Volume/Bag</th>
             <th style="width: 100px;">Total (ml)</th>
-            <th style="width: 100px;">Available (ml)</th>
             <th style="width: 120px;">Date</th>
             <th style="width: 100px;">Time</th>
         </tr>
@@ -31,12 +41,6 @@
                         echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
                     @endphp
                 </td>
-                <td class="text-end">
-                    @php
-                        $vol = (float) ($row['available'] ?? 0);
-                        echo $vol == (int) $vol ? (int) $vol : rtrim(rtrim(number_format($vol, 2, '.', ''), '0'), '.');
-                    @endphp
-                </td>
                 <td style="text-align: center;">{{ $row['date'] ?? '-' }}</td>
                 <td style="text-align: center;">{{ $row['time'] ?? '-' }}</td>
             </tr>
@@ -48,7 +52,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="6"><strong>Grand Total Available</strong></td>
+            <td colspan="5"><strong>Grand Total</strong></td>
             <td class="text-end">
                 <strong>
                     @php

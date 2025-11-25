@@ -4,12 +4,21 @@
 @endphp
 
 <table class="report-table">
+    <colgroup>
+        <col style="width:5%">
+        <col style="width:28%">
+        <col style="width:12%">
+        <col style="width:12%">
+        <col style="width:16%">
+        <col style="width:12%">
+        <col style="width:15%">
+    </colgroup>
     <thead>
         <tr>
             <th style="width: 50px;">No</th>
             <th>Batch Number</th>
             <th style="width: 120px;">Total (ml)</th>
-            <th style="width: 120px;">Available (ml)</th>
+            <th style="width: 120px;" title="Available (ml)">Available</th>
             <th style="width: 120px;">Date</th>
             <th style="width: 100px;">Time</th>
             <th style="width: 80px;">Donations Count</th>

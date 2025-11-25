@@ -4,6 +4,12 @@
 @endphp
 
 <table class="report-table">
+    <colgroup>
+        <col style="width:5%">
+        <col style="width:65%">
+        <col style="width:15%">
+        <col style="width:15%">
+    </colgroup>
     <thead>
         <tr>
             <th style="width: 50px;">No</th>

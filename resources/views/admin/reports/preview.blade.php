@@ -349,6 +349,8 @@
             margin-top: 0.2in;
             margin-bottom: 0.25in;
             font-size: 10px;
+            /* Use fixed layout so column widths (inline or CSS) are respected in PDF */
+            table-layout: fixed;
         }
 
         body.pdf-output table.report-table {
@@ -372,6 +374,10 @@
             text-align: center;
             line-height: 1.4;
             vertical-align: middle;
+            /* Allow header text to wrap so long column titles remain visible */
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
         }
 
         body.pdf-output table.report-table thead th {
@@ -384,6 +390,9 @@
             padding: 7px 6px;
             line-height: 1.4;
             vertical-align: middle;
+            /* Allow cell content to wrap naturally while keeping column widths */
+            white-space: normal;
+            word-break: break-word;
         }
 
         body.pdf-output table.report-table tbody td {
@@ -455,6 +464,38 @@
             word-break: break-word;
         }
 
+        /* Additional PDF layout hints so dompdf preserves column widths and
+           avoids collapsing narrow columns that force one-letter-per-line
+           rendering. These are gentle width hints; adjust the percentages to
+           suit your report columns. */
+        body.pdf-output table.report-table {
+            table-layout: fixed !important;
+            width: 100% !important;
+        }
+
+        body.pdf-output table.report-table thead th,
+        body.pdf-output table.report-table tbody td {
+            white-space: normal !important;
+            word-break: normal !important;
+            overflow-wrap: anywhere !important;
+        }
+
+        /* Column widths for common report tables (7-column layout for inventory dispensed) */
+        body.pdf-output table.report-table th:nth-child(1),
+        body.pdf-output table.report-table td:nth-child(1) { width: 5%; }
+        body.pdf-output table.report-table th:nth-child(2),
+        body.pdf-output table.report-table td:nth-child(2) { width: 18%; }
+        body.pdf-output table.report-table th:nth-child(3),
+        body.pdf-output table.report-table td:nth-child(3) { width: 18%; }
+        body.pdf-output table.report-table th:nth-child(4),
+        body.pdf-output table.report-table td:nth-child(4) { width: 28%; }
+        body.pdf-output table.report-table th:nth-child(5),
+        body.pdf-output table.report-table td:nth-child(5) { width: 12%; }
+        body.pdf-output table.report-table th:nth-child(6),
+        body.pdf-output table.report-table td:nth-child(6) { width: 12%; }
+        body.pdf-output table.report-table th:nth-child(7),
+        body.pdf-output table.report-table td:nth-child(7) { width: 7%; }
+
         @media print {
             .btn-download {
                 display: none !important;
@@ -464,6 +505,76 @@
                 print-color-adjust: exact;
                 -webkit-print-color-adjust: exact;
             }
+            /* When printing the on-screen preview, expand the canvas so the
+               table can use the full printable width instead of being confined
+               to a small centered box which causes narrow columns and
+               character-per-line wrapping. */
+            body.screen-preview .page-canvas {
+                width: auto !important;
+                min-height: auto !important;
+                margin: 0 !important;
+                padding: 0.5in !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: #ffffff !important;
+            }
+
+            body.screen-preview main {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Table wrapping rules for printed preview */
+            body.screen-preview table.report-table {
+                table-layout: fixed !important;
+                width: 100% !important;
+                font-size: 10px !important;
+            }
+
+            body.screen-preview table.report-table thead th,
+            body.screen-preview table.report-table tbody td {
+                white-space: normal !important;
+                word-break: normal !important;
+                overflow-wrap: anywhere !important;
+            }
+            /* Print-specific table fixes: keep header text horizontal, avoid
+               breaking words into single characters, and respect column widths
+               when printing from the browser (screen-preview). */
+            table.report-table {
+                table-layout: fixed !important;
+                width: 100% !important;
+                -webkit-print-color-adjust: exact;
+            }
+
+            table.report-table thead th,
+            table.report-table tbody td {
+                /* Allow wrapping at word boundaries instead of character-by-character */
+                white-space: normal !important;
+                word-break: normal !important;
+                overflow-wrap: anywhere !important;
+            }
+
+            /* Provide gentle width hints for common inventory columns so the
+               browser print engine doesn't collapse columns too narrowly. Adjust
+               these selectors if your partials change column order. */
+            /* Print-friendly column widths for inventory tables (7 columns) */
+            table.report-table th:nth-child(1),
+            table.report-table td:nth-child(1) { width: 5%; }
+            table.report-table th:nth-child(2),
+            table.report-table td:nth-child(2) { width: 18%; }
+            table.report-table th:nth-child(3),
+            table.report-table td:nth-child(3) { width: 18%; }
+            table.report-table th:nth-child(4),
+            table.report-table td:nth-child(4) { width: 28%; }
+            table.report-table th:nth-child(5),
+            table.report-table td:nth-child(5) { width: 12%; }
+            table.report-table th:nth-child(6),
+            table.report-table td:nth-child(6) { width: 12%; }
+            table.report-table th:nth-child(7),
+            table.report-table td:nth-child(7) { width: 7%; }
+
+            /* Ensure table headers stay visible on each printed page */
+            table.report-table thead { display: table-header-group; }
         }
     </style>
 </head>
