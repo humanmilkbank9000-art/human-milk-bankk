@@ -41,7 +41,7 @@ class FaqController extends Controller
                 'icon' => 'fas fa-info-circle',
                 'color' => '#667eea', // Lavender
                 'question' => 'How walk-in donation works?',
-                'answer' => 'To donate via walk-in, navigate to the "Donate " section: (1) Select your preferred day and time(highlightened in color green in the calendar) and place your schedule. (1) Please take note of your selected date and time and to visit the human milk bank and the unit staff will welcome and assist you',
+                'answer' => 'To donate via walk-in, navigate to the "Donate " section: (1) Select your preferred day (highlightened in color pink in the calendar) and place your schedule. (1) Please take note of your selected date and to visit the human milk bank and the unit staff will welcome and assist you',
                 'tags' => ['donation', 'process', 'walk-in']
             ],            
 [
@@ -68,7 +68,7 @@ class FaqController extends Controller
                 'icon' => 'fas fa-baby',
                 'color' => '#a8edea', // Cream/mint
                 'question' => 'How to request breastmilk?',
-                'answer' => 'You will need: (1) Scanned or a picture of a medical prescription from a doctor, (2) Place or select your preferred date and time to visit the unit, (3) Arrive on time, (4) Human milk bank staff will interview you as a guardian, (5) Note: Your request might be rejected; and if so, you might be referred to the other nearest human milk bank',
+                'answer' => 'You will need: (1) Scanned or a picture of a medical prescription from a doctor, (2) Place or select your preferred date to visit the unit, (3) Arrive on time, (4) Human milk bank staff will interview you as a guardian, (5) Note: Your request might be rejected; and if so, you might be referred to the other nearest human milk bank',
                 'tags' => ['matching', 'infant', 'distribution']
             ],
             [

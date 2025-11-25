@@ -1284,9 +1284,10 @@
                                 <label for="guardian_contact" class="form-label">Contact Number <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="guardian_contact" name="guardian_contact"
-                                    value="{{ old('guardian_contact') }}" placeholder="09XXXXXXXXX">
-                                <div id="guardian_contact_feedback" class="form-text text-danger" style="display:none;">
-                                </div>
+                                    value="{{ old('guardian_contact') }}" placeholder="09XXXXXXXXX" pattern="^09\\d{9}$" minlength="11" inputmode="numeric">
+                                <div class="form-text text-muted small">Enter an 11-digit mobile number starting with 09.</div>
+                                <div id="guardian_contact_feedback" class="form-text text-danger" style="display:none;"></div>
+                                <div id="guardian_contact_format_feedback" class="invalid-feedback" style="display:none;">Contact must be 11 digits numbers only</div>
                             </div>
                         </div>
 
@@ -1444,9 +1445,62 @@
 
     <!-- JavaScript for prescription viewing and inventory selection -->
     {{-- Real-time Search Functionality --}}
-    <script>    // Assisted form: check for duplicate guardian contact numbers     document.addEventListener('DOMContentLoaded', function () {         const contactEl = document.getElementById('guardian_contact');         const feedbackEl = document.getElementById('guardian_contact_feedback');         const submitBtn = document.querySelector('#assistedRequestForm button[type="submit"]');
+    <script>
+    // Assisted form: check for duplicate guardian contact numbers and live format validation
+    document.addEventListener('DOMContentLoaded', function () {
+        const contactEl = document.getElementById('guardian_contact');
+        const feedbackEl = document.getElementById('guardian_contact_feedback');
+        const formatFeedbackEl = document.getElementById('guardian_contact_format_feedback');
+        const submitBtn = document.querySelector('#assistedRequestForm button[type="submit"]');
+
         if (contactEl) {
-            let timeout = null; contactEl.addEventListener('input', function () {                 // clear feedback while typing                 if (feedbackEl) {                     feedbackEl.style.display = 'none';                     feedbackEl.textContent = '';                 }                 if (submitBtn) submitBtn.disabled = false;                 // debounce                 if (timeout) clearTimeout(timeout);                 timeout = setTimeout(() => {                     const val = (contactEl.value || '').trim();                     if (!val) return;                     // Simple format normalization (remove spaces)                     const normalized = val.replace(/\s+/g, '');                     fetch(`{{ route('admin.request.check-contact') }}?contact=${encodeURIComponent(normalized)}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } })                         .then(r => r.json())                         .then(data => {                             if (data && data.exists) {                                 // Show warning and disable submit to prevent accidental duplicate                                 if (feedbackEl) {                                     feedbackEl.style.display = 'block';                                     feedbackEl.textContent = 'This contact number already exists for user: ' + (data.user.first_name || '') + ' ' + (data.user.last_name || '') + ' — leave as is to link to existing user, or change the number to create a new walk-in user.';                                 }                                 if (submitBtn) submitBtn.disabled = false; // still allow submit; admin may intend to link to existing user                             } else {                                 if (feedbackEl) {                                     feedbackEl.style.display = 'none';                                     feedbackEl.textContent = '';                                 }                                 if (submitBtn) submitBtn.disabled = false;                             }                         })                         .catch(err => {                             // ignore errors silently                         });                 }, 450);             });         }     });
+            let timeout = null;
+            // Live input: strip non-digits, but do not truncate valid digits count (so >11 shows invalid)
+            contactEl.addEventListener('input', function () {
+                const raw = (contactEl.value || '');
+                const digits = raw.replace(/\D/g, '');
+                if (digits !== raw) {
+                    contactEl.value = digits;
+                }
+
+                // Show/hide inline format feedback (require leading 09 and total 11 digits)
+                if (/^09\\d{9}$/.test(digits)) {
+                    contactEl.classList.remove('is-invalid');
+                    if (formatFeedbackEl) formatFeedbackEl.style.display = 'none';
+                } else {
+                    contactEl.classList.add('is-invalid');
+                    if (formatFeedbackEl) formatFeedbackEl.style.display = 'block';
+                }
+
+                // clear existing duplicate feedback while typing
+                if (feedbackEl) { feedbackEl.style.display = 'none'; feedbackEl.textContent = ''; }
+                if (submitBtn) submitBtn.disabled = false;
+
+                // debounce duplicate-contact check (only when there's something to check)
+                if (timeout) clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    const val = (contactEl.value || '').trim();
+                    if (!val) return;
+                    const normalized = val.replace(/\s+/g, '');
+                    fetch(`{{ route('admin.request.check-contact') }}?contact=${encodeURIComponent(normalized)}`, { headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && data.exists) {
+                                if (feedbackEl) {
+                                    feedbackEl.style.display = 'block';
+                                    feedbackEl.textContent = 'This contact number already exists for user: ' + (data.user.first_name || '') + ' ' + (data.user.last_name || '') + ' — leave as is to link to existing user, or change the number to create a new walk-in user.';
+                                }
+                                if (submitBtn) submitBtn.disabled = false; // allow submit; admin may intend to link to existing user
+                            } else {
+                                if (feedbackEl) { feedbackEl.style.display = 'none'; feedbackEl.textContent = ''; }
+                                if (submitBtn) submitBtn.disabled = false;
+                            }
+                        })
+                        .catch(err => { /* ignore errors silently */ });
+                }, 450);
+            });
+        }
+    });
                 // Toggle and search for Assisted Request existing user     document.addEventListener('DOMContentLoaded', function () {         (function () {             const optionSel = document.getElementById('assist_option');             const wrap = document.getElementById('assisted-existing-user');             const search = document.getElementById('assisted_user_search');             const list = document.getElementById('assisted_user_results');             const hiddenId = document.getElementById('assisted_existing_user_id');             const gFirst = document.getElementById('guardian_first_name');             const gLast = document.getElementById('guardian_last_name');             const gContact = document.getElementById('guardian_contact');             // Infant auto-fill elements             const infantWrap = document.getElementById('assisted_infant_select_wrap');             const infantSelect = document.getElementById('assisted_infant_select');             const iFirst = document.getElementById('infant_first_name');             const iLast = document.getElementById('infant_last_name');             const iDob = document.getElementById('infant_date_of_birth');             const iSex = document.getElementById('infant_sex');             const iWeight = document.getElementById('infant_weight');
                 const infantsUrlBase = "{{ url('/admin/users') }}/"; // /admin/users/{id}/infants
                 function clearInfantSelector() { if (infantSelect) infantSelect.innerHTML = ''; if (infantWrap) infantWrap.style.display = 'none'; }
@@ -2838,6 +2892,24 @@
                                                                 const assistedForm = document.getElementById('assistedRequestForm');
                                                                 if (assistedForm) {
                                                                     assistedForm.addEventListener('submit', function (e) {
+                                                                        // Validate guardian contact is exactly 11 digits before submitting
+                                                                        const gContactRaw = (document.getElementById('guardian_contact') || {}).value || '';
+                                                                        const gDigits = (gContactRaw + '').replace(/\D/g, '');
+                                                                        const valid = /^09\d{9}$/.test(gDigits);
+                                                                        if (!valid) {
+                                                                            e.preventDefault();
+                                                                            if (typeof Swal !== 'undefined') {
+                                                                                Swal.fire({
+                                                                                    icon: 'warning',
+                                                                                    title: 'Invalid Contact',
+                                                                                    text: 'Contact must be 11 digits numbers only',
+                                                                                    confirmButtonColor: '#3085d6'
+                                                                                });
+                                                                            } else {
+                                                                                alert('Contact must be 11 digits numbers only');
+                                                                            }
+                                                                            return false;
+                                                                        }
                                                                         const dispenseNow = document.getElementById('dispense_now_checkbox').checked;
                                                                         if (!dispenseNow) return; // nothing to do
 

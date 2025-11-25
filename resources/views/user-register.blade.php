@@ -554,8 +554,8 @@
                 <div id="contact-error" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px; font-weight:500;">
                     Please enter your contact number.
                 </div>
-                <div id="contact-req" style="display:none; color:#ff5a7a; font-size:0.8em; margin-top:2px;">
-                    Contact number must be exactly 11 digits and start with 09.
+                <div id="contact-req" class="invalid-feedback" style="display:none;">
+                    Contact must be 11 digits numbers only
                 </div>
                 <script>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -918,10 +918,8 @@
         // Validate on form submit
         contactInput.addEventListener('blur', function (e) {
             const value = e.target.value;
-            if (value && value.length !== 11) {
-                e.target.setCustomValidity('Contact number must be exactly 11 digits');
-            } else if (value && !value.startsWith('09')) {
-                e.target.setCustomValidity('Contact number must start with 09');
+            if (value && (!/^\d{11}$/.test(value))) {
+                e.target.setCustomValidity('Contact must be 11 digits numbers only');
             } else {
                 e.target.setCustomValidity('');
             }

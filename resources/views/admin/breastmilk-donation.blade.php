@@ -2110,8 +2110,10 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Contact Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="donor_contact" placeholder="09XXXXXXXXX"
-                                    required>
+                                <input type="text" id="assist_donor_contact" class="form-control" name="donor_contact" placeholder="09XXXXXXXXX"
+                                    pattern="^09\\d{9}$" minlength="11" inputmode="numeric" required>
+                                <div class="form-text text-muted small">Enter an 11-digit mobile number starting with 09.</div>
+                                <div id="assist_contact_feedback" class="invalid-feedback" style="display:none;">Contact must be 11 digits numbers only</div>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -2318,11 +2320,46 @@
                 // Submit via AJAX
                 const form = document.getElementById('assistWalkInDonationForm');
                 if (form) {
+                    // Live validation: restrict contact input to digits and max 11 chars
+                    const contactInput = document.getElementById('assist_donor_contact');
+                    const contactFeedback = document.getElementById('assist_contact_feedback');
+                    if (contactInput) {
+                        contactInput.addEventListener('input', function (ev) {
+                            // remove non-digits but do NOT truncate — allow the user to type/paste >11 to show invalid immediately
+                            let v = (this.value || '').replace(/\D/g, '');
+                            this.value = v;
+
+                            // Mark invalid when length is not exactly 11 or doesn't match required pattern
+                            if (v.length === 11 && /^09\d{9}$/.test(v)) {
+                                this.classList.remove('is-invalid');
+                                if (contactFeedback) {
+                                    contactFeedback.style.display = 'none';
+                                }
+                            } else {
+                                this.classList.add('is-invalid');
+                                if (contactFeedback) {
+                                    contactFeedback.style.display = 'block';
+                                }
+                            }
+                        });
+                    }
+
                     form.addEventListener('submit', function (e) {
                         e.preventDefault();
+                        // Client-side validation for donor contact: must be 11 digits starting with 09
+                        const contactEl = document.getElementById('assist_donor_contact');
+                        const err = document.getElementById('assist-walkin-error');
+                        if (contactEl) {
+                            const v = (contactEl.value || '').trim();
+                            const valid = /^09\d{9}$/.test(v);
+                            if (!valid) {
+                                err.textContent = 'Contact must be 11 digits numbers only';
+                                err.style.display = 'block';
+                                return;
+                            }
+                        }
                         const spinner = document.getElementById('assist-spinner');
                         const text = document.getElementById('assist-submit-text');
-                        const err = document.getElementById('assist-walkin-error');
                         err.style.display = 'none'; err.textContent = '';
                         spinner.style.display = 'inline-block'; text.textContent = 'Recording...';
                         const formData = new FormData(form);

@@ -97,6 +97,15 @@ class ReportController extends Controller
             $payload['total_volume'] = $totalVolume;
         }
 
+        // Ensure PHP GD extension is available before generating PDF (dompdf requires GD for images)
+        if (!extension_loaded('gd') && !function_exists('gd_info')) {
+            $msg = 'PDF generation requires the PHP GD extension (ext-gd). Please install/enable the GD extension and restart your webserver, then try again.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => $msg], 500);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
+
         $pdf = Pdf::loadView('admin.reports.preview', [
             'type' => $meta['type'],
             'view' => $view,
