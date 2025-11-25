@@ -588,36 +588,19 @@
                             <form id="pasteurizationForm">
                                 <div class="inventory-action-bar d-flex justify-content-between align-items-center mb-3">
                                     <div class="inventory-select-controls">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                            onclick="selectAllDonations()">
-                                            <i class="fas fa-check-square"></i> Select All
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
-                                            onclick="clearAllSelections()">
-                                            <i class="fas fa-square"></i> Clear All
+                                        <button type="button" id="selectAllToggleBtn" class="btn btn-sm btn-outline-secondary"
+                                            onclick="toggleSelectClear();">
+                                            <i class="fas fa-check-square"></i> <span id="selectAllToggleLabel">Select All</span>
                                         </button>
                                     </div>
                                     <div class="inventory-action-buttons d-flex align-items-center">
-                                        <!-- Mobile: compact Select/Clear menu -->
-                                        <div class="dropdown d-sm-none me-2">
+                                        <!-- Mobile: compact Select/Clear toggle (replaces 'More') -->
+                                        <div class="d-sm-none me-2">
                                             <button class="btn btn-sm btn-outline-secondary" type="button"
-                                                id="inventoryMoreMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-h"></i> More
+                                                id="selectAllToggleBtnMobile" onclick="toggleSelectClear();">
+                                                <i class="fas fa-check-square"></i>
+                                                <span id="selectAllToggleLabelMobile">Select All</span>
                                             </button>
-                                            <ul class="dropdown-menu" aria-labelledby="inventoryMoreMenu">
-                                                <li>
-                                                    <a class="dropdown-item" href="#"
-                                                        onclick="event.preventDefault(); selectAllDonations();">
-                                                        <i class="fas fa-check-square me-2"></i> Select All
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="#"
-                                                        onclick="event.preventDefault(); clearAllSelections();">
-                                                        <i class="fas fa-square me-2"></i> Clear All
-                                                    </a>
-                                                </li>
-                                            </ul>
                                         </div>
 
                                         <div id="selectedVolumeInfo" class="me-3 selected-volume-info">
@@ -1580,6 +1563,7 @@
                 const headerCheckbox = document.getElementById('selectAllCheckbox');
                 if (headerCheckbox) headerCheckbox.checked = true;
                 updatePasteurizeButton();
+                updateSelectToggleLabel();
             }
 
             function clearAllSelections() {
@@ -1588,6 +1572,7 @@
                 const headerCheckbox = document.getElementById('selectAllCheckbox');
                 if (headerCheckbox) headerCheckbox.checked = false;
                 updatePasteurizeButton();
+                updateSelectToggleLabel();
             }
 
             function toggleAllDonations() {
@@ -1596,6 +1581,25 @@
                 document.querySelectorAll('.bag-checkbox').forEach(cb => cb.checked = checked);
                 document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = checked);
                 updatePasteurizeButton();
+                updateSelectToggleLabel();
+            }
+
+            function toggleSelectClear() {
+                // If there are any unchecked bag checkboxes, perform select all. Otherwise clear all.
+                const unchecked = document.querySelectorAll('.bag-checkbox:not(:checked)').length;
+                if (unchecked > 0) {
+                    selectAllDonations();
+                } else {
+                    clearAllSelections();
+                }
+            }
+
+            function updateSelectToggleLabel() {
+                const unchecked = document.querySelectorAll('.bag-checkbox:not(:checked)').length;
+                const btnLabel = document.getElementById('selectAllToggleLabel');
+                const btnLabelMobile = document.getElementById('selectAllToggleLabelMobile');
+                if (btnLabel) btnLabel.textContent = unchecked > 0 ? 'Select All' : 'Clear All';
+                if (btnLabelMobile) btnLabelMobile.textContent = unchecked > 0 ? 'Select All' : 'Clear All';
             }
 
             function toggleDonationBags(masterCheckbox) {
@@ -1624,6 +1628,8 @@
 
                 // Update the selected total volume display
                 updateSelectedVolume();
+                // Ensure select/clear toggle shows correct label
+                updateSelectToggleLabel();
             }
 
             // Maximum selectable total volume (ml)
@@ -2353,6 +2359,10 @@
             }
 
             // Initialize selected volume display once page scripts have loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                // ensure toggle label initializes correctly
+                try { updateSelectToggleLabel(); } catch (e) {}
+            });
             try {
                 updatePasteurizeButton();
             } catch (e) {
