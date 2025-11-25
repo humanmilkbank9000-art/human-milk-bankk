@@ -7,12 +7,12 @@
     <thead>
         <tr>
             <th style="width: 5%;">No</th>
-            <th style="width: 20%;">Guardian</th>
-            <th style="width: 20%;">Infant</th>
+            <th style="width: 18%;">Guardian</th>
+            <th style="width: 18%;">Infant</th>
             <th style="width: 25%;">Batch</th>
-            <th style="width: 13%;">Dispensed Date</th>
+            <th style="width: 14%;">Dispensed Date</th>
             <th style="width: 10%;">Dispensed Time</th>
-            <th style="width: 7%;">Total Volume (ml)</th>
+            <th style="width: 10%;">Total Volume (ml)</th>
         </tr>
     </thead>
     <tbody>

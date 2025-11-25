@@ -473,11 +473,25 @@
             width: 100% !important;
         }
 
-        body.pdf-output table.report-table thead th,
+        /* Allow header labels to wrap onto multiple lines at word boundaries
+           so long titles like "Dispensed Time" and "Total Volume (ml)"
+           remain readable in narrow columns. Reduce header font-size in
+           PDF output to help fit the labels while keeping body cells
+           wrapping cleanly. */
+        body.pdf-output table.report-table thead th {
+            white-space: normal !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            font-size: 9px !important;
+            padding: 6px 4px !important;
+            text-align: center !important;
+            vertical-align: middle !important;
+        }
+
         body.pdf-output table.report-table tbody td {
             white-space: normal !important;
-            word-break: normal !important;
-            overflow-wrap: anywhere !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
         }
 
         /* Column widths for common report tables (7-column layout for inventory dispensed) */
@@ -488,13 +502,33 @@
         body.pdf-output table.report-table th:nth-child(3),
         body.pdf-output table.report-table td:nth-child(3) { width: 18%; }
         body.pdf-output table.report-table th:nth-child(4),
-        body.pdf-output table.report-table td:nth-child(4) { width: 28%; }
+        body.pdf-output table.report-table td:nth-child(4) { width: 25%; }
         body.pdf-output table.report-table th:nth-child(5),
-        body.pdf-output table.report-table td:nth-child(5) { width: 12%; }
+        body.pdf-output table.report-table td:nth-child(5) { width: 14%; }
         body.pdf-output table.report-table th:nth-child(6),
-        body.pdf-output table.report-table td:nth-child(6) { width: 12%; }
+        body.pdf-output table.report-table td:nth-child(6) { width: 10%; }
         body.pdf-output table.report-table th:nth-child(7),
-        body.pdf-output table.report-table td:nth-child(7) { width: 7%; }
+        body.pdf-output table.report-table td:nth-child(7) { width: 10%; }
+
+        /* Column width hints for 9-column donation tables */
+        body.pdf-output table.report-table th:nth-child(1),
+        body.pdf-output table.report-table td:nth-child(1) { width: 4%; }
+        body.pdf-output table.report-table th:nth-child(2),
+        body.pdf-output table.report-table td:nth-child(2) { width: 18%; }
+        body.pdf-output table.report-table th:nth-child(3),
+        body.pdf-output table.report-table td:nth-child(3) { width: 12%; }
+        body.pdf-output table.report-table th:nth-child(4),
+        body.pdf-output table.report-table td:nth-child(4) { width: 20%; }
+        body.pdf-output table.report-table th:nth-child(5),
+        body.pdf-output table.report-table td:nth-child(5) { width: 8%; }
+        body.pdf-output table.report-table th:nth-child(6),
+        body.pdf-output table.report-table td:nth-child(6) { width: 11%; }
+        body.pdf-output table.report-table th:nth-child(7),
+        body.pdf-output table.report-table td:nth-child(7) { width: 10%; }
+        body.pdf-output table.report-table th:nth-child(8),
+        body.pdf-output table.report-table td:nth-child(8) { width: 7%; }
+        body.pdf-output table.report-table th:nth-child(9),
+        body.pdf-output table.report-table td:nth-child(9) { width: 10%; }
 
         @media print {
             .btn-download {
@@ -531,11 +565,19 @@
                 font-size: 10px !important;
             }
 
-            body.screen-preview table.report-table thead th,
+            body.screen-preview table.report-table thead th {
+                white-space: normal !important;
+                word-break: break-word !important;
+                overflow-wrap: break-word !important;
+                font-size: 11px !important;
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+
             body.screen-preview table.report-table tbody td {
                 white-space: normal !important;
-                word-break: normal !important;
-                overflow-wrap: anywhere !important;
+                word-break: break-word !important;
+                overflow-wrap: break-word !important;
             }
             /* Print-specific table fixes: keep header text horizontal, avoid
                breaking words into single characters, and respect column widths
@@ -546,12 +588,20 @@
                 -webkit-print-color-adjust: exact;
             }
 
-            table.report-table thead th,
+            table.report-table thead th {
+                /* Printed/preview headers: allow wrapping and center text */
+                white-space: normal !important;
+                word-break: break-word !important;
+                overflow-wrap: break-word !important;
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+
             table.report-table tbody td {
                 /* Allow wrapping at word boundaries instead of character-by-character */
                 white-space: normal !important;
-                word-break: normal !important;
-                overflow-wrap: anywhere !important;
+                word-break: break-word !important;
+                overflow-wrap: break-word !important;
             }
 
             /* Provide gentle width hints for common inventory columns so the
@@ -565,13 +615,33 @@
             table.report-table th:nth-child(3),
             table.report-table td:nth-child(3) { width: 18%; }
             table.report-table th:nth-child(4),
-            table.report-table td:nth-child(4) { width: 28%; }
+            table.report-table td:nth-child(4) { width: 25%; }
             table.report-table th:nth-child(5),
-            table.report-table td:nth-child(5) { width: 12%; }
+            table.report-table td:nth-child(5) { width: 14%; }
             table.report-table th:nth-child(6),
-            table.report-table td:nth-child(6) { width: 12%; }
+            table.report-table td:nth-child(6) { width: 10%; }
             table.report-table th:nth-child(7),
-            table.report-table td:nth-child(7) { width: 7%; }
+            table.report-table td:nth-child(7) { width: 10%; }
+
+            /* Print-friendly widths for 9-column donation tables */
+            table.report-table th:nth-child(1),
+            table.report-table td:nth-child(1) { width: 4%; }
+            table.report-table th:nth-child(2),
+            table.report-table td:nth-child(2) { width: 18%; }
+            table.report-table th:nth-child(3),
+            table.report-table td:nth-child(3) { width: 12%; }
+            table.report-table th:nth-child(4),
+            table.report-table td:nth-child(4) { width: 20%; }
+            table.report-table th:nth-child(5),
+            table.report-table td:nth-child(5) { width: 8%; }
+            table.report-table th:nth-child(6),
+            table.report-table td:nth-child(6) { width: 11%; }
+            table.report-table th:nth-child(7),
+            table.report-table td:nth-child(7) { width: 10%; }
+            table.report-table th:nth-child(8),
+            table.report-table td:nth-child(8) { width: 7%; }
+            table.report-table th:nth-child(9),
+            table.report-table td:nth-child(9) { width: 10%; }
 
             /* Ensure table headers stay visible on each printed page */
             table.report-table thead { display: table-header-group; }
