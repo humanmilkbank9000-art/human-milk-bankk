@@ -477,17 +477,7 @@
 
         <!-- Inventory Statistics -->
         <div class="stats-cards-container">
-            <div class="stats-card-wrapper">
-                <div class="stats-card warning">
-                    <div class="stats-icon">
-                        <i class="fas fa-flask"></i>
-                    </div>
-                    <div class="stats-text">
-                        <div class="stats-number" id="unpasteurized-count">{{ $unpasteurizedDonations->count() }}</div>
-                        <div class="stats-label">Unpasteurized Donations</div>
-                    </div>
-                </div>
-            </div>
+            
             <div class="stats-card-wrapper">
                 <div class="stats-card info">
                     <div class="stats-icon">
@@ -501,17 +491,7 @@
                     </div>
                 </div>
             </div>
-            <div class="stats-card-wrapper">
-                <div class="stats-card primary">
-                    <div class="stats-icon">
-                        <i class="fas fa-vial"></i>
-                    </div>
-                    <div class="stats-text">
-                        <div class="stats-number" id="pasteurized-batches">{{ $pasteurizationBatches->count() }}</div>
-                        <div class="stats-label">Active Batches</div>
-                    </div>
-                </div>
-            </div>
+            
             <div class="stats-card-wrapper">
                 <div class="stats-card info">
                     <div class="stats-icon">
@@ -525,17 +505,7 @@
                     </div>
                 </div>
             </div>
-            <div class="stats-card-wrapper">
-                <div class="stats-card success">
-                    <div class="stats-icon">
-                        <i class="fas fa-hand-holding-medical"></i>
-                    </div>
-                    <div class="stats-text">
-                        <div class="stats-number" id="dispensed-records">{{ $dispensedMilk->count() }}</div>
-                        <div class="stats-label">Dispensed Records</div>
-                    </div>
-                </div>
-            </div>
+            
             <div class="stats-card-wrapper">
                 <div class="stats-card success">
                     <div class="stats-icon">
