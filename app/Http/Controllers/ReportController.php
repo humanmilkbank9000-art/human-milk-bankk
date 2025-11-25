@@ -114,9 +114,7 @@ class ReportController extends Controller
             'isPdf' => true,
         ])->setPaper([0, 0, 612, 936], 'portrait');
 
-        // Render the PDF so we can access the underlying Dompdf canvas and
-        // draw the page number centered at the footer. We render here so
-        // page numbers appear even if inline PHP is disabled in DOMPDF.
+        // Render the PDF so we can draw the page numbers on the Dompdf canvas.
         $pdf->render();
 
         try {
@@ -130,7 +128,7 @@ class ReportController extends Controller
             $w = $canvas->get_width();
             $h = $canvas->get_height();
 
-            // Use a sample width based on 'Page 1' to compute a stable center
+            // Compute center X for stable centering using sample text width
             $sampleText = 'Page 1';
             $textWidth = $fontMetrics->get_text_width($sampleText, $font, $size);
             $x = ($w - $textWidth) / 2;
@@ -138,8 +136,8 @@ class ReportController extends Controller
             // Vertical placement: place inside footer band (adjust as needed)
             $y = $h - 36;
 
-            // Footer color #6b7280 as floats
             $color = [107/255, 114/255, 128/255];
+            // Draw page text on every page. Dompdf expands placeholders.
             $canvas->page_text($x, $y, $text, $font, $size, $color);
         } catch (\Throwable $e) {
             // If anything goes wrong, ignore and continue — download will still work.

@@ -26,6 +26,10 @@
             font-size: 11px;
             line-height: 1.5;
             background: #ffffff;
+            /* Prevent dompdf's default stylesheet from incrementing the
+               page counter on the body element (which causes page 1 to
+               display as Page 2 when we also reset the counter). */
+            counter-increment: none;
         }
 
         body.screen-preview {
@@ -215,10 +219,10 @@
 
         footer.report-footer .footer-grid {
             width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: nowrap;
+            position: relative;
+            /* Reserve vertical space so absolutely positioned children
+               don't overlap content when wrapping. */
+            min-height: 1.1em;
         }
 
         body.screen-preview footer.report-footer .footer-grid {
@@ -234,19 +238,47 @@
             white-space: nowrap;
         }
 
+        /* Allow footer text to wrap in PDF output so long labels align with
+           the centered page number and don't overflow the footer area. */
+        body.pdf-output footer.report-footer .footer-grid>div {
+            white-space: normal;
+        }
+
         footer.report-footer .footer-left {
             text-align: left;
-            flex: 1 1 40%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            padding-right: 8px;
+            max-width: calc(50% - 70px);
         }
 
         footer.report-footer .footer-center {
             text-align: center;
-            flex: 0 0 20%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            z-index: 2;
         }
 
         footer.report-footer .footer-right {
             text-align: right;
-            flex: 1 1 40%;
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding-left: 8px;
+            max-width: calc(50% - 70px);
+        }
+
+        /* Ensure left/right footer blocks can wrap without overlapping the
+           centered page number. In PDF output allow wrapping and break words
+           to avoid overflow issues. */
+        body.pdf-output footer.report-footer .footer-left,
+        body.pdf-output footer.report-footer .footer-right {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
 
         body {
@@ -257,8 +289,11 @@
             content: counter(page);
         }
 
-        @page {
-            counter-increment: page;
+        /* When rendering PDFs we hide the CSS-generated page number because
+           we will draw the page number using Dompdf's canvas to ensure the
+           number is accurate on every page and perfectly centered. */
+        body.pdf-output .page-number {
+            display: none;
         }
 
         main {
@@ -734,11 +769,9 @@
 
         <footer class="report-footer">
             <div class="footer-grid">
-                @unless($isPdf)
-                    <div class="footer-left">
-                        Development of Web App for Breastmilk Request and Donation
-                    </div>
-                @endunless
+                <div class="footer-left">
+                    Development of Web App for Breastmilk Request and Donation
+                </div>
 
                 <div class="footer-center">
                     @unless($isPdf)
@@ -746,11 +779,9 @@
                     @endunless
                 </div>
 
-                @unless($isPdf)
-                    <div class="footer-right">
-                        Generated: {{ $generatedAt->timezone('Asia/Manila')->format('M d, Y h:i A') }} PHT
-                    </div>
-                @endunless
+                <div class="footer-right">
+                    Generated: {{ $generatedAt->timezone($timezoneName ?? 'Asia/Manila')->format('M d, Y h:i A') }} {{ $timezoneAbbr ?? 'PHT' }}
+                </div>
             </div>
         </footer>
 
