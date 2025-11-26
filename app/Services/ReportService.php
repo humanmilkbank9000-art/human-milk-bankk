@@ -181,29 +181,17 @@ class ReportService
 
     public function buildInventoryData(int $year, int $month): array
     {
+        // Get current unpasteurized inventory (not based on date added, but what's currently available)
+        $today = now()->toDateString();
         $unpasteurized = Donation::with('user')
             ->whereIn('status', ['success_walk_in', 'success_home_collection'])
             ->where('pasteurization_status', 'unpasteurized')
-            ->where(function ($query) {
-                $query->where('available_volume', '>', 0)
-                    ->orWhereRaw('(total_volume - COALESCE(dispensed_volume, 0)) > 0');
+            ->where('available_volume', '>', 0)
+            ->where(function ($query) use ($today) {
+                $query->whereNull('expiration_date')
+                    ->orWhereDate('expiration_date', '>', $today);
             })
-            ->whereDoesntHave('disposedMilk')
-            ->where(function ($query) use ($year, $month) {
-                $query->where(function ($sub) use ($year, $month) {
-                    $sub->whereYear('added_to_inventory_at', $year)
-                        ->whereMonth('added_to_inventory_at', $month);
-                })
-                    ->orWhere(function ($sub) use ($year, $month) {
-                        $sub->whereYear('donation_date', $year)
-                            ->whereMonth('donation_date', $month);
-                    })
-                    ->orWhere(function ($sub) use ($year, $month) {
-                        $sub->whereYear('scheduled_pickup_date', $year)
-                            ->whereMonth('scheduled_pickup_date', $month);
-                    });
-            })
-            ->orderByRaw('COALESCE(added_to_inventory_at, donation_date, scheduled_pickup_date) asc')
+            ->orderBy('added_to_inventory_at', 'asc')
             ->get();
 
         $pasteurized = PasteurizationBatch::with('donations')
