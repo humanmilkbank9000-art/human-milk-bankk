@@ -42,10 +42,66 @@
     }
 
     /* Ensure notification content wraps properly on all screen sizes */
+    @media (max-width: 768px) {
+        #notificationDropdown {
+            width: 85vw !important;
+            max-width: 85vw !important;
+            right: 0 !important;
+            left: auto !important;
+        }
+
+        /* More compact header on mobile */
+        #notificationDropdown .d-flex.justify-content-between {
+            gap: 0.25rem !important;
+        }
+
+        #notificationDropdown strong {
+            font-size: 0.9rem;
+        }
+
+        #notificationDropdown .btn-sm {
+            font-size: 0.75rem !important;
+            padding: 0.2rem 0.4rem !important;
+        }
+
+        /* Ensure notification items are readable */
+        .notification-item {
+            padding: 0.75rem !important;
+        }
+
+        .notification-item .bi {
+            font-size: 1rem !important;
+        }
+
+        .notification-item > div:first-of-type {
+            font-size: 0.85rem !important;
+        }
+
+        .notification-item .small {
+            font-size: 0.75rem !important;
+        }
+
+        /* Always show delete button on mobile for easier interaction */
+        .notification-delete-btn {
+            opacity: 0.6;
+        }
+
+        .notification-delete-btn:active {
+            opacity: 1;
+            background-color: #fee !important;
+        }
+    }
+
     @media (max-width: 576px) {
         #notificationDropdown {
             width: 90vw !important;
             max-width: 90vw !important;
+        }
+
+        /* Stack header on very small screens if needed */
+        #notificationDropdown .d-flex.justify-content-between {
+            flex-direction: row !important;
+            align-items: center !important;
         }
     }
 
@@ -53,6 +109,15 @@
         #notificationDropdown {
             width: 95vw !important;
             max-width: 95vw !important;
+        }
+
+        #notificationDropdown strong {
+            font-size: 0.85rem;
+        }
+
+        #notificationDropdown .btn-sm {
+            font-size: 0.7rem !important;
+            padding: 0.15rem 0.3rem !important;
         }
     }
 </style>
@@ -66,19 +131,19 @@
             style="top:-4px;right:-8px;display:none;visibility:hidden;min-width:20px;height:20px;border-radius:10px;font-size:0.75rem;line-height:20px;padding:0 5px;"></span>
     </button>
     <div class="dropdown-menu dropdown-menu-end p-2" id="notificationDropdown"
-        style="width:320px; max-width:90vw; max-height:420px; overflow-y:auto; overflow-x:hidden;">
-        <div class="d-flex justify-content-between align-items-center px-2 mb-2">
-            <strong>Notifications</strong>
-            <div class="d-flex gap-1">
-                <button class="btn btn-sm btn-link" id="markAllReadBtn">Mark all as read</button>
-                <button class="btn btn-sm btn-link text-danger" id="deleteAllNotificationsBtn">Delete all</button>
+        style="width:320px; max-width:90vw; max-height:420px; overflow-y:auto; overflow-x:hidden; transition: max-height 0.3s ease;">
+        <div class="d-flex justify-content-between align-items-center px-2 mb-2" style="flex-wrap: wrap; gap: 0.5rem;">
+            <strong style="white-space: nowrap;">Notifications</strong>
+            <div class="d-flex gap-1" style="flex-wrap: nowrap;">
+                <button class="btn btn-sm btn-link text-nowrap" id="markAllReadBtn" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">Mark all as read</button>
+                <button class="btn btn-sm btn-link text-danger text-nowrap" id="deleteAllNotificationsBtn" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">Delete all</button>
             </div>
         </div>
         <div id="notificationList">
             <div class="text-center text-muted py-3">Loading...</div>
         </div>
         <div class="border-top mt-2 pt-2 text-center">
-            <a href="#" id="viewAllNotifications" class="small">View all</a>
+            <a href="javascript:void(0);" id="viewAllNotifications" class="small text-decoration-none" style="color: #0d6efd; font-weight: 500; cursor: pointer;">View all</a>
         </div>
     </div>
 </div>
@@ -279,6 +344,7 @@
         if (viewAllBtn) {
             viewAllBtn.addEventListener('click', function (e) {
                 e.preventDefault();
+                e.stopPropagation();
                 const dropdown = document.getElementById('notificationDropdown');
 
                 if (dropdown.style.maxHeight === '80vh') {

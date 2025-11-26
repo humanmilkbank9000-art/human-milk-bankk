@@ -321,14 +321,6 @@
     }
   </style>
 
-  <!-- Motivational Message -->
-  <div class="motivational-message">
-    <div class="motivational-icon">
-      <i class="fas fa-lightbulb"></i>
-    </div>
-    <p class="motivational-text">{{ $motivationalMessage }}</p>
-  </div>
-
   <!-- Dashboard Statistics Cards -->
   <div class="stats-container">
     <!-- Total Donations Card -->
