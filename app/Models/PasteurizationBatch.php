@@ -60,6 +60,22 @@ class PasteurizationBatch extends Model
         return $this->time_pasteurized->format('g:i A');
     }
 
+    // Accessor to ensure batch_number is always present
+    public function getBatchNumberAttribute($value): string
+    {
+        // If batch_number is null or empty, generate one based on batch_id
+        if (empty($value)) {
+            return 'BATCH-' . str_pad($this->batch_id, 3, '0', STR_PAD_LEFT);
+        }
+        return $value;
+    }
+
+    // Accessor for simple batch name display
+    public function getSimpleBatchNameAttribute(): string
+    {
+        return $this->batch_number;
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active' && $this->available_volume > 0;

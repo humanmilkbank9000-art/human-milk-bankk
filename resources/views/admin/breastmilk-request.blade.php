@@ -2309,7 +2309,7 @@
                                                                                     `<strong>Donation #${item.id}</strong><br>
                                                                                                                                                                                                                                                                              ${item.donor_name} - ${item.donation_type}<br>
                                                                                                                                                                                                                                                                              <span class="text-primary">${formatVolume(item.volume)}ml</span> (${item.date} ${item.time})` :
-                                                                                    `<strong>Batch ${parseInt(item.batch_number)}</strong><br>
+                                                                                    `<strong>${item.batch_number || 'BATCH-' + item.batch_id || 'Batch'}</strong><br>
                                                                                                                                                                                                                                                                              Pasteurized by: ${item.admin_name}<br>
                                                                                                                                                                                                                                                                              <span class="text-primary">${formatVolume(item.volume)}ml available</span> of ${formatVolume(item.original_volume)}ml (${item.pasteurized_date})`
                                                                                 }
@@ -2862,7 +2862,7 @@
                                                                                                                 onchange="updateSelectedVolume(${requestId})">
                                                                                                             <label class="form-check-label" for="batch_${requestId}_${batch.batch_id}">
                                                                                                                 <small>
-                                                                                                                    <strong>Batch #${parseInt(batch.batch_number)}</strong><br>
+                                                                                                                    <strong>${batch.batch_number || 'BATCH-' + batch.batch_id || 'Batch'}</strong><br>
                                                                                                                     <span class="text-primary">${formatVolume(batch.available_volume)} ml available</span><br>
                                                                                                                     <span class="text-muted">Date: ${batch.date_pasteurized}</span>
                                                                                                                 </small>
@@ -3456,7 +3456,7 @@
                                                                                                                         <input class="form-check-input" type="checkbox" id="assisted_batch_${b.batch_id}" value="${b.batch_id}" data-volume="${avail}" onchange="assistedUpdateSelectedVolume()">
                                                                                                                         <label class="form-check-label" for="assisted_batch_${b.batch_id}">
                                                                                                                             <small>
-                                                                                                                                <strong>Batch #${parseInt(b.batch_number)}</strong><br>
+                                                                                                                                <strong>${b.batch_number || 'BATCH-' + b.batch_id || 'Batch'}</strong><br>
                                                                                                                                 <span class="text-primary">${formatVolume(avail)} ml available</span><br>
                                                                                                                                 <span class="text-muted">Date: ${b.date_pasteurized}</span>
                                                                                                                             </small>
