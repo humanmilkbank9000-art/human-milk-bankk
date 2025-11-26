@@ -158,15 +158,16 @@ class ReportService
         $records = $donations->map(function (Donation $donation) {
             $bagVolumes = collect($donation->individual_bag_volumes ?? [])
                 ->filter(fn ($volume) => $volume !== null && $volume !== '')
-                ->map(fn ($volume) => number_format((float) $volume, 0) . ' ml')
-                ->implode(', ');
+                ->map(fn ($volume) => number_format((float) $volume, 0) . 'ml')
+                ->values()
+                ->all();
 
             return [
                 'donation_type' => $donation->donation_method === 'walk_in' ? 'Walk-in' : 'Home Collection',
                 'name' => $donation->user ? $this->formatFullName($donation->user) : '-',
                 'address' => $donation->user->address ?? '-',
                 'number_of_bags' => $donation->number_of_bags ?? 0,
-                'volume_per_bag' => $bagVolumes ?: '-',
+                'volume_per_bag' => $bagVolumes,
                 'total_volume' => (float) ($donation->total_volume ?? 0),
                 'date' => $this->formatDateValue($donation->donation_date ?? $donation->scheduled_pickup_date),
                 'time' => $this->formatTimeValue($donation->donation_time ?? $donation->scheduled_pickup_time),

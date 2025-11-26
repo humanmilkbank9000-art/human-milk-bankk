@@ -4,9 +4,20 @@
 @endphp
 
 <table class="report-table">
+    <colgroup>
+        <col style="width:5%">
+        <col style="width:17%">
+        <col style="width:12%">
+        <col style="width:20%">
+        <col style="width:8%">
+        <col style="width:15%">
+        <col style="width:10%">
+        <col style="width:8%">
+        <col style="width:5%">
+    </colgroup>
     <thead>
         <tr>
-            <th style="width: 50px;">No.</th>
+            <th>No.</th>
             <th>Name</th>
             <th>Donation type</th>
             <th>Address</th>
@@ -25,7 +36,19 @@
                 <td>{{ $row['donation_type'] ?? '' }}</td>
                 <td>{{ $row['address'] ?? '' }}</td>
                 <td style="text-align: center;">{{ $row['number_of_bags'] ?? '' }}</td>
-                <td style="text-align: center;">{{ $row['volume_per_bag'] ?? '' }}</td>
+                <td style="text-align: center; font-size: 9px; line-height: 1.4;">
+                    @php
+                        $volumes = $row['volume_per_bag'] ?? [];
+                        if (is_array($volumes) && count($volumes) > 0) {
+                            foreach ($volumes as $i => $vol) {
+                                echo htmlspecialchars($vol);
+                                if ($i < count($volumes) - 1) echo ',<br>';
+                            }
+                        } else {
+                            echo '-';
+                        }
+                    @endphp
+                </td>
                 <td style="text-align: center;">{{ $row['date'] ?? '' }}</td>
                 <td style="text-align: center;">{{ $row['time'] ?? '' }}</td>
                 <td style="text-align: center;">
