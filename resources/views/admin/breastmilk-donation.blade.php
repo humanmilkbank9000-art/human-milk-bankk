@@ -1835,17 +1835,19 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer d-flex justify-content-between flex-wrap gap-2">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-danger" id="walkin-decline-btn"
-                                onclick="declineDonation(currentDonationId)">
-                                <i class="fas fa-times me-1"></i> Decline
-                            </button>
-                            <button type="submit" class="btn btn-success" id="walkin-validate-submit">
-                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"
-                                    style="display:none;" id="walkin-validate-spinner"></span>
-                                <span id="walkin-validate-text">Validate Donation</span>
-                            </button>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-danger" id="walkin-decline-btn"
+                                    onclick="declineDonation(currentDonationId)">
+                                    <i class="fas fa-times me-1"></i> Decline
+                                </button>
+                                <button type="submit" class="btn btn-success" id="walkin-validate-submit">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"
+                                        style="display:none;" id="walkin-validate-spinner"></span>
+                                    <span id="walkin-validate-text">Validate Donation</span>
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -2286,10 +2288,9 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Contact Number <span class="text-danger">*</span></label>
-                                <input type="text" id="assist_donor_contact" class="form-control" name="donor_contact" placeholder="09XXXXXXXXX"
-                                    pattern="^09\\d{9}$" minlength="11" inputmode="numeric" required>
-                                <div class="form-text text-muted small">Enter an 11-digit mobile number starting with 09.</div>
-                                <div id="assist_contact_feedback" class="invalid-feedback" style="display:none;">Contact must be 11 digits numbers only</div>
+                                <input type="text" id="assist_donor_contact" class="form-control" name="donor_contact" placeholder="Enter contact number"
+                                    inputmode="numeric" required>
+                                <div id="assist_contact_feedback" class="invalid-feedback" style="display:none;">Contact number is required</div>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -2553,15 +2554,6 @@
                         // Client-side validation for donor contact: must be 11 digits starting with 09
                         const contactEl = document.getElementById('assist_donor_contact');
                         const err = document.getElementById('assist-walkin-error');
-                        if (contactEl) {
-                            const v = (contactEl.value || '').trim();
-                            const valid = /^09\d{9}$/.test(v);
-                            if (!valid) {
-                                err.textContent = 'Contact must be 11 digits numbers only';
-                                err.style.display = 'block';
-                                return;
-                            }
-                        }
                         const spinner = document.getElementById('assist-spinner');
                         const text = document.getElementById('assist-submit-text');
                         err.style.display = 'none'; err.textContent = '';
