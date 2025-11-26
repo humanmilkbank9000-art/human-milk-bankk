@@ -233,10 +233,13 @@
                             </select>
                         </div>
                         <div class="filter-actions">
-                            <a class="btn btn-primary"
-                                href="{{ route('admin.reports.preview', ['type' => 'requests', 'year' => $year, 'month' => $month]) }}"
-                                target="_blank" rel="noopener">
+                            <button type="button" class="btn btn-primary" onclick="printReport('requests', {{ $year }}, {{ $month }})">
                                 <i class="fas fa-print"></i> Print
+                            </button>
+                            <a class="btn btn-secondary ms-2"
+                               href="{{ route('admin.reports.download', ['type' => 'requests', 'year' => $year, 'month' => $month]) }}"
+                               target="_blank" rel="noopener">
+                                <i class="fas fa-download"></i> Download PDF
                             </a>
                         </div>
                     </form>
@@ -310,10 +313,13 @@
                             </select>
                         </div>
                         <div class="filter-actions">
-                            <a class="btn btn-primary"
-                                href="{{ route('admin.reports.preview', ['type' => 'donations', 'year' => $year, 'month' => $month]) }}"
-                                target="_blank" rel="noopener">
+                            <button type="button" class="btn btn-primary" onclick="printReport('donations', {{ $year }}, {{ $month }})">
                                 <i class="fas fa-print"></i> Print
+                            </button>
+                            <a class="btn btn-secondary ms-2"
+                               href="{{ route('admin.reports.download', ['type' => 'donations', 'year' => $year, 'month' => $month]) }}"
+                               target="_blank" rel="noopener">
+                                <i class="fas fa-download"></i> Download PDF
                             </a>
                         </div>
                     </form>
@@ -391,10 +397,13 @@
                             </select>
                         </div>
                         <div class="filter-actions">
-                            <a class="btn btn-primary"
-                                href="{{ route('admin.reports.preview', ['type' => 'inventory', 'year' => $year, 'month' => $month]) }}"
-                                target="_blank" rel="noopener">
+                            <button type="button" class="btn btn-primary" onclick="printReport('inventory', {{ $year }}, {{ $month }})">
                                 <i class="fas fa-print"></i> Print
+                            </button>
+                            <a class="btn btn-secondary ms-2"
+                               href="{{ route('admin.reports.download', ['type' => 'inventory', 'year' => $year, 'month' => $month]) }}"
+                               target="_blank" rel="noopener">
+                                <i class="fas fa-download"></i> Download PDF
                             </a>
                         </div>
                     </form>
@@ -450,4 +459,22 @@
         </div>
     </div>
 
+@endsection
+
+@section('scripts')
+<script>
+function printReport(type, year, month) {
+    // Open the PDF preview (streamed inline) in a new tab
+    const url = `{{ route('admin.reports.pdf', ['type' => 'TYPE', 'year' => 'YEAR', 'month' => 'MONTH']) }}`
+        .replace('TYPE', type)
+        .replace('YEAR', year)
+        .replace('MONTH', month);
+    // Open the PDF preview (no forced download, no print dialog)
+    const w = window.open(url, '_blank');
+    if (!w) {
+        // Popup blocked: fall back to navigating current tab
+        window.location.href = url;
+    }
+}
+</script>
 @endsection

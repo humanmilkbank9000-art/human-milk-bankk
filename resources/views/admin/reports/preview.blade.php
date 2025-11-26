@@ -11,7 +11,7 @@
     <style>
         @page {
             size: 8.5in 13in;
-            margin: 0.75in 0.75in 0.85in 0.75in;
+            margin: 0.75in 0.75in 1.0in 0.75in;
         }
 
         html,
@@ -21,38 +21,38 @@
 
         body {
             margin: 0;
+            padding: 0.75in;
             font-family: "DejaVu Sans", Arial, sans-serif;
             color: #1f2937;
             font-size: 11px;
             line-height: 1.5;
             background: #ffffff;
-            /* Prevent dompdf's default stylesheet from incrementing the
-               page counter on the body element (which causes page 1 to
-               display as Page 2 when we also reset the counter). */
             counter-increment: none;
         }
 
         body.screen-preview {
-            background: linear-gradient(180deg, #d1d5db 0%, #eceff4 40%, #d1d5db 100%);
-            padding: 40px 0;
+            background: #ffffff;
+            padding: 0.75in;
         }
 
         body.pdf-output {
             font-size: 10px;
+            padding: 0;
         }
 
         .page-canvas {
             position: relative;
-            min-height: calc(13in - 2in);
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
         }
 
         body.screen-preview .page-canvas {
-            width: 8.5in;
-            min-height: 13in;
-            margin: 0 auto;
+            width: 100%;
+            margin: 0;
+            padding: 0;
             background: #ffffff;
-            border: 1px solid #d4d4d8;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14), 0 8px 18px rgba(15, 23, 42, 0.1);
         }
 
         body.pdf-output .page-canvas {
@@ -64,23 +64,19 @@
         header.report-header {
             text-align: center;
             margin-bottom: 0.3in;
+            padding: 0;
         }
 
         body.screen-preview header.report-header {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            right: auto;
-            transform: translateX(-50%);
-            width: calc(8.5in - 1.5in);
-            padding-top: 0.4in;
-            margin-bottom: 0;
+            position: relative;
+            margin: 0 0 0.3in 0;
+            padding: 0;
         }
 
         body.pdf-output header.report-header {
             position: relative;
-            margin-top: 0;
-            padding-top: 0;
+            margin: 0 0 0.3in 0;
+            padding: 0;
         }
 
         .header-grid {
@@ -194,27 +190,27 @@
         }
 
         body.screen-preview footer.report-footer {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            right: auto;
-            transform: translateX(-50%);
-            width: calc(8.5in - 1.5in);
-            padding-bottom: 0.4in;
-            margin-top: 0;
+            position: relative;
+            margin-top: 0.3in;
+            padding: 0;
+            width: auto;
         }
 
         body.pdf-output footer.report-footer {
             position: fixed;
-            bottom: 0.15in;
+            bottom: 0.35in;
             left: 0.75in;
             right: 0.75in;
             width: auto;
             padding-left: 0;
             padding-right: 0;
-            padding-bottom: 0.15in;
-            padding-top: 0.15in;
+            padding-bottom: 0.25in;
+            padding-top: 0.25in;
             background: white;
+            z-index: 1000;
+            border-top: 1px solid #d1d5db;
+            opacity: 1 !important;
+            visibility: visible !important;
         }
 
         footer.report-footer .footer-grid {
@@ -223,6 +219,8 @@
             /* Reserve vertical space so absolutely positioned children
                don't overlap content when wrapping. */
             min-height: 1.1em;
+            opacity: 1 !important;
+            visibility: visible !important;
         }
 
         body.screen-preview footer.report-footer .footer-grid {
@@ -250,7 +248,19 @@
             left: 0;
             top: 0;
             padding-right: 8px;
-            max-width: calc(50% - 70px);
+            max-width: calc(50% - 80px);
+            font-size: 9px;
+            line-height: 1.3;
+            color: #6b7280;
+        }
+
+        body.pdf-output footer.report-footer .footer-left {
+            font-size: 9px;
+            font-weight: 600;
+            color: #374151;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
         }
 
         footer.report-footer .footer-center {
@@ -260,6 +270,17 @@
             transform: translateX(-50%);
             white-space: nowrap;
             z-index: 2;
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+        body.pdf-output footer.report-footer .footer-center {
+            font-size: 9px;
+            font-weight: 600;
+            color: #374151;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
         }
 
         footer.report-footer .footer-right {
@@ -268,7 +289,18 @@
             right: 0;
             top: 0;
             padding-left: 8px;
-            max-width: calc(50% - 70px);
+            max-width: calc(50% - 80px);
+            font-size: 9px;
+            line-height: 1.3;
+            color: #6b7280;
+        }
+
+        body.pdf-output footer.report-footer .footer-right {
+            font-size: 9px;
+            color: #374151;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
         }
 
         /* Ensure left/right footer blocks can wrap without overlapping the
@@ -302,16 +334,13 @@
         }
 
         body.screen-preview main {
-            padding-top: 1.2in;
-            padding-bottom: 1in;
-            padding-left: 0.75in;
-            padding-right: 0.75in;
-            min-height: calc(13in - 2in);
+            padding: 0;
+            margin: 0;
         }
 
         body.pdf-output main {
             padding: 0;
-            margin-bottom: 0.5in;
+            margin: 0 0 0.5in 0;
         }
 
         .btn-download {
@@ -685,6 +714,30 @@
 
             /* Ensure table headers stay visible on each printed page */
             table.report-table thead { display: table-header-group; }
+            
+            /* Ensure footer is visible in print output */
+            footer.report-footer {
+                display: block !important;
+                position: fixed !important;
+                bottom: 0.35in !important;
+                left: 0.75in !important;
+                right: 0.75in !important;
+                page-break-inside: avoid !important;
+                print-color-adjust: exact !important;
+                -webkit-print-color-adjust: exact !important;
+            }
+            
+            footer.report-footer .footer-grid {
+                display: block !important;
+            }
+            
+            footer.report-footer .footer-left,
+            footer.report-footer .footer-center,
+            footer.report-footer .footer-right {
+                display: block !important;
+                print-color-adjust: exact !important;
+                -webkit-print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>

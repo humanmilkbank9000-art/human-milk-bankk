@@ -114,6 +114,8 @@ Route::get('/admin/monthly-reports', [ReportsController::class, 'admin_monthly_r
 Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
     Route::get('{type}/preview', [ReportController::class, 'preview'])->name('preview');
     Route::get('{type}/download', [ReportController::class, 'download'])->name('download');
+    // Stream PDF inline in browser for previewing the PDF itself
+    Route::get('{type}/pdf', [ReportController::class, 'previewPdf'])->name('pdf');
 });
 
 Route::get('/admin/settings', [App\Http\Controllers\LoginController::class, 'admin_settings'])->name('admin.settings');
