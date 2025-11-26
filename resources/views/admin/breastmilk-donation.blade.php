@@ -603,6 +603,182 @@
                     color: #fff !important;
                 }
             }
+
+            /* Navigation Tabs - Health Screening Style */
+            .nav-tabs.nav-tabs-standard {
+                justify-content: flex-start;
+                gap: 4px;
+                border-bottom: 1px solid #dee2e6;
+                flex-wrap: wrap;
+                padding-bottom: 0 !important;
+                margin-bottom: 1rem !important;
+                border-left: none !important;
+                border-right: none !important;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-item {
+                flex: 0 0 auto;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+                border-radius: 0;
+                border: none;
+                border-bottom: 3px solid transparent;
+                line-height: 1.4;
+                background: transparent !important;
+                transition: all 0.2s ease;
+                font-weight: 500;
+                color: #6c757d;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link:hover {
+                background: rgba(0, 0, 0, 0.02) !important;
+                color: #495057;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link.active {
+                background-color: transparent !important;
+                border-bottom-color: currentColor;
+                font-weight: 600;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link .badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 20px;
+                height: 20px;
+                padding: 0 0.4rem;
+                border-radius: 10px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                line-height: 1;
+                margin-left: 0.4rem;
+            }
+
+            /* Tab-specific colors for donation status */
+            .nav-tabs.nav-tabs-standard .nav-link:has(.bg-warning) .badge,
+            .nav-tabs.nav-tabs-standard .nav-link .badge.bg-warning {
+                background: #ffc107 !important;
+                color: #111827 !important;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link.active:has(.bg-warning),
+            .nav-tabs.nav-tabs-standard .nav-link.active.text-warning {
+                color: #ffc107 !important;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link:has(.bg-primary) .badge,
+            .nav-tabs.nav-tabs-standard .nav-link .badge.bg-primary {
+                background: #0d6efd !important;
+                color: #fff !important;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link.active:has(.bg-primary),
+            .nav-tabs.nav-tabs-standard .nav-link.active.text-primary {
+                color: #0d6efd !important;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link:has(.bg-success) .badge,
+            .nav-tabs.nav-tabs-standard .nav-link .badge.bg-success {
+                background: #198754 !important;
+                color: #fff !important;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link.active:has(.bg-success),
+            .nav-tabs.nav-tabs-standard .nav-link.active.text-success {
+                color: #198754 !important;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link:has(.bg-danger) .badge,
+            .nav-tabs.nav-tabs-standard .nav-link .badge.bg-danger {
+                background: #dc3545 !important;
+                color: #fff !important;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link.active:has(.bg-danger),
+            .nav-tabs.nav-tabs-standard .nav-link.active.text-danger {
+                color: #dc3545 !important;
+            }
+
+            /* Mobile Responsive Tab Styles */
+            @media (max-width: 768px) {
+                .nav-tabs.nav-tabs-standard {
+                    gap: 0;
+                    padding-left: 8px !important;
+                    padding-right: 8px !important;
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    scrollbar-width: thin;
+                    -webkit-overflow-scrolling: touch;
+                    flex-wrap: nowrap !important;
+                }
+
+                .nav-tabs.nav-tabs-standard::-webkit-scrollbar {
+                    height: 3px;
+                }
+
+                .nav-tabs.nav-tabs-standard::-webkit-scrollbar-thumb {
+                    background-color: rgba(0, 0, 0, 0.2);
+                    border-radius: 2px;
+                }
+
+                .nav-tabs.nav-tabs-standard .nav-item {
+                    flex: 0 0 auto;
+                    flex-shrink: 0;
+                }
+
+                .nav-tabs.nav-tabs-standard .nav-link {
+                    padding: 0.4rem 0.5rem;
+                    font-size: 0.7rem;
+                    white-space: nowrap;
+                    border-bottom-width: 2px;
+                }
+
+                .nav-tabs.nav-tabs-standard .nav-link .badge {
+                    min-width: 16px;
+                    height: 16px;
+                    padding: 0 0.25rem;
+                    font-size: 0.6rem;
+                    margin-left: 0.25rem;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .nav-tabs.nav-tabs-standard {
+                    padding-left: 5px !important;
+                    padding-right: 5px !important;
+                }
+
+                .nav-tabs.nav-tabs-standard .nav-link {
+                    padding: 0.35rem 0.45rem;
+                    font-size: 0.65rem;
+                }
+
+                .nav-tabs.nav-tabs-standard .nav-link .badge {
+                    min-width: 14px;
+                    height: 14px;
+                    padding: 0 0.2rem;
+                    font-size: 0.55rem;
+                    margin-left: 0.2rem;
+                }
+            }
+
+            /* Extra small screens - even more compact */
+            @media (max-width: 400px) {
+                .nav-tabs.nav-tabs-standard .nav-link {
+                    padding: 0.3rem 0.35rem;
+                    font-size: 0.6rem;
+                }
+
+                .nav-tabs.nav-tabs-standard .nav-link .badge {
+                    min-width: 13px;
+                    height: 13px;
+                    font-size: 0.5rem;
+                }
+            }
         </style>
     @endsection
 

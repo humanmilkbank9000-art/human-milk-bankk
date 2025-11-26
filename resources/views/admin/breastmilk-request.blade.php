@@ -201,9 +201,137 @@
             display: none;
         }
 
+        /* Navigation Tabs - Health Screening Style */
+        .nav-tabs.nav-tabs-standard {
+            justify-content: flex-start;
+            gap: 4px;
+            border-bottom: 1px solid #dee2e6;
+            flex-wrap: wrap;
+            padding-bottom: 0 !important;
+            margin-bottom: 1rem !important;
+            border-left: none !important;
+            border-right: none !important;
+        }
+
+        .nav-tabs.nav-tabs-standard .nav-item {
+            flex: 0 0 auto;
+        }
+
+        .nav-tabs.nav-tabs-standard .nav-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0;
+            border: none;
+            border-bottom: 3px solid transparent;
+            line-height: 1.4;
+            background: transparent;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .nav-tabs.nav-tabs-standard .nav-link:hover {
+            background: rgba(0, 0, 0, 0.02);
+            color: #495057;
+        }
+
+        .nav-tabs.nav-tabs-standard .nav-link.active {
+            background-color: transparent;
+            border-bottom-color: currentColor;
+            font-weight: 600;
+        }
+
+        .nav-tabs.nav-tabs-standard .nav-link .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-left: 0.4rem;
+        }
+
+        /* Tab-specific colors */
+        #pending-tab .badge {
+            background: #ffc107 !important;
+            color: #111827 !important;
+        }
+
+        #pending-tab.active {
+            color: #ffc107;
+        }
+
+        #dispensed-tab .badge {
+            background: #0dcaf0 !important;
+            color: #000 !important;
+        }
+
+        #dispensed-tab.active {
+            color: #0dcaf0;
+        }
+
+        #declined-tab .badge {
+            background: #dc3545 !important;
+            color: #fff !important;
+        }
+
+        #declined-tab.active {
+            color: #dc3545;
+        }
+
+        /* Mobile Responsive Tab Styles */
         @media (max-width: 768px) {
             #searchInput {
                 font-size: 0.9rem;
+            }
+
+            /* Horizontal scrolling tabs for mobile */
+            .nav-tabs.nav-tabs-standard {
+                gap: 0;
+                padding-left: 8px !important;
+                padding-right: 8px !important;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scrollbar-width: thin;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap !important;
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            .nav-tabs.nav-tabs-standard::-webkit-scrollbar {
+                height: 3px;
+            }
+
+            .nav-tabs.nav-tabs-standard::-webkit-scrollbar-thumb {
+                background-color: rgba(0, 0, 0, 0.2);
+                border-radius: 2px;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-item {
+                flex: 0 0 auto;
+                flex-shrink: 0;
+                padding: 0;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.7rem;
+                white-space: nowrap;
+                border-bottom-width: 2px;
+                margin: 0;
+            }
+
+            .nav-tabs.nav-tabs-standard .nav-link .badge {
+                min-width: 16px;
+                height: 16px;
+                padding: 0 0.25rem;
+                font-size: 0.6rem;
+                margin-left: 0.25rem;
             }
         }
 
@@ -327,46 +455,46 @@
                     margin-left: 0 !important;
                     margin-top: 6px;
                 }
-            }
 
-            /* Compact tabs for mobile while keeping them horizontal */
-            .nav-tabs {
-                margin-left: 0;
-                margin-right: 0;
-                padding-left: 0;
-                padding-right: 0;
-            }
+                /* Even more compact tabs on small screens */
+                .nav-tabs.nav-tabs-standard {
+                    padding-left: 5px !important;
+                    padding-right: 5px !important;
+                }
 
-            .nav-tabs .nav-item {
-                flex: 1 1 33.333%;
-                max-width: 33.333%;
-                padding: 0;
-            }
+                .nav-tabs.nav-tabs-standard .nav-link {
+                    padding: 0.35rem 0.5rem;
+                    font-size: 0.65rem;
+                }
 
-            .nav-tabs .nav-link {
-                font-size: 0.7rem;
-                padding: 0.5rem 0.15rem;
-                margin: 0;
-                word-break: break-word;
-                line-height: 1.2;
-            }
-
-            .nav-tabs .badge {
-                font-size: 0.65rem;
-                padding: 0.2em 0.35em;
-                margin-top: 0.15rem;
+                .nav-tabs.nav-tabs-standard .nav-link .badge {
+                    min-width: 14px;
+                    height: 14px;
+                    padding: 0 0.2rem;
+                    font-size: 0.55rem;
+                    margin-left: 0.2rem;
+                }
             }
         }
 
-        @media (max-width: 576px) {
-            .nav-tabs .nav-link {
-                font-size: 0.65rem;
-                padding: 0.4rem 0.1rem;
+        @media (max-width: 400px) {
+            .nav-tabs.nav-tabs-standard .nav-link {
+                padding: 0.3rem 0.4rem;
+                font-size: 0.6rem;
             }
 
-            .nav-tabs .badge {
+            .nav-tabs.nav-tabs-standard .nav-link .badge {
+                min-width: 13px;
+                height: 13px;
+                font-size: 0.5rem;
+            }
+        }
+
+            .nav-tabs.nav-tabs-standard .badge {
                 font-size: 0.6rem;
                 padding: 0.15em 0.3em;
+                min-width: 16px;
+                height: 16px;
             }
         }
 
