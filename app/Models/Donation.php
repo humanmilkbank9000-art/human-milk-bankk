@@ -107,6 +107,11 @@ class Donation extends Model
             ->withTimestamps();
     }
 
+    public function disposedMilk()
+    {
+        return $this->hasMany(DisposedMilk::class, 'source_donation_id', 'breastmilk_donation_id');
+    }
+
     // Status check methods
     public function isPendingWalkIn()
     {

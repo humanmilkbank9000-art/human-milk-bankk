@@ -188,6 +188,7 @@ class ReportService
                 $query->where('available_volume', '>', 0)
                     ->orWhereRaw('(total_volume - COALESCE(dispensed_volume, 0)) > 0');
             })
+            ->whereDoesntHave('disposedMilk')
             ->where(function ($query) use ($year, $month) {
                 $query->where(function ($sub) use ($year, $month) {
                     $sub->whereYear('added_to_inventory_at', $year)
