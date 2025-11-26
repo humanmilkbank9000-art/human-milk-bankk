@@ -184,6 +184,10 @@ class ReportService
         $unpasteurized = Donation::with('user')
             ->whereIn('status', ['success_walk_in', 'success_home_collection'])
             ->where('pasteurization_status', 'unpasteurized')
+            ->where(function ($query) {
+                $query->where('available_volume', '>', 0)
+                    ->orWhereRaw('(total_volume - COALESCE(dispensed_volume, 0)) > 0');
+            })
             ->where(function ($query) use ($year, $month) {
                 $query->where(function ($sub) use ($year, $month) {
                     $sub->whereYear('added_to_inventory_at', $year)
@@ -204,6 +208,10 @@ class ReportService
         $pasteurized = PasteurizationBatch::with('donations')
             ->whereYear('date_pasteurized', $year)
             ->whereMonth('date_pasteurized', $month)
+            ->where(function ($query) {
+                $query->where('available_volume', '>', 0)
+                    ->orWhereRaw('COALESCE(available_volume, total_volume) > 0');
+            })
             ->orderBy('date_pasteurized')
             ->orderBy('time_pasteurized')
             ->get();
