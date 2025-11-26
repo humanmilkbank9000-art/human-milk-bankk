@@ -14,9 +14,9 @@
         margin-bottom: 1.25rem;
     }
 
-    /* Nutritional Guide Card - Blue to complement FAQ pink */
+    /* Nutritional Guide Card - Sky blue gradient for fresh, clean look */
     .nutritional-guide-card {
-        background: linear-gradient(135deg, var(--blue-400) 0%, var(--blue-600) 100%);
+        background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
         border-radius: 0.75rem;
         padding: 1rem;
         cursor: pointer;
@@ -45,9 +45,9 @@
 
     .nutritional-guide-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.35);
     }
-    .nutritional-guide-card:focus-visible { outline: 3px solid var(--blue-400); outline-offset: 2px; }
+    .nutritional-guide-card:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }
 
     .nutritional-guide-card:hover::before {
         background: rgba(255, 255, 255, 0.1);

@@ -87,35 +87,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <div class="mt-4">
-                        <div class="d-flex flex-wrap justify-content-center gap-3">
-                            <div class="flex-fill" style="min-width: 250px; max-width: 350px;">
-                                <div class="card shadow-sm rounded-lg border-0 h-100" style="background: #e91e63; color: white;">
-                                    <div class="card-body text-center py-4">
-                                        <h6 class="card-title text-uppercase mb-2" style="color: rgba(255, 255, 255, 0.95); font-weight: 500; letter-spacing: 0.5px; font-size: 0.8rem;">Total Donations</h6>
-                                        <h2 class="fw-bold mb-0" style="color: white; font-size: 2rem;">{{ $completedDonations->count() }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-fill" style="min-width: 250px; max-width: 350px;">
-                                <div class="card shadow-sm rounded-lg border-0 h-100" style="background: #16a34a; color: white;">
-                                    <div class="card-body text-center py-4">
-                                        <h6 class="card-title text-uppercase mb-2" style="color: rgba(255, 255, 255, 0.95); font-weight: 500; letter-spacing: 0.5px; font-size: 0.8rem;">Total Volume</h6>
-                                        <h2 class="fw-bold mb-0" style="color: white; font-size: 2rem;">{{ $completedDonations->sum('total_volume') }} ml</h2>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-fill" style="min-width: 250px; max-width: 350px;">
-                                <div class="card shadow-sm rounded-lg border-0 h-100" style="background: #2563eb; color: white;">
-                                    <div class="card-body text-center py-4">
-                                        <h6 class="card-title text-uppercase mb-2" style="color: rgba(255, 255, 255, 0.95); font-weight: 500; letter-spacing: 0.5px; font-size: 0.8rem;">Total Bags</h6>
-                                        <h2 class="fw-bold mb-0" style="color: white; font-size: 2rem;">{{ $completedDonations->sum('number_of_bags') }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 @else
                     <div class="text-center text-muted py-5">
                         <i class="fas fa-history fa-3x mb-3"></i>

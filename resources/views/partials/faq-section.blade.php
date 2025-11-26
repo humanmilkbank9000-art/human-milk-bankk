@@ -16,8 +16,8 @@
 
     /* Single Consolidated FAQ Card - Exact match to stat-card */
     .faq-main-card {
-        /* Pink card to mirror admin pink */
-        background: linear-gradient(135deg, var(--pink-400) 0%, var(--pink-600) 100%);
+        /* Deep violet/purple gradient for FAQ */
+        background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
         border-radius: 0.75rem;
         padding: 1rem;
         cursor: pointer;
@@ -46,10 +46,10 @@
 
     .faq-main-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(232, 62, 140, 0.25);
+        box-shadow: 0 8px 20px rgba(109, 40, 217, 0.35);
     }
     .faq-main-card:focus-visible {
-        outline: 3px solid var(--pink-400);
+        outline: 3px solid #8b5cf6;
         outline-offset: 2px;
     }
 
