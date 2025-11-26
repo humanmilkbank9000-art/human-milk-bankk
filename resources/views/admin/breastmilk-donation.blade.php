@@ -2518,7 +2518,7 @@
                     html += `
                                                                                                                                                                         <div class="col-md-6 mb-2">
                                                                                                                                                                             <label class="form-label">Bag ${i} (ml)</label>
-                                                                                                                                                                            <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" required>
+                                                                                                                                                                            <input type="number" step="0.01" min="0.01" class="form-control assist-bag-volume" name="bag_volumes[]" value="120" required>
                                                                                                                                                                                                            </div>`;
                     }
                     html += '</div>';
