@@ -2242,6 +2242,34 @@
                     setDonorFieldsReadonly(false); // Enable fields when switching away from existing user
                 }
             }
+
+            // --- Begin new logic for editable state ---
+            function updateEditableState() {
+                if (optionSelect.value === 'record_to_existing_user') {
+                    // When an existing user has been selected (userIdInput has a value),
+                    // donor fields must be readonly/disabled. If no user is selected yet,
+                    // allow editing so the admin can enter or search for a user.
+                    setDonorFieldsReadonly(!!userIdInput.value);
+                } else {
+                    setDonorFieldsReadonly(false);
+                }
+            }
+            if (optionSelect && userIdInput) {
+                optionSelect.addEventListener('change', function() {
+                    userIdInput.value = '';
+                    updateEditableState();
+                });
+                userIdInput.addEventListener('change', updateEditableState);
+                updateEditableState();
+            }
+            // Also update when a user is selected from search
+            if (resultsBox) {
+                resultsBox.addEventListener('click', function(e) {
+                    setTimeout(updateEditableState, 100);
+                });
+            }
+            // --- End new logic for editable state ---
+
             if (optionSelect) {
                 optionSelect.addEventListener('change', toggleExistingUser);
                 toggleExistingUser();

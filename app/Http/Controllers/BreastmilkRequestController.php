@@ -30,6 +30,10 @@ class BreastmilkRequestController extends Controller
     {
         $this->service = $service;
     }
+
+    /**
+     * Show the user breastmilk request form
+     */
     public function index()
     {
         if (!Session::has('account_id') || Session::get('account_role') !== 'user') {
@@ -55,32 +59,18 @@ class BreastmilkRequestController extends Controller
         return view('user.breastmilk-request', compact('infants', 'availableDates'));
     }
 
-    public function getInfantInfo($infantId)
+    /**
+     * Get specific infant information (AJAX endpoint)
+     */
+    public function getInfantInfo(Request $request, $infantId)
     {
-        if (!Session::has('account_id')) {
-            return response()->json(['error' => 'Unauthorized (no session)'], 401);
+        if (!Session::has('account_id') || Session::get('account_role') !== 'user') {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
-        $role = Session::get('account_role');
-        if (!in_array($role, ['user','requester'])) { // allow broader user roles
-            return response()->json(['error' => 'Unauthorized role: '.$role], 403);
-        }
-            // Normalize date format if user entered DD/MM/YYYY or MM/DD/YYYY
-            $rawDob = $request->input('infant_date_of_birth');
-            if ($rawDob && strpos($rawDob, '/') !== false) {
-                $normalized = null;
-                foreach (['d/m/Y','m/d/Y'] as $fmt) {
-                    try {
-                        $dt = \Carbon\Carbon::createFromFormat($fmt, $rawDob);
-                        if ($dt) { $normalized = $dt->format('Y-m-d'); break; }
-                    } catch (\Exception $e) {}
-                }
-                if ($normalized) {
-                    $request->merge(['infant_date_of_birth' => $normalized]);
-                }
-            }
 
         $userId = Session::get('account_id');
 
+        // Get the specific infant belonging to the user
         $infant = Infant::where('infant_id', $infantId)
             ->where('user_id', $userId)
             ->first();
@@ -89,14 +79,7 @@ class BreastmilkRequestController extends Controller
             return response()->json(['error' => 'Infant not found'], 404);
         }
 
-        return response()->json([
-            'infant_id' => $infant->infant_id,
-            'full_name' => $infant->first_name . ' ' . ($infant->middle_name ? $infant->middle_name . ' ' : '') . $infant->last_name,
-            'sex' => ucfirst($infant->sex),
-            'date_of_birth' => Carbon::parse($infant->date_of_birth)->format('M d, Y'),
-            'age_months' => $infant->getCurrentAgeInMonths(),
-            'birth_weight' => $infant->birth_weight . ' kg'
-        ]);
+        return response()->json($infant);
     }
 
     public function store(StoreBreastmilkRequestRequest $request)
@@ -757,8 +740,16 @@ class BreastmilkRequestController extends Controller
 
     public function storeAssisted(Request $request)
     {
+        // Log incoming request for debugging
+        Log::info('=== Assisted Request Received ===');
+        Log::info('All Request Data: ' . json_encode($request->all()));
+        Log::info('Assist Option: ' . $request->input('assist_option'));
+        Log::info('Dispense Now: ' . $request->input('dispense_now'));
+        Log::info('Selected Sources JSON: ' . $request->input('selected_sources_json'));
+        
         // Validate admin access
         if (!Session::has('account_id') || Session::get('account_role') !== 'admin') {
+            Log::warning('Unauthorized access attempt to storeAssisted');
             return redirect()->route('login')->with('error', 'Unauthorized access.');
         }
 
@@ -775,6 +766,7 @@ class BreastmilkRequestController extends Controller
             'infant_date_of_birth' => 'required|date|before_or_equal:today',
             'infant_sex' => 'required|in:Male,Female',
             'infant_weight' => 'required|numeric|min:0.5|max:20',
+            'infant_id' => 'nullable|integer|exists:infant,infant_id',
             'medical_condition' => 'required|string',
             'prescription' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             'request_date' => 'required|date',
@@ -784,6 +776,8 @@ class BreastmilkRequestController extends Controller
             ,'dispense_now' => 'nullable|in:1',
             'selected_sources_json' => 'nullable|string'
         ]);
+
+        Log::info('Validation passed. Validated data: ' . json_encode($validated));
 
         try {
             DB::beginTransaction();
@@ -835,17 +829,30 @@ class BreastmilkRequestController extends Controller
             $months = max(0, ($dob->diff($now)->y * 12) + $dob->diff($now)->m);
             $sexLower = strtolower($validated['infant_sex']); // map 'Male'/'Female' -> 'male'/'female'
 
-            // Enforce single infant per user: reuse existing if present, else create new
-            $infant = Infant::where('user_id', $user->user_id)->first();
-            if ($infant) {
-                // Update with latest provided data (admin assisted form acts as source of truth)
-                $infant->first_name = $validated['infant_first_name'];
-                $infant->last_name = $validated['infant_last_name'];
-                $infant->date_of_birth = $validated['infant_date_of_birth'];
-                $infant->sex = $sexLower;
-                $infant->age = $months;
-                $infant->birth_weight = $validated['infant_weight'];
-                $infant->save();
+            // Check if infant_id was provided (existing infant selected)
+            $infantId = $validated['infant_id'] ?? null;
+            
+            if ($infantId) {
+                // Update existing infant
+                $infant = Infant::where('infant_id', $infantId)
+                    ->where('user_id', $user->user_id)
+                    ->first();
+                    
+                if ($infant) {
+                    // Update with latest provided data
+                    $infant->first_name = $validated['infant_first_name'];
+                    $infant->last_name = $validated['infant_last_name'];
+                    $infant->date_of_birth = $validated['infant_date_of_birth'];
+                    $infant->sex = $sexLower;
+                    $infant->age = $months;
+                    $infant->birth_weight = $validated['infant_weight'];
+                    $infant->save();
+                    Log::info('Updated existing infant ID: ' . $infant->infant_id);
+                } else {
+                    // Invalid infant_id, rollback
+                    DB::rollBack();
+                    return redirect()->back()->withInput()->with('error', 'Selected infant not found or does not belong to this user.');
+                }
             } else {
                 $infant = Infant::create([
                     'user_id' => $user->user_id,
@@ -885,51 +892,68 @@ class BreastmilkRequestController extends Controller
 
             DB::commit();
 
+            Log::info('Breastmilk request created successfully. ID: ' . $breastmilkRequest->breastmilk_request_id);
+
             // If admin chose to dispense immediately, attempt to record dispensing
             if ($request->has('dispense_now') && $request->input('dispense_now') == '1') {
+                Log::info('Dispense now is checked. Processing immediate dispensing...');
                 $selectedJson = $request->input('selected_sources_json');
+                Log::info('Selected sources JSON: ' . $selectedJson);
+                
+                if (!$selectedJson) {
+                    Log::warning('No sources JSON provided');
+                    return redirect()->route('admin.request')
+                        ->with('warning', 'Assisted request created but no inventory sources were selected for immediate dispensing.');
+                }
+                
                 $sources = [];
-                if ($selectedJson) {
-                    $decoded = json_decode($selectedJson, true);
-                    if (is_array($decoded)) {
-                        // normalize sources: expect {type,id,volume}
-                        foreach ($decoded as $s) {
-                            if (!empty($s['type']) && !empty($s['id']) && !empty($s['volume'])) {
-                                $sources[] = [
-                                    'type' => $s['type'],
-                                    'id' => $s['id'],
-                                    'volume' => (float)$s['volume']
-                                ];
-                            }
+                $decoded = json_decode($selectedJson, true);
+                Log::info('Decoded sources: ' . json_encode($decoded));
+                
+                if (is_array($decoded)) {
+                    foreach ($decoded as $s) {
+                        if (!empty($s['type']) && !empty($s['id']) && !empty($s['volume'])) {
+                            $sources[] = [
+                                'type' => $s['type'],
+                                'id' => $s['id'],
+                                'volume' => (float)$s['volume']
+                            ];
                         }
                     }
                 }
 
                 if (empty($sources)) {
-                    // no sources selected — inform admin
+                    Log::warning('No valid sources after parsing');
                     return redirect()->route('admin.request')
                         ->with('warning', 'Assisted request created but no inventory sources were selected for immediate dispensing.');
                 }
+
+                Log::info('Total sources to dispense: ' . count($sources));
 
                 // Compute total volume from selected sources
                 $totalSelectedVolume = 0.0;
                 foreach ($sources as $s) {
                     $totalSelectedVolume += (float) ($s['volume'] ?? 0);
                 }
+                
                 if ($totalSelectedVolume <= 0) {
+                    Log::warning('Total volume is zero');
                     return redirect()->route('admin.request')
                         ->with('warning', 'Assisted request created but selected volumes total is zero. No dispensing performed.');
                 }
 
+                Log::info('Total volume to dispense: ' . $totalSelectedVolume);
+
                 try {
-                    // Use the same approval+dispense flow used by admins when approving user requests
                     $adminId = Session::get('account_id');
+                    
                     // Normalize selected sources to selected_items expected by approveAndDispense
                     $selectedItems = [];
                     foreach ($sources as $s) {
-                        $si = ['id' => $s['id'], 'volume' => $s['volume']];
-                        if (isset($s['bag_index'])) $si['bag_index'] = (int)$s['bag_index'];
-                        $selectedItems[] = $si;
+                        $selectedItems[] = [
+                            'id' => $s['id'],
+                            'volume' => $s['volume']
+                        ];
                     }
 
                     $payload = [
@@ -939,13 +963,18 @@ class BreastmilkRequestController extends Controller
                         'admin_notes' => $validated['admin_notes'] ?? null
                     ];
 
+                    Log::info('Calling approveAndDispense with payload: ' . json_encode($payload));
+                    
                     $this->service->approveAndDispense($breastmilkRequest, $payload, $adminId);
 
+                    Log::info('Successfully dispensed assisted request');
+                    
                     return redirect()->route('admin.request', ['status' => 'dispensed'])
                         ->with('success', 'Assisted request submitted and dispensed successfully for ' . $validated['guardian_first_name'] . ' ' . $validated['guardian_last_name']);
+                        
                 } catch (\Exception $e) {
                     Log::error('Error dispensing during assisted request: ' . $e->getMessage());
-                    // Dispense failed but request created — notify admin and redirect
+                    Log::error('Stack trace: ' . $e->getTraceAsString());
                     return redirect()->route('admin.request')
                         ->with('error', 'Assisted request was created but dispensing failed: ' . $e->getMessage());
                 }

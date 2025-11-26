@@ -1,3 +1,22 @@
+            @if(session('success'))
+            if (hasSwal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: @json(session('success')),
+                    confirmButtonColor: '#28a745'
+                }).then(() => {
+                    // Optionally close modal after success
+                    try {
+                        const modalEl = document.getElementById('assistedRequestModal');
+                        if (modalEl && window.bootstrap && bootstrap.Modal) {
+                            const m = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                            m.hide();
+                        }
+                    } catch (_) {}
+                });
+            }
+            @endif
 @extends('layouts.admin-layout')
 
 @section('title', 'Breastmilk Request Management')
@@ -507,10 +526,28 @@
     <div class="container-fluid page-container-standard">
 
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const hasSwal = (typeof Swal !== 'undefined');
+                    if (hasSwal) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: @json(session('success')),
+                            confirmButtonColor: '#28a745'
+                        });
+
+                        // Close the modal after showing success
+                        const modalEl = document.getElementById('assistedRequestModal');
+                        if (modalEl && window.bootstrap && bootstrap.Modal) {
+                            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                            if (modalInstance) {
+                                modalInstance.hide();
+                            }
+                        }
+                    }
+                });
+            </script>
         @endif
 
         @if(session('error'))
@@ -1248,22 +1285,22 @@
                             mothers/guardians who do not have a device. Interview them and fill in their details below.
                         </div>
                         <div class="mb-3">
-                            <label for="assist_option" class="form-label"><i class="fas fa-tag me-1"></i> Assist Option
-                                <span class="text-danger">*</span></label>
-                            <select class="form-select" id="assist_option" name="assist_option">
+                            <label class="form-label"><i class="fas fa-tag me-1"></i> Assist Option <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-select" name="assist_option" required>
                                 <option value="">Select option</option>
                                 <option value="no_account_direct_record">No account or direct record</option>
                                 <option value="record_to_existing_user">Record to existing user</option>
                             </select>
                         </div>
-                        <div id="assisted-existing-user" class="mb-3" style="display:none;">
+                        <div id="assist-existing-user" class="mb-3" style="display:none;">
                             <label class="form-label"><i class="fas fa-search me-1"></i> Find Existing User</label>
-                            <input type="text" class="form-control" id="assisted_user_search"
+                            <input type="text" class="form-control" id="assist_user_search"
                                 placeholder="Search by name or contact (min 2 chars)">
-                            <div id="assisted_user_results" class="list-group mt-2"
-                                style="max-height:220px; overflow:auto;"></div>
-                            <input type="hidden" name="existing_user_id" id="assisted_existing_user_id" value="">
-                            <small class="text-muted">Selecting a user will auto-fill Guardian fields below.</small>
+                            <div id="assist_user_results" class="list-group mt-2" style="max-height:220px; overflow:auto;">
+                            </div>
+                            <input type="hidden" name="existing_user_id" id="assist_existing_user_id" value="">
+                            <small class="text-muted">When you select a user, their details will auto-fill below.</small>
                         </div>
 
                         <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-user"></i> Guardian Information</h6>
@@ -1284,7 +1321,7 @@
                                 <label for="guardian_contact" class="form-label">Contact Number <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="guardian_contact" name="guardian_contact"
-                                    value="{{ old('guardian_contact') }}" placeholder="09XXXXXXXXX" pattern="^09\\d{9}$" minlength="11" inputmode="numeric">
+                                    value="{{ old('guardian_contact') }}" placeholder="09XXXXXXXXX" minlength="11" maxlength="11" inputmode="numeric" autocomplete="off">
                                 <div class="form-text text-muted small">Enter an 11-digit mobile number starting with 09.</div>
                                 <div id="guardian_contact_feedback" class="form-text text-danger" style="display:none;"></div>
                                 <div id="guardian_contact_format_feedback" class="invalid-feedback" style="display:none;">Contact must be 11 digits numbers only</div>
@@ -1297,6 +1334,7 @@
                             <label for="assisted_infant_select" class="form-label"><i class="fas fa-child me-1"></i> Select
                                 Existing Infant (optional)</label>
                             <select id="assisted_infant_select" class="form-select"></select>
+                            <input type="hidden" name="infant_id" id="assist_infant_id" value="">
                             <small class="text-muted">Choosing an infant will auto-fill the fields below. You can still edit
                                 any value before submitting.</small>
                         </div>
@@ -1434,8 +1472,10 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             <i class="fas fa-times"></i> Cancel
                         </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-check"></i> Submit Request
+                        <button type="submit" class="btn btn-primary" id="assistedRequestSubmitBtn">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="display:none;" id="assisted-request-spinner"></span>
+                            <i class="fas fa-check" id="assisted-request-icon"></i>
+                            <span id="assisted-request-text">Submit Request</span>
                         </button>
                     </div>
                 </form>
@@ -1455,21 +1495,23 @@
 
         if (contactEl) {
             let timeout = null;
-            // Live input: strip non-digits, but do not truncate valid digits count (so >11 shows invalid)
             contactEl.addEventListener('input', function () {
-                const raw = (contactEl.value || '');
-                const digits = raw.replace(/\D/g, '');
+                let raw = contactEl.value || '';
+                // Only allow digits
+                let digits = raw.replace(/\D/g, '');
                 if (digits !== raw) {
                     contactEl.value = digits;
+                    raw = digits;
                 }
 
-                // Show/hide inline format feedback (require leading 09 and total 11 digits)
-                if (/^09\\d{9}$/.test(digits)) {
+                // Validation: must start with 09 and be exactly 11 digits
+                if (/^09\d{9}$/.test(raw) && raw.length === 11) {
                     contactEl.classList.remove('is-invalid');
                     if (formatFeedbackEl) formatFeedbackEl.style.display = 'none';
                 } else {
                     contactEl.classList.add('is-invalid');
                     if (formatFeedbackEl) formatFeedbackEl.style.display = 'block';
+                    formatFeedbackEl.textContent = 'Contact must be 11 digits numbers only';
                 }
 
                 // clear existing duplicate feedback while typing
@@ -1499,32 +1541,351 @@
                         .catch(err => { /* ignore errors silently */ });
                 }, 450);
             });
+
+            // Add SweetAlert error if all required fields are blank
+            const form = document.getElementById('assistedRequestForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // Check if "record_to_existing_user" is selected but no user was chosen
+                    const assistOption = form.querySelector('select[name="assist_option"]');
+                    const existingUserId = document.getElementById('assist_existing_user_id');
+                    
+                    if (assistOption && assistOption.value === 'record_to_existing_user') {
+                        if (!existingUserId || !existingUserId.value || existingUserId.value.trim() === '') {
+                            e.preventDefault();
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'User Not Selected',
+                                    text: 'Please search and select an existing user from the list.',
+                                    confirmButtonColor: '#f59e0b'
+                                });
+                            } else {
+                                alert('Please search and select an existing user from the list.');
+                            }
+                            return false;
+                        }
+                    }
+                    
+                    // Required fields
+                    // Check medical condition specifically
+                    const medicalCondition = document.getElementById('medical_condition');
+                    if (!medicalCondition || !medicalCondition.value || medicalCondition.value.trim() === '') {
+                        e.preventDefault();
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Medical Condition Required',
+                                text: 'Please describe the medical condition or reason for requesting breastmilk.',
+                                confirmButtonColor: '#f59e0b'
+                            });
+                        } else {
+                            alert('Please describe the medical condition or reason for requesting breastmilk.');
+                        }
+                        // Focus on the field
+                        if (medicalCondition) medicalCondition.focus();
+                        return false;
+                    }
+                    
+                    const requiredFields = [
+                        form.querySelector('select[name="assist_option"]'),
+                        document.getElementById('guardian_first_name'),
+                        document.getElementById('guardian_last_name'),
+                        document.getElementById('guardian_contact'),
+                        document.getElementById('infant_first_name'),
+                        document.getElementById('infant_last_name'),
+                        document.getElementById('infant_date_of_birth'),
+                        document.getElementById('infant_sex'),
+                        document.getElementById('infant_weight'),
+                        document.getElementById('medical_condition'),
+                        document.getElementById('request_date'),
+                        document.getElementById('milk_type')
+                    ];
+                    const allBlank = requiredFields.every(f => !f || !f.value || f.value.trim() === '');
+                    if (allBlank) {
+                        e.preventDefault();
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'All fields are blank',
+                                text: 'Please fill out the required fields before submitting.',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        } else {
+                            alert('Please fill out the required fields before submitting.');
+                        }
+                        return false;
+                    }
+                    let raw = contactEl.value || '';
+                    if (!/^09\d{9}$/.test(raw) || raw.length !== 11) {
+                        e.preventDefault();
+                        contactEl.classList.add('is-invalid');
+                        if (formatFeedbackEl) {
+                            formatFeedbackEl.style.display = 'block';
+                            formatFeedbackEl.textContent = 'Contact must be 11 digits numbers only';
+                        }
+                        // Only show inline error, no SweetAlert
+                        return false;
+                    }
+                });
+            }
         }
     });
-                // Toggle and search for Assisted Request existing user     document.addEventListener('DOMContentLoaded', function () {         (function () {             const optionSel = document.getElementById('assist_option');             const wrap = document.getElementById('assisted-existing-user');             const search = document.getElementById('assisted_user_search');             const list = document.getElementById('assisted_user_results');             const hiddenId = document.getElementById('assisted_existing_user_id');             const gFirst = document.getElementById('guardian_first_name');             const gLast = document.getElementById('guardian_last_name');             const gContact = document.getElementById('guardian_contact');             // Infant auto-fill elements             const infantWrap = document.getElementById('assisted_infant_select_wrap');             const infantSelect = document.getElementById('assisted_infant_select');             const iFirst = document.getElementById('infant_first_name');             const iLast = document.getElementById('infant_last_name');             const iDob = document.getElementById('infant_date_of_birth');             const iSex = document.getElementById('infant_sex');             const iWeight = document.getElementById('infant_weight');
-                const infantsUrlBase = "{{ url('/admin/users') }}/"; // /admin/users/{id}/infants
-                function clearInfantSelector() { if (infantSelect) infantSelect.innerHTML = ''; if (infantWrap) infantWrap.style.display = 'none'; }
-                function setGuardianFieldsReadonly(readonly) { const fields = [gFirst, gLast, gContact]; fields.forEach(field => { if (field) { if (readonly) { field.setAttribute('readonly', 'readonly'); field.style.backgroundColor = '#e9ecef'; field.style.cursor = 'not-allowed'; } else { field.removeAttribute('readonly'); field.style.backgroundColor = ''; field.style.cursor = ''; } } }); }
-                function setInfantFieldsReadonly(readonly) { const fields = [iFirst, iLast, iDob, iSex, iWeight]; fields.forEach(field => { if (field) { if (readonly) { field.setAttribute('readonly', 'readonly'); if (field.tagName === 'SELECT') { field.setAttribute('disabled', 'disabled'); } field.style.backgroundColor = '#e9ecef'; field.style.cursor = 'not-allowed'; } else { field.removeAttribute('readonly'); if (field.tagName === 'SELECT') { field.removeAttribute('disabled'); } field.style.backgroundColor = ''; field.style.cursor = ''; } } }); }
-                function applyInfant(i, makeReadonly = false) { if (!i) return; if (iFirst) iFirst.value = i.first_name || ''; if (iLast) iLast.value = i.last_name || ''; if (iDob) iDob.value = (i.date_of_birth || '').substring(0, 10); if (iSex) { const val = String(i.sex || '').toLowerCase() === 'male' ? 'Male' : (String(i.sex || '').toLowerCase() === 'female' ? 'Female' : ''); if (val) iSex.value = val; } if (iWeight) iWeight.value = i.birth_weight != null ? i.birth_weight : ''; if (makeReadonly) { setInfantFieldsReadonly(true); } }
-                async function loadInfantsForUser(userId) {
-                    clearInfantSelector(); if (!userId) return; try {
-                        const r = await fetch(`${infantsUrlBase}${encodeURIComponent(userId)}/infants`, { headers: { 'Accept': 'application/json' } }); if (!r.ok) return; const data = await r.json(); const infants = Array.isArray(data) ? data : (data.data || []); if (!infants || infants.length === 0) {                         // nothing to select; keep fields as-is                         return;                     }                     // Always show selector to allow user to see and switch between infants                     if (!infantSelect) return;                     infantSelect.innerHTML = '';                     const ph = document.createElement('option');                     ph.value = '';                     ph.textContent = infants.length === 1 ? 'Infant selected (you can view details below)' : 'Select an infant to auto-fill…';                     infantSelect.appendChild(ph);                     infants.forEach(i => {                         const opt = document.createElement('option');                         opt.value = i.infant_id;                         const name = `${i.first_name || ''} ${i.last_name || ''}`.trim() || 'Unnamed infant';                         const dob = (i.date_of_birth || '').substring(0, 10);                         const sex = (String(i.sex || '')).toLowerCase();                         const sexLabel = sex === 'male' ? 'Male' : (sex === 'female' ? 'Female' : '');                         const wt = (i.birth_weight != null && i.birth_weight !== '') ? `${i.birth_weight} kg` : '';                         opt.textContent = [name, dob, sexLabel, wt].filter(Boolean).join(' • ');                         opt.dataset.payload = JSON.stringify(i);                         infantSelect.appendChild(opt);                     });                     if (infantWrap) infantWrap.style.display = 'block';                     // Auto-select first infant                     if (infants.length > 0) {                         infantSelect.value = infants[0].infant_id;                         applyInfant(infants[0], true);                     }                 } catch (e) {                     // fail silently                 }             }
-                            if (infantSelect) {
-                                infantSelect.addEventListener('change', function () {
-                                    const sel = infantSelect.options[infantSelect.selectedIndex]; const payload = sel && sel.dataset && sel.dataset.payload ? JSON.parse(sel.dataset.payload) : null; if (payload) {                         // When user is selected from existing user, keep fields readonly when switching infants                         const isExistingUser = hiddenId && hiddenId.value;                         applyInfant(payload, isExistingUser);                     }                 });             }
-                                        function toggle() {
-                                            if (!optionSel) return; wrap.style.display = optionSel.value === 'record_to_existing_user' ? 'block' : 'none'; if (optionSel.value !== 'record_to_existing_user') {
-                                                list.innerHTML = ''; hiddenId.value = ''; clearInfantSelector(); setGuardianFieldsReadonly(false); // Enable fields when switching away from existing user                     setInfantFieldsReadonly(false); // Enable infant fields when switching away from existing user                 }             }
-                                                if (optionSel) { optionSel.addEventListener('change', toggle); toggle(); }
-                                                function render(items) {
-                                                    list.innerHTML = ''; (items || []).forEach(u => {
-                                                        const b = document.createElement('button'); b.type = 'button'; b.className = 'list-group-item list-group-item-action'; const name = `${u.first_name || ''} ${u.last_name || ''}`.trim(); b.innerHTML = `<div class=\"d-flex justify-content-between\"><strong>${name || 'Unnamed user'}</strong><span class=\"badge bg-secondary\">${u.user_type || ''}</span></div><div class=\"small text-muted\">${u.contact_number || ''} • ${u.address || ''}</div>`; b.addEventListener('click', () => {
-                                                            hiddenId.value = u.user_id; if (gFirst) gFirst.value = u.first_name || ''; if (gLast) gLast.value = u.last_name || ''; if (gContact) gContact.value = u.contact_number || ''; list.innerHTML = ''; search.value = name || u.contact_number || '';                         // Make guardian fields readonly when existing user is selected                         setGuardianFieldsReadonly(true);                         // Load infants for this user and auto-fill when possible                         loadInfantsForUser(u.user_id);                     });                     list.appendChild(b);                 });             }
-                                                            let t = null; async function doFetch() { const q = (search.value || '').trim(); if (q.length < 2) { list.innerHTML = ''; return; } try { const r = await fetch(`{{ route('admin.users.search') }}?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } }); if (!r.ok) return; const data = await r.json(); render((data && data.data) || []); } catch (e) { /* ignore */ } }
-                                                            if (search) { search.addEventListener('input', () => { if (t) clearTimeout(t); t = setTimeout(doFetch, 300); }); }
-                                                            // Reset guardian and infant fields to editable when modal is closed             const assistModal = document.getElementById('assistedRequestModal');             if (assistModal) {                 assistModal.addEventListener('hidden.bs.modal', function () {                     setGuardianFieldsReadonly(false);                     setInfantFieldsReadonly(false);                     // Also clear the hidden user ID and search results                     if (hiddenId) hiddenId.value = '';                     if (list) list.innerHTML = '';                     if (search) search.value = '';                 });             }         })();     });
-                                                            document.addEventListener('DOMContentLoaded', function () {
+    </script>
+
+    <script>
+    // Toggle and search for Assisted Request existing user
+    (function () {
+        const optionSelect = document.querySelector('#assistedRequestForm select[name="assist_option"]');
+        const existingWrap = document.getElementById('assist-existing-user');
+        const searchInput = document.getElementById('assist_user_search');
+        const resultsBox = document.getElementById('assist_user_results');
+        const userIdInput = document.getElementById('assist_existing_user_id');
+        const gFirst = document.getElementById('guardian_first_name');
+        const gLast = document.getElementById('guardian_last_name');
+        const gContact = document.getElementById('guardian_contact');
+        
+        // Infant auto-fill elements
+        const infantWrap = document.getElementById('assisted_infant_select_wrap');
+        const infantSelect = document.getElementById('assisted_infant_select');
+        const iFirst = document.getElementById('infant_first_name');
+        const iLast = document.getElementById('infant_last_name');
+        const iDob = document.getElementById('infant_date_of_birth');
+        const iSex = document.getElementById('infant_sex');
+        const iWeight = document.getElementById('infant_weight');
+        
+        const infantsUrlBase = "{{ url('/admin/users') }}/";
+
+        function clearInfantSelector() {
+            if (infantSelect) infantSelect.innerHTML = '';
+            if (infantWrap) infantWrap.style.display = 'none';
+        }
+
+        function setGuardianFieldsReadonly(readonly) {
+            const fields = [gFirst, gLast, gContact];
+            fields.forEach(field => {
+                if (field) {
+                    if (readonly) {
+                        field.setAttribute('readonly', 'readonly');
+                        field.style.backgroundColor = '#e9ecef';
+                        field.style.cursor = 'not-allowed';
+                    } else {
+                        field.removeAttribute('readonly');
+                        field.style.backgroundColor = '';
+                        field.style.cursor = '';
+                    }
+                }
+            });
+        }
+
+        function setInfantFieldsReadonly(readonly) {
+            const fields = [iFirst, iLast, iDob, iSex, iWeight];
+            fields.forEach(field => {
+                if (field) {
+                    if (readonly) {
+                        field.setAttribute('readonly', 'readonly');
+                        // Don't disable SELECT - use pointer-events to prevent interaction
+                        if (field.tagName === 'SELECT') {
+                            field.style.pointerEvents = 'none';
+                        }
+                        field.style.backgroundColor = '#e9ecef';
+                        field.style.cursor = 'not-allowed';
+                    } else {
+                        field.removeAttribute('readonly');
+                        if (field.tagName === 'SELECT') {
+                            field.style.pointerEvents = '';
+                        }
+                        field.style.backgroundColor = '';
+                        field.style.cursor = '';
+                    }
+                }
+            });
+        }
+
+        function applyInfant(i, makeReadonly = false) {
+            if (!i) return;
+            if (iFirst) iFirst.value = i.first_name || '';
+            if (iLast) iLast.value = i.last_name || '';
+            if (iDob) iDob.value = (i.date_of_birth || '').substring(0, 10);
+            if (iSex) {
+                const val = String(i.sex || '').toLowerCase() === 'male' ? 'Male' : (String(i.sex || '').toLowerCase() === 'female' ? 'Female' : '');
+                if (val) iSex.value = val;
+            }
+            if (iWeight) iWeight.value = i.birth_weight != null ? i.birth_weight : '';
+            if (makeReadonly) {
+                setInfantFieldsReadonly(true);
+            }
+        }
+
+        async function loadInfantsForUser(userId) {
+            clearInfantSelector();
+            if (!userId) return;
+            try {
+                const r = await fetch(`${infantsUrlBase}${encodeURIComponent(userId)}/infants`, { headers: { 'Accept': 'application/json' } });
+                if (!r.ok) return;
+                const data = await r.json();
+                const infants = Array.isArray(data) ? data : (data.data || []);
+                if (!infants || infants.length === 0) {
+                    return;
+                }
+                if (!infantSelect) return;
+                infantSelect.innerHTML = '';
+                const ph = document.createElement('option');
+                ph.value = '';
+                ph.textContent = infants.length === 1 ? 'Infant selected (you can view details below)' : 'Select an infant to auto-fill…';
+                infantSelect.appendChild(ph);
+                infants.forEach(i => {
+                    const opt = document.createElement('option');
+                    opt.value = i.infant_id;
+                    const name = `${i.first_name || ''} ${i.last_name || ''}`.trim() || 'Unnamed infant';
+                    const dob = (i.date_of_birth || '').substring(0, 10);
+                    const sex = (String(i.sex || '')).toLowerCase();
+                    const sexLabel = sex === 'male' ? 'Male' : (sex === 'female' ? 'Female' : '');
+                    const wt = (i.birth_weight != null && i.birth_weight !== '') ? `${i.birth_weight} kg` : '';
+                    opt.textContent = [name, dob, sexLabel, wt].filter(Boolean).join(' • ');
+                    opt.dataset.payload = JSON.stringify(i);
+                    infantSelect.appendChild(opt);
+                });
+                if (infantWrap) infantWrap.style.display = 'block';
+                if (infants.length > 0) {
+                    infantSelect.value = infants[0].infant_id;
+                    applyInfant(infants[0], true);
+                    // Set the hidden infant_id field
+                    const infantIdInput = document.getElementById('assist_infant_id');
+                    if (infantIdInput) {
+                        infantIdInput.value = infants[0].infant_id || '';
+                    }
+                }
+            } catch (e) {
+                // fail silently
+            }
+        }
+
+        if (infantSelect) {
+            infantSelect.addEventListener('change', function () {
+                const sel = infantSelect.options[infantSelect.selectedIndex];
+                const payload = sel && sel.dataset && sel.dataset.payload ? JSON.parse(sel.dataset.payload) : null;
+                if (payload) {
+                    const isExistingUser = userIdInput && userIdInput.value;
+                    applyInfant(payload, isExistingUser);
+                    // Set the hidden infant_id field
+                    const infantIdInput = document.getElementById('assist_infant_id');
+                    if (infantIdInput) {
+                        infantIdInput.value = payload.infant_id || '';
+                    }
+                } else {
+                    // Clear infant_id if no infant selected
+                    const infantIdInput = document.getElementById('assist_infant_id');
+                    if (infantIdInput) {
+                        infantIdInput.value = '';
+                    }
+                }
+            });
+        }
+
+        function toggleExistingUser() {
+            const val = optionSelect ? optionSelect.value : '';
+            if (val === 'record_to_existing_user') {
+                existingWrap.style.display = 'block';
+            } else {
+                existingWrap.style.display = 'none';
+                resultsBox.innerHTML = '';
+                userIdInput.value = '';
+                setGuardianFieldsReadonly(false);
+                setInfantFieldsReadonly(false);
+                clearInfantSelector();
+            }
+        }
+
+        function updateEditableState() {
+            if (optionSelect && optionSelect.value === 'record_to_existing_user') {
+                setGuardianFieldsReadonly(!!userIdInput.value);
+            } else {
+                setGuardianFieldsReadonly(false);
+            }
+        }
+
+        if (optionSelect && userIdInput) {
+            optionSelect.addEventListener('change', function() {
+                userIdInput.value = '';
+                updateEditableState();
+            });
+            userIdInput.addEventListener('change', updateEditableState);
+            updateEditableState();
+        }
+
+        if (resultsBox) {
+            resultsBox.addEventListener('click', function(e) {
+                setTimeout(updateEditableState, 100);
+            });
+        }
+
+        if (optionSelect) {
+            optionSelect.addEventListener('change', toggleExistingUser);
+            toggleExistingUser();
+        }
+
+        let searchTimer = null;
+        function renderResults(items) {
+            resultsBox.innerHTML = '';
+            if (!items || items.length === 0) return;
+            items.forEach(u => {
+                const a = document.createElement('button');
+                a.type = 'button';
+                a.className = 'list-group-item list-group-item-action';
+                const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+                a.innerHTML = `<div class="d-flex justify-content-between"><strong>${name || 'Unnamed user'}</strong><span class="badge bg-secondary">${u.user_type || ''}</span></div><div class="small text-muted">${u.contact_number || ''} • ${u.address || ''}</div>`;
+                a.addEventListener('click', () => {
+                    userIdInput.value = u.user_id;
+                    if (gFirst) gFirst.value = u.first_name || '';
+                    if (gLast) gLast.value = u.last_name || '';
+                    if (gContact) gContact.value = u.contact_number || '';
+                    resultsBox.innerHTML = '';
+                    searchInput.value = name || u.contact_number || '';
+                    setGuardianFieldsReadonly(true);
+                    loadInfantsForUser(u.user_id);
+                });
+                resultsBox.appendChild(a);
+            });
+        }
+
+        async function doSearch() {
+            const q = (searchInput.value || '').trim();
+            if (q.length < 2) { resultsBox.innerHTML = ''; return; }
+            try {
+                const resp = await fetch(`{{ route('admin.users.search') }}?q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                renderResults((data && data.data) || []);
+            } catch (e) { /* ignore */ }
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                if (searchTimer) clearTimeout(searchTimer);
+                searchTimer = setTimeout(doSearch, 300);
+            });
+        }
+
+        // Reset when modal is closed
+        const assistModal = document.getElementById('assistedRequestModal');
+        if (assistModal) {
+            assistModal.addEventListener('hidden.bs.modal', function () {
+                setGuardianFieldsReadonly(false);
+                setInfantFieldsReadonly(false);
+                if (userIdInput) userIdInput.value = '';
+                if (resultsBox) resultsBox.innerHTML = '';
+                if (searchInput) searchInput.value = '';
+                if (optionSelect) optionSelect.value = '';
+                if (existingWrap) existingWrap.style.display = 'none';
+                clearInfantSelector();
+            });
+        }
+    })();
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
                                                                 const searchInput = document.getElementById('searchInput'); const clearBtn = document.getElementById('clearSearch');
                                                                 if (!searchInput) return;
                                                                 // Immediate submit (no debounce) so results load after every keystroke         function submitSearchImmediate() {             const url = new URL(window.location.href);             const term = searchInput.value.trim();             if (term.length) {                 url.searchParams.set('q', term);             } else {                 url.searchParams.delete('q');             }             window.location.replace(url.toString());         }
@@ -2888,6 +3249,20 @@
                                                                     }
                                                                 })();
 
+                                                                // Also trigger initialization when modal is shown
+                                                                const assistedModal = document.getElementById('assistedRequestModal');
+                                                                if (assistedModal) {
+                                                                    assistedModal.addEventListener('shown.bs.modal', function () {
+                                                                        const section = document.getElementById('assistedInventorySection');
+                                                                        if (dispenseNowCheckbox && dispenseNowCheckbox.checked) {
+                                                                            section.style.display = 'block';
+                                                                            if (milkTypeSelect && milkTypeSelect.value) {
+                                                                                assistedLoadInventory();
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                }
+
                                                                 // Prepare selected_sources_json before form submit
                                                                 const assistedForm = document.getElementById('assistedRequestForm');
                                                                 if (assistedForm) {
@@ -3004,6 +3379,20 @@
                                                                         });
 
                                                                         document.getElementById('selected_sources_json').value = JSON.stringify(sources);
+                                                                        
+                                                                        // Show loading state (but don't disable the button yet - let form submit first)
+                                                                        const spinner = document.getElementById('assisted-request-spinner');
+                                                                        const icon = document.getElementById('assisted-request-icon');
+                                                                        const text = document.getElementById('assisted-request-text');
+                                                                        if (spinner) spinner.style.display = 'inline-block';
+                                                                        if (icon) icon.style.display = 'none';
+                                                                        if (text) text.textContent = 'Submitting...';
+                                                                        
+                                                                        // Log for debugging
+                                                                        console.log('Form submitting with dispense_now data:', {
+                                                                            sources: sources,
+                                                                            json: JSON.stringify(sources)
+                                                                        });
                                                                     });
                                                                 }
                                                             });
