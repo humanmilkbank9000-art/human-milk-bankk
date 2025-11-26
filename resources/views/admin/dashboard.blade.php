@@ -1449,45 +1449,75 @@
               confirmButtonColor: '#d33',
               cancelButtonColor: '#6c757d',
               confirmButtonText: 'Yes, delete them',
-            }).then((result) => {
+            }).then(async (result) => {
             if (!result.isConfirmed) return;
 
             const csrf = document.querySelector('input[name="_token"]').value;
-            // Send DELETE requests sequentially
-            const deletePromises = ids.map(id => fetch(`{{ url('/admin/availability') }}/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
-              .then(resp => resp.text().then(text => { let data=null; try{data= text ? JSON.parse(text) : null;}catch(e){data=null;} if (resp.ok) return data||{success:true}; const msg=(data&&data.message)?data.message:(text||'Delete failed'); throw new Error(msg);}))
-            );
-
-            Promise.allSettled(deletePromises).then(results => {
-              const succeeded = [];
-              const failed = [];
-              results.forEach((r, idx) => {
-                if (r.status === 'fulfilled') succeeded.push(ids[idx]);
-                else failed.push({ id: ids[idx], reason: r.reason && r.reason.message ? r.reason.message : String(r.reason) });
-              });
-
-              // Remove succeeded dates from availableDates and selected arrays
-              succeeded.forEach(id => {
-                // find date(s) that matched this id and remove
-                for (const [dateStr, availId] of Object.entries(selectedAvailabilityIds)) {
-                  if (String(availId) === String(id)) {
-                    const idx = availableDates.indexOf(dateStr);
-                    if (idx !== -1) availableDates.splice(idx, 1);
-                    // remove from selectedDates
-                    const sdIdx = selectedDates.indexOf(dateStr);
-                    if (sdIdx !== -1) selectedDates.splice(sdIdx, 1);
-                    delete selectedAvailabilityIds[dateStr];
-                  }
+            
+            // Delete sequentially to avoid race conditions
+            const succeeded = [];
+            const failed = [];
+            
+            for (let i = 0; i < ids.length; i++) {
+              const id = ids[i];
+              try {
+                const resp = await fetch(`{{ url('/admin/availability') }}/${id}`, { 
+                  method: 'DELETE', 
+                  headers: { 
+                    'X-CSRF-TOKEN': csrf, 
+                    'Accept': 'application/json', 
+                    'X-Requested-With': 'XMLHttpRequest' 
+                  } 
+                });
+                
+                const text = await resp.text();
+                let data = null;
+                try {
+                  data = text ? JSON.parse(text) : null;
+                } catch(e) {
+                  data = null;
                 }
-              });
+                
+                if (resp.ok) {
+                  succeeded.push(id);
+                } else {
+                  const msg = (data && data.message) ? data.message : (text || 'Delete failed');
+                  failed.push({ id: id, reason: msg });
+                }
+              } catch (error) {
+                failed.push({ id: id, reason: error.message || 'Network error' });
+              }
+            }
 
-              // Show result
-              let msg = `${succeeded.length} date(s) deleted.`;
-              if (failed.length) msg += ` ${failed.length} failed.`;
-              Swal.fire({ icon: failed.length ? 'warning' : 'success', title: failed.length ? 'Partial Result' : 'Deleted', text: msg, confirmButtonColor: '#e83e8c', customClass: { container: 'swal-high-zindex' } }).then(() => { window.location.reload(); });
-            }).catch(err => {
-              console.error('Delete batch error:', err);
-              Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred while deleting availability.', confirmButtonColor: '#b21f66', customClass: { container: 'swal-high-zindex' } });
+            // Remove succeeded dates from availableDates and selected arrays
+            succeeded.forEach(id => {
+              // find date(s) that matched this id and remove
+              for (const [dateStr, availId] of Object.entries(selectedAvailabilityIds)) {
+                if (String(availId) === String(id)) {
+                  const idx = availableDates.indexOf(dateStr);
+                  if (idx !== -1) availableDates.splice(idx, 1);
+                  // remove from selectedDates
+                  const sdIdx = selectedDates.indexOf(dateStr);
+                  if (sdIdx !== -1) selectedDates.splice(sdIdx, 1);
+                  delete selectedAvailabilityIds[dateStr];
+                }
+              }
+            });
+
+            // Show result
+            let msg = `${succeeded.length} date(s) deleted.`;
+            if (failed.length) {
+              msg += ` ${failed.length} failed.`;
+            }
+            
+            Swal.fire({ 
+              icon: failed.length ? 'warning' : 'success', 
+              title: failed.length ? 'Partial Result' : 'Deleted', 
+              text: msg, 
+              confirmButtonColor: '#e83e8c', 
+              customClass: { container: 'swal-high-zindex' } 
+            }).then(() => { 
+              window.location.reload(); 
             });
           });
           }, 300); // End setTimeout for delete confirmation

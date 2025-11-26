@@ -2354,15 +2354,25 @@
                 window.location.href = url.toString();
             }
 
-            // Debounced search on input
+            // Debounced search on input - increased delay to 1000ms (1 second)
             searchInput.addEventListener('input', function () {
                 clearTimeout(searchTimer);
-                searchTimer = setTimeout(submitSearch, 500);
+                
+                // Update clear button visibility immediately
+                if (searchInput.value.trim()) {
+                    clearBtn.style.display = 'inline-block';
+                } else {
+                    clearBtn.style.display = 'none';
+                }
+                
+                // Wait 1 second after user stops typing before submitting
+                searchTimer = setTimeout(submitSearch, 1000);
             });
 
             // Search on Enter key
             searchInput.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
+                    e.preventDefault();
                     clearTimeout(searchTimer);
                     submitSearch();
                 }
@@ -2371,6 +2381,7 @@
             // Clear search
             clearBtn.addEventListener('click', function () {
                 searchInput.value = '';
+                clearTimeout(searchTimer);
                 const url = new URL(window.location.href);
                 url.searchParams.delete('q');
                 window.location.href = url.toString();

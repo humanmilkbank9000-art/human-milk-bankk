@@ -32,7 +32,7 @@ return [
     |
     */
 
-    'lifetime' => env('SESSION_LIFETIME', 240), // Extended to 4 hours
+    'lifetime' => env('SESSION_LIFETIME', 480), // Extended to 8 hours
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 
@@ -213,5 +213,17 @@ return [
     */
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Session Regeneration
+    |--------------------------------------------------------------------------
+    |
+    | Prevent session regeneration on every request to avoid session conflicts
+    | when multiple tabs are open
+    |
+    */
+    
+    'regenerate_on_login' => false,
 
 ];

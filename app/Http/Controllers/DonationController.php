@@ -37,7 +37,8 @@ class DonationController extends Controller
                     $q->whereHas('user', function($userQuery) use ($search) {
                         $userQuery->where('first_name', 'LIKE', "%{$search}%")
                             ->orWhere('last_name', 'LIKE', "%{$search}%")
-                            ->orWhere('contact_number', 'LIKE', "%{$search}%");
+                            ->orWhere('contact_number', 'LIKE', "%{$search}%")
+                            ->orWhere('address', 'LIKE', "%{$search}%");
                     });
                 });
             }

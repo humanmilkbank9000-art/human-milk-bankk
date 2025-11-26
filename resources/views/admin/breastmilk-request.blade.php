@@ -2014,14 +2014,60 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-                                                                const searchInput = document.getElementById('searchInput'); const clearBtn = document.getElementById('clearSearch');
-                                                                if (!searchInput) return;
-                                                                // Immediate submit (no debounce) so results load after every keystroke         function submitSearchImmediate() {             const url = new URL(window.location.href);             const term = searchInput.value.trim();             if (term.length) {                 url.searchParams.set('q', term);             } else {                 url.searchParams.delete('q');             }             window.location.replace(url.toString());         }
-                                                                searchInput.addEventListener('input', function () {
-                                                                    const term = searchInput.value.trim(); clearBtn.style.display = term ? 'inline-block' : 'none';             // Submit on every input change (including clear)             submitSearchImmediate();         });
-                                                                    // Enter key still works (prevent form submission side-effects)         searchInput.addEventListener('keypress', function (e) {             if (e.key === 'Enter') {                 e.preventDefault();                 submitSearchImmediate();             }         });
-                                                                    clearBtn.addEventListener('click', function () { searchInput.value = ''; clearBtn.style.display = 'none'; submitSearchImmediate(); });
-                                                                });
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearSearch');
+        
+        if (!searchInput) return;
+        
+        // Debounce timer
+        let searchTimer = null;
+        
+        // Submit search to server
+        function submitSearch() {
+            const url = new URL(window.location.href);
+            const term = searchInput.value.trim();
+            
+            if (term.length) {
+                url.searchParams.set('q', term);
+                clearBtn.style.display = 'inline-block';
+            } else {
+                url.searchParams.delete('q');
+                clearBtn.style.display = 'none';
+            }
+            
+            window.location.href = url.toString();
+        }
+        
+        // Debounced search on input - wait 1 second after user stops typing
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimer);
+            
+            // Update clear button visibility immediately
+            const term = searchInput.value.trim();
+            clearBtn.style.display = term ? 'inline-block' : 'none';
+            
+            // Wait 1 second after user stops typing before submitting
+            searchTimer = setTimeout(submitSearch, 1000);
+        });
+        
+        // Enter key still works (prevent form submission side-effects)
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimer);
+                submitSearch();
+            }
+        });
+        
+        clearBtn.addEventListener('click', function () {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            clearTimeout(searchTimer);
+            const url = new URL(window.location.href);
+            url.searchParams.delete('q');
+            window.location.href = url.toString();
+        });
+    });
     </script>
 
     <script>     // Display SweetAlert for flash messages after redirects (success/warning/error)     document.addEventListener('DOMContentLoaded', function () {         try {             const hasSwal = (typeof Swal !== 'undefined');             @if ($errors->any())             if (hasSwal) {                 let html = '';                 @foreach ($errors->all() as $err)                 html += `<div>• {{ addslashes($err) }}</div>`;                 @endforeach                 Swal.fire({                     icon: 'error',                     title: 'Please fix the following:',                     html: html,                     confirmButtonColor: '#dc3545'                 });             }             // Reopen the Assisted modal so the admin can correct inputs             try {                 const modalEl = document.getElementById('assistedRequestModal');                 if (modalEl && window.bootstrap && bootstrap.Modal) {                     const m = new bootstrap.Modal(modalEl);                     m.show();                 }             } catch (_) { }             @endif             @if(session('success'))             if (hasSwal) {                 Swal.fire({                     icon: 'success',                     title: 'Success',                     text: @json(session('success')),                     confirmButtonColor: '#28a745'                 });             }             @endif             @if(session('warning'))             if (hasSwal) {                 Swal.fire({                     icon: 'warning',                     title: 'Notice',                     text: @json(session('warning')),                     confirmButtonColor: '#f59e0b'                 });             }             @endif             @if(session('error'))             if (hasSwal) {                 Swal.fire({                     icon: 'error',                     title: 'Error',                     text: @json(session('error')),                     confirmButtonColor: '#dc3545'                 });             }             @endif
