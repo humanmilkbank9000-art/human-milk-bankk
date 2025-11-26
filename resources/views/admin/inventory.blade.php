@@ -713,7 +713,7 @@
                         <div class="stats-number" id="unpasteurized-volume">
                             {{ number_format($unpasteurizedDonations->where('available_volume', '>', 0)->sum('available_volume'), 0) }}ml
                         </div>
-                        <div class="stats-label">Available Volume</div>
+                        <div class="stats-label">Available Unpasteurized Volume</div>
                     </div>
                 </div>
             </div>
@@ -727,7 +727,7 @@
                         <div class="stats-number" id="pasteurized-volume">
                             {{ number_format($pasteurizationBatches->sum('available_volume'), 0) }}ml
                         </div>
-                        <div class="stats-label">Pasteurized Volume</div>
+                        <div class="stats-label">Available Pasteurized Volume</div>
                     </div>
                 </div>
             </div>
