@@ -14,6 +14,7 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\NutritionalGuideController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
 
 Route::get('/user-register', [UserRegisterController::class, 'user_register'])->name('user.register');
 Route::post('/user-register/store', [UserRegisterController::class, 'store_user'])->name('user.store'); 
@@ -40,6 +41,9 @@ Route::middleware('guest')->group(function () {
 
 Route::get('/user/dashboard', [LoginController::class, 'user_dashboard'])->name('user.dashboard');
 Route::get('/admin/dashboard', [LoginController::class, 'admin_dashboard'])->name('admin.dashboard');
+
+// Admin badge counts API
+Route::get('/admin/badge-counts', [AdminController::class, 'getBadgeCounts'])->name('admin.badge-counts');
 
 Route::post('/admin/availability/store', [AvailabilityController::class, 'store'])
     ->name('admin.availability.store');

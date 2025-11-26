@@ -798,73 +798,96 @@ $defaultTitle = $titles[$routeName] ?? 'Admin';
 
             if (accountRole !== 'admin') return;
 
-            const pages = [
-                { url: @json(route('admin.health-screening')), selector: 'span.badge.bg-warning.text-dark.ms-1', target: 'sidebar-health-badge' },
-                { url: @json(route('admin.donation')), selector: 'span.badge.bg-warning.text-dark', target: 'sidebar-donation-badge' },
-                { url: @json(route('admin.request')), selector: 'span.badge.bg-warning', target: 'sidebar-request-badge' }
-            ];
-
-            function parseCount(html, selector){
-                try{
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    if(selector){
-                        const el = doc.querySelector(selector);
-                        if(el){ const m = el.textContent.match(/(\d+)/); if(m) return parseInt(m[1],10); }
-                    }
-                    const candidates = ['span.pending-count-badge','span.badge.bg-warning.text-dark','span.badge.bg-warning','span.badge.ms-1','span.badge'];
-                    for(const s of candidates){ const e = doc.querySelector(s); if(e){ const m = e.textContent.match(/(\d+)/); if(m) return parseInt(m[1],10); } }
-                    const any = Array.from(doc.querySelectorAll('span,div')).find(n => /\d+/.test(n.textContent));
-                    if(any){ const m = any.textContent.match(/(\d+)/); if(m) return parseInt(m[1],10); }
-                }catch(e){ console && console.error && console.error('parse error', e); }
-                return 0;
-            }
-
             async function updateBadges(){
-                for(const p of pages){
-                    try{
-                        const res = await fetch(p.url, { credentials: 'same-origin' });
-                        if(!res.ok) continue;
-                        const html = await res.text();
-                        const count = parseCount(html, p.selector);
-                        // find the sidebar link for this target
-                        const link = document.querySelector('[href]');
-                        // more robust: look for element by route URL
-                        const sidebarLink = Array.from(document.querySelectorAll('.sidebar a')).find(a => a.getAttribute('href') === p.url || a.href === p.url || a.getAttribute('href') === p.url.replace(window.location.origin, ''));
-                        if(!sidebarLink) continue;
-                        let badge = sidebarLink.querySelector('.dynamic-sidebar-badge');
-                        if(count > 0){
-                            if(!badge){
-                                badge = document.createElement('span');
-                                badge.className = 'badge bg-danger text-white dynamic-sidebar-badge';
-                                badge.setAttribute('aria-hidden', 'true');
-                                // compact circular badge styling to match screenshot
-                                badge.style.fontSize = '0.68rem';
-                                badge.style.position = 'absolute';
-                                badge.style.right = '18px';
-                                badge.style.top = '50%';
-                                badge.style.transform = 'translateY(-50%)';
-                                badge.style.minWidth = '18px';
-                                badge.style.height = '18px';
-                                badge.style.lineHeight = '18px';
-                                badge.style.textAlign = 'center';
-                                badge.style.padding = '0';
-                                badge.style.borderRadius = '50%';
-                                sidebarLink.style.position = sidebarLink.style.position || 'relative';
-                                sidebarLink.appendChild(badge);
-                            }
-                            badge.style.display = 'inline-block';
-                            badge.textContent = String(count);
-                        } else {
-                            if(badge){ badge.remove(); }
+                try {
+                    // Fetch badge counts from dedicated API endpoint
+                    const res = await fetch(@json(route('admin.badge-counts')), { 
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
-                    }catch(err){ console && console.error && console.error('badge fetch err', err); }
+                    });
+                    
+                    if (!res.ok) {
+                        console.error('Failed to fetch badge counts');
+                        return;
+                    }
+                    
+                    const data = await res.json();
+                    
+                    // Update badge for Health Screening
+                    updateBadge(
+                        @json(route('admin.health-screening')),
+                        data.health_screening || 0
+                    );
+                    
+                    // Update badge for Breastmilk Donation
+                    updateBadge(
+                        @json(route('admin.donation')),
+                        data.donation || 0
+                    );
+                    
+                    // Update badge for Breastmilk Request
+                    updateBadge(
+                        @json(route('admin.request')),
+                        data.request || 0
+                    );
+                    
+                } catch(err) { 
+                    console.error('Badge update error:', err); 
+                }
+            }
+            
+            function updateBadge(routeUrl, count) {
+                // Find the sidebar link for this route
+                const sidebarLink = Array.from(document.querySelectorAll('.sidebar a')).find(a => {
+                    const href = a.getAttribute('href');
+                    return href === routeUrl || 
+                           a.href === routeUrl || 
+                           href === routeUrl.replace(window.location.origin, '');
+                });
+                
+                if (!sidebarLink) return;
+                
+                let badge = sidebarLink.querySelector('.dynamic-sidebar-badge');
+                
+                if (count > 0) {
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'badge bg-danger text-white dynamic-sidebar-badge';
+                        badge.setAttribute('aria-hidden', 'true');
+                        // Compact circular badge styling
+                        badge.style.fontSize = '0.68rem';
+                        badge.style.position = 'absolute';
+                        badge.style.right = '18px';
+                        badge.style.top = '50%';
+                        badge.style.transform = 'translateY(-50%)';
+                        badge.style.minWidth = '18px';
+                        badge.style.height = '18px';
+                        badge.style.lineHeight = '18px';
+                        badge.style.textAlign = 'center';
+                        badge.style.padding = '0';
+                        badge.style.borderRadius = '50%';
+                        badge.style.display = 'inline-flex';
+                        badge.style.alignItems = 'center';
+                        badge.style.justifyContent = 'center';
+                        
+                        sidebarLink.style.position = sidebarLink.style.position || 'relative';
+                        sidebarLink.appendChild(badge);
+                    }
+                    badge.style.display = 'inline-flex';
+                    badge.textContent = String(count);
+                } else {
+                    if (badge) { 
+                        badge.remove(); 
+                    }
                 }
             }
 
             document.addEventListener('DOMContentLoaded', function(){
-                updateBadges();
-                setInterval(updateBadges, 60000); // refresh every minute
+                updateBadges(); // Initial load
+                setInterval(updateBadges, 60000); // Refresh every minute
             });
         })();
     </script>

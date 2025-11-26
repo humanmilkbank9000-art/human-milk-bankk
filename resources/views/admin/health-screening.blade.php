@@ -103,6 +103,62 @@
             color: #fff;
         }
 
+        /* Modal tabs - compact styling */
+        .modal-body .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            gap: 0;
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            z-index: 10;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body .nav-tabs .nav-item {
+            margin-bottom: -1px;
+        }
+
+        .modal-body .nav-tabs .nav-link {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem 0.25rem 0 0;
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .modal-body .nav-tabs .nav-link i {
+            font-size: 0.9rem;
+        }
+
+        .modal-body .nav-tabs .nav-link:hover {
+            border-color: #e9ecef #e9ecef #dee2e6;
+            color: #495057;
+        }
+
+        .modal-body .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+        }
+
+        /* Responsive: stack tabs on small screens */
+        @media (max-width: 576px) {
+            .modal-body .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .modal-body .nav-tabs .nav-link {
+                font-size: 0.75rem;
+                padding: 0.35rem 0.5rem;
+            }
+
+            .modal-body .nav-tabs .nav-link i {
+                font-size: 0.8rem;
+            }
+        }
+
         .nav-tabs .nav-link.active {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
@@ -731,7 +787,7 @@
                 ['Have you for any reason been deferred as a breastmilk donor? If yes, specify reason', 'Naballbaran na ba ka nga mag-donar sa imung gatas kaniadto? Kung oo, unsay hinungdan?', true],
                 ['Did you have a normal pregnancy and delivery for your most recent pregnancy?', 'Wala ka bay naaging kalisod og komplikasyon sa pinakaulahi nimung pagburos og pagpanganak?', false],
                 ['Do you have any acute or chronic infection such as tuberculosis, hepatitis, systemic disorders? If yes, specify', 'Aduna ka bay gibating mga sakit sama sa Tuberculosis, sakit sa atay or sakit sa dugo? Kung naa, unsa man kini?', true],
-                ['Have you been diagnosed with a chronic non-infectious illness such as diabetes, hypertension, heart disease? If yes, specify', 'Nadayagnos ka ba nga adunay laygay nga dili makatakod nga sakit sama sa diabetes, altapresyon, sakit sa kasingkasing? Kung naa, unsa man kini?', true],
+                ['Have you been diagnosed with a chronic non-infectious illness such as diabetes, hypertension, heart disease? If yes, specify', 'Nadayagnos ka ba nga adunay lagay nga dili makatakod nga sakit sama sa diabetes, altapresyon, sakit sa kasingkasing? Kung naa, unsa man kini?', true],
                 ['Have you received any blood transfusion or blood products within the last 12 months?', 'Naabunohan ka ba ug dugo sulod sa niaging 12 ka buwan?', false],
                 ['Have you received any organ or tissue transplant within the last 12 months?', 'Niagi ka ba ug operasyon din nidawat ka ug bahin/parte sa lawas sulod sa nlilabay nga 12 ka bulan?', false],
                 ['Have you had any intake of alcohol within the last 24 hours? If yes, how much', 'Sulod sa 24 oras, naka inum ka ba og bisan unsang ilimnong makahubog? Kung oo, unsa ka daghan?', true],
@@ -966,175 +1022,209 @@
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                {{-- User Information --}}
-                                <div class="mb-4">
-                                    <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-fill me-2"></i>User
-                                        Information</h6>
-                                    @if($screening->user)
-                                        <div class="row">
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Name:</strong> {{ $screening->user->first_name }}
-                                                {{ $screening->user->last_name }}
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Contact Number:</strong> {{ $screening->user->contact_number }}
-                                            </div>
-                                            @php
-                                                $userDob = $screening->user->date_of_birth ?? null;
-                                            @endphp
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Date of Birth:</strong>
-                                                <span>
-                                                    {{ $userDob ? \Carbon\Carbon::parse($userDob)->format('M d, Y') : '-' }}
-                                                </span>
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Age:</strong> {{ $screening->user->age }}
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Sex:</strong> {{ ucfirst($screening->user->sex) }}
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Civil Status:</strong> {{ ucfirst($screening->civil_status ?? 'N/A') }}
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Occupation:</strong> {{ $screening->occupation ?? 'N/A' }}
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Type of Donor:</strong>
-                                                {{ ucwords(str_replace('_', ' ', $screening->type_of_donor ?? 'N/A')) }}
-                                            </div>
-                                            <div class="col-12 mb-2">
-                                                <strong>Address:</strong> {{ $screening->user->address }}
-                                            </div>
-                                        </div>
-                                    @else
-                                        <p class="text-muted">No user data found.</p>
-                                    @endif
-                                </div>
+                                {{-- Tab Navigation --}}
+                                <ul class="nav nav-tabs mb-3" id="screeningTabs{{ $screening->health_screening_id }}" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="user-tab{{ $screening->health_screening_id }}" data-bs-toggle="tab" 
+                                            data-bs-target="#user{{ $screening->health_screening_id }}" type="button" role="tab" 
+                                            aria-controls="user{{ $screening->health_screening_id }}" aria-selected="true">
+                                            <i class="bi bi-person-fill me-1"></i> User Information
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="infant-tab{{ $screening->health_screening_id }}" data-bs-toggle="tab" 
+                                            data-bs-target="#infant{{ $screening->health_screening_id }}" type="button" role="tab" 
+                                            aria-controls="infant{{ $screening->health_screening_id }}" aria-selected="false">
+                                            <i class="bi bi-heart-fill me-1"></i> Infant Information
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="answers-tab{{ $screening->health_screening_id }}" data-bs-toggle="tab" 
+                                            data-bs-target="#answers{{ $screening->health_screening_id }}" type="button" role="tab" 
+                                            aria-controls="answers{{ $screening->health_screening_id }}" aria-selected="false">
+                                            <i class="bi bi-clipboard-check-fill me-1"></i> Screening Answers
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="status-tab{{ $screening->health_screening_id }}" data-bs-toggle="tab" 
+                                            data-bs-target="#status{{ $screening->health_screening_id }}" type="button" role="tab" 
+                                            aria-controls="status{{ $screening->health_screening_id }}" aria-selected="false">
+                                            <i class="bi bi-info-circle-fill me-1"></i> Submission Status
+                                        </button>
+                                    </li>
+                                </ul>
 
-                                {{-- Infant Information --}}
-                                <div class="mb-4">
-                                    <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-heart-fill me-2"></i>Infant
-                                        Information</h6>
-                                    @if($screening->infant)
-                                        <div class="row">
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Name:</strong> {{ $screening->infant->first_name }}
-                                                {{ $screening->infant->last_name }}{{ $screening->infant->suffix ? ' ' . $screening->infant->suffix : '' }}
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Sex:</strong> {{ ucfirst($screening->infant->sex) }}
-                                            </div>
-                                            @php
-                                                $infantDob = $screening->infant->date_of_birth ?? null;
-                                            @endphp
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Date of Birth:</strong>
-                                                <span>
-                                                    {{ $infantDob ? \Carbon\Carbon::parse($infantDob)->format('M d, Y') : '-' }}
-                                                </span>
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Age:</strong> {{ $screening->infant->getFormattedAge() }}
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <strong>Birth Weight:</strong> {{ rtrim(rtrim(number_format($screening->infant->birth_weight, 2, '.', ''), '0'), '.') }} kg
-                                            </div>
-                                        </div>
-                                    @else
-                                        <p class="text-muted">No infant data found.</p>
-                                    @endif
-                                </div>
-
-                                {{-- Screening Answers --}}
-                                <div class="mb-3">
-                                    <h6 class="text-primary border-bottom pb-2 mb-3"><i
-                                            class="bi bi-clipboard-check-fill me-2"></i>Health Screening Answers</h6>
-
-                                    @foreach($sections as $sectionKey => $questions)
-                                        <div class="mb-4">
-                                            <h6 class="text-secondary mb-3">{{ ucwords(str_replace('_', ' ', $sectionKey)) }}</h6>
-                                            @php $qNum = 1; @endphp
-                                            @foreach($questions as $q)
+                                {{-- Tab Content --}}
+                                <div class="tab-content" id="screeningTabContent{{ $screening->health_screening_id }}">
+                                    {{-- User Information Tab --}}
+                                    <div class="tab-pane fade show active" id="user{{ $screening->health_screening_id }}" role="tabpanel" 
+                                        aria-labelledby="user-tab{{ $screening->health_screening_id }}">
+                                        @if($screening->user)
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Name:</strong> {{ $screening->user->first_name }}
+                                                    {{ $screening->user->last_name }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Contact Number:</strong> {{ $screening->user->contact_number }}
+                                                </div>
                                                 @php
-                                                    $field = $sectionKey . '_' . str_pad($qNum, 2, '0', STR_PAD_LEFT);
-                                                    $value = $screening->{$field} ?? '';
-                                                    $details = $screening->{$field . '_details'} ?? '';
+                                                    $userDob = $screening->user->date_of_birth ?? null;
                                                 @endphp
-                                                <div class="mb-3 p-3 bg-light rounded">
-                                                    <div class="mb-1">
-                                                        <strong>{{ $qNum }}.</strong> {{ $q[0] }}
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Date of Birth:</strong>
+                                                    <span>
+                                                        {{ $userDob ? \Carbon\Carbon::parse($userDob)->format('M d, Y') : '-' }}
+                                                    </span>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Age:</strong> {{ $screening->user->age }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Sex:</strong> {{ ucfirst($screening->user->sex) }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Civil Status:</strong> {{ ucfirst($screening->civil_status ?? 'N/A') }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Occupation:</strong> {{ $screening->occupation ?? 'N/A' }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Type of Donor:</strong>
+                                                    {{ ucwords(str_replace('_', ' ', $screening->type_of_donor ?? 'N/A')) }}
+                                                </div>
+                                                <div class="col-12 mb-2">
+                                                    <strong>Address:</strong> {{ $screening->user->address }}
+                                                </div>
+                                            </div>
+                                        @else
+                                            <p class="text-muted">No user data found.</p>
+                                        @endif
+                                    </div>
+
+                                    {{-- Infant Information Tab --}}
+                                    <div class="tab-pane fade" id="infant{{ $screening->health_screening_id }}" role="tabpanel" 
+                                        aria-labelledby="infant-tab{{ $screening->health_screening_id }}">
+                                        @if($screening->infant)
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Name:</strong> {{ $screening->infant->first_name }}
+                                                    {{ $screening->infant->last_name }}{{ $screening->infant->suffix ? ' ' . $screening->infant->suffix : '' }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Sex:</strong> {{ ucfirst($screening->infant->sex) }}
+                                                </div>
+                                                @php
+                                                    $infantDob = $screening->infant->date_of_birth ?? null;
+                                                @endphp
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Date of Birth:</strong>
+                                                    <span>
+                                                        {{ $infantDob ? \Carbon\Carbon::parse($infantDob)->format('M d, Y') : '-' }}
+                                                    </span>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Age:</strong> {{ $screening->infant->getFormattedAge() }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <strong>Birth Weight:</strong> {{ rtrim(rtrim(number_format($screening->infant->birth_weight, 2, '.', ''), '0'), '.') }} kg
+                                                </div>
+                                            </div>
+                                        @else
+                                            <p class="text-muted">No infant data found.</p>
+                                        @endif
+                                    </div>
+
+                                    {{-- Screening Answers Tab --}}
+                                    <div class="tab-pane fade" id="answers{{ $screening->health_screening_id }}" role="tabpanel" 
+                                        aria-labelledby="answers-tab{{ $screening->health_screening_id }}">
+                                        @foreach($sections as $sectionKey => $questions)
+                                            <div class="mb-4">
+                                                <h6 class="text-secondary mb-3">{{ ucwords(str_replace('_', ' ', $sectionKey)) }}</h6>
+                                                @php $qNum = 1; @endphp
+                                                @foreach($questions as $q)
+                                                    @php
+                                                        $field = $sectionKey . '_' . str_pad($qNum, 2, '0', STR_PAD_LEFT);
+                                                        $value = $screening->{$field} ?? '';
+                                                        $details = $screening->{$field . '_details'} ?? '';
+                                                    @endphp
+                                                    <div class="mb-3 p-3 bg-light rounded">
+                                                        <div class="mb-1">
+                                                            <strong>{{ $qNum }}.</strong> {{ $q[0] }}
+                                                        </div>
+                                                        <div class="translation text-muted mb-2" style="font-size: 0.9rem;">
+                                                            <em>{{ $q[1] }}</em>
+                                                        </div>
+                                                        <div>
+                                                            <span
+                                                                class="badge bg-{{ $value == 'yes' ? 'success' : ($value == 'no' ? 'secondary' : 'light text-dark') }} px-3 py-2">
+                                                                {{ $value ? ucfirst($value) : 'N/A' }}
+                                                            </span>
+                                                            @if($details)
+                                                                <div class="mt-2 p-2 bg-white rounded border">
+                                                                    <strong>Details:</strong> {{ $details }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
                                                     </div>
-                                                    <div class="translation text-muted mb-2" style="font-size: 0.9rem;">
-                                                        <em>{{ $q[1] }}</em>
-                                                    </div>
-                                                    <div>
-                                                        <span
-                                                            class="badge bg-{{ $value == 'yes' ? 'success' : ($value == 'no' ? 'secondary' : 'light text-dark') }} px-3 py-2">
-                                                            {{ $value ? ucfirst($value) : 'N/A' }}
-                                                        </span>
-                                                        @if($details)
-                                                            <div class="mt-2 p-2 bg-white rounded border">
-                                                                <strong>Details:</strong> {{ $details }}
-                                                            </div>
-                                                        @endif
+                                                    @php $qNum++; @endphp
+                                                @endforeach
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- Submission Status Tab --}}
+                                    <div class="tab-pane fade" id="status{{ $screening->health_screening_id }}" role="tabpanel" 
+                                        aria-labelledby="status-tab{{ $screening->health_screening_id }}">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3 d-flex align-items-center">
+                                                <strong class="me-2 mb-0">Status:</strong>
+                                                <span
+                                                    class="badge bg-{{ $screening->status == 'accepted' ? 'success' : ($screening->status == 'declined' ? 'danger' : 'warning text-dark') }}">
+                                                    {{ ucfirst($screening->status) }}
+                                                </span>
+                                            </div>
+                                            <div class="col-md-6 mb-3 d-flex align-items-center">
+                                                <strong class="me-2 mb-0">Submitted:</strong>
+                                                <span>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                            </div>
+                                            @if($screening->status == 'accepted' && $screening->date_accepted)
+                                                <div class="col-md-6 mb-3 d-flex align-items-center">
+                                                    <strong class="me-2 mb-0">Accepted At:</strong>
+                                                    <span>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                                </div>
+                                            @endif
+                                            @if($screening->status == 'declined' && $screening->date_declined)
+                                                <div class="col-md-6 mb-3 d-flex align-items-center">
+                                                    <strong class="me-2 mb-0">Declined At:</strong>
+                                                    <span>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
+                                                </div>
+                                            @endif
+                                            @if(!empty($screening->admin_notes))
+                                                <div class="col-12 mb-3 mt-2">
+                                                    <strong>Admin Comments:</strong>
+                                                    <div class="mt-2 p-3 bg-light border rounded">
+                                                        {{ $screening->admin_notes }}
                                                     </div>
                                                 </div>
-                                                @php $qNum++; @endphp
-                                            @endforeach
+                                            @endif
                                         </div>
-                                    @endforeach
-                                </div>
 
-                                {{-- Submission Status --}}
-                                <div class="mb-3">
-                                    <h6 class="text-primary border-bottom pb-2 mb-3"><i
-                                            class="bi bi-info-circle-fill me-2"></i>Submission Status</h6>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2 d-flex align-items-center">
-                                            <strong class="me-2 mb-0">Status:</strong>
-                                            <span
-                                                class="badge bg-{{ $screening->status == 'accepted' ? 'success' : ($screening->status == 'declined' ? 'danger' : 'warning text-dark') }}">
-                                                {{ ucfirst($screening->status) }}
-                                            </span>
-                                        </div>
-                                        <div class="col-md-6 mb-2 d-flex align-items-center">
-                                            <strong class="me-2 mb-0">Submitted:</strong>
-                                            <span>{{ optional($screening->created_at)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
-                                        </div> @if($screening->status == 'accepted' && $screening->date_accepted)
-                                            <div class="col-md-6 mb-2 d-flex align-items-center">
-                                                <strong class="me-2 mb-0">Accepted At:</strong>
-                                                <span>{{ optional($screening->date_accepted)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
-                                        </div> @endif @if($screening->status == 'declined' && $screening->date_declined)
-                                            <div class="col-md-6 mb-2 d-flex align-items-center">
-                                                <strong class="me-2 mb-0">Declined At:</strong>
-                                                <span>{{ optional($screening->date_declined)->setTimezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
-                                        </div> @endif @if(!empty($screening->admin_notes))
-                                            <div class="col-12 mb-2 mt-2">
-                                                <strong>Admin Comments:</strong>
-                                                <div class="mt-2 p-3 bg-light border rounded">
-                                                    {{ $screening->admin_notes }}
+                                        {{-- Admin Comments/Notes Section for Pending Status --}}
+                                        @if($screening->status == 'pending')
+                                            <div class="mt-4 pt-3 border-top">
+                                                <h6 class="text-primary mb-3"><i class="bi bi-chat-left-text-fill me-2"></i>Admin Action</h6>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <textarea class="form-control admin-comments-textarea rounded"
+                                                            id="adminComments{{ $screening->health_screening_id }}" name="comments" rows="3"
+                                                            placeholder="Enter comments or notes (required for declining, optional for accepting)"></textarea>
+                                                    </div>
                                                 </div>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
-
-                                {{-- Admin Comments/Notes Section --}}
-                                @if($screening->status == 'pending')
-                                    <div class="mb-4">
-                                        <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-chat-left-text-fill me-2"></i>Admin
-                                            Action</h6>
-                                        <div class="row">
-                                            <div class="col-12 mb-2">
-                                                <textarea class="form-control admin-comments-textarea rounded mt-2"
-                                                    id="adminComments{{ $screening->health_screening_id }}" name="comments" rows="3"
-                                                    placeholder="Enter comments or notes (required for declining, optional for accepting)"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
