@@ -199,7 +199,10 @@
         @else
             <div class="card">
                 <div class="card-body text-center py-5">
-                    <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="mb-3" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                    </svg>
                     <h5 class="text-muted">No Pending Donations</h5>
                     <p class="text-muted">You don't have any pending donation requests at the moment.</p>
                     <a href="{{ route('user.donate') }}" class="btn btn-primary">
