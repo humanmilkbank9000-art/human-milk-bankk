@@ -149,7 +149,7 @@
                                             </tr>
                                             <tr>
                                                 <td><strong>Birth Weight:</strong></td>
-                                                <td>{{ $request->infant->birth_weight }} kg</td>
+                                                <td>{{ rtrim(rtrim(number_format($request->infant->birth_weight, 2, '.', ''), '0'), '.') }} kg</td>
                                             </tr>
                                         </table>
                                     </div>

@@ -1039,7 +1039,7 @@
                                                 <strong>Age:</strong> {{ $screening->infant->getFormattedAge() }}
                                             </div>
                                             <div class="col-md-6 mb-2">
-                                                <strong>Birth Weight:</strong> {{ $screening->infant->birth_weight }} kg
+                                                <strong>Birth Weight:</strong> {{ rtrim(rtrim(number_format($screening->infant->birth_weight, 2, '.', ''), '0'), '.') }} kg
                                             </div>
                                         </div>
                                     @else

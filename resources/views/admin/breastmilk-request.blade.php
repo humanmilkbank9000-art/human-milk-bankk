@@ -1234,7 +1234,7 @@
                                 <p class="mb-1"><strong>Age:</strong> {{ $request->infant->getFormattedAge() }}</p>
                                 <p class="mb-0"><strong>Sex:</strong> {{ ucfirst($request->infant->sex) }}</p>
                                 <p class="mb-0"><strong>Birth Weight:</strong>
-                                    {{ $request->infant->birth_weight ? $request->infant->birth_weight . ' kg' : '-' }}</p>
+                                    {{ $request->infant->birth_weight ? rtrim(rtrim(number_format($request->infant->birth_weight, 2, '.', ''), '0'), '.') . ' kg' : '-' }}</p>
                             </div>
                         </div>
                     </div>
@@ -1869,7 +1869,7 @@
                     const dob = (i.date_of_birth || '').substring(0, 10);
                     const sex = (String(i.sex || '')).toLowerCase();
                     const sexLabel = sex === 'male' ? 'Male' : (sex === 'female' ? 'Female' : '');
-                    const wt = (i.birth_weight != null && i.birth_weight !== '') ? `${i.birth_weight} kg` : '';
+                    const wt = (i.birth_weight != null && i.birth_weight !== '') ? `${parseFloat(i.birth_weight)} kg` : '';
                     opt.textContent = [name, dob, sexLabel, wt].filter(Boolean).join(' • ');
                     opt.dataset.payload = JSON.stringify(i);
                     infantSelect.appendChild(opt);

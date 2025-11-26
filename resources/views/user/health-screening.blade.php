@@ -497,7 +497,7 @@
                             <p><strong>Sex:</strong> {{ ucfirst($infant->sex) }}</p>
                             <p><strong>Date of Birth:</strong> {{ $infant->date_of_birth ? \Carbon\Carbon::parse($infant->date_of_birth)->format('M d, Y') : '-' }}</p>
                             <p><strong>Age:</strong> {{ $infant->getFormattedAge() }}</p>
-                            <p><strong>Birth Weight:</strong> {{ $infant->birth_weight }} kg</p>
+                            <p><strong>Birth Weight:</strong> {{ rtrim(rtrim(number_format($infant->birth_weight, 2, '.', ''), '0'), '.') }} kg</p>
                         @else
                             <p>No infant data found.</p>
                         @endif
@@ -650,7 +650,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <p><strong>Age:</strong> {{ $infant->getFormattedAge() }}</p>
-                                            <p><strong>Birth Weight:</strong> {{ $infant->birth_weight }} kg</p>
+                                            <p><strong>Birth Weight:</strong> {{ rtrim(rtrim(number_format($infant->birth_weight, 2, '.', ''), '0'), '.') }} kg</p>
                                         </div>
                                     </div>
                                 @else
@@ -1092,7 +1092,7 @@
             reviewHTML += '<div class="review-item"><strong>Sex:</strong> {{ ucfirst($infant->sex ?? '') }}</div>';
             reviewHTML += '<div class="review-item"><strong>Date of Birth:</strong> {{ $infant->date_of_birth ? \Carbon\Carbon::parse($infant->date_of_birth)->format('M d, Y') : '' }}</div>';
             reviewHTML += '<div class="review-item"><strong>Age:</strong> {{ $infant->getFormattedAge() }}</div>';
-            reviewHTML += '<div class="review-item"><strong>Birth Weight:</strong> {{ $infant->birth_weight ?? '' }} kg</div>';
+            reviewHTML += '<div class="review-item"><strong>Birth Weight:</strong> {{ $infant->birth_weight ? rtrim(rtrim(number_format($infant->birth_weight, 2, '.', ''), '0'), '.') : '' }} kg</div>';
             reviewHTML += '</div>';
 
             // Medical History
