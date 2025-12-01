@@ -115,6 +115,19 @@ class HealthScreeningController extends Controller
         return view('admin.health-screening', compact('healthScreenings', 'status', 'pendingCount', 'acceptedCount', 'declinedCount'));
     }
 
+    public function showDetails($id)
+    {
+        if (!Session::has('account_id') || Session::get('account_role') !== 'admin') {
+            return redirect()->route('login')->with('error', 'Please login as admin first.');
+        }
+
+        $screening = HealthScreening::with('user', 'infant')->findOrFail($id);
+        
+        $sections = $this->service->getQuestionSections();
+
+        return view('admin.health-screening-details', compact('screening', 'sections'));
+    }
+
     public function accept($id)
     {
         $screening = HealthScreening::findOrFail($id);

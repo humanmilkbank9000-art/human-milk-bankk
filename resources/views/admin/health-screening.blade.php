@@ -935,10 +935,10 @@
                                             @endif
                                             <td class="text-center align-middle">
                                                 <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
-                                                    <button class="admin-review-btn" data-bs-toggle="modal"
-                                                        data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                                    <a href="{{ route('admin.health-screening.details', $screening->health_screening_id) }}" 
+                                                       class="admin-review-btn" style="text-decoration: none;">
                                                         Review
-                                                    </button>
+                                                    </a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -988,10 +988,10 @@
                                 @endif
                                 <div class="card-actions">
                                     <div class="d-inline-flex align-items-center" style="gap:0.5rem;">
-                                        <button class="admin-review-btn" data-bs-toggle="modal"
-                                            data-bs-target="#detailsModal{{ $screening->health_screening_id }}">
+                                        <a href="{{ route('admin.health-screening.details', $screening->health_screening_id) }}" 
+                                           class="admin-review-btn" style="text-decoration: none;">
                                             Review
-                                        </button>
+                                        </a>
 
                                     </div>
                                 </div>

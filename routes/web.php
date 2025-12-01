@@ -53,6 +53,7 @@ Route::delete('/admin/availability/{id}', [AvailabilityController::class, 'destr
     ->name('admin.availability.destroy');
 
 Route::get('/admin/health-screening', [HealthScreeningController::class, 'admin_health_screening'])->name('admin.health-screening');
+Route::get('/admin/health-screening/{id}', [HealthScreeningController::class, 'showDetails'])->name('admin.health-screening.details');
 Route::post('/admin/health-screening/{id}/accept', [HealthScreeningController::class, 'accept'])->name('admin.health-screening.accept');
 Route::post('/admin/health-screening/{id}/reject', [HealthScreeningController::class, 'reject'])->name('admin.health-screening.reject');
 Route::post('/admin/health-screening/{id}/undo-decline', [HealthScreeningController::class, 'undoDecline'])->name('admin.health-screening.undo-decline');

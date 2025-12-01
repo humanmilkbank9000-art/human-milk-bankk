@@ -779,14 +779,14 @@
                                     }
                                     #hcQAModal .qa-intro { color:#444; }
                                     #hcQAModal .question-item { background:#fff9fb; border:1px solid rgba(255,111,166,0.12); border-radius:8px; padding:12px; margin-bottom:12px; }
-                                    #hcQAModal .question-label { font-weight:600; color:#212529; margin-bottom:8px; }
-                                    #hcQAModal .translation { font-style: italic; color:#555; font-size:0.9rem; }
-                                    #hcQAModal .radio-group { display:flex; gap:10px; }
-                                    #hcQAModal .radio-option { position:relative; flex:1; }
-                                    #hcQAModal .radio-option input[type="radio"]{ position:absolute; opacity:0; width:0; height:0; }
-                                    #hcQAModal .radio-option label{ display:flex; align-items:center; justify-content:center; padding:10px 16px; background:#fff6fb; border:2px solid rgba(255,111,166,0.2); border-radius:8px; cursor:pointer; transition:all .2s; font-weight:500; min-height:44px; }
-                                    #hcQAModal .radio-option label:hover{ border-color:#ff93c1; background:#fff0f6; }
-                                    #hcQAModal .radio-option input[type="radio"]:checked + label{ background:#ff93c1; border-color:#ff93c1; color:#fff; box-shadow:0 2px 8px rgba(255,83,140,0.18); }
+                                    #hcQAModal .question-label { font-weight:600; color:#212529; margin-bottom:8px; display:flex; align-items:center; gap:12px; }
+                                    #hcQAModal .translation { font-style: italic; color:#555; font-size:0.9rem; margin-left:32px; }
+                                    #hcQAModal .checkbox-wrapper { position:relative; display:inline-block; }
+                                    #hcQAModal .checkbox-wrapper input[type="checkbox"]{ position:absolute; opacity:0; width:0; height:0; }
+                                    #hcQAModal .checkbox-wrapper label{ display:flex; align-items:center; justify-content:center; width:24px; height:24px; background:#fff; border:2px solid rgba(255,111,166,0.4); border-radius:6px; cursor:pointer; transition:all .2s; }
+                                    #hcQAModal .checkbox-wrapper label:hover{ border-color:#ff93c1; background:#fff0f6; }
+                                    #hcQAModal .checkbox-wrapper input[type="checkbox"]:checked + label{ background:#ff93c1; border-color:#ff93c1; box-shadow:0 2px 8px rgba(255,83,140,0.18); }
+                                    #hcQAModal .checkbox-wrapper input[type="checkbox"]:checked + label::after{ content:'✓'; color:#fff; font-weight:bold; font-size:16px; }
                                 </style>
                                 <div class="modal-dialog modal-lg modal-dialog-centered">
                                     <div class="modal-content">
@@ -795,7 +795,7 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <p class="qa-intro mb-3">Please answer all questions below. You can proceed regardless of Yes/No answers.</p>
+                                            <p class="qa-intro mb-3">Please check all statements that apply to you. If No you can skip other questions.</p>
                                             ${[
                         ['q1', 'I am in good health', 'Maayo akong paminaw sa akong kalawasan'],
                         ['q2', 'I do not smoke', 'Dili ako gapangarilyo'],
@@ -809,18 +809,14 @@
                         ['q10', 'I have followed all storage instructions', 'Gisunod nako ang tanan mga instruksyon tumong sa pagtipig sa gatas']
                     ].map(([code, en, cebu]) => `
                                                 <div class="question-item">
-                                                    <div class="question-label">${en}</div>
-                                                    <div class="translation">(${cebu})</div>
-                                                    <div class="radio-group mt-2">
-                                                        <div class="radio-option yes">
-                                                            <input type="radio" id="${code}_yes" name="hcqa[${code}]" value="yes">
-                                                            <label for="${code}_yes">Yes</label>
+                                                    <div class="question-label">
+                                                        <div class="checkbox-wrapper">
+                                                            <input type="checkbox" id="${code}" name="hcqa[${code}]" value="yes">
+                                                            <label for="${code}"></label>
                                                         </div>
-                                                        <div class="radio-option no">
-                                                            <input type="radio" id="${code}_no" name="hcqa[${code}]" value="no">
-                                                            <label for="${code}_no">No</label>
-                                                        </div>
+                                                        <span>${en}</span>
                                                     </div>
+                                                    <div class="translation">(${cebu})</div>
                                                 </div>
                                             `).join('')}
                                         </div>
@@ -837,21 +833,17 @@
             qaModal.show();
 
             const continueBtn = qaEl.querySelector('#hcQAContinueBtn');
-            // Fix selector for radios (must match names starting with hcqa[)
-            const radios = Array.from(qaEl.querySelectorAll('input[type="radio"][name^="hcqa["]'));
+            const checkboxes = Array.from(qaEl.querySelectorAll('input[type="checkbox"][name^="hcqa["]'));
 
-            function updateContinueState() {
-                const names = [...new Set(radios.map(r => r.name))];
-                const allAnswered = names.every(n => qaEl.querySelector(`input[name="${n}"]:checked`));
-                if (continueBtn) continueBtn.disabled = !allAnswered;
-            }
+            // Enable continue button immediately since checkboxes are optional
+            if (continueBtn) continueBtn.disabled = false;
 
-            // Auto-scroll to next question when an answer is selected
-            function autoScrollNextQuestion(changedRadio) {
+            // Auto-scroll to next question when a checkbox is checked
+            function autoScrollNextQuestion(changedCheckbox) {
                 try {
                     const body = qaEl.querySelector('.modal-body');
                     if (!body) return;
-                    const current = changedRadio.closest('.question-item');
+                    const current = changedCheckbox.closest('.question-item');
                     if (!current) return;
                     // Find the next question-item (skip whitespace/text nodes)
                     let next = current.nextElementSibling;
@@ -876,21 +868,19 @@
                 }
             }
 
-            radios.forEach(r => {
-                r.addEventListener('change', function (ev) {
-                    updateContinueState();
-                    autoScrollNextQuestion(r);
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', function (ev) {
+                    if (cb.checked) {
+                        autoScrollNextQuestion(cb);
+                    }
                 });
             });
-            updateContinueState();
 
             if (continueBtn) {
                 continueBtn.onclick = function () {
                     // After Q&A -> collect answers and show location review step
-                    const names = [...new Set(radios.map(r => r.name))];
-                    const anyNo = names.some(n => qaEl.querySelector(`input[name="${n}"]:checked`)?.value === 'no');
-
-                    // Map q1..q10 to donation field names and normalize to YES/NO
+                    // Map q1..q10 to donation field names
+                    // Checked = YES, Unchecked = NO
                     const codeToField = {
                         'q1': 'good_health',
                         'q2': 'no_smoking',
@@ -904,12 +894,14 @@
                         'q10': 'followed_storage'
                     };
                     const answers = {};
+                    let anyNo = false;
                     Object.keys(codeToField).forEach(code => {
-                        const sel = qaEl.querySelector(`input[name="hcqa[${code}]"]:checked`);
-                        if (sel) {
-                            const fieldName = codeToField[code];
-                            const value = String(sel.value).toUpperCase() === 'YES' ? 'YES' : 'NO';
+                        const checkbox = qaEl.querySelector(`input[name="hcqa[${code}]"]`);
+                        const fieldName = codeToField[code];
+                        if (checkbox) {
+                            const value = checkbox.checked ? 'YES' : 'NO';
                             answers[fieldName] = value;
+                            if (value === 'NO') anyNo = true;
                             console.log(`Q&A: ${fieldName} = ${value}`);
                         }
                     });
