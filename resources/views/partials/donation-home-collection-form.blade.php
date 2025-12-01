@@ -420,8 +420,13 @@
 
             const tr = el('tr');
 
-            const time = el('input', { type: 'time', name: 'bag_time[]', class: 'form-control form-control-sm', required: true });
-            const date = el('input', { type: 'date', name: 'bag_date[]', class: 'form-control form-control-sm', required: true });
+            // Auto-fill current time
+            const now = new Date();
+            const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+            const currentDate = now.toISOString().slice(0, 10); // YYYY-MM-DD format
+
+            const time = el('input', { type: 'time', name: 'bag_time[]', class: 'form-control form-control-sm', required: true, value: currentTime });
+            const date = el('input', { type: 'date', name: 'bag_date[]', class: 'form-control form-control-sm', required: true, value: currentDate });
 
             const bagsLabel = el('div', { class: 'hc-bag-label fw-bold', text: 'Bag ' + bagNumber });
             const bags = el('input', { type: 'hidden', name: 'bag_number[]', value: String(bagNumber) });
@@ -444,7 +449,32 @@
                 el('option', { value: 'FRZ', text: 'Freezer' })
             ]);
 
-            const temp = el('input', { type: 'number', name: 'bag_temp[]', class: 'form-control form-control-sm', step: '0.1', placeholder: '°C', required: true });
+            // Auto-fill temperature with minus sign
+            const temp = el('input', { type: 'text', name: 'bag_temp[]', class: 'form-control form-control-sm', placeholder: '°C', required: true, value: '-' });
+            
+            // Handle temperature input to ensure minus sign and numeric validation
+            temp.addEventListener('focus', function() {
+                if (temp.value === '' || temp.value === '-') {
+                    temp.value = '-';
+                }
+            });
+            
+            temp.addEventListener('input', function() {
+                let val = temp.value;
+                // Allow only minus sign, digits, and one decimal point
+                val = val.replace(/[^\d.-]/g, '');
+                // Ensure only one minus sign at the start
+                if (val.indexOf('-') > 0) {
+                    val = val.replace(/-/g, '');
+                    val = '-' + val;
+                }
+                // Ensure only one decimal point
+                const parts = val.split('.');
+                if (parts.length > 2) {
+                    val = parts[0] + '.' + parts.slice(1).join('');
+                }
+                temp.value = val;
+            });
 
             const method = el('select', { name: 'bag_method[]', class: 'form-select form-select-sm', required: true });
             const m0 = el('option', { value: '', text: 'Select method' });
@@ -657,6 +687,14 @@
             // Add listeners for expression dates and validate ordering
             const firstExpr = document.getElementById('hc-first-expression');
             const lastExpr = document.getElementById('hc-last-expression');
+
+            // Auto-fill both dates with today's date if empty on init
+            try {
+                const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+                if (firstExpr && !firstExpr.value) firstExpr.value = today;
+                if (lastExpr && !lastExpr.value) lastExpr.value = today;
+            } catch (e) { /* non-fatal */ }
+
             if (firstExpr) firstExpr.addEventListener('change', function () { checkExpressionDates(false); enableSubmitCheck(); });
             if (lastExpr) lastExpr.addEventListener('change', function () { if (!checkExpressionDates(true)) { /* invalid - alert already shown */ } enableSubmitCheck(); });
 
