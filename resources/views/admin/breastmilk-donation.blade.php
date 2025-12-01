@@ -1469,6 +1469,21 @@
                                                             <span class="d-none d-md-inline"> Validate</span>
                                                         </button>
 
+                                                        {{-- Print button for scheduled pickups --}}
+                                                        <button class="btn btn-info btn-sm px-2 print-home-collection"
+                                                            title="Print Collection Form"
+                                                            data-id="{{ $donation->breastmilk_donation_id }}"
+                                                            data-donor="{{ trim(data_get($donation, 'user.first_name', '') . ' ' . data_get($donation, 'user.last_name', '')) }}"
+                                                            data-address="{{ data_get($donation, 'user.address', 'Not provided') }}"
+                                                            data-first-expression="{{ $donation->first_expression_date ? $donation->first_expression_date->format('M d, Y') : '' }}"
+                                                            data-last-expression="{{ $donation->last_expression_date ? $donation->last_expression_date->format('M d, Y') : '' }}"
+                                                            data-bags="{{ $donation->number_of_bags }}"
+                                                            data-bag-details='@json($donation->bag_details, JSON_HEX_APOS | JSON_HEX_QUOT)'
+                                                            data-total="{{ $donation->formatted_total_volume }}">
+                                                            <i class="fas fa-print"></i>
+                                                            <span class="d-none d-md-inline"> Print</span>
+                                                        </button>
+
                                                         {{-- Reschedule button for scheduled pickups --}}
                                                         <button class="btn btn-outline-primary btn-sm px-2 reschedule-pickup"
                                                             title="Reschedule Pickup"
@@ -4534,7 +4549,400 @@
                         e.target.setSelectionRange(newPosition, newPosition);
                     });
                 });
+
+                // Print Home Collection handler
+                document.querySelectorAll('.print-home-collection').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const donationId = this.dataset.id;
+                        const donor = this.dataset.donor;
+                        const address = this.dataset.address;
+                        const firstExpression = this.dataset.firstExpression;
+                        const lastExpression = this.dataset.lastExpression;
+                        const bags = this.dataset.bags;
+                        const bagDetails = JSON.parse(this.dataset.bagDetails || '[]');
+                        const total = this.dataset.total;
+
+                        printHomeCollectionForm(donationId, donor, address, firstExpression, lastExpression, bags, bagDetails, total);
+                    });
+                });
             });
+
+            // Print Home Collection Form function
+            function printHomeCollectionForm(donationId, donor, address, firstExpression, lastExpression, bags, bagDetails, total) {
+                // Fetch lifestyle checklist data from screening endpoint
+                fetch(`/admin/donations/${donationId}/screening`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Convert questions array to lifestyle object format
+                        const lifestyle = {};
+                        if (data.questions && Array.isArray(data.questions)) {
+                            data.questions.forEach(q => {
+                                lifestyle[q.key] = q.answer;
+                            });
+                        }
+                        generatePrintWindow(donor, address, firstExpression, lastExpression, bagDetails, lifestyle);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching lifestyle data:', error);
+                        generatePrintWindow(donor, address, firstExpression, lastExpression, bagDetails, {});
+                    });
+            }
+
+            function generatePrintWindow(donor, address, firstExpression, lastExpression, bagDetails, lifestyle) {
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                
+                // Helper function to format time from 24-hour to 12-hour format
+                function formatTime(timeStr) {
+                    if (!timeStr || timeStr === '-') return '-';
+                    try {
+                        const [hours, minutes] = timeStr.split(':');
+                        const hour = parseInt(hours);
+                        const min = minutes || '00';
+                        const ampm = hour >= 12 ? 'PM' : 'AM';
+                        const hour12 = hour % 12 || 12;
+                        return `${hour12}:${min} ${ampm}`;
+                    } catch (e) {
+                        return timeStr;
+                    }
+                }
+
+                // Helper function to format date from YYYY-MM-DD to readable format
+                function formatDate(dateStr) {
+                    if (!dateStr || dateStr === '-') return '-';
+                    try {
+                        const date = new Date(dateStr + 'T00:00:00');
+                        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                        return date.toLocaleDateString('en-US', options);
+                    } catch (e) {
+                        return dateStr;
+                    }
+                }
+                
+                // Lifestyle questions mapping
+                const lifestyleQuestions = {
+                    'good_health': 'I am in good health',
+                    'no_smoking': 'I do not smoke',
+                    'no_medication': 'I am not taking medication or herbal supplements',
+                    'no_alcohol': 'I am not consuming alcohol',
+                    'no_fever': 'I have not had a fever',
+                    'no_cough_colds': 'I have not had cough or colds',
+                    'no_breast_infection': 'I have no breast infections',
+                    'followed_hygiene': 'I have followed all hygiene instructions',
+                    'followed_labeling': 'I have followed all labeling instructions',
+                    'followed_storage': 'I have followed all storage instructions'
+                };
+
+                // Generate lifestyle rows
+                let lifestyleRows = '';
+                Object.keys(lifestyleQuestions).forEach(key => {
+                    const question = lifestyleQuestions[key];
+                    const rawAnswer = lifestyle[key] || '';
+                    let answer = '-';
+                    
+                    // Handle different answer formats: "Yes"/"No" or "YES"/"NO"
+                    const answerUpper = String(rawAnswer).toUpperCase();
+                    if (answerUpper === 'YES' || answerUpper === 'Y' || rawAnswer === '1' || rawAnswer === 1 || rawAnswer === true) {
+                        answer = 'Yes';
+                    } else if (answerUpper === 'NO' || answerUpper === 'N' || rawAnswer === '0' || rawAnswer === 0 || rawAnswer === false) {
+                        answer = 'No';
+                    } else if (rawAnswer && rawAnswer !== 'N/A') {
+                        answer = rawAnswer; // Use whatever was returned
+                    }
+                    
+                    lifestyleRows += `
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #000;">${question}</td>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center; font-weight: 600;">${answer}</td>
+                        </tr>
+                    `;
+                });
+
+                // Generate bag details rows
+                let bagRows = '';
+                bagDetails.forEach((bag, index) => {
+                    // Handle both old and new field names for compatibility
+                    const storage = bag.storage_location || bag.storage || '';
+                    const storageLabel = storage === 'REF' ? 'Refrigerator' : (storage === 'FRZ' ? 'Freezer' : (storage || '-'));
+                    const temp = bag.temperature || bag.temp || '-';
+                    const method = bag.collection_method || bag.method || '-';
+                    const formattedTime = formatTime(bag.time);
+                    const formattedDate = formatDate(bag.date);
+                    bagRows += `
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center;">${bag.bag_number || (index + 1)}</td>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center;">${formattedTime}</td>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center;">${formattedDate}</td>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center;">${bag.volume || '-'}</td>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center;">${storageLabel}</td>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center;">${temp}</td>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center;">${method}</td>
+                        </tr>
+                    `;
+                });
+
+                // Generate confirmation table rows (copy bag details but leave volume and temp blank)
+                let confirmationRows = '';
+                bagDetails.forEach((bag, index) => {
+                    // Handle both old and new field names for compatibility
+                    const storage = bag.storage_location || bag.storage || '';
+                    const storageLabel = storage === 'REF' ? 'Refrigerator' : (storage === 'FRZ' ? 'Freezer' : (storage || '-'));
+                    const method = bag.collection_method || bag.method || '-';
+                    const formattedTime = formatTime(bag.time);
+                    const formattedDate = formatDate(bag.date);
+                    confirmationRows += `
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #000; text-align: center; font-weight: 600;">${bag.bag_number || (index + 1)}</td>
+                            <td style="padding: 12px; border: 1px solid #000; text-align: center;">${formattedTime}</td>
+                            <td style="padding: 12px; border: 1px solid #000; text-align: center;">${formattedDate}</td>
+                            <td style="padding: 12px; border: 1px solid #000; text-align: center; background: #fffacd;"></td>
+                            <td style="padding: 12px; border: 1px solid #000; text-align: center;">${storageLabel}</td>
+                            <td style="padding: 12px; border: 1px solid #000; text-align: center; background: #fffacd;"></td>
+                            <td style="padding: 12px; border: 1px solid #000; text-align: center;">${method}</td>
+                        </tr>
+                    `;
+                });
+
+                const htmlContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Home Collection Form - ${donor}</title>
+                        <style>
+                            @page {
+                                size: A4;
+                                margin: 0.5in;
+                                @bottom-center {
+                                    content: "Page " counter(page) " of " counter(pages) " | Development of Web App for Breastmilk Request and Donation";
+                                    font-size: 9px;
+                                    color: #666;
+                                }
+                            }
+                            body {
+                                font-family: Arial, sans-serif;
+                                font-size: 11px;
+                                line-height: 1.4;
+                                color: #000;
+                                margin: 0;
+                                padding: 20px;
+                            }
+                            .header {
+                                position: relative;
+                                text-align: center;
+                                margin-bottom: 30px;
+                                padding-bottom: 15px;
+                                border-bottom: 3px solid #000;
+                                min-height: 80px;
+                            }
+                            .header-logo-left {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                height: 60px;
+                                width: auto;
+                            }
+                            .header-logo-right {
+                                position: absolute;
+                                right: 0;
+                                top: 0;
+                                height: 60px;
+                                width: auto;
+                            }
+                            .header-content {
+                                display: inline-block;
+                                padding: 0 80px;
+                            }
+                            .header h1 {
+                                margin: 0 0 5px 0;
+                                font-size: 18px;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                            }
+                            .header p {
+                                margin: 3px 0;
+                                font-size: 10px;
+                            }
+                            .section {
+                                margin-bottom: 25px;
+                                page-break-inside: avoid;
+                            }
+                            .section-title {
+                                font-size: 13px;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                                margin-bottom: 12px;
+                                padding: 8px 10px;
+                                background: #f0f0f0;
+                                border-left: 4px solid #000;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-bottom: 15px;
+                            }
+                            th {
+                                background: #e0e0e0;
+                                font-weight: bold;
+                                padding: 10px 8px;
+                                border: 1px solid #000;
+                                text-align: center;
+                                font-size: 10px;
+                            }
+                            td {
+                                padding: 8px;
+                                border: 1px solid #000;
+                                font-size: 10px;
+                            }
+                            .info-table td:first-child {
+                                font-weight: 600;
+                                width: 180px;
+                                background: #f9f9f9;
+                            }
+                            .confirmation-section {
+                                margin-top: 30px;
+                                padding-top: 20px;
+                                border-top: 2px dashed #666;
+                            }
+                            .note {
+                                font-style: italic;
+                                color: #555;
+                                margin-top: 8px;
+                                font-size: 10px;
+                            }
+                            @media print {
+                                body {
+                                    padding: 0;
+                                }
+                                .section {
+                                    page-break-inside: avoid;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <img src="/jrbgh-logo.png" alt="JRBGH Logo" class="header-logo-left">
+                            <img src="/hmblsc-logo.png" alt="HMBLSC Logo" class="header-logo-right">
+                            <div class="header-content">
+                                <h1>Home Collection Form</h1>
+                                <p>Cagayan de Oro City - Human Milk Bank & Lactation Support Center</p>
+                                <p>J.V. Serina St. Carmen, Cagayan de Oro, Philippines</p>
+                                <p style="font-size: 9px; color: #666; margin-top: 8px;">Generated on: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                            </div>
+                        </div>
+
+                        <!-- Donor Information -->
+                        <div class="section">
+                            <div class="section-title">Donor Information</div>
+                            <table class="info-table">
+                                <tr>
+                                    <td>Donor Name</td>
+                                    <td>${donor}</td>
+                                </tr>
+                                <tr>
+                                    <td>Address</td>
+                                    <td>${address}</td>
+                                </tr>
+                                <tr>
+                                    <td>First Expression Date</td>
+                                    <td>${firstExpression || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Last Expression Date</td>
+                                    <td>${lastExpression || '-'}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Bag Details Provided by Donor -->
+                        <div class="section">
+                            <div class="section-title">Bag Details (Provided by Donor)</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Bag #</th>
+                                        <th>Time</th>
+                                        <th>Date</th>
+                                        <th>Volume (ml)</th>
+                                        <th>Storage</th>
+                                        <th>Temp (°C)</th>
+                                        <th>Collection Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${bagRows}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Lifestyle Checklist -->
+                        <div class="section">
+                            <div class="section-title">Lifestyle Checklist</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; width: 75%;">Question</th>
+                                        <th style="width: 25%;">Answer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${lifestyleRows}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Admin Confirmation Section -->
+                        <div class="confirmation-section">
+                            <div class="section-title">Admin Confirmation (To be filled during collection)</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Bag #</th>
+                                        <th>Time</th>
+                                        <th>Date</th>
+                                        <th style="background: #fffacd;">Volume (ml)</th>
+                                        <th>Storage</th>
+                                        <th style="background: #fffacd;">Temp (°C)</th>
+                                        <th>Collection Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${confirmationRows}
+                                </tbody>
+                            </table>
+                            <p class="note">Note: Admin should verify and record the actual volume and temperature of each bag during collection.</p>
+                            
+                            <div style="margin-top: 40px;">
+                                <table style="border: none;">
+                                    <tr>
+                                        <td style="border: none; width: 50%; padding: 20px 10px;">
+                                            <div style="border-top: 1px solid #000; padding-top: 5px; text-align: center;">
+                                                <strong>Donor Signature</strong><br>
+                                                <small>Date: _________________</small>
+                                            </div>
+                                        </td>
+                                        <td style="border: none; width: 50%; padding: 20px 10px;">
+                                            <div style="border-top: 1px solid #000; padding-top: 5px; text-align: center;">
+                                                <strong>Admin Signature</strong><br>
+                                                <small>Date: _________________</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+                printWindow.focus();
+                
+                // Auto-print after content loads
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            }
 
             // Edit UI removed per request
         </script>
