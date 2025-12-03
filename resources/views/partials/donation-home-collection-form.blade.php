@@ -163,6 +163,58 @@
     #home-collection-submit-btn {
         background: linear-gradient(135deg, #28a745, #20c046);
         color: #fff !important;
+    }
+
+    /* Custom Tooltip Styling */
+    .tooltip-icon {
+        margin-left: 8px;
+        width: 18px;
+        height: 18px;
+        background: linear-gradient(135deg, #ff7bb0, #ff5aa8);
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        cursor: help;
+        flex-shrink: 0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .tooltip-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 3px 8px rgba(255, 90, 168, 0.4);
+    }
+
+    .tooltip.custom-tooltip .tooltip-inner {
+        background: linear-gradient(135deg, #ff7bb0, #ff5aa8);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        max-width: 300px;
+        text-align: left;
+        box-shadow: 0 6px 16px rgba(255, 90, 168, 0.35);
+        line-height: 1.5;
+    }
+
+    .tooltip.custom-tooltip .tooltip-arrow::before {
+        border-top-color: #ff7bb0;
+    }
+
+    .tooltip.custom-tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+        border-bottom-color: #ff7bb0;
+    }
+
+    .tooltip.custom-tooltip.bs-tooltip-start .tooltip-arrow::before {
+        border-left-color: #ff7bb0;
+    }
+
+    .tooltip.custom-tooltip.bs-tooltip-end .tooltip-arrow::before {
+        border-right-color: #ff7bb0;
+    }
         border: none;
         border-radius: 24px;
         padding: 0.5rem 1.5rem;
@@ -304,12 +356,26 @@
     <!-- Date of expression fields -->
     <div class="row g-3 hc-date-row">
         <div class="col-md-6">
-            <label class="form-label">Date of first expression:</label>
+            <label class="form-label">
+                Date of first expression:
+                <span class="tooltip-icon" 
+                    data-bs-toggle="tooltip" 
+                    data-bs-placement="top" 
+                    data-bs-custom-class="custom-tooltip"
+                    title="Enter the date when you first expressed milk for this donation batch. This helps us track the freshness and storage requirements.">i</span>
+            </label>
             <input type="date" class="form-control" name="first_expression_date" id="hc-first-expression"
                 placeholder="dd/mm/yyyy" required>
         </div>
         <div class="col-md-6">
-            <label class="form-label">Date of last expression:</label>
+            <label class="form-label">
+                Date of last expression:
+                <span class="tooltip-icon" 
+                    data-bs-toggle="tooltip" 
+                    data-bs-placement="top" 
+                    data-bs-custom-class="custom-tooltip"
+                    title="Enter the date of your most recent milk expression for this donation batch. Must be on or after the first expression date.">i</span>
+            </label>
             <input type="date" class="form-control" name="last_expression_date" id="hc-last-expression"
                 placeholder="dd/mm/yyyy" required>
         </div>
@@ -694,6 +760,14 @@
                 if (firstExpr && !firstExpr.value) firstExpr.value = today;
                 if (lastExpr && !lastExpr.value) lastExpr.value = today;
             } catch (e) { /* non-fatal */ }
+
+            // Initialize Bootstrap tooltips for all tooltip icons
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
 
             if (firstExpr) firstExpr.addEventListener('change', function () { checkExpressionDates(false); enableSubmitCheck(); });
             if (lastExpr) lastExpr.addEventListener('change', function () { if (!checkExpressionDates(true)) { /* invalid - alert already shown */ } enableSubmitCheck(); });
