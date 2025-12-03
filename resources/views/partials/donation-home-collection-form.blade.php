@@ -178,19 +178,17 @@
         justify-content: center;
         font-size: 12px;
         font-weight: bold;
-        cursor: help;
+        cursor: pointer;
         flex-shrink: 0;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
-<<<<<<< HEAD
         user-select: none;
         -webkit-user-select: none;
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
-=======
->>>>>>> parent of 6849039 (Update donation-home-collection-form.blade.php)
     }
 
-    .tooltip-icon:hover {
+    .tooltip-icon:hover,
+    .tooltip-icon:active {
         transform: scale(1.1);
         box-shadow: 0 3px 8px rgba(255, 90, 168, 0.4);
     }
@@ -789,20 +787,10 @@
                 if (lastExpr && !lastExpr.value) lastExpr.value = today;
             } catch (e) { /* non-fatal */ }
 
-<<<<<<< HEAD
             // Initialize tooltips - now using static text below fields instead
             // Tooltip code removed as we're using helper text below inputs
             const triggerEls = document.querySelectorAll('.tooltip-icon[data-bs-toggle="tooltip"]');
             console.log('Tooltip icons found (now unused):', triggerEls.length);
-=======
-            // Initialize Bootstrap tooltips for all tooltip icons
-            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
-                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
-                });
-            }
->>>>>>> parent of 6849039 (Update donation-home-collection-form.blade.php)
 
             if (firstExpr) firstExpr.addEventListener('change', function () { checkExpressionDates(false); enableSubmitCheck(); });
             if (lastExpr) lastExpr.addEventListener('change', function () { if (!checkExpressionDates(true)) { /* invalid - alert already shown */ } enableSubmitCheck(); });
