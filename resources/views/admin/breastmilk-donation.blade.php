@@ -5134,29 +5134,132 @@
             function downloadBagLabel() {
                 const content = document.getElementById('bagLabelContent');
                 
-                // Load html2canvas if not already loaded
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Generating Image...',
+                    text: 'Please wait while we prepare your bag label.',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Ensure html2canvas is loaded
                 if (typeof html2canvas === 'undefined') {
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.crossOrigin = 'anonymous';
+                    script.onerror = () => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed to Load',
+                            text: 'Could not load the image capture library. Please check your internet connection.',
+                            confirmButtonColor: '#d33'
+                        });
+                    };
                     script.onload = () => {
-                        captureAndDownload(content);
+                        setTimeout(() => captureAndDownload(content), 100);
                     };
                     document.head.appendChild(script);
                 } else {
-                    captureAndDownload(content);
+                    setTimeout(() => captureAndDownload(content), 100);
                 }
             }
 
             function captureAndDownload(element) {
+                console.log('Starting capture...');
+                
                 html2canvas(element, {
                     backgroundColor: '#ffffff',
-                    scale: 2
+                    scale: 2,
+                    logging: true,
+                    useCORS: true,
+                    allowTaint: false,
+                    width: element.offsetWidth,
+                    height: element.offsetHeight
                 }).then(canvas => {
-                    const link = document.createElement('a');
-                    const bagNumber = document.querySelector('#bagLabelModal .modal-title').textContent.match(/\d+/)[0];
-                    link.download = `bag-label-${bagNumber}-${Date.now()}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    console.log('Canvas created successfully');
+                    Swal.close();
+                    
+                    // Get bag number for filename
+                    let bagNumber = '1';
+                    try {
+                        const titleText = document.querySelector('#bagLabelModal .modal-title').textContent;
+                        const match = titleText.match(/\d+/);
+                        if (match) bagNumber = match[0];
+                    } catch (e) {
+                        console.warn('Could not extract bag number');
+                    }
+                    
+                    const timestamp = new Date().toISOString().slice(0, 10);
+                    const filename = `bag-label-${bagNumber}-${timestamp}.png`;
+                    
+                    // Try direct download
+                    try {
+                        const dataUrl = canvas.toDataURL('image/png');
+                        console.log('DataURL created, length:', dataUrl.length);
+                        
+                        // Create and trigger download
+                        const link = document.createElement('a');
+                        link.href = dataUrl;
+                        link.download = filename;
+                        
+                        // Important: Append to body before clicking
+                        document.body.appendChild(link);
+                        
+                        // Force click event
+                        link.click();
+                        
+                        console.log('Download triggered');
+                        
+                        // Cleanup after delay
+                        setTimeout(() => {
+                            document.body.removeChild(link);
+                        }, 100);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Downloaded!',
+                            html: `Bag label saved as:<br><strong>${filename}</strong>`,
+                            timer: 3000,
+                            showConfirmButton: true
+                        });
+                    } catch (error) {
+                        console.error('Download error:', error);
+                        
+                        // Fallback: Show image in new window
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Manual Save Required',
+                            html: 'Right-click the image in the new window and select "Save Image As..."',
+                            confirmButtonText: 'Open Image',
+                            showCancelButton: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const dataUrl = canvas.toDataURL('image/png');
+                                const newWindow = window.open();
+                                newWindow.document.write(`
+                                    <html>
+                                        <head><title>Bag Label ${bagNumber}</title></head>
+                                        <body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f0f0;">
+                                            <img src="${dataUrl}" alt="Bag Label" style="max-width:100%;height:auto;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                                        </body>
+                                    </html>
+                                `);
+                                newWindow.document.close();
+                            }
+                        });
+                    }
+                }).catch(error => {
+                    console.error('Capture error:', error);
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Capture Failed',
+                        text: 'Failed to generate the image. Error: ' + error.message,
+                        confirmButtonColor: '#d33'
+                    });
                 });
             }
         </script>
