@@ -178,12 +178,15 @@
         justify-content: center;
         font-size: 12px;
         font-weight: bold;
-        cursor: help;
+        cursor: pointer;
         flex-shrink: 0;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
     }
 
-    .tooltip-icon:hover {
+    .tooltip-icon:hover,
+    .tooltip-icon:active {
         transform: scale(1.1);
         box-shadow: 0 3px 8px rgba(255, 90, 168, 0.4);
     }
@@ -765,7 +768,44 @@
             if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
                 const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
                 tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                    // Enable both hover and click for mobile devices
+                    const tooltip = new bootstrap.Tooltip(tooltipTriggerEl, {
+                        trigger: 'hover focus click',
+                        html: true
+                    });
+                    
+                    // For touch devices, toggle tooltip on click
+                    tooltipTriggerEl.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Hide all other tooltips first
+                        tooltipTriggerList.forEach(function(otherEl) {
+                            if (otherEl !== tooltipTriggerEl) {
+                                const otherTooltip = bootstrap.Tooltip.getInstance(otherEl);
+                                if (otherTooltip) {
+                                    otherTooltip.hide();
+                                }
+                            }
+                        });
+                        
+                        // Toggle current tooltip
+                        tooltip.toggle();
+                    });
+                    
+                    return tooltip;
+                });
+                
+                // Close tooltips when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('[data-bs-toggle="tooltip"]')) {
+                        tooltipTriggerList.forEach(function(tooltipEl) {
+                            const tooltip = bootstrap.Tooltip.getInstance(tooltipEl);
+                            if (tooltip) {
+                                tooltip.hide();
+                            }
+                        });
+                    }
                 });
             }
 
