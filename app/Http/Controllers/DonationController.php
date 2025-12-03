@@ -822,4 +822,30 @@ class DonationController extends Controller
             return redirect()->route('user.pending')->with('error', $e->getMessage());
         }
     }
+
+    /**
+     * Show bag label page (public access for QR code scanning)
+     */
+    public function showBagLabel($donation_id, $bag_number)
+    {
+        $donorName = request('donor', 'N/A');
+        $date = request('date', '');
+        $time = request('time', 'N/A');
+        $volume = request('volume', '0');
+        $storage = request('storage', 'N/A');
+        $temp = request('temp', 'N/A');
+        $method = request('method', 'N/A');
+
+        return view('bag-label', [
+            'donationId' => $donation_id,
+            'bagNumber' => $bag_number,
+            'donorName' => $donorName,
+            'date' => $date,
+            'time' => $time,
+            'volume' => $volume,
+            'storage' => $storage,
+            'temp' => $temp,
+            'method' => $method
+        ]);
+    }
 }

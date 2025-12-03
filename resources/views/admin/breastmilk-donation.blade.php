@@ -2207,6 +2207,9 @@
                                                         <th
                                                             style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center;">
                                                             Method</th>
+                                                        <th
+                                                            style="background: #f8f9fa; font-weight: 600; padding: 12px; text-align: center; width: 120px;">
+                                                            Label</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="home-bag-details-body">
@@ -3318,6 +3321,15 @@
                                                                                                                                                         <td style="padding: 8px;">
                                                                                                                                                             <input type="text" name="bag_method[]" class="form-control" value="${bag.collection_method || ''}" placeholder="method" style="border: 1px solid #dee2e6; padding: 8px;">
                                                                                                                                                         </td>
+                                                                                                                                                        <td style="padding: 8px; text-align: center;">
+                                                                                                                                                            <button type="button" class="btn btn-sm btn-outline-primary generate-label-btn" 
+                                                                                                                                                                data-bag-number="${bagNum}"
+                                                                                                                                                                data-donor-name="${donationData?.donor_name || donorName || 'N/A'}"
+                                                                                                                                                                data-donation-id="${currentDonationId}"
+                                                                                                                                                                onclick="generateBagLabel(this, '${time}', '${date}', '${volume}', '${storageLabel}', '${temp}', '${method}')">
+                                                                                                                                                                <i class="fas fa-tag me-1"></i> Label
+                                                                                                                                                            </button>
+                                                                                                                                                        </td>
                                                                                                                                                     </tr>`;
                                     tbody.append(row);
                                     tbody.closest('.table-responsive').show();
@@ -3432,7 +3444,7 @@
 
                                 $('#home-form-error').hide().text('');
                             } else {
-                                $('#home-bag-details-body').append('<tr><td colspan="7" class="text-center text-muted">No bag details available</td></tr>');
+                                $('#home-bag-details-body').append('<tr><td colspan="8" class="text-center text-muted">No bag details available</td></tr>');
                                 $('#home-total').text(parseFloat(totalVolume || 0).toFixed(2) + ' ml');
                                 $('#home-form-error').hide().text('');
                             }
@@ -4945,5 +4957,207 @@
             }
 
             // Edit UI removed per request
+
+            // Generate Bag Label Function
+            function generateBagLabel(button, time, date, volume, storage, temp, method) {
+                const bagNumber = $(button).data('bag-number');
+                const donorName = $(button).data('donor-name');
+                const donationId = $(button).data('donation-id');
+                
+                // Get current values from the row
+                const row = $(button).closest('tr');
+                const currentVolume = row.find('input[name="bag_volumes[]"]').val() || volume;
+                const currentStorage = row.find('select[name="bag_storage[]"]').val() || storage;
+                const currentTemp = row.find('input[name="bag_temp[]"]').val() || temp;
+                const currentMethod = row.find('input[name="bag_method[]"]').val() || method;
+                const currentTime = row.find('input[name="bag_time[]"]').val() || time;
+                const currentDate = row.find('input[name="bag_date[]"]').val() || date;
+                
+                // Show bag label modal
+                showBagLabelModal(bagNumber, donorName, donationId, currentTime, currentDate, currentVolume, currentStorage, currentTemp, currentMethod);
+            }
+
+            function showBagLabelModal(bagNumber, donorName, donationId, time, date, volume, storage, temp, method) {
+                // Create modal if it doesn't exist
+                let modal = document.getElementById('bagLabelModal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'bagLabelModal';
+                    modal.className = 'modal fade';
+                    modal.innerHTML = `
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title"><i class="fas fa-tag me-2"></i>Bag Label</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="bagLabelContent" style="border: 2px solid #000; padding: 20px; background: white; font-family: Arial, sans-serif;">
+                                        <!-- Label content will be inserted here -->
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" onclick="printBagLabel()">
+                                        <i class="fas fa-print me-1"></i> Print Label
+                                    </button>
+                                    <button type="button" class="btn btn-success" onclick="downloadBagLabel()">
+                                        <i class="fas fa-download me-1"></i> Save as Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                }
+
+                // Format date for display
+                const formatDate = (dateStr) => {
+                    if (!dateStr) return '';
+                    try {
+                        const d = new Date(dateStr);
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    } catch {
+                        return dateStr;
+                    }
+                };
+
+                // Generate QR code data - URL to view bag details
+                const bagDetailsUrl = `${window.location.origin}/bag-label/${donationId}/${bagNumber}?donor=${encodeURIComponent(donorName)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&volume=${encodeURIComponent(volume)}&storage=${encodeURIComponent(storage)}&temp=${encodeURIComponent(temp)}&method=${encodeURIComponent(method)}`;
+                const qrData = bagDetailsUrl;
+
+                // Build label content
+                const labelContent = `
+                    <div style="text-align: center;">
+                        <div style="background: linear-gradient(135deg, #ff93c1, #ff7fb3); color: white; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 8px 8px 0 0;">
+                            <h3 style="margin: 0; font-size: 24px; font-weight: bold;">BAG #${bagNumber}</h3>
+                            <p style="margin: 5px 0 0 0; font-size: 14px;">Human Milk Bank</p>
+                        </div>
+                        
+                        <div id="qrcode-${bagNumber}" style="margin: 20px auto; display: flex; justify-content: center;"></div>
+                        
+                        <table style="width: 100%; margin-top: 20px; border-collapse: collapse; text-align: left;">
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">Donor:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${donorName}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">Date:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formatDate(date)}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">Time:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${time}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">Volume:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-size: 18px; color: #0d6efd; font-weight: bold;">${volume} ml</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">Storage:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${storage}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">Temp:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${temp}°C</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; font-weight: bold;">Method:</td>
+                                <td style="padding: 8px;">${method}</td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 11px; color: #666;">
+                            <strong>Donation ID:</strong> ${donationId}<br>
+                            <strong>Generated:</strong> ${new Date().toLocaleString()}
+                        </div>
+                    </div>
+                `;
+
+                // Insert content
+                document.getElementById('bagLabelContent').innerHTML = labelContent;
+
+                // Load QR code library if not already loaded
+                if (typeof QRCode === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+                    script.onload = () => {
+                        new QRCode(document.getElementById(`qrcode-${bagNumber}`), {
+                            text: qrData,
+                            width: 128,
+                            height: 128
+                        });
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    // Clear previous QR code
+                    document.getElementById(`qrcode-${bagNumber}`).innerHTML = '';
+                    new QRCode(document.getElementById(`qrcode-${bagNumber}`), {
+                        text: qrData,
+                        width: 128,
+                        height: 128
+                    });
+                }
+
+                // Show modal
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+            }
+
+            function printBagLabel() {
+                const content = document.getElementById('bagLabelContent');
+                const printWindow = window.open('', '', 'width=600,height=800');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Bag Label</title>
+                        <style>
+                            body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+                            @media print {
+                                body { margin: 0; padding: 0; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${content.outerHTML}
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(() => {
+                    printWindow.print();
+                }, 250);
+            }
+
+            function downloadBagLabel() {
+                const content = document.getElementById('bagLabelContent');
+                
+                // Load html2canvas if not already loaded
+                if (typeof html2canvas === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = () => {
+                        captureAndDownload(content);
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    captureAndDownload(content);
+                }
+            }
+
+            function captureAndDownload(element) {
+                html2canvas(element, {
+                    backgroundColor: '#ffffff',
+                    scale: 2
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    const bagNumber = document.querySelector('#bagLabelModal .modal-title').textContent.match(/\d+/)[0];
+                    link.download = `bag-label-${bagNumber}-${Date.now()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            }
         </script>
 @endsection

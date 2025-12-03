@@ -22,6 +22,9 @@ Route::get('/user-register-infant', [UserRegisterController::class, 'user_regist
 Route::post('/user-register-infant/store', [UserRegisterController::class, 'store_infant'])->name('user.store.infant');
 Route::post('/user-register-infant/save-temp', [UserRegisterController::class, 'save_temp_infant'])->name('user.save.temp.infant');
 
+// Public route for bag label QR code
+Route::get('/bag-label/{donation_id}/{bag_number}', [DonationController::class, 'showBagLabel'])->name('bag.label');
+
 Route::get('/', [LoginController::class, 'login_page'])->name('login'); // default root → login form
 Route::get('/login', [LoginController::class, 'login_page'])->name('login.page'); // alias
 Route::post('/login', [LoginController::class, 'handle_login'])->name('login.submit'); // process login

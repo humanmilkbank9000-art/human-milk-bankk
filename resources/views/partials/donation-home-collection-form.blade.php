@@ -307,11 +307,13 @@
             <label class="form-label">Date of first expression:</label>
             <input type="date" class="form-control" name="first_expression_date" id="hc-first-expression"
                 placeholder="dd/mm/yyyy" required>
+            <small class="text-muted">The date when you first expressed milk for this donation batch</small>
         </div>
         <div class="col-md-6">
             <label class="form-label">Date of last expression:</label>
             <input type="date" class="form-control" name="last_expression_date" id="hc-last-expression"
                 placeholder="dd/mm/yyyy" required>
+            <small class="text-muted">The date when you last expressed milk for this donation batch</small>
         </div>
     </div>
 
@@ -445,7 +447,7 @@
             const storage = el('select', { name: 'bag_storage[]', class: 'form-select form-select-sm', required: true }, [
                 el('option', { value: '', text: 'Select' }),
                 // Keep underlying values for backend compatibility but present friendly labels to users
-                el('option', { value: 'REF', text: 'Refrigerator' }),
+                el('option', { value: 'REF', text: 'Refrigerator', selected: true }),
                 el('option', { value: 'FRZ', text: 'Freezer' })
             ]);
 

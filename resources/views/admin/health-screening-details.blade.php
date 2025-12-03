@@ -246,33 +246,16 @@
         }
 
         .nav-tabs {
-            border-bottom: 2px solid #e5e7eb;
-            margin-bottom: 1rem;
-        }
-
-        .nav-tabs .nav-link {
-            color: #6b7280;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .nav-tabs .nav-link:hover {
-            color: #e83e8c;
-            border-bottom-color: #ffd4e3;
-        }
-
-        .nav-tabs .nav-link.active {
-            color: #e83e8c;
-            background: transparent;
-            border-bottom-color: #e83e8c;
+            display: none;
         }
 
         .tab-content {
             padding-top: 0.25rem;
+        }
+
+        .tab-pane {
+            display: block !important;
+            opacity: 1 !important;
         }
 
         .btn-print {
@@ -734,169 +717,102 @@
             </button>
         </div>
 
-        {{-- Tab Navigation --}}
-        <ul class="nav nav-tabs mb-4" id="screeningTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="user-tab" data-bs-toggle="tab" 
-                    data-bs-target="#user" type="button" role="tab" 
-                    aria-controls="user" aria-selected="true">
-                    <i class="bi bi-person-fill me-1"></i> User Information
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="infant-tab" data-bs-toggle="tab" 
-                    data-bs-target="#infant" type="button" role="tab" 
-                    aria-controls="infant" aria-selected="false">
-                    <i class="bi bi-heart-fill me-1"></i> Infant Information
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="answers-tab" data-bs-toggle="tab" 
-                    data-bs-target="#answers" type="button" role="tab" 
-                    aria-controls="answers" aria-selected="false">
-                    <i class="bi bi-clipboard-check-fill me-1"></i> Screening Answers
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="status-tab" data-bs-toggle="tab" 
-                    data-bs-target="#status" type="button" role="tab" 
-                    aria-controls="status" aria-selected="false">
-                    <i class="bi bi-info-circle-fill me-1"></i> Submission Status
-                </button>
-            </li>
-        </ul>
-
-        {{-- Tab Content --}}
-        <div class="tab-content" id="screeningTabContent">
-            {{-- User Information Tab --}}
-            <div class="tab-pane fade show active" id="user" role="tabpanel" aria-labelledby="user-tab">
-                <div class="detail-card">
-            <div class="detail-card-header">
-                <i class="bi bi-person-fill"></i>
-                <span>User Information</span>
-            </div>
-            <div class="detail-card-body">
-                @if($screening->user)
-                    <div class="row">
-                        <div class="col-md-6">
+        {{-- User and Infant Information Side by Side --}}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="detail-card" style="height: 100%;">
+                    <div class="detail-card-header">
+                        <i class="bi bi-person-fill"></i>
+                        <span>User Information</span>
+                    </div>
+                    <div class="detail-card-body">
+                        @if($screening->user)
                             <div class="info-row">
                                 <span class="info-label">Name:</span>
                                 <span class="info-value">{{ $screening->user->first_name }} {{ $screening->user->last_name }}</span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Contact Number:</span>
                                 <span class="info-value">{{ $screening->user->contact_number }}</span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Date of Birth:</span>
                                 <span class="info-value">
                                     {{ $screening->user->date_of_birth ? \Carbon\Carbon::parse($screening->user->date_of_birth)->format('M d, Y') : '-' }}
                                 </span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Age:</span>
                                 <span class="info-value">{{ $screening->user->age }}</span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Sex:</span>
                                 <span class="info-value">{{ ucfirst($screening->user->sex) }}</span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Civil Status:</span>
                                 <span class="info-value">{{ ucfirst($screening->civil_status ?? 'N/A') }}</span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Occupation:</span>
                                 <span class="info-value">{{ $screening->occupation ?? 'N/A' }}</span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Type of Donor:</span>
                                 <span class="info-value">{{ ucwords(str_replace('_', ' ', $screening->type_of_donor ?? 'N/A')) }}</span>
                             </div>
-                        </div>
-                        <div class="col-12">
                             <div class="info-row">
                                 <span class="info-label">Address:</span>
                                 <span class="info-value">{{ $screening->user->address }}</span>
                             </div>
-                        </div>
+                        @else
+                            <p class="text-muted">No user data found.</p>
+                        @endif
                     </div>
-                @else
-                    <p class="text-muted">No user data found.</p>
-                @endif
-            </div>
-        </div>
+                </div>
             </div>
 
-            {{-- Infant Information Tab --}}
-            <div class="tab-pane fade" id="infant" role="tabpanel" aria-labelledby="infant-tab">
-                <div class="detail-card">
-            <div class="detail-card-header">
-                <i class="bi bi-heart-fill"></i>
-                <span>Infant Information</span>
-            </div>
-            <div class="detail-card-body">
-                @if($screening->infant)
-                    <div class="row">
-                        <div class="col-md-6">
+            <div class="col-md-6">
+                <div class="detail-card" style="height: 100%;">
+                    <div class="detail-card-header">
+                        <i class="bi bi-heart-fill"></i>
+                        <span>Infant Information</span>
+                    </div>
+                    <div class="detail-card-body">
+                        @if($screening->infant)
                             <div class="info-row">
                                 <span class="info-label">Name:</span>
                                 <span class="info-value">
                                     {{ $screening->infant->first_name }} {{ $screening->infant->last_name }}{{ $screening->infant->suffix ? ' ' . $screening->infant->suffix : '' }}
                                 </span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Sex:</span>
                                 <span class="info-value">{{ ucfirst($screening->infant->sex) }}</span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Date of Birth:</span>
                                 <span class="info-value">
                                     {{ $screening->infant->date_of_birth ? \Carbon\Carbon::parse($screening->infant->date_of_birth)->format('M d, Y') : '-' }}
                                 </span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Age:</span>
                                 <span class="info-value">{{ $screening->infant->getFormattedAge() }}</span>
                             </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="info-row">
                                 <span class="info-label">Birth Weight:</span>
                                 <span class="info-value">{{ rtrim(rtrim(number_format($screening->infant->birth_weight, 2, '.', ''), '0'), '.') }} kg</span>
                             </div>
-                        </div>
+                        @else
+                            <p class="text-muted">No infant data found.</p>
+                        @endif
                     </div>
-                @else
-                    <p class="text-muted">No infant data found.</p>
-                @endif
+                </div>
             </div>
         </div>
-            </div>
 
-            {{-- Screening Answers Tab --}}
-            <div class="tab-pane fade" id="answers" role="tabpanel" aria-labelledby="answers-tab">
-                <div class="detail-card">
+        <div class="detail-card">
             <div class="detail-card-header">
                 <i class="bi bi-clipboard-check-fill"></i>
                 <span>Screening Answers</span>
@@ -936,11 +852,8 @@
                 @endforeach
             </div>
         </div>
-            </div>
 
-            {{-- Submission Status Tab --}}
-            <div class="tab-pane fade" id="status" role="tabpanel" aria-labelledby="status-tab">
-                <div class="detail-card">
+        <div class="detail-card">
             <div class="detail-card-header">
                 <i class="bi bi-info-circle-fill"></i>
                 <span>Submission Status</span>
@@ -1017,8 +930,6 @@
                         </button>
                     </div>
                 @endif
-            </div>
-        </div>
             </div>
         </div>
     </div>
