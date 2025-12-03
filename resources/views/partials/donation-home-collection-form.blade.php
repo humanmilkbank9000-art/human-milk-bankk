@@ -178,15 +178,12 @@
         justify-content: center;
         font-size: 12px;
         font-weight: bold;
-        cursor: pointer;
+        cursor: help;
         flex-shrink: 0;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
-        -webkit-tap-highlight-color: transparent;
-        user-select: none;
     }
 
-    .tooltip-icon:hover,
-    .tooltip-icon:active {
+    .tooltip-icon:hover {
         transform: scale(1.1);
         box-shadow: 0 3px 8px rgba(255, 90, 168, 0.4);
     }
@@ -363,7 +360,9 @@
                 Date of first expression:
                 <span class="tooltip-icon" 
                     data-bs-toggle="tooltip" 
-                    data-bs-placement="top" 
+                    data-bs-placement="auto" 
+                    data-bs-trigger="click focus"
+                    role="button" tabindex="0"
                     data-bs-custom-class="custom-tooltip"
                     title="Enter the date when you first expressed milk for this donation batch. This helps us track the freshness and storage requirements.">i</span>
             </label>
@@ -375,7 +374,9 @@
                 Date of last expression:
                 <span class="tooltip-icon" 
                     data-bs-toggle="tooltip" 
-                    data-bs-placement="top" 
+                    data-bs-placement="auto" 
+                    data-bs-trigger="click focus"
+                    role="button" tabindex="0"
                     data-bs-custom-class="custom-tooltip"
                     title="Enter the date of your most recent milk expression for this donation batch. Must be on or after the first expression date.">i</span>
             </label>
@@ -764,48 +765,50 @@
                 if (lastExpr && !lastExpr.value) lastExpr.value = today;
             } catch (e) { /* non-fatal */ }
 
-            // Initialize Bootstrap tooltips for all tooltip icons
+            // Initialize Bootstrap tooltips for all tooltip icons (mobile-friendly)
             if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
-                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    // Enable both hover and click for mobile devices
-                    const tooltip = new bootstrap.Tooltip(tooltipTriggerEl, {
-                        trigger: 'hover focus click',
-                        html: true
+                const triggerEls = Array.prototype.slice.call(document.querySelectorAll('.tooltip-icon[data-bs-toggle="tooltip"]'));
+                const instances = triggerEls.map(function (el) {
+                    // Ensure desired options even if attributes are missing
+                    return new bootstrap.Tooltip(el, {
+                        trigger: el.getAttribute('data-bs-trigger') || 'click focus',
+                        placement: el.getAttribute('data-bs-placement') || 'auto',
+                        container: 'body',
+                        customClass: (el.getAttribute('data-bs-custom-class') || '') + ' custom-tooltip'
                     });
-                    
-                    // For touch devices, toggle tooltip on click
-                    tooltipTriggerEl.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        // Hide all other tooltips first
-                        tooltipTriggerList.forEach(function(otherEl) {
-                            if (otherEl !== tooltipTriggerEl) {
-                                const otherTooltip = bootstrap.Tooltip.getInstance(otherEl);
-                                if (otherTooltip) {
-                                    otherTooltip.hide();
-                                }
+                });
+
+                // Only one tooltip open at a time
+                triggerEls.forEach(function (el) {
+                    el.addEventListener('show.bs.tooltip', function () {
+                        triggerEls.forEach(function (other) {
+                            if (other !== el) {
+                                const inst = bootstrap.Tooltip.getInstance(other);
+                                inst && inst.hide();
                             }
                         });
-                        
-                        // Toggle current tooltip
-                        tooltip.toggle();
                     });
-                    
-                    return tooltip;
                 });
-                
-                // Close tooltips when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!e.target.closest('[data-bs-toggle="tooltip"]')) {
-                        tooltipTriggerList.forEach(function(tooltipEl) {
-                            const tooltip = bootstrap.Tooltip.getInstance(tooltipEl);
-                            if (tooltip) {
-                                tooltip.hide();
-                            }
+
+                // Hide on outside click
+                document.addEventListener('click', function (e) {
+                    if (!e.target.closest('.tooltip') && !e.target.closest('.tooltip-icon')) {
+                        triggerEls.forEach(function (el) {
+                            const inst = bootstrap.Tooltip.getInstance(el);
+                            inst && inst.hide();
                         });
                     }
+                });
+
+                // Keyboard accessibility: toggle on Enter/Space
+                triggerEls.forEach(function (el) {
+                    el.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const inst = bootstrap.Tooltip.getInstance(el);
+                            inst && inst.toggle();
+                        }
+                    });
                 });
             }
 
