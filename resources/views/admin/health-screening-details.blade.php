@@ -938,6 +938,13 @@
         function acceptScreening(id) {
             const comments = document.getElementById('adminComments')?.value || '';
             
+            // Verify CSRF token exists
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                Swal.fire('Error', 'CSRF token not found. Please refresh the page.', 'error');
+                return;
+            }
+            
             Swal.fire({
                 title: 'Accept Health Screening?',
                 text: 'This will accept the health screening submission.',
@@ -953,11 +960,20 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            'X-CSRF-TOKEN': csrfToken.content,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({ comments: comments })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(`Server returned ${response.status}: ${text}`);
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             Swal.fire({
@@ -974,7 +990,8 @@
                         }
                     })
                     .catch(error => {
-                        Swal.fire('Error', 'An error occurred', 'error');
+                        console.error('Accept error:', error);
+                        Swal.fire('Error', error.message || 'An error occurred', 'error');
                     });
                 }
             });
@@ -985,6 +1002,13 @@
             
             if (!comments.trim()) {
                 Swal.fire('Required', 'Comments are required when declining.', 'warning');
+                return;
+            }
+
+            // Verify CSRF token exists
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                Swal.fire('Error', 'CSRF token not found. Please refresh the page.', 'error');
                 return;
             }
 
@@ -1003,11 +1027,20 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            'X-CSRF-TOKEN': csrfToken.content,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({ comments: comments })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(`Server returned ${response.status}: ${text}`);
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             Swal.fire({
@@ -1024,13 +1057,21 @@
                         }
                     })
                     .catch(error => {
-                        Swal.fire('Error', 'An error occurred', 'error');
+                        console.error('Decline error:', error);
+                        Swal.fire('Error', error.message || 'An error occurred', 'error');
                     });
                 }
             });
         }
 
         function undoDeclineScreening(id) {
+            // Verify CSRF token exists
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                Swal.fire('Error', 'CSRF token not found. Please refresh the page.', 'error');
+                return;
+            }
+
             Swal.fire({
                 title: 'Undo Decline & Accept?',
                 text: 'This will accept the previously declined screening.',
@@ -1046,10 +1087,19 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            'X-CSRF-TOKEN': csrfToken.content,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(`Server returned ${response.status}: ${text}`);
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             Swal.fire({
@@ -1064,13 +1114,14 @@
                         } else {
                             Swal.fire('Error', data.error || 'Failed to accept screening', 'error');
                         }
-                })
-                .catch(error => {
-                    Swal.fire('Error', 'An error occurred', 'error');
-                });
-            }
-        });
-    }
+                    })
+                    .catch(error => {
+                        console.error('Undo decline error:', error);
+                        Swal.fire('Error', error.message || 'An error occurred', 'error');
+                    });
+                }
+            });
+        }
 
     function printScreening() {
         window.print();

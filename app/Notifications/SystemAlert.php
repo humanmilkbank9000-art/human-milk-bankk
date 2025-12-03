@@ -23,10 +23,10 @@ class SystemAlert extends Notification
         $this->meta = $meta;
     }
 
-    // Persist to database and broadcast for real-time updates
+    // Persist to database only (removed broadcast to prevent hanging)
     public function via($notifiable)
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     // The array stored in the database `notifications` table
