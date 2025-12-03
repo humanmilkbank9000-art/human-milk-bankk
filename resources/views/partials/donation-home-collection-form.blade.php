@@ -178,12 +178,17 @@
         justify-content: center;
         font-size: 12px;
         font-weight: bold;
-        cursor: help;
+        cursor: pointer;
         flex-shrink: 0;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
     }
 
-    .tooltip-icon:hover {
+    .tooltip-icon:hover,
+    .tooltip-icon:active {
         transform: scale(1.1);
         box-shadow: 0 3px 8px rgba(255, 90, 168, 0.4);
     }
@@ -214,6 +219,39 @@
 
     .tooltip.custom-tooltip.bs-tooltip-end .tooltip-arrow::before {
         border-right-color: #ff7bb0;
+    }
+
+    /* Simple custom tooltip implementation for reliability */
+    .simple-tooltip {
+        position: absolute;
+        background: linear-gradient(135deg, #ff7bb0, #ff5aa8);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        max-width: 300px;
+        text-align: left;
+        box-shadow: 0 6px 16px rgba(255, 90, 168, 0.35);
+        line-height: 1.5;
+        z-index: 9999;
+        display: none;
+        pointer-events: none;
+    }
+
+    .simple-tooltip.show {
+        display: block;
+    }
+
+    .simple-tooltip::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 20px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid #ff7bb0;
     }
         border: none;
         border-radius: 24px;
@@ -356,32 +394,16 @@
     <!-- Date of expression fields -->
     <div class="row g-3 hc-date-row">
         <div class="col-md-6">
-            <label class="form-label">
-                Date of first expression:
-                <span class="tooltip-icon" 
-                    data-bs-toggle="tooltip" 
-                    data-bs-placement="auto" 
-                    data-bs-trigger="click focus"
-                    role="button" tabindex="0"
-                    data-bs-custom-class="custom-tooltip"
-                    title="Enter the date when you first expressed milk for this donation batch. This helps us track the freshness and storage requirements.">i</span>
-            </label>
+            <label class="form-label">Date of first expression:</label>
             <input type="date" class="form-control" name="first_expression_date" id="hc-first-expression"
                 placeholder="dd/mm/yyyy" required>
+            <small class="text-muted" style="font-size: 12px; color: #666;">Enter the date when you first expressed milk for this donation batch</small>
         </div>
         <div class="col-md-6">
-            <label class="form-label">
-                Date of last expression:
-                <span class="tooltip-icon" 
-                    data-bs-toggle="tooltip" 
-                    data-bs-placement="auto" 
-                    data-bs-trigger="click focus"
-                    role="button" tabindex="0"
-                    data-bs-custom-class="custom-tooltip"
-                    title="Enter the date of your most recent milk expression for this donation batch. Must be on or after the first expression date.">i</span>
-            </label>
+            <label class="form-label">Date of last expression:</label>
             <input type="date" class="form-control" name="last_expression_date" id="hc-last-expression"
                 placeholder="dd/mm/yyyy" required>
+            <small class="text-muted" style="font-size: 12px; color: #666;">Enter the date of your most recent milk expression for this donation batch</small>
         </div>
     </div>
 
@@ -765,52 +787,10 @@
                 if (lastExpr && !lastExpr.value) lastExpr.value = today;
             } catch (e) { /* non-fatal */ }
 
-            // Initialize Bootstrap tooltips for all tooltip icons (mobile-friendly)
-            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
-                const triggerEls = Array.prototype.slice.call(document.querySelectorAll('.tooltip-icon[data-bs-toggle="tooltip"]'));
-                const instances = triggerEls.map(function (el) {
-                    // Ensure desired options even if attributes are missing
-                    return new bootstrap.Tooltip(el, {
-                        trigger: el.getAttribute('data-bs-trigger') || 'click focus',
-                        placement: el.getAttribute('data-bs-placement') || 'auto',
-                        container: 'body',
-                        customClass: (el.getAttribute('data-bs-custom-class') || '') + ' custom-tooltip'
-                    });
-                });
-
-                // Only one tooltip open at a time
-                triggerEls.forEach(function (el) {
-                    el.addEventListener('show.bs.tooltip', function () {
-                        triggerEls.forEach(function (other) {
-                            if (other !== el) {
-                                const inst = bootstrap.Tooltip.getInstance(other);
-                                inst && inst.hide();
-                            }
-                        });
-                    });
-                });
-
-                // Hide on outside click
-                document.addEventListener('click', function (e) {
-                    if (!e.target.closest('.tooltip') && !e.target.closest('.tooltip-icon')) {
-                        triggerEls.forEach(function (el) {
-                            const inst = bootstrap.Tooltip.getInstance(el);
-                            inst && inst.hide();
-                        });
-                    }
-                });
-
-                // Keyboard accessibility: toggle on Enter/Space
-                triggerEls.forEach(function (el) {
-                    el.addEventListener('keydown', function (e) {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            const inst = bootstrap.Tooltip.getInstance(el);
-                            inst && inst.toggle();
-                        }
-                    });
-                });
-            }
+            // Initialize tooltips - now using static text below fields instead
+            // Tooltip code removed as we're using helper text below inputs
+            const triggerEls = document.querySelectorAll('.tooltip-icon[data-bs-toggle="tooltip"]');
+            console.log('Tooltip icons found (now unused):', triggerEls.length);
 
             if (firstExpr) firstExpr.addEventListener('change', function () { checkExpressionDates(false); enableSubmitCheck(); });
             if (lastExpr) lastExpr.addEventListener('change', function () { if (!checkExpressionDates(true)) { /* invalid - alert already shown */ } enableSubmitCheck(); });
